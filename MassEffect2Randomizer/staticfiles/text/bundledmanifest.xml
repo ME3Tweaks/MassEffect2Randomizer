@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mermanifest version="1.0">
+  <faqlink>https://me3tweaks.com/masseffectrandomizer/faq</faqlink>
+  <!-- Executables with hashes that are not in the list are almost always pirated and are not supported.-->
+  <supportedhashes>
+    <supportedhash game="me1" name="Steam">647b93621389709cab8d268379bd4c47</supportedhash>
+    <supportedhash game="me1" name="Steam, MEM patched">78ac3d9b4aad1989dae74505ea65aa6c</supportedhash>
+    <supportedhash game="me1" name="Origin, MEM patched">2390143503635f3c4cfaed0afe0b8c71</supportedhash>
+    <supportedhash game="me1" name="Origin">ff1f894fa1c2dbf4d4b9f0de85c166e5</supportedhash>
+    <supportedhash game="me1" name="DVD">73b76699d4e245c92110a93c54980b78</supportedhash>
+    <supportedhash game="me1" name="DVD, Polish">298c30a399d0959e5e997a9d64b42548</supportedhash>
+    <supportedhash game="me1" name="DVD, Polish, MEM Patched">9a89527800722ec308c01a421bfeb478</supportedhash>
+    <supportedhash game="me1" name="Origin - German">8bba14d838d9c95e10d8ceeb5c958976</supportedhash>
+  </supportedhashes>
+  <!-- Cached Files -->
+  <cachedfile link="https://me3tweaks.com/masseffectrandomizer/cachedfiles/merintros/MER_Madman.bik" 
+              destination="merintros/MER_Madman.bik" 
+              md5="94aa9193af527813c04b58352ca09aed"
+              size="6792200"/>
+  <cachedfile link="https://me3tweaks.com/masseffectrandomizer/cachedfiles/merintros/MER_TombsCrazy.bik" 
+              destination="merintros/MER_TombsCrazy.bik"
+              md5="0fc5fb826e7b1c19ab101e3e02e94268"
+              size="6792108"/>
+  <cachedfile link="https://me3tweaks.com/masseffectrandomizer/cachedfiles/merintros/MER_MrTombs.bik" 
+              destination="merintros/MER_MrTombs.bik" 
+              md5="760407cdc96def4b7aa35e541ddac7f2"
+              size="6792248"/>
+  <cachedfile link="https://me3tweaks.com/masseffectrandomizer/cachedfiles/MassEffectModderNoGui.exe" 
+              destination="executables/MassEffectModderNoGui.exe" 
+              md5="b71d1b5e1036c22ccf4c7afa290cbbd7"
+              size="19121308"/>
+  <cachedfile link="https://me3tweaks.com/masseffectrandomizer/cachedfiles/lzma.exe"
+              destination="executables/lzma.exe"
+              md5="845187008fbd01478fa845b563b73ee3"
+              size="102400"/>
+  <cachedfile link="https://me3tweaks.com/masseffectrandomizer/cachedfiles/PermissionsGranter.exe"
+              destination="executables/PermissionsGranter.exe"
+              md5="952d7c7a5720645a32ca14b31137991f"
+              size="20976"/>
+</mermanifest>
