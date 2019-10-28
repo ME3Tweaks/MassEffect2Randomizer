@@ -100,23 +100,6 @@ namespace MassEffectRandomizer.Classes
             }
         }
 
-        internal static void Restore2DAFiles()
-        {
-            List<string> files = new List<string>();
-            files.Add(Path.Combine("BioGame", "CookedPC", "Maps", "EntryMenu.SFM"));
-            files.Add(Path.Combine("BioGame", "CookedPC", "Engine.u"));
-
-            string gamepath = GetGamePath();
-            string backuppath = Path.Combine(GetAppDataFolder(), "2dabackup");
-
-            foreach (string file in files)
-            {
-                var sourcepath = Path.Combine(backuppath, file);
-                var destpath = Path.Combine(gamepath, file);
-                File.Copy(sourcepath, destpath, true);
-            }
-        }
-
         //internal static string ExtractInternalStaticExecutable(string executableFilename, bool overwrite)
         //{
         //    Log.Information("Extracting executable file: " + executableFilename);
@@ -213,32 +196,12 @@ namespace MassEffectRandomizer.Classes
 
         internal static string GetEngineFile()
         {
-            return Path.Combine(GetGamePath(), "BioGame", "CookedPC", "Engine.u");
-        }
-
-        internal static void Backup2daFiles()
-        {
-            List<string> files = new List<string>();
-            files.Add(Path.Combine("BioGame", "CookedPC", "Maps", "EntryMenu.SFM"));
-            files.Add(Path.Combine("BioGame", "CookedPC", "Engine.u"));
-
-            string gamepath = GetGamePath();
-            string backuppath = Path.Combine(GetAppDataFolder(), "2dabackup");
-
-            foreach (string file in files)
-            {
-                var sourcepath = Path.Combine(gamepath, file);
-                var destpath = Path.Combine(backuppath, file);
-
-                Directory.CreateDirectory(Directory.GetParent(destpath).FullName);
-                File.Copy(sourcepath, destpath, true);
-            }
-            File.Create(Path.Combine(GetAppDataFolder(), "BACKED_UP"));
+            return Path.Combine(GetGamePath(), "BioGame", "CookedPC", "Engine.pcc");
         }
 
         internal static string GetEntryMenuFile()
         {
-            return Path.Combine(GetGamePath(), "BioGame", "CookedPC", "Maps", "EntryMenu.SFM");
+            return Path.Combine(GetGamePath(), "BioGame", "CookedPC", "EntryMenu.pcc");
         }
 
         public static bool IsDirectoryWritable2(string dirPath)
@@ -324,8 +287,8 @@ namespace MassEffectRandomizer.Classes
         {
             string path = GetGamePath();
             if (path == null) { return null; }
-            WriteDebugLog("GetEXE ME1 Path: " + Path.Combine(path, @"Binaries\MassEffect.exe"));
-            return Path.Combine(path, @"Binaries\MassEffect.exe");
+            WriteDebugLog("GetEXE ME2 Path: " + Path.Combine(path, @"Binaries\MassEffect2.exe"));
+            return Path.Combine(path, @"Binaries\MassEffect2.exe");
         }
 
         public static bool IsDirectoryEmpty(string path)
@@ -428,7 +391,7 @@ namespace MassEffectRandomizer.Classes
         /// <returns>True if found, false otherwise</returns>
         public static bool CheckIfHashIsSupported(string hash)
         {
-            foreach (KeyValuePair<string, string> hashPair in SUPPORTED_HASHES_ME1)
+            foreach (KeyValuePair<string, string> hashPair in SUPPORTED_HASHES_ME2)
             {
                 if (hashPair.Key == hash)
                 {
@@ -495,7 +458,7 @@ namespace MassEffectRandomizer.Classes
 
         internal static Tuple<bool, string> GetRawGameSourceByHash(string hash)
         {
-            List<KeyValuePair<string, string>> list = SUPPORTED_HASHES_ME1;
+            List<KeyValuePair<string, string>> list = SUPPORTED_HASHES_ME2;
             foreach (KeyValuePair<string, string> hashPair in list)
             {
                 if (hashPair.Key == hash)
@@ -506,7 +469,7 @@ namespace MassEffectRandomizer.Classes
             return new Tuple<bool, string>(false, "Unknown source - this installation is not supported.");
         }
 
-        public static List<KeyValuePair<string, string>> SUPPORTED_HASHES_ME1 = new List<KeyValuePair<string, string>>();
+        public static List<KeyValuePair<string, string>> SUPPORTED_HASHES_ME2 = new List<KeyValuePair<string, string>>();
 
         public static bool IsWindows10OrNewer()
         {
@@ -517,7 +480,7 @@ namespace MassEffectRandomizer.Classes
 
         public static string GetGameBackupPath()
         {
-            string entry = "ME1VanillaBackupLocation";
+            string entry = "ME2VanillaBackupLocation";
             string path = Utilities.GetBackupRegistrySettingString(entry);
             if (path == null || !Directory.Exists(path))
             {
@@ -662,7 +625,7 @@ namespace MassEffectRandomizer.Classes
             string gamePath = GetGamePath();
             if (gamePath != null)
             {
-                gamePath += @"\BioGame\CookedPC\testVolumeLight_VFX.upk";
+                gamePath += @"BioGame\CookedPC\BIOC_Materials.pcc";
                 return gamePath;
             }
             return null;
@@ -951,12 +914,6 @@ namespace MassEffectRandomizer.Classes
             return memKb;
         }
 
-        public static bool isRunningOnAMD()
-        {
-            var processorIdentifier = System.Environment.GetEnvironmentVariable("PROCESSOR_IDENTIFIER");
-            return processorIdentifier != null && processorIdentifier.Contains("AuthenticAMD");
-        }
-
         public static bool TestXMLIsValid(string inputXML)
         {
             try
@@ -1063,88 +1020,21 @@ namespace MassEffectRandomizer.Classes
 
         public static bool isGameRunning()
         {
-            Process[] pname = Process.GetProcessesByName("MassEffect");
-            return pname.Length > 0;
+            Process[] pname = Process.GetProcessesByName("MassEffect2");
+            Process[] pname2 = Process.GetProcessesByName("ME2Game");
+            return pname.Length > 0 || pname2.Length > 0;
         }
 
         public static bool IsSupportedLocale()
         {
             var gamePath = GetGamePath();
-            var locintfile1 = Path.Combine(gamePath, @"BioGame\CookedPC\Maps\EntryMenu_LOC_int.SFM");
-            var locintfile2 = Path.Combine(gamePath, @"BioGame\CookedPC\Maps\ICE\BIOA_ICE00_LOC_int.SFM");
-            var locintfile3 = Path.Combine(gamePath, @"BioGame\CookedPC\Maps\LAV\BIOA_LAV00_LOC_int.SFM");
-            var locintfile4 = Path.Combine(gamePath, @"BioGame\CookedPC\Maps\CRD\BIOA_CRD00_LOC_int.SFM");
+            var locintfile1 = Path.Combine(gamePath, @"BioGame\CookedPC\Startup_INT.pcc");
+            var locintfile2 = Path.Combine(gamePath, @"BioGame\CookedPC\BioD_QuaTlL_321AgriDomeTrial1_LOC_INT.pcc");
+            var locintfile3 = Path.Combine(gamePath, @"BioGame\CookedPC\ss_global_hench_geth_S_INT.afc");
+            var locintfile4 = Path.Combine(gamePath, @"BioGame\CookedPC\MBioD_ProFre_500Warhouse_LOC_INT.pcc");
 
             return File.Exists(locintfile1) && File.Exists(locintfile2) && File.Exists(locintfile3) && File.Exists(locintfile4);
-
-            ////does not exist in ini (or ini does not exist).
-            //string softwareKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\";
-            //string key64 = @"Wow6432Node\";
-            //string gameKey = @"BioWare\Mass Effect";
-            //string entry = "Locale";
-
-            //string locale = (string)Registry.GetValue(softwareKey + gameKey, entry, null);
-            //if (locale == null)
-            //{
-            //    locale = (string)Registry.GetValue(softwareKey + key64 + gameKey, entry, null);
-            //}
-
-            //return locale;
         }
-
-        public static void RemoveRunAsAdminXPSP3FromME1()
-        {
-            string gamePath = GetGamePath();
-            gamePath += "\\Binaries\\MassEffect.exe";
-            var compatKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers", true);
-            if (compatKey != null)
-            {
-                string compatString = (string)compatKey.GetValue(gamePath, null);
-                if (compatString != null) //has compat setting
-                {
-                    string[] compatsettings = compatString.Split(' ');
-                    List<string> newSettings = new List<string>();
-
-                    foreach (string str in compatsettings)
-                    {
-                        switch (str)
-                        {
-                            case "~":
-                            case "RUNASADMIN":
-                            case "WINXPSP3":
-                                continue;
-                            default:
-                                newSettings.Add(str);
-                                break;
-                        }
-                    }
-
-                    if (newSettings.Count > 0)
-                    {
-                        string newcompatString = "~";
-                        foreach (string compatitem in newSettings)
-                        {
-                            newcompatString += " " + compatitem;
-                        }
-                        if (newcompatString == compatString)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            compatKey.SetValue(gamePath, newcompatString);
-                            Log.Information("New stripped compatibility string: " + newcompatString);
-                        }
-                    }
-                    else
-                    {
-                        compatKey.DeleteValue(gamePath);
-                        Log.Information("Removed compatibility settings for ME1.");
-                    }
-                }
-            }
-        }
-
         internal static string GetAppCrashHandledFile()
         {
             return Path.Combine(Utilities.GetAppDataFolder(), "APP_CRASH_HANDLED");

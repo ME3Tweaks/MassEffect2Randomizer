@@ -94,7 +94,7 @@ namespace MassEffectRandomizer
             {
                 RANDSETTING_WEAPONS_STARTINGEQUIPMENT = true;
                 RANDSETTING_CHARACTER_INVENTORY = true;
-                RANDSETTING_MOVEMENT_MAKO = true;
+                RANDSETTING_MOVEMENT_HAMMERHEAD = true;
                 RANDSETTING_CHARACTER_ICONICFACE = true;
                 RANDSETTING_CHARACTER_CHARCREATOR = true;
                 RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE = true;
@@ -232,52 +232,29 @@ namespace MassEffectRandomizer
         public bool RANDSETTING_CHARACTER_ICONICFACE { get; set; }
         public double RANDSETTING_CHARACTER_ICONICFACE_AMOUNT { get; set; }
 
-
-        //Talents
-        public bool RANDSETTING_TALENTS_SHUFFLECLASSTALENTS { get; set; }
-        public bool RANDSETTING_TALENTS_STATS { get; set; }
-
-        //private bool _randsetting_talents_shuffle_allowsquadmateunity;
-        //public bool RANDSETTING_TALENTS_SHUFFLE_ALLOWSQUADMATEUNITY { get { return _randsetting_talents_shuffle_allowsquadmateunity; } set { SetProperty(ref _randsetting_talents_shuffle_allowsquadmateunity, value); } }
-
-        // SIZESIXTEENS SPECIFIC
-        public bool STREAMER_MODE_SIZESIXTEENS { get; set; }
-
         //MOVEMENT
         public bool RANDSETTING_MOVEMENT_CREATURESPEED { get; set; }
 
-        public bool RANDSETTING_MOVEMENT_MAKO { get; set; }
+        public bool RANDSETTING_MOVEMENT_HAMMERHEAD { get; set; }
         public bool RANDSETTING_MOVEMENT_MAKO_WHEELS { get; set; }
 
         //Misc
-        public bool RANDSETTING_MISC_MUSIC { get; set; }
-        public bool RANDSETTING_MISC_GUIMUSIC { get; set; }
-        public bool RANDSETTING_MISC_GUISFX { get; set; }
         public bool RANDSETTING_PAWN_MAPFACES { get; set; }
         public bool RANDSETTING_MISC_INTERPPAWNS { get; set; }
         public double RANDSETTING_MISC_MAPFACES_AMOUNT { get; set; }
-        public bool RANDSETTING_MAP_PINNACLESTATION { get; set; }
-        public bool RANDSETTING_MAP_BDTS { get; set; }
         public bool RANDSETTING_MAP_CITADEL { get; set; }
         public bool RANDSETTING_MISC_HEIGHTFOG { get; set; }
         public bool RANDSETTING_MISC_STARCOLORS { get; set; }
-        public bool RANDSETTING_MAP_EDENPRIME { get; set; }
-        public bool RANDSETTING_MAP_FEROS { get; set; }
-        public bool RANDSETTING_MAP_NOVERIA { get; set; }
-        public bool RANDSETTING_MISC_ENDINGART { get; set; }
         public int RANDSETTING_WACK_FACEFX_AMOUNT { get; set; }
         public bool LogUploaderFlyoutOpen { get; set; }
         public bool DiagnosticsFlyoutOpen { get; set; }
         public bool RANDSETTING_MISC_GAMEOVERTEXT { get; set; }
-        public bool RANDSETTING_MISC_SPLASH { get; set; }
         public bool RANDSETTING_PAWN_MATERIALCOLORS { get; set; }
 
         //Wackadoodle
         public bool RANDSETTING_MISC_MAPPAWNSIZES { get; set; }
-        public bool RANDSETTING_MISC_HAZARDS { get; set; }
         public bool RANDSETTING_MISC_ENEMYAIDISTANCES { get; set; }
         public bool RANDSETTING_MISC_INTERPS { get; set; }
-        public bool RANDSETTING_WACK_OPENINGCUTSCENE { get; set; }
         public bool RANDSETTING_PAWN_FACEFX { get; set; }
         public bool RANDSETTING_WACK_SCOTTISH { get; set; }
         public bool RANDSETTING_PAWN_BIOLOOKATDEFINITION { get; set; }

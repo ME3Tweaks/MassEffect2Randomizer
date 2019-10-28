@@ -176,9 +176,7 @@
                                     <StackPanel>
                                         <fonts:OutlinedTextBlock Text="Inventory" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
-                                            <CheckBox Content="Randomize initial 4 starting weapons" Margin="3" ToolTip="Randomizes the starting guns you get.&#xA;Due to how the game is coded, you will be forced to randomly get one of every weapon" IsChecked="{Binding RANDSETTING_WEAPONS_STARTINGEQUIPMENT}" />
-                                            <!--<CheckBox Content="Randomize weapon stats" Margin="3" IsChecked="{Binding RANDSETTING_WEAPONS_EFFECTLEVELS}" IsEnabled="False" ToolTip="This feature is not yet complete and cannot be used at this time"/>-->
-                                            <CheckBox Content="Randomize squad armor/amp" ToolTip="Randomizes the starting armor and amp for the squad" Margin="3" IsChecked="{Binding RANDSETTING_CHARACTER_INVENTORY}" />
+                                            <CheckBox Content="Randomize weapons" Margin="3" IsChecked="{Binding RANDSETTING_WEAPONS}" IsEnabled="False"/>
 
                                         </StackPanel>
                                     </StackPanel>
@@ -192,27 +190,9 @@
                                         <fonts:OutlinedTextBlock Text="Movement" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
                                             <CheckBox Content="Randomize movement speeds" Margin="3" ToolTip="Randomizes movement speeds of all characters" IsChecked="{Binding RANDSETTING_MOVEMENT_CREATURESPEED}" />
-                                            <CheckBox Content="Randomize enemy AI distances" Margin="3" ToolTip="Randomize the distances enemy AI prefer to fight at" IsChecked="{Binding RANDSETTING_MISC_ENEMYAIDISTANCES}" />
-                                            <CheckBox Name="RandomizeMako_CheckBox" Content="Randomize Mako" Margin="3" ToolTip="Randomizes various parts of the Mako" IsChecked="{Binding RANDSETTING_MOVEMENT_MAKO}" />
-                                            <CheckBox Content="Reverse front and rear wheels" Foreground="Red" Margin="25,0,0,0" ToolTip="Rear wheel steering. Going in reverse will significantly hamper forward turning" IsChecked="{Binding RANDSETTING_MOVEMENT_MAKO_WHEELS}" >
-                                                <CheckBox.Style>
-                                                    <Style TargetType="CheckBox" BasedOn="{StaticResource MetroCheckBox}">
-                                                        <Setter Property="Opacity" Value="0.5"></Setter>
-                                                        <Setter Property="IsEnabled" Value="False"></Setter>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsChecked,ElementName=RandomizeMako_CheckBox}" Value="True">
-                                                                <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Opacity" Value="1.0"></Setter>
-
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                        <Style.Resources>
-                                                            <SolidColorBrush x:Key="HighlightBrush" Color="Orchid" />
-                                                        </Style.Resources>
-                                                    </Style>
-                                                </CheckBox.Style>
-
-                                            </CheckBox>
+                                            <CheckBox Content="Randomize weapons types squadmates can use" Margin="3" ToolTip="Randomize the distances enemy AI prefer to fight at" IsChecked="{Binding RANDSETTING_MISC_ENEMYAIDISTANCES}" />
+                                            <!-- SFXPlayerSquadLoadoutData -->
+                                            <CheckBox Content="Randomize HammerHead" Margin="3" ToolTip="Randomizes speed of Hammerhead" IsChecked="{Binding RANDSETTING_MOVEMENT_HAMMERHEAD}" />
                                         </StackPanel>
                                     </StackPanel>
                                     <StackPanel>

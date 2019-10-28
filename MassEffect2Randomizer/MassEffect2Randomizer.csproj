@@ -75,7 +75,7 @@
     </Reference>
     <Reference Include="ME3ExplorerLib, Version=4.1.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>libraries\ME3ExplorerLib.dll</HintPath>
+      <HintPath>..\..\PackageCompactor\PackageCompactor\libs\ME3ExplorerLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.WindowsAPICodePack-Core.1.1.0.2\lib\Microsoft.WindowsAPICodePack.dll</HintPath>
@@ -169,7 +169,6 @@
     <Compile Include="Classes\Converters\FaceFXRandomizationLevelIntToStringConverter.cs" />
     <Compile Include="Classes\IFaceFXAnimSet.cs" />
     <Compile Include="Classes\ME2FaceFXAnimSet.cs" />
-    <Compile Include="Classes\ME3FaceFXAnimSet.cs" />
     <Compile Include="Classes\ObservableCollectionExtended.cs" />
     <Compile Include="Classes\StreamIO.cs" />
     <Compile Include="MainWindowUIComponents\UISupportingFunctions.cs" />
