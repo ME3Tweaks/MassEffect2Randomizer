@@ -696,6 +696,16 @@ namespace MassEffectRandomizer.Classes
             return null;
         }
 
+        /// <summary>
+        /// Fetches file from CookedPC (ME2 specific)
+        /// </summary>
+        /// <param name="basefilename"></param>
+        /// <returns></returns>
+        internal static string GetBasegameFile(string basefilename)
+        {
+            return GetGameFile("CookedPC\\" + basefilename);
+        }
+
         public static int runProcess(string exe, string args, bool standAlone = false)
         {
             Log.Information("Running process: " + exe + " " + args);
@@ -1031,7 +1041,7 @@ namespace MassEffectRandomizer.Classes
             var locintfile1 = Path.Combine(gamePath, @"BioGame\CookedPC\Startup_INT.pcc");
             var locintfile2 = Path.Combine(gamePath, @"BioGame\CookedPC\BioD_QuaTlL_321AgriDomeTrial1_LOC_INT.pcc");
             var locintfile3 = Path.Combine(gamePath, @"BioGame\CookedPC\ss_global_hench_geth_S_INT.afc");
-            var locintfile4 = Path.Combine(gamePath, @"BioGame\CookedPC\MBioD_ProFre_500Warhouse_LOC_INT.pcc");
+            var locintfile4 = Path.Combine(gamePath, @"BioGame\CookedPC\BioD_ProFre_500Warhouse_LOC_INT.pcc");
 
             return File.Exists(locintfile1) && File.Exists(locintfile2) && File.Exists(locintfile3) && File.Exists(locintfile4);
         }

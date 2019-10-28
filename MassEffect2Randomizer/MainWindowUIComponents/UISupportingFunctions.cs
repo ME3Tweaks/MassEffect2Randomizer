@@ -195,16 +195,8 @@ namespace MassEffectRandomizer
 
             Log.Information("Reverting lod settings");
             string exe = Path.Combine(Utilities.GetAppDataFolder(), "executables", "MassEffectModderNoGui.exe");
-            string args = "--remove-lods --gameid 1";
+            string args = "--remove-lods --gameid 2";
             Utilities.runProcess(exe, args);
-
-            string iniPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + @"\BioWare\Mass Effect\Config\BIOEngine.ini";
-            if (File.Exists(iniPath))
-            {
-                Log.Information("Reverting Indirect Sound ini fix for ME1");
-                IniFile engineConf = new IniFile(iniPath);
-                engineConf.DeleteKey("DeviceName", "ISACTAudio.ISACTAudioDevice");
-            }
 
             if (Utilities.IsDirectoryWritable(Directory.GetParent(gamePath).FullName))
             {
@@ -240,7 +232,7 @@ namespace MassEffectRandomizer
             if (gamePath != null)
             {
                 Log.Information("Copying backup to game directory: " + backupPath + " -> " + gamePath);
-                CopyDir.CopyAll_ProgressBar(new DirectoryInfo(backupPath), new DirectoryInfo(gamePath), BackupWorker, "Restoring Mass Effect...", -1, 0);
+                CopyDir.CopyAll_ProgressBar(new DirectoryInfo(backupPath), new DirectoryInfo(gamePath), BackupWorker, "Restoring Mass Effect 2...", -1, 0);
                 Log.Information("Restore of game data has completed");
             }
             e.Result = true;
@@ -705,7 +697,7 @@ namespace MassEffectRandomizer
             foreach (var item in supportedHashesList)
             {
                 KeyValuePair<string, string> kvp = new KeyValuePair<string, string>(item.Value, (string)item.Attribute("name"));
-                Utilities.SUPPORTED_HASHES_ME1.Add(kvp);
+                Utilities.SUPPORTED_HASHES_ME2.Add(kvp);
             }
             FaqLink = rootElement.Element("faqlink").Value;
             var requiredCachedFiles = (from e in rootElement.Elements("cachedfile")

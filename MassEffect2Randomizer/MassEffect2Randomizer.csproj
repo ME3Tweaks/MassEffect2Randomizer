@@ -260,6 +260,9 @@
     <None Include="costura64\lzo2wrapper.dll" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="staticfiles\text\gameovertexts.xml" />
+    <EmbeddedResource Include="staticfiles\text\openingcrawls.xml" />
+    <EmbeddedResource Include="staticfiles\text\allowedcutscenerandomizationtags.txt" />
     <EmbeddedResource Include="staticfiles\**\*.bik" />
     <Resource Include="images\me3_bg_800x600.jpg" />
     <Resource Include="images\wards.jpg" />

@@ -26,7 +26,7 @@ namespace MassEffectRandomizer.Classes.Converters
                 case 3:
                     return "Sonic Adventure";
                 case 4:
-                    return "Source filemaker";
+                    return "Source filmmaker";
                 default:
                     return "Total madness";
             }

@@ -103,11 +103,11 @@ namespace MassEffectRandomizer
                 RANDSETTING_PAWN_FACEFX = true;
                 RANDSETTING_PAWN_MATERIALCOLORS = true;
 
-                RANDSETTING_WACK_OPENINGCUTSCENE = true;
-                RANDSETTING_MAP_EDENPRIME = true;
-                RANDSETTING_MAP_CITADEL = true;
-                RANDSETTING_MAP_NOVERIA = true;
-                RANDSETTING_MAP_FEROS = true;
+                //RANDSETTING_WACK_OPENINGCUTSCENE = true;
+                //RANDSETTING_MAP_EDENPRIME = true;
+                //RANDSETTING_MAP_CITADEL = true;
+                //RANDSETTING_MAP_NOVERIA = true;
+                //RANDSETTING_MAP_FEROS = true;
 
                 RANDSETTING_GALAXYMAP_CLUSTERS = true;
                 RANDSETTING_GALAXYMAP_SYSTEMS = true;
@@ -115,13 +115,13 @@ namespace MassEffectRandomizer
 
                 RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION = true;
                 RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET = true;
-                RANDSETTING_MISC_HAZARDS = true;
+               // RANDSETTING_MISC_HAZARDS = true;
 
                 RANDSETTING_MISC_GAMEOVERTEXT = true;
                 RANDSETTING_MISC_HEIGHTFOG = true;
                 RANDSETTING_MISC_STARCOLORS = true;
-                RANDSETTING_MISC_ENDINGART = true;
-                RANDSETTING_MISC_SPLASH = true;
+                //RANDSETTING_MISC_ENDINGART = true;
+                //RANDSETTING_MISC_SPLASH = true;
                 RANDSETTING_MISC_INTERPPAWNS = true;
 
             }
@@ -448,7 +448,7 @@ namespace MassEffectRandomizer
             try
             {
                 int myReleaseAge = 0;
-                var releases = await client.Repository.Release.GetAll("ME3Tweaks", "MassEffectRandomizer");
+                var releases = await client.Repository.Release.GetAll("Mgamerz", "MassEffect2Randomizer");
                 if (releases.Count > 0)
                 {
                     Log.Information("Fetched application releases from github");
