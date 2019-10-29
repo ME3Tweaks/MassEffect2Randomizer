@@ -32,6 +32,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -44,6 +45,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
     <DebugSymbols>true</DebugSymbols>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -167,6 +169,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Converters\FaceFXRandomizationLevelIntToStringConverter.cs" />
+    <Compile Include="Classes\gameini\CaseInsensitiveDictionary.cs" />
+    <Compile Include="Classes\gameini\DuplicatingIni.cs" />
+    <Compile Include="Classes\gameini\ME2Coalesced.cs" />
+    <Compile Include="Classes\gameini\StringStructParser.cs" />
     <Compile Include="Classes\IFaceFXAnimSet.cs" />
     <Compile Include="Classes\ME2FaceFXAnimSet.cs" />
     <Compile Include="Classes\ObservableCollectionExtended.cs" />
@@ -282,7 +288,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>if $(ConfigurationName) == Debug ("%25ProgramFiles(x86)%25\Microsoft Visual Studio\2019\Community\Common7\IDE\TextTransform.exe" -a !!build!true "$(ProjectDir)Properties\AssemblyInfo.tt") ELSE ("%25ProgramFiles(x86)%25\Microsoft Visual Studio\2019\Community\Common7\IDE\TextTransform.exe" -a !!revision!true -a !!build!true "$(ProjectDir)Properties\AssemblyInfo.tt")
+    <PreBuildEvent>::if $(ConfigurationName) == Debug ("%25ProgramFiles(x86)%25\Microsoft Visual Studio\2019\Community\Common7\IDE\TextTransform.exe" -a !!build!true "$(ProjectDir)Properties\AssemblyInfo.tt") ELSE ("%25ProgramFiles(x86)%25\Microsoft Visual Studio\2019\Community\Common7\IDE\TextTransform.exe" -a !!revision!true -a !!build!true "$(ProjectDir)Properties\AssemblyInfo.tt")
 </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
