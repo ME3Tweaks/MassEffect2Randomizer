@@ -104,7 +104,7 @@ namespace MassEffectRandomizer
 
         private async void RestoreGame()
         {
-            currentProgressDialogController = backupRestoreController = await this.ShowProgressAsync("Preparing to restore Mass Effect", "Preparing to restore Mass Effect, please wait...", true);
+            currentProgressDialogController = backupRestoreController = await this.ShowProgressAsync("Preparing to restore Mass Effect 2", "Preparing to restore Mass Effect 2, please wait...", true);
             currentProgressDialogController.SetIndeterminate();
 
             BackupWorker = new BackgroundWorker();
@@ -126,11 +126,11 @@ namespace MassEffectRandomizer
                 bool result = (bool)e.Result;
                 if (result)
                 {
-                    await this.ShowMessageAsync("Restore completed", "Mass Effect has been restored from backup.");
+                    await this.ShowMessageAsync("Restore completed", "Mass Effect 2 has been restored from backup.");
                 }
                 else
                 {
-                    await this.ShowMessageAsync("Restore failed", "Mass Effect was not restored from backup. Check the logs for more information.");
+                    await this.ShowMessageAsync("Restore failed", "Mass Effect 2 was not restored from backup. Check the logs for more information.");
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace MassEffectRandomizer
             string destPath = (string)e.Result;
             if (destPath != null)
             {
-                Utilities.WriteRegistryKey(Registry.CurrentUser, ALOT_REGISTRY_KEY, "ME1VanillaBackupLocation", destPath);
+                Utilities.WriteRegistryKey(Registry.CurrentUser, ALOT_REGISTRY_KEY, "ME2VanillaBackupLocation", destPath);
             }
 
             //Backup completed, update UI
@@ -155,11 +155,11 @@ namespace MassEffectRandomizer
                 {
                     BackupRestoreText = "Restore";
                     BackupRestore_Button.ToolTip = "Click to restore game from\n" + result;
-                    await this.ShowMessageAsync("Backup completed", "Mass Effect has been backed up. You can restore this backup by clicking the Restore button.");
+                    await this.ShowMessageAsync("Backup completed", "Mass Effect 2 has been backed up. You can restore this backup by clicking the Restore button.");
                 }
                 else
                 {
-                    await this.ShowMessageAsync("Backup failed", "Mass Effect was unable to be fully backed up. Check the logs for more information.");
+                    await this.ShowMessageAsync("Backup failed", "Mass Effect 2 was unable to be fully backed up. Check the logs for more information.");
                 }
             }
         }
@@ -248,14 +248,14 @@ namespace MassEffectRandomizer
             try
             {
                 string me2Subpath = Path.Combine(me2path, @"BioGame\CookedPC");
-                bool me1Writable = Utilities.IsDirectoryWritable(me2path) && Utilities.IsDirectoryWritable(me2Subpath);
-                if (!me1Writable)
+                bool me2Writable = Utilities.IsDirectoryWritable(me2path) && Utilities.IsDirectoryWritable(me2Subpath);
+                if (!me2Writable)
                 {
                     Log.Information("ME2 not writable: " + me2path);
                     directories.Add(me2path);
                 }
 
-                if (directories.Count() > 0)
+                if (directories.Any())
                 {
                     foreach (String str in directories)
                     {

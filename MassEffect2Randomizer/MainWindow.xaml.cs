@@ -99,7 +99,7 @@ namespace MassEffectRandomizer
                 RANDSETTING_CHARACTER_CHARCREATOR = true;
                 RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE = true;
                 RANDSETTING_CHARACTER_HENCHFACE = true;
-                RANDSETTING_PAWN_MAPFACES = true;
+                RANDSETTING_BIOMORPHFACES = true;
                 RANDSETTING_PAWN_FACEFX = true;
                 RANDSETTING_PAWN_MATERIALCOLORS = true;
 
@@ -228,6 +228,7 @@ namespace MassEffectRandomizer
         public bool RANDSETTING_CHARACTER_INVENTORY { get; set; }
         public bool RANDSETTING_CHARACTER_CHARCREATOR { get; set; }
         public bool RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE { get; set; }
+        public bool RANDSETTING_ILLUSIVEEYES { get; set; }
         public bool RANDSETTING_CHARACTER_HENCHFACE { get; set; }
         public bool RANDSETTING_CHARACTER_ICONICFACE { get; set; }
         public double RANDSETTING_CHARACTER_ICONICFACE_AMOUNT { get; set; }
@@ -239,7 +240,8 @@ namespace MassEffectRandomizer
         public bool RANDSETTING_MOVEMENT_MAKO_WHEELS { get; set; }
 
         //Misc
-        public bool RANDSETTING_PAWN_MAPFACES { get; set; }
+        public bool RANDSETTING_BIOMORPHFACES { get; set; }
+        public bool RANDSETTING_PAWN_CLOWNMODE { get; set; }
         public bool RANDSETTING_MISC_INTERPPAWNS { get; set; }
         public double RANDSETTING_MISC_MAPFACES_AMOUNT { get; set; }
         public bool RANDSETTING_MAP_CITADEL { get; set; }
@@ -349,9 +351,9 @@ namespace MassEffectRandomizer
             string me2Path = Utilities.GetGamePath(allowMissing: true);
 
             //int installedGames = 5;
-            bool me1Installed = (me2Path != null);
+            bool me2installed = (me2Path != null);
 
-            if (!me1Installed)
+            if (!me2installed)
             {
                 Log.Error("Mass Effect 2 couldn't be found. Application will now exit.");
                 await this.ShowMessageAsync("Mass Effect 2 is not installed", "Mass Effect 2 couldn't be found on this system. Mass Effect 2 Randomizer only works with legitimate, official copies of Mass Effect 2. Ensure you have run the game at least once. If you need assistance, please come to the ME3Tweaks Discord.");
@@ -377,8 +379,8 @@ namespace MassEffectRandomizer
                 BackupRestoreText = "Restore";
                 BackupRestore_Button.ToolTip = "Click to restore game from " + Environment.NewLine + path;
 
-                string testME1Installed = Utilities.GetGamePath();
-                if (testME1Installed == null)
+                string testME2Installed = Utilities.GetGamePath();
+                if (testME2Installed == null)
                 {
                     Log.Error("Mass Effect detected as installed, but files are missing");
                     MetroDialogSettings settings = new MetroDialogSettings();
@@ -400,7 +402,7 @@ namespace MassEffectRandomizer
             }
             else
             {
-                if (me1Installed)
+                if (me2installed)
                 {
                     BackupRestoreText = "Backup";
                     BackupRestore_Button.ToolTip = "Click to backup game";
@@ -630,7 +632,7 @@ namespace MassEffectRandomizer
                 MetroDialogSettings settings = new MetroDialogSettings();
                 settings.NegativeButtonText = "Cancel";
                 settings.AffirmativeButtonText = "Restore";
-                MessageDialogResult result = await this.ShowMessageAsync("Restoring Mass Effect from backup", "Restoring Mass Effect will wipe out the current installation and put your game back to the state when you backed it up. Are you sure you want to do this?", MessageDialogStyle.AffirmativeAndNegative, settings);
+                MessageDialogResult result = await this.ShowMessageAsync("Restoring Mass Effect 2 from backup", "Restoring Mass Effect 2 will wipe out the current installation and put your game back to the state when you backed it up. Are you sure you want to do this?", MessageDialogStyle.AffirmativeAndNegative, settings);
                 if (result == MessageDialogResult.Affirmative)
                 {
                     RestoreGame();

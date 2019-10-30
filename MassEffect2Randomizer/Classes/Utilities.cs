@@ -703,7 +703,7 @@ namespace MassEffectRandomizer.Classes
         /// <returns></returns>
         internal static string GetBasegameFile(string basefilename)
         {
-            return GetGameFile("CookedPC\\" + basefilename);
+            return GetGameFile("BIOGame\\CookedPC\\" + basefilename);
         }
 
         public static int runProcess(string exe, string args, bool standAlone = false)

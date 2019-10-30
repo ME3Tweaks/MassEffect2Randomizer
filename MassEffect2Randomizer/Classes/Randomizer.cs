@@ -44,6 +44,7 @@ namespace MassEffectRandomizer.Classes
                 seed = new Random().Next();
                 mainWindow.SeedTextBox.Text = seed.ToString();
             }
+
             Log.Information("-------------------------STARTING RANDOMIZER WITH SEED " + seed + "--------------------------");
             randomizationWorker.RunWorkerAsync(seed);
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Indeterminate, mainWindow);
@@ -105,6 +106,7 @@ namespace MassEffectRandomizer.Classes
                     }
                 }
             }
+
             export.WriteProperty(waypointReferences);
         }
 
@@ -118,10 +120,11 @@ namespace MassEffectRandomizer.Classes
                 mainWindow.ProgressBarIndeterminate = true;
                 ME3ExplorerMinified.DLL.Startup();
             }
+
             //Load TLKs
             mainWindow.CurrentOperationText = "Loading TLKs";
             mainWindow.ProgressBarIndeterminate = true;
-            var Tlks = Directory.GetFiles(Path.Combine(Utilities.GetGamePath(), "BioGame","CookedPC"), "*_INT.tlk", SearchOption.AllDirectories).Select(x =>
+            var Tlks = Directory.GetFiles(Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC"), "*_INT.tlk", SearchOption.AllDirectories).Select(x =>
             {
                 TalkFile tf = new TalkFile();
                 tf.LoadTlkData(x);
@@ -261,12 +264,21 @@ namespace MassEffectRandomizer.Classes
             //}
 
 
-            //RANDOMIZE FACES
+            //RANDOMIZE FACESRANDSETTING_PAWN_CLOWNMODE
             //if (mainWindow.RANDSETTING_CHARACTER_HENCHFACE)
             //{
             //    RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\GameObjects\Characters\Faces\BIOG_Hench_FAC.upk"), random); //Henchmen
             //    RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\BIOG_MORPH_FACE.upk"), random); //Iconic and player (Not sure if this does anything...
             //}
+
+            if (mainWindow.RANDSETTING_ILLUSIVEEYES)
+            {
+                //var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
+                var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BioD_ProCer_350BriefRoom.pcc"));
+                var eyes = headmorphpro.getUExport(2234); //Illusive man eyes
+                RandomizeMaterialInstance(eyes, random);
+                ModifiedFiles[headmorphpro.FilePath] = headmorphpro.FilePath;
+            }
 
             if (RunAllFilesRandomizerPass)
             {
@@ -295,7 +307,7 @@ namespace MassEffectRandomizer.Classes
                         foreach (ExportEntry exp in package.Exports)
                         {
                             //Randomize faces
-                            if (mainWindow.RANDSETTING_PAWN_MAPFACES && exp.ClassName == "BioMorphFace")
+                            if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
                             {
                                 //Face randomizer
                                 if (!loggedFilePath)
@@ -339,6 +351,7 @@ namespace MassEffectRandomizer.Classes
                                     //Log.Information("Randomizing map file: " + files[i]);
                                     loggedFilePath = true;
                                 }
+
                                 ShuffleCutscenePawns(exp, random);
                             }
                             else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
@@ -348,6 +361,7 @@ namespace MassEffectRandomizer.Classes
                                     //Log.Information("Randomizing map file: " + files[i]);
                                     loggedFilePath = true;
                                 }
+
                                 RandomizeBioLookAtDefinition(exp, random);
                             }
                             else if (exp.ClassName == "BioPawn")
@@ -382,6 +396,7 @@ namespace MassEffectRandomizer.Classes
                                     Log.Information("Randomizing map file: " + files[i]);
                                     loggedFilePath = true;
                                 }
+
                                 RandomizeHeightFogComponent(exp, random);
                             }
                             else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
@@ -477,11 +492,12 @@ namespace MassEffectRandomizer.Classes
                     mainWindow.CurrentOperationText = "Saving TLKs";
                     ModifiedFiles[tf.path] = tf.path;
                     //HuffmanCompression hc = new ME3Explorer.HuffmanCompression();
-                   // hc.SavetoFile(tf.path);
+                    // hc.SavetoFile(tf.path);
                 }
             }
+
             mainWindow.CurrentOperationText = "Finishing up";
-            AddMERSplash(random);
+            //AddMERSplash(random);
         }
 
         private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks)
@@ -494,6 +510,7 @@ namespace MassEffectRandomizer.Classes
                     RandomizeBioMorphFace(export, random); //.3 default
                     continue;
                 }
+
                 if (export.ClassName == "BioMorphFaceFESliderColour")
                 {
 
@@ -515,6 +532,7 @@ namespace MassEffectRandomizer.Classes
 
                 }
             }
+
             biop_char.save();
             ModifiedFiles[biop_char.FilePath] = biop_char.FilePath;
         }
@@ -540,6 +558,7 @@ namespace MassEffectRandomizer.Classes
 
                 }
             }
+
             export.WriteProperty(boneDefinitions);
         }
 
@@ -560,6 +579,7 @@ namespace MassEffectRandomizer.Classes
                     var twentyPercent = random.NextFloat(-density * .05, density * 0.75);
                     density.Value = density + twentyPercent;
                 }
+
                 exp.WriteProperties(properties);
             }
         }
@@ -579,40 +599,58 @@ namespace MassEffectRandomizer.Classes
                     {
                         //MaterialInstanceConstant
                         ExportEntry material = exp.FileRef.getUExport(materialObj.Value);
-                        var props = material.GetProperties();
-
-                        {
-                            var scalars = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues");
-                            var vectors = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues");
-                            if (scalars != null)
-                            {
-                                for (int i = 0; i < scalars.Count; i++)
-                                {
-                                    var scalar = scalars[i];
-                                    var parameter = scalar.GetProp<NameProperty>("ParameterName");
-                                    var currentValue = scalar.GetProp<FloatProperty>("ParameterValue");
-                                    if (currentValue > 1)
-                                    {
-                                        scalar.GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0, currentValue * 1.3);
-                                    }
-                                    else
-                                    {
-                                        Debug.WriteLine("Randomizing parameter " + scalar.GetProp<NameProperty>("ParameterName"));
-                                        scalar.GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0, 1);
-                                    }
-                                }
-
-                                foreach (var vector in vectors)
-                                {
-                                    var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                                    RandomizeTint(random, paramValue, false);
-                                }
-                            }
-                        }
-                        material.WriteProperties(props);
+                        RandomizeMaterialInstance(material, random);
+                        
                     }
                 }
             }
+        }
+
+        private void RandomizeMaterialInstance(ExportEntry material, Random random)
+        {
+            var props = material.GetProperties();
+
+            {
+                var vectors = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues");
+                if (vectors != null)
+                {
+                    foreach (var vector in vectors)
+                    {
+                        var pc = vector.GetProp<StructProperty>("ParameterValue");
+                        if (pc != null)
+                        {
+                            RandomizeTint(random, pc, false);
+                        }
+                    }
+                }
+
+                var scalars = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues");
+                if (scalars != null)
+                {
+                    for (int i = 0; i < scalars.Count; i++)
+                    {
+                        var scalar = scalars[i];
+                        var parameter = scalar.GetProp<NameProperty>("ParameterName");
+                        var currentValue = scalar.GetProp<FloatProperty>("ParameterValue");
+                        if (currentValue > 1)
+                        {
+                            scalar.GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0, currentValue * 1.3);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Randomizing parameter " + scalar.GetProp<NameProperty>("ParameterName"));
+                            scalar.GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0, 1);
+                        }
+                    }
+
+                    foreach (var vector in vectors)
+                    {
+                        var paramValue = vector.GetProp<StructProperty>("ParameterValue");
+                        RandomizeTint(random, paramValue, false);
+                    }
+                }
+            }
+            material.WriteProperties(props);
         }
 
         private void RandomizeSplash(Random random, MEPackage entrymenu)
@@ -761,6 +799,7 @@ namespace MassEffectRandomizer.Classes
         }
 
         private List<string> acceptableTagsForPawnShuffling = new List<string>();
+
         private void ShuffleCutscenePawns(ExportEntry export, Random random)
         {
             var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
@@ -824,6 +863,7 @@ namespace MassEffectRandomizer.Classes
                 {
                     pawnsToShuffle[i].Value = newAssignedValues[i];
                 }
+
                 export.WriteProperty(variableLinks);
             }
         }
@@ -904,6 +944,7 @@ namespace MassEffectRandomizer.Classes
                                     {
                                         faceFxline.points[j].weight *= 8;
                                     }
+
                                     break;
                                 case 4: //Extreme
                                     if (random.Next(6) == 0)
@@ -914,6 +955,7 @@ namespace MassEffectRandomizer.Classes
                                     {
                                         faceFxline.points[j].weight *= 20;
                                     }
+
                                     break;
                                 default:
                                     Debugger.Break();
@@ -1076,6 +1118,7 @@ namespace MassEffectRandomizer.Classes
                     filesInIndex.Add(@"Movies\MERIntro.bik");
                     File.WriteAllLines(fileIndex, filesInIndex);
                 }
+
                 ModifiedFiles[entrymenu.FilePath] = entrymenu.FilePath;
             }
 
@@ -1684,7 +1727,7 @@ namespace MassEffectRandomizer.Classes
 
         public bool RunAllFilesRandomizerPass
         {
-            get => mainWindow.RANDSETTING_PAWN_MAPFACES
+            get => mainWindow.RANDSETTING_BIOMORPHFACES
                    || mainWindow.RANDSETTING_MISC_MAPPAWNSIZES
                    || mainWindow.RANDSETTING_MISC_INTERPS
                    || mainWindow.RANDSETTING_MISC_INTERPPAWNS
@@ -1804,6 +1847,59 @@ namespace MassEffectRandomizer.Classes
                         x.Value = x.Value * random.NextFloat(1 - amount, 1 + amount);
                         y.Value = y.Value * random.NextFloat(1 - amount, 1 + amount);
                         z.Value = z.Value * random.NextFloat(1 - (amount / .85), 1 + (amount / .85));
+                    }
+                }
+            }
+
+            export.WriteProperties(props);
+            if (mainWindow.RANDSETTING_PAWN_CLOWNMODE)
+            {
+                var materialoverride = props.GetProp<ObjectProperty>("m_oMaterialOverrides");
+                if (materialoverride != null)
+                {
+                    var overrides = export.FileRef.getUExport(materialoverride.Value);
+                    RandomizeMaterialOverride(overrides, random);
+                }
+            }
+        }
+
+        private void RandomizeMaterialOverride(ExportEntry export, Random random)
+        {
+            PropertyCollection props = export.GetProperties();
+            var colorOverrides = props.GetProp<ArrayProperty<StructProperty>>("m_aColorOverrides");
+            if (colorOverrides != null)
+            {
+                foreach (StructProperty colorParameter in colorOverrides)
+                {
+                    RandomizeTint(random, colorParameter.GetProp<StructProperty>("cValue"), false);
+                }
+            }
+            var scalarOverrides = props.GetProp<ArrayProperty<StructProperty>>("m_aScalarOverrides");
+            if (scalarOverrides != null)
+            {
+                foreach (StructProperty scalarParameter in scalarOverrides)
+                {
+                    var name = scalarParameter.GetProp<NameProperty>("nName");
+                    if (name != null)
+                    {
+                        if (name.Value.Name.Contains("_Frek_") || name.Value.Name.StartsWith("HAIR") || name.Value.Name.StartsWith("HED_Scar"))
+                        {
+
+                            var currentValue = scalarParameter.GetProp<FloatProperty>("sValue");
+                            if (currentValue != null)
+                            {
+
+                                if (currentValue > 1)
+                                {
+                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = random.NextFloat(0, currentValue * 1.3);
+                                }
+                                else
+                                {
+                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = random.NextFloat(0, 1);
+                                }
+                            }
+                        }
+
                     }
                 }
             }

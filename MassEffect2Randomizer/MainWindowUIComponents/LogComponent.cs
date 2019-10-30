@@ -380,57 +380,12 @@ namespace MassEffectRandomizer
             StringBuilder crashLogs = new StringBuilder();
             var sevenDaysAgo = DateTime.Now.AddDays(-7);
 
-            string logsdir = Environment.GetFolderPath(Environment.SpecialFolder.Personal) + @"\BioWare\Mass Effect\Logs";
-            if (Directory.Exists(logsdir))
-            {
-                DirectoryInfo info = new DirectoryInfo(logsdir);
-                FileInfo[] files = info.GetFiles().Where(f => f.LastWriteTime > sevenDaysAgo).OrderByDescending(p => p.LastWriteTime).ToArray();
-                crashLogs.AppendLine("[STARTOFME1LOGS]");
-
-                foreach (FileInfo file in files)
-                {
-                    Console.WriteLine(file.Name + " " + file.LastWriteTime);
-                    var logLines = File.ReadAllLines(file.FullName);
-                    int crashIndex = -1;
-                    int index = 0;
-                    string reason = "";
-                    foreach (string line in logLines)
-                    {
-                        if (line.Contains("Critical: appError called"))
-                        {
-                            crashIndex = index;
-                            reason = "[Warning] Log file indicates crash occured";
-                            Log.Information("Found crash in ME1 log " + file.Name + " on line " + index);
-                            break;
-                        }
-
-                        index++;
-                    }
-
-                    if (crashIndex >= 0)
-                    {
-                        crashIndex = Math.Max(0, crashIndex - 10);
-                        //this log has a crash
-                        crashLogs.AppendLine("===Mass Effect log " + file.Name);
-                        if (reason != "") crashLogs.AppendLine(reason);
-                        if (crashIndex > 0)
-                        {
-                            crashLogs.AppendLine("[CRASHLOG]...");
-                        }
-
-                        for (int i = crashIndex; i < logLines.Length; i++)
-                        {
-                            crashLogs.AppendLine("[CRASHLOG]" + logLines[i]);
-                        }
-                    }
-                }
-            }
 
             //Get event logs
             EventLog ev = new EventLog("Application");
             List<EventLogEntry> entries = ev.Entries
                 .Cast<EventLogEntry>()
-                .Where(z => z.InstanceId == 1001 && z.TimeGenerated > sevenDaysAgo && GenerateLogString(z).Contains("MassEffect.exe"))
+                .Where(z => z.InstanceId == 1001 && z.TimeGenerated > sevenDaysAgo && (GenerateLogString(z).Contains("MassEffect2.exe") || GenerateLogString(z).Contains("ME2Game.exe")))
                 .ToList();
 
             if (entries.Count > 0)
@@ -441,14 +396,14 @@ namespace MassEffectRandomizer
                 foreach (var entry in entries)
                 {
                     string str = string.Join("\n", GenerateLogString(entry).Split('\n').ToList().Take(17).ToList());
-                    crashLogs.AppendLine($"!!!MassEffect.exe Event Log {entry.TimeGenerated}\n{str}");
+                    crashLogs.AppendLine($"!!!MassEffect2.exe Event Log {entry.TimeGenerated}\n{str}");
                 }
-                crashLogs.AppendLine("===Mass Effect crash logs found in Event Viewer");
+                crashLogs.AppendLine("===Mass Effect 2 crash logs found in Event Viewer");
             }
             else
             {
                 crashLogs.AppendLine("No crash events found in Event Viewer");
-                crashLogs.AppendLine("===Mass Effect crash logs found in Event Viewer");
+                crashLogs.AppendLine("===Mass Effect 2 crash logs found in Event Viewer");
             }
 
             return crashLogs.ToString();

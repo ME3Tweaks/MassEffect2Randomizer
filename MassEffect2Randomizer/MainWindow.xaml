@@ -64,8 +64,8 @@
                     </Border.Background>
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Orientation="Vertical" UseLayoutRounding="True" Margin="0,95,0,0" Width="700">
                         <StackPanel Width="400" HorizontalAlignment="Right" Margin="0,0,-30,70">
-                            <TextBlock Text="Welcome to&#10;Mass Effect Randomizer" FontSize="30" FontWeight="Light" TextAlignment="Center"/>
-                            <TextBlock TextWrapping="Wrap" Text="Mass Effect Randomizer is a randomizer for the english version of Mass Effect." FontSize="13" TextAlignment="Center"/>
+                            <TextBlock Text="Welcome to&#10;Mass Effect 2 Randomizer" FontSize="30" FontWeight="Light" TextAlignment="Center"/>
+                            <TextBlock TextWrapping="Wrap" Text="Mass Effect 2 Randomizer is a randomizer for the english version of Mass Effect 2." FontSize="13" TextAlignment="Center"/>
                         </StackPanel>
                         <StackPanel x:Name="FirstRun_MainContent">
                             <TextBlock Text="Do I randomize before or after MEUITM/ALOT?" Margin="0,10,0,0" FontSize="20"/>
@@ -76,7 +76,7 @@
                             Mods that replace files in the game directory itself should work with this randomizer, however translation mods will not work and will not be supported. DLC mods will be mostly unaffected by this program.</TextBlock>
                         </StackPanel>
 
-                        <TextBlock Text="MER only works on the English version of Mass Effect" FontSize="20" Margin="0,10,0,0"></TextBlock>
+                        <TextBlock Text="ME2R only works on the English version of Mass Effect 2" FontSize="20" Margin="0,10,0,0"></TextBlock>
                         <TextBlock Text="This program has very specific code that is tied to the English version of the game. It will not work with others and the program may crash if attempted to be used on those versions." FontSize="13"/>
 
                         <TextBlock  Text="Be sure to read the directions" FontSize="20" Margin="0,10,0,0"></TextBlock>
@@ -234,7 +234,9 @@
                                             <CheckBox Content="Randomize squadmate faces" ToolTip="Randomize the face morphs used by squadmates that support face morphs&#10;Due to how Unreal Engine 3 handles loading, their face may change over time if their face is embedded in a level, for a cutscene for example.&#10;This typically only occurs during early game" Margin="3" IsChecked="{Binding RANDSETTING_CHARACTER_HENCHFACE}" />
                                             <!--<CheckBox Content="Randomize LookAt limits" ToolTip="Randomizes the values the game uses when making a character turn to face a certain point" Margin="3" IsChecked="{Binding RANDSETTING_PAWN_BIOLOOKATDEFINITION}" />-->
 
-                                            <CheckBox Name="Checkbox_RandomizeBioMorphFaceMaps" Content="Randomize NPC faces" ToolTip="Randomize humanoid faces through the headmorph" Margin="3" IsChecked="{Binding RANDSETTING_PAWN_MAPFACES}" />
+                                            <CheckBox Content="Randomize Illusive Man eyes" ToolTip="Randomize color of Illusive Man eyes" Margin="3" IsChecked="{Binding RANDSETTING_ILLUSIVEEYES}" />
+
+                                            <CheckBox Name="Checkbox_RandomizeBioMorphFaceMaps" Content="Randomize NPC faces" ToolTip="Randomize humanoid faces through the headmorph&#10;Many faces of plot-heavy characters are mesh based in ME2 and can't be randomized." Margin="3" IsChecked="{Binding RANDSETTING_BIOMORPHFACES}" />
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal" Margin="45,0,0,0">
                                                     <TextBlock Text="Randomization amount: " IsEnabled="False"/>
@@ -243,7 +245,7 @@
                                                 <Slider Name="RANDSETTING_MISC_BIOMORPHFACE_SLIDER" Value="{Binding RANDSETTING_MISC_MAPFACES_AMOUNT}" ToolTip="Amount to randomize.&#xA;Larger values result in more ridiculous faces.&#xA;Default value is 0.3." Margin="3" Width="200px" Minimum=".1" Maximum=".7" Ticks=".1,.2,.3,.4,.5,.6,.7" IsSnapToTickEnabled="True" IsMoveToPointEnabled="True" TickPlacement="BottomRight">
                                                     <Slider.Style>
                                                         <Style TargetType="Slider" BasedOn="{StaticResource MetroSlider}">
-                                                            <Setter Property="IsEnabled" Value="False"></Setter>
+                                                            <Setter Property="IsEnabled" Value="False"/>
                                                             <Style.Triggers>
                                                                 <DataTrigger Binding="{Binding IsChecked,ElementName=Checkbox_RandomizeBioMorphFaceMaps}" Value="True">
                                                                     <Setter Property="IsEnabled" Value="True"/>
@@ -252,6 +254,18 @@
                                                         </Style>
                                                     </Slider.Style>
                                                 </Slider>
+                                                <CheckBox Content="Randomize colors" IsChecked="{Binding RANDSETTING_PAWN_CLOWNMODE}" Margin="45,0,0,0">
+                                                    <CheckBox.Style>
+                                                        <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                                                            <Setter Property="IsEnabled" Value="False"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsChecked,ElementName=Checkbox_RandomizeBioMorphFaceMaps}" Value="True">
+                                                                    <Setter Property="IsEnabled" Value="True"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </CheckBox.Style>
+                                                </CheckBox>
                                                 <StackPanel.Style>
                                                     <Style TargetType="StackPanel">
                                                         <Setter Property="Opacity" Value="0.5"></Setter>
@@ -400,12 +414,12 @@
                             </Grid.ColumnDefinitions>
                             <Image Source="masseffectrandomizer.ico" Grid.Row="0" Grid.Column="0" Margin="4" ToolTip="Hello!" />
                             <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,3,0,0">
-                                <TextBlock HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Text="Mass Effect Randomizer" FontWeight="Light" />
+                                <TextBlock HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Text="Mass Effect 2 Randomizer" FontWeight="Light" />
                                 <TextBlock x:Name="TextBlock_AssemblyVersion" HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="15" FontWeight="Light" Text="Version" />
                                 <Image HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Source="images/me3tweaks.png" Margin="8,0,0,0" Cursor="Hand" MouseDown="Image_ME3Tweaks_Click" ToolTip="Software developed with love by ME3Tweaks" />
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Left" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,3,0,0">
-                                <TextBlock Text="Copyright (C) 2019 ME3Tweaks&#xA;Enormous help from Hallashyn &lt;3&#xA;Huge thanks to all of the artists who let me use their images. You rock!&#xA;&#xA;This program is free software: you can redistribute it and/or modify it under the terms of the&#xA;GNU General Public License as published by the Free Software Foundation, either version 3 of the&#xA;License, or (at your option) any later version.&#xA;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without&#xA;even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the&#xA;GNU General Public License for more details.&#xA;&#xA;Mass Effect is a registered trademark of EA INTERNATIONAL (STUDIO&#xA;AND PUBLISHING) LTD. This program has no affiliation with BioWare&#xA;or Electronic Arts.&#xA;&#xA;Images are copyright of their respective owners, see Credits tab." />
+                                <TextBlock Text="Copyright (C) 2019 ME3Tweaks&#xA;&#xA;This program is free software: you can redistribute it and/or modify it under the terms of the&#xA;GNU General Public License as published by the Free Software Foundation, either version 3 of the&#xA;License, or (at your option) any later version.&#xA;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without&#xA;even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the&#xA;GNU General Public License for more details.&#xA;&#xA;Mass Effect 2 is a registered trademark of EA INTERNATIONAL (STUDIO&#xA;AND PUBLISHING) LTD. This program has no affiliation with BioWare&#xA;or Electronic Arts." />
                             </StackPanel>
                         </Grid>
                     </StackPanel>
