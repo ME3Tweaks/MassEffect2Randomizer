@@ -220,7 +220,7 @@ namespace MassEffectRandomizer
 
         //Weapons
         public bool RANDSETTING_WEAPONS_STARTINGEQUIPMENT { get; set; }
-        public bool RANDSETTING_WEAPONS_EFFECTLEVELS { get; set; }
+        public bool RANDSETTING_WEAPONS { get; set; }
 
 
         //Character

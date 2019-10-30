@@ -13,6 +13,8 @@ using ME3Explorer.Packages;
 using ME3Explorer;
 using ME2Explorer.Unreal;
 using ME3Explorer.FaceFX;
+using MassEffectModManagerCore.modmanager.gameini;
+using MassEffectModManagerCore.modmanager.helpers;
 
 namespace MassEffectRandomizer.Classes
 {
@@ -270,6 +272,8 @@ namespace MassEffectRandomizer.Classes
             //    RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\GameObjects\Characters\Faces\BIOG_Hench_FAC.upk"), random); //Henchmen
             //    RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\BIOG_MORPH_FACE.upk"), random); //Iconic and player (Not sure if this does anything...
             //}
+            string cookedPC = Path.Combine(Utilities.GetGamePath(), "BioGame");
+            ME2Coalesced me2basegamecoalesced = new ME2Coalesced(Utilities.GetGameFile(@"BIOGame\Config\PC\Cooked\Coalesced.ini"));
 
             if (mainWindow.RANDSETTING_ILLUSIVEEYES)
             {
@@ -280,12 +284,29 @@ namespace MassEffectRandomizer.Classes
                 ModifiedFiles[headmorphpro.FilePath] = headmorphpro.FilePath;
             }
 
+            if (mainWindow.RANDSETTING_WEAPONS)
+            {
+                Log.Information("Randomizing basegame weapon ini");
+                var bioweapon = me2basegamecoalesced.Inis.FirstOrDefault(x => Path.GetFileName(x.Key) == "BIOGame.ini").Value;
+                RandomizeWeaponIni(bioweapon, random);
+                var weaponInis = Directory.GetFiles(Path.Combine(cookedPC, "DLC"), "BIOWeapon.ini", SearchOption.AllDirectories).ToList();
+                foreach (var wi in weaponInis)
+                {
+                    //Log.Information("Randomizing weapons in ini: " + wi);
+                    var dlcWeapIni = DuplicatingIni.LoadIni(wi);
+                    RandomizeWeaponIni(dlcWeapIni, random);
+                    dlcWeapIni.SaveToDisk();
+                }
+            }
+
+            Log.Information("Saving Coalesced.ini file");
+            me2basegamecoalesced.Serialize();
+
             if (RunAllFilesRandomizerPass)
             {
                 mainWindow.CurrentOperationText = "Getting list of files...";
 
                 mainWindow.ProgressBarIndeterminate = true;
-                string cookedPC = Path.Combine(Utilities.GetGamePath(), "BioGame");
 
                 var files = Directory.GetFiles(cookedPC, "*.pcc", SearchOption.AllDirectories).ToList();
 
@@ -498,6 +519,61 @@ namespace MassEffectRandomizer.Classes
 
             mainWindow.CurrentOperationText = "Finishing up";
             //AddMERSplash(random);
+        }
+
+        private void RandomizeWeaponIni(DuplicatingIni bioweapon, Random random)
+        {
+            foreach (var section in bioweapon.Sections)
+            {
+                var sectionsplit = section.Header.Split('.').ToList();
+                if (sectionsplit.Count > 1)
+                {
+                    var objectname = sectionsplit[1];
+                    if (objectname.StartsWith("SFXWeapon") || objectname.StartsWith("SFXHeavyWeapon"))
+                    {
+                        //We can randomize this section of the ini.
+                        foreach (var entry in section.Entries)
+                        {
+                            if (entry.HasValue)
+                            {
+                                string value = entry.Value;
+                                if (value.StartsWith("("))
+                                {
+                                    value = value.Substring(0, value.IndexOf(')') + 1); //trim off trash on end (like ; comment )
+                                    var p = StringStructParser.GetCommaSplitValues(value);
+                                    if (p.Count == 2)
+                                    {
+                                        float x = float.Parse(p["X"].TrimEnd('f'));
+                                        float y = float.Parse(p["Y"].TrimEnd('f'));
+                                        if (x < 0 || y < 0)
+                                        {
+                                            Debug.WriteLine(" BELOW ZERO: " + entry.Key);
+                                        }
+                                        bool isMaxMin = x > y;
+                                        bool isMinMax = y < x;
+                                        bool isZeroed = x == 0 && y == 0;
+                                        if (isZeroed) continue; //skip
+
+                                        float Max = isMaxMin ? x : y;
+                                        float Min = isMaxMin ? y : x;
+
+                                        float range = Max - Min;
+                                        if (range == 0) range = 0.1f * Max;
+                                        float rangeExtension = range * .5f; //50%
+
+                                        float newMin = Math.Max(0, random.NextFloat(Min - rangeExtension, Min + rangeExtension));
+                                        float newMax = random.NextFloat(Max - rangeExtension, Max + rangeExtension);
+                                        x = isMaxMin ? newMax : newMin;
+                                        y = isMaxMin ? newMin : newMax; //might need to check zeros
+                                        entry.Value = $"(X={x},Y={y})";
+                                        Debug.WriteLine($"{entry.Key}={entry.Value}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks)

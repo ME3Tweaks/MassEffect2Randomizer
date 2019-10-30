@@ -176,7 +176,7 @@
                                     <StackPanel>
                                         <fonts:OutlinedTextBlock Text="Inventory" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
-                                            <CheckBox Content="Randomize weapons" Margin="3" IsChecked="{Binding RANDSETTING_WEAPONS}" IsEnabled="False"/>
+                                            <CheckBox Content="Randomize weapons" Margin="3" IsChecked="{Binding RANDSETTING_WEAPONS}"/>
 
                                         </StackPanel>
                                     </StackPanel>
