@@ -118,6 +118,11 @@
       <Private>True</Private>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -175,6 +180,7 @@
     <Compile Include="Classes\gameini\StringStructParser.cs" />
     <Compile Include="Classes\IFaceFXAnimSet.cs" />
     <Compile Include="Classes\ME2FaceFXAnimSet.cs" />
+    <Compile Include="Classes\MERFileSystem.cs" />
     <Compile Include="Classes\ObservableCollectionExtended.cs" />
     <Compile Include="Classes\StreamIO.cs" />
     <Compile Include="MainWindowUIComponents\UISupportingFunctions.cs" />
@@ -236,6 +242,7 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="staticfiles\starterkit\dlcmodcomponents.zip" />
     <Resource Include="fonts\aerolight.ttf" />
     <None Include="app.manifest" />
     <None Include="packages.config" />

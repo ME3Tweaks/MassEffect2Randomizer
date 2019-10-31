@@ -122,23 +122,37 @@ namespace MassEffectRandomizer.Classes
         //    return extractedPath;
         //}
 
-        internal static string ExtractInternalFile(string internalResourceName, string destination, bool overwrite, bool fullname)
+        public static string ExtractInternalFile(string internalResourceName, bool fullname, string destination, bool overwrite)
+        {
+            return ExtractInternalFile(internalResourceName, fullname, destination, overwrite, null);
+        }
+
+        public static void ExtractInternalFileToMemory(string internalResourceName, bool fullname, MemoryStream stream)
+        {
+            ExtractInternalFile(internalResourceName, fullname, destStream: stream);
+        }
+
+        private static string ExtractInternalFile(string internalResourceName, bool fullname, string destination = null, bool overwrite = false, Stream destStream = null)
         {
             Log.Information("Extracting file: " + internalResourceName);
-            if (!File.Exists(destination) || overwrite)
+            if (destStream != null || (destination != null && (!File.Exists(destination) || overwrite)))
             {
-                using (Stream stream = Utilities.GetResourceStream(fullname ? internalResourceName : "MassEffectRandomizer.staticfiles." + internalResourceName))
+                using Stream stream = Utilities.GetResourceStream(fullname ? internalResourceName : "MassEffectRandomizer.staticfiles." + internalResourceName);
+                bool close = destStream != null;
+                if (destStream == null)
                 {
-
-                    using (var file = new FileStream(destination, FileMode.Create, FileAccess.Write))
-                    {
-                        stream.CopyTo(file);
-                    }
+                    destStream = new FileStream(destination, FileMode.Create, FileAccess.Write)
                 }
+                stream.CopyTo(destStream);
+                if (close) stream.Close();
+            }
+            else if (destination != null && !overwrite)
+            {
+                Log.Warning("File already exists");
             }
             else
             {
-                Log.Warning("File already exists");
+                Log.Warning("Invalid extraction parameters!");
             }
             return destination;
         }
@@ -185,13 +199,6 @@ namespace MassEffectRandomizer.Classes
 
             // Check if writing is allowed
             return rules.OfType<FileSystemAccessRule>().Any(r => (groups.Contains(r.IdentityReference) || r.IdentityReference.Value == sidCurrentUser) && r.AccessControlType == AccessControlType.Allow && (r.FileSystemRights & FileSystemRights.WriteData) == FileSystemRights.WriteData);
-        }
-
-        internal static string GetGameFile(string subpath)
-        {
-            var gamePath = GetGamePath();
-            if (gamePath == null) return null;
-            return Path.Combine(gamePath, subpath);
         }
 
         internal static string GetEngineFile()
@@ -696,15 +703,6 @@ namespace MassEffectRandomizer.Classes
             return null;
         }
 
-        /// <summary>
-        /// Fetches file from CookedPC (ME2 specific)
-        /// </summary>
-        /// <param name="basefilename"></param>
-        /// <returns></returns>
-        internal static string GetBasegameFile(string basefilename)
-        {
-            return GetGameFile("BIOGame\\CookedPC\\" + basefilename);
-        }
 
         public static int runProcess(string exe, string args, bool standAlone = false)
         {
@@ -1053,6 +1051,11 @@ namespace MassEffectRandomizer.Classes
         internal static string GetAppCrashFile()
         {
             return Path.Combine(Utilities.GetAppDataFolder(), "APP_CRASH");
+        }
+
+        internal static object ExtractInteralFileToMemory(string v)
+        {
+            throw new NotImplementedException();
         }
     }
 }

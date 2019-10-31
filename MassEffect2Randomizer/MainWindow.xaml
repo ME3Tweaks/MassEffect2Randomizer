@@ -343,7 +343,7 @@
 
                                     <fonts:OutlinedTextBlock Text="Maps" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
 
-                                    <StackPanel Margin="10,0,0,0">
+                                    <!--<StackPanel Margin="10,0,0,0">
                                         <CheckBox Content="Randomize opening cutscene" ToolTip="Modifies some of the opening cutscene" Margin="3" IsChecked="{Binding RANDSETTING_WACK_OPENINGCUTSCENE}" />
                                         <CheckBox Content="Randomize Eden Prime" ToolTip="Randomizes different parts of Eden Prime" Margin="3" IsChecked="{Binding RANDSETTING_MAP_EDENPRIME}" />
                                         <CheckBox Content="Randomize Citadel" ToolTip="Randomizes different parts of the Citadel" Margin="3" IsChecked="{Binding RANDSETTING_MAP_CITADEL}" />
@@ -351,8 +351,8 @@
                                         <CheckBox Content="Randomize Feros" ToolTip="Randomizes different parts of Feros" Margin="3" IsChecked="{Binding RANDSETTING_MAP_FEROS}" />
                                         <CheckBox Content="Randomize Bring Down The Sky" ToolTip="Randomize various parts of Bring Down The Sky. Will make the DLC more difficult" Margin="3" IsChecked="{Binding RANDSETTING_MAP_BDTS}" IsEnabled="{Binding BringDownTheSkyInstalled}" />
                                         <CheckBox Content="Randomize Pinnacle Station" ToolTip="Randomize the scoreboard names at Pinnacle Station" Margin="3" IsChecked="{Binding RANDSETTING_MAP_PINNACLESTATION}" IsEnabled="{Binding PinnacleStationInstalled}" />
-                                    </StackPanel>
-                                    <StackPanel>
+                                    </StackPanel>-->
+                                    <!--<StackPanel>
                                         <fonts:OutlinedTextBlock Text="Galaxy Map" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
                                             <CheckBox Content="Randomize cluster positions" Margin="3" IsChecked="{Binding RANDSETTING_GALAXYMAP_CLUSTERS}" ToolTip="Randomizes the location of each cluster on the main galaxy map"/>
@@ -379,19 +379,19 @@
                                             </CheckBox>
                                             <CheckBox Content="Randomize planet hazards" Margin="3" IsChecked="{Binding RANDSETTING_MISC_HAZARDS}" ToolTip="Randomizes what hazard you will get on maps that have hazards"/>
                                         </StackPanel>
-                                    </StackPanel>
+                                    </StackPanel>-->
                                     <StackPanel>
                                         <fonts:OutlinedTextBlock Text="Miscellaneous" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
-                                            <CheckBox Content="Randomize music" ToolTip="Randomize music used in gameplay" Margin="3" IsChecked="{Binding RANDSETTING_MISC_MUSIC}" />
+                                            <!--<CheckBox Content="Randomize music" ToolTip="Randomize music used in gameplay" Margin="3" IsChecked="{Binding RANDSETTING_MISC_MUSIC}" />
                                             <CheckBox Content="Randomize GUI music" ToolTip="Randomize music used in GUI areas (like game startup, character creator, etc)" Margin="3" IsChecked="{Binding RANDSETTING_MISC_GUIMUSIC}" />
-                                            <CheckBox Content="Randomize GUI sounds" ToolTip="Randomize sound effects for GUI audio" Margin="3" IsChecked="{Binding RANDSETTING_MISC_GUISFX}" />
+                                            <CheckBox Content="Randomize GUI sounds" ToolTip="Randomize sound effects for GUI audio" Margin="3" IsChecked="{Binding RANDSETTING_MISC_GUISFX}" />-->
                                             <CheckBox Content="Randomize game over text" ToolTip="Randomize the game over title text" Margin="3" IsChecked="{Binding RANDSETTING_MISC_GAMEOVERTEXT}" />
                                             <CheckBox Content="Randomize fog colors" ToolTip="Randomizes the colors of fog and slightly tweaks their densities" Margin="3" IsChecked="{Binding RANDSETTING_MISC_HEIGHTFOG}"/>
-                                            <CheckBox Content="Randomize 'sun actor' colors" ToolTip="Randomizes the colors of stars in the sky of levels and some stage light sources.&#10;Note that not all stars are affected as some are designed differently.&#10;This won't change the color of the lighting as that is precomputed" Margin="3" IsChecked="{Binding RANDSETTING_MISC_STARCOLORS}"/>
-                                            <CheckBox Content="Randomize game ending screen" ToolTip="Changes the art shown at the very end of the game" Margin="3" IsChecked="{Binding RANDSETTING_MISC_ENDINGART}" />
+                                            <!--<CheckBox Content="Randomize 'sun actor' colors" ToolTip="Randomizes the colors of stars in the sky of levels and some stage light sources.&#10;Note that not all stars are affected as some are designed differently.&#10;This won't change the color of the lighting as that is precomputed" Margin="3" IsChecked="{Binding RANDSETTING_MISC_STARCOLORS}"/>-->
+                                            <!--<CheckBox Content="Randomize game ending screen" ToolTip="Changes the art shown at the very end of the game" Margin="3" IsChecked="{Binding RANDSETTING_MISC_ENDINGART}" />-->
                                             <CheckBox Content="Randomize splash screen" Margin="3" IsChecked="{Binding RANDSETTING_MISC_SPLASH}" ToolTip="Randomizes what the splash planet looks like and some other stuff on the splash"/>
-                                            <CheckBox Content="Randomize pawns in cutscenes" ToolTip="Randomize who appears in what position in a cutscene. May create ridiculous things&#10;This will cover more cutscenes in a future update" Margin="3" IsChecked="{Binding RANDSETTING_MISC_INTERPPAWNS}" />
+                                            <CheckBox Content="Randomize pawns in cutscenes" ToolTip="Randomize who appears in what position in a cutscene. May create ridiculous things" Margin="3" IsChecked="{Binding RANDSETTING_SHUFFLE_CUTSCENE_ACTORS}" />
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>

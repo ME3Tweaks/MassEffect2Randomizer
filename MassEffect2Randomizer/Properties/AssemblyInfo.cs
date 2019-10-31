@@ -4,12 +4,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Resources;
 
-[assembly: AssemblyTitle("Mass Effect Randomizer")]
-[assembly: AssemblyDescription("Randomizer for Mass Effect")]
+[assembly: AssemblyTitle("Mass Effect 2 Randomizer")]
+[assembly: AssemblyDescription("Randomizer for Mass Effect 2")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ME3Tweaks")]
-[assembly: AssemblyProduct("Mass Effect Randomizer")]
-[assembly: AssemblyCopyright("Copyright © 2018-2019 ME3Tweaks")]
+[assembly: AssemblyProduct("Mass Effect 2 Randomizer")]
+[assembly: AssemblyCopyright("Copyright © 2019 ME3Tweaks")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

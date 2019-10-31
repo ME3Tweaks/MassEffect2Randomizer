@@ -92,7 +92,7 @@ namespace MassEffectRandomizer
 
             if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common)
             {
-                RANDSETTING_WEAPONS_STARTINGEQUIPMENT = true;
+                RANDSETTING_PAWN_EYES = true;
                 RANDSETTING_CHARACTER_INVENTORY = true;
                 RANDSETTING_MOVEMENT_HAMMERHEAD = true;
                 RANDSETTING_CHARACTER_ICONICFACE = true;
@@ -122,7 +122,7 @@ namespace MassEffectRandomizer
                 RANDSETTING_MISC_STARCOLORS = true;
                 //RANDSETTING_MISC_ENDINGART = true;
                 //RANDSETTING_MISC_SPLASH = true;
-                RANDSETTING_MISC_INTERPPAWNS = true;
+                RANDSETTING_SHUFFLE_CUTSCENE_ACTORS = true;
 
             }
             else if (SelectedRandomizeMode == RandomizationMode.ERAndomizationMode_Screed)
@@ -223,8 +223,7 @@ namespace MassEffectRandomizer
         public bool RANDSETTING_WEAPONS { get; set; }
 
 
-        //Character
-        public bool RANDSETTING_CHARACTER_HENCH_ARCHETYPES { get; set; }
+        public bool RANDSETTING_PAWN_EYES { get; set; }
         public bool RANDSETTING_CHARACTER_INVENTORY { get; set; }
         public bool RANDSETTING_CHARACTER_CHARCREATOR { get; set; }
         public bool RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE { get; set; }
@@ -242,7 +241,7 @@ namespace MassEffectRandomizer
         //Misc
         public bool RANDSETTING_BIOMORPHFACES { get; set; }
         public bool RANDSETTING_PAWN_CLOWNMODE { get; set; }
-        public bool RANDSETTING_MISC_INTERPPAWNS { get; set; }
+        public bool RANDSETTING_SHUFFLE_CUTSCENE_ACTORS { get; set; }
         public double RANDSETTING_MISC_MAPFACES_AMOUNT { get; set; }
         public bool RANDSETTING_MAP_CITADEL { get; set; }
         public bool RANDSETTING_MISC_HEIGHTFOG { get; set; }
@@ -420,7 +419,7 @@ namespace MassEffectRandomizer
                 ProgressPanelVisible = Visibility.Visible;
                 randomizer = new Randomizer(this);
                 AllowOptionsChanging = false;
-                randomizer.randomize();
+                randomizer.Randomize();
             }
             else
             {

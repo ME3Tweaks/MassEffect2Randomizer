@@ -6,6 +6,8 @@ using System.Linq;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using System.IO;
 using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Serilog;
 using ME3Explorer.Unreal;
@@ -33,8 +35,9 @@ namespace MassEffectRandomizer.Classes
         }
 
         public bool Busy => randomizationWorker != null && randomizationWorker.IsBusy;
+        private MERFileSystem MERFS;
 
-        public void randomize()
+        public void Randomize(bool usingDLCModFS)
         {
             randomizationWorker = new BackgroundWorker();
             randomizationWorker.DoWork += PerformRandomization;
@@ -48,7 +51,7 @@ namespace MassEffectRandomizer.Classes
             }
 
             Log.Information("-------------------------STARTING RANDOMIZER WITH SEED " + seed + "--------------------------");
-            randomizationWorker.RunWorkerAsync(seed);
+            randomizationWorker.RunWorkerAsync((usingDLCModFS, seed));
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Indeterminate, mainWindow);
         }
 
@@ -115,7 +118,9 @@ namespace MassEffectRandomizer.Classes
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
             ModifiedFiles = new ConcurrentDictionary<string, string>(); //this will act as a Set since there is no ConcurrentSet
-            Random random = new Random((int)e.Argument);
+            var parms = ((bool usingMerFS, int seed))e.Argument;
+            MERFS = new MERFileSystem(Utilities.GetGamePath(), parms.usingMerFS);
+            Random random = new Random(parms.seed);
             if (!ME3ExplorerMinified.DLL.Booted)
             {
                 mainWindow.CurrentOperationText = "Loading ME3Explorer Library";
@@ -315,174 +320,177 @@ namespace MassEffectRandomizer.Classes
                 mainWindow.ProgressBar_Bottom_Min = 0;
                 double morphFaceRandomizationAmount = mainWindow.RANDSETTING_MISC_MAPFACES_AMOUNT;
                 double faceFXRandomizationAmount = mainWindow.RANDSETTING_WACK_FACEFX_AMOUNT;
-                for (int i = 0; i < files.Count; i++)
-                {
-                    bool loggedFilePath = false;
-                    mainWindow.CurrentProgressValue = i;
-                    mainWindow.CurrentOperationText = "Randomizing game files [" + i + "/" + files.Count() + "]";
-                    //if (!mapBaseName.StartsWith("bioa_sta")) continue;
-                    bool hasLogged = false;
-                    var package = MEPackageHandler.OpenMEPackage(files[i]);
-                    if (RunAllFilesRandomizerPass)
-                    {
-                        foreach (ExportEntry exp in package.Exports)
-                        {
-                            //Randomize faces
-                            if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
-                            {
-                                //Face randomizer
-                                if (!loggedFilePath)
-                                {
-                                    Log.Information("Randomizing file: " + files[i]);
-                                    loggedFilePath = true;
-                                }
+                int currentFileNumber = 0;
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (file) =>
+                  {
+                      //for (int i = 0; i < files.Count; i++)
+                      //{
+                      bool loggedFilePath = false;
+                      mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
+                      mainWindow.CurrentOperationText = "Randomizing game files [" + currentFileNumber + "/" + files.Count() + "]";
+                      //if (!mapBaseName.StartsWith("bioa_sta")) continue;
+                      bool hasLogged = false;
+                      var package = MEPackageHandler.OpenMEPackage(file);
+                      if (RunAllFilesRandomizerPass)
+                      {
+                          foreach (ExportEntry exp in package.Exports)
+                          {
+                              //Randomize faces
+                              if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
+                              {
+                                  //Face randomizer
+                                  if (!loggedFilePath)
+                                  {
+                                      Log.Information("Randomizing file: " + file);
+                                      loggedFilePath = true;
+                                  }
 
-                                RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
-                            }
-                            //else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
-                            //{
-                            //    if (!loggedFilePath)
-                            //    {
-                            //        Log.Information("Randomizing map file: " + files[i]);
-                            //        loggedFilePath = true;
-                            //    }
-                            //    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
-                            //    {
-                            //        var tint = exp.GetProperty<StructProperty>("FlareTint");
-                            //        if (tint != null)
-                            //        {
-                            //            RandomizeTint(random, tint, false);
-                            //            exp.WriteProperty(tint);
-                            //        }
-                            //    }
-                            //    else if (exp.ClassName == "BioSunActor")
-                            //    {
-                            //        var tint = exp.GetProperty<StructProperty>("SunTint");
-                            //        if (tint != null)
-                            //        {
-                            //            RandomizeTint(random, tint, false);
-                            //            exp.WriteProperty(tint);
-                            //        }
-                            //    }
-                            //}
-                            else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_MISC_INTERPPAWNS)
-                            {
-                                if (!loggedFilePath)
-                                {
-                                    //Log.Information("Randomizing map file: " + files[i]);
-                                    loggedFilePath = true;
-                                }
+                                  RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
+                              }
+                              //else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
+                              //{
+                              //    if (!loggedFilePath)
+                              //    {
+                              //        Log.Information("Randomizing map file: " + files[i]);
+                              //        loggedFilePath = true;
+                              //    }
+                              //    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
+                              //    {
+                              //        var tint = exp.GetProperty<StructProperty>("FlareTint");
+                              //        if (tint != null)
+                              //        {
+                              //            RandomizeTint(random, tint, false);
+                              //            exp.WriteProperty(tint);
+                              //        }
+                              //    }
+                              //    else if (exp.ClassName == "BioSunActor")
+                              //    {
+                              //        var tint = exp.GetProperty<StructProperty>("SunTint");
+                              //        if (tint != null)
+                              //        {
+                              //            RandomizeTint(random, tint, false);
+                              //            exp.WriteProperty(tint);
+                              //        }
+                              //    }
+                              //}
+                              else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
+                              {
+                                  if (!loggedFilePath)
+                                  {
+                                      //Log.Information("Randomizing map file: " + files[i]);
+                                      loggedFilePath = true;
+                                  }
 
-                                ShuffleCutscenePawns(exp, random);
-                            }
-                            else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
-                            {
-                                if (!loggedFilePath)
-                                {
-                                    //Log.Information("Randomizing map file: " + files[i]);
-                                    loggedFilePath = true;
-                                }
+                                  ShuffleCutscenePawns(exp, random);
+                              }
+                              else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
+                              {
+                                  if (!loggedFilePath)
+                                  {
+                                      //Log.Information("Randomizing map file: " + files[i]);
+                                      loggedFilePath = true;
+                                  }
 
-                                RandomizeBioLookAtDefinition(exp, random);
-                            }
-                            else if (exp.ClassName == "BioPawn")
-                            {
-                                if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && random.Next(4) == 0)
-                                {
-                                    if (!loggedFilePath)
-                                    {
-                                        Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilePath = true;
-                                    }
+                                  RandomizeBioLookAtDefinition(exp, random);
+                              }
+                              else if (exp.ClassName == "BioPawn")
+                              {
+                                  if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && random.Next(4) == 0)
+                                  {
+                                      if (!loggedFilePath)
+                                      {
+                                          Log.Information("Randomizing file: " + file);
+                                          loggedFilePath = true;
+                                      }
 
-                                    //Pawn size randomizer
-                                    RandomizeBioPawnSize(exp, random, 0.4);
-                                }
+                                      //Pawn size randomizer
+                                      RandomizeBioPawnSize(exp, random, 0.4);
+                                  }
 
-                                if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
-                                {
-                                    if (!loggedFilePath)
-                                    {
-                                        Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilePath = true;
-                                    }
+                                  if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
+                                  {
+                                      if (!loggedFilePath)
+                                      {
+                                          Log.Information("Randomizing file: " + file);
+                                          loggedFilePath = true;
+                                      }
 
-                                    RandomizePawnMaterialInstances(exp, random);
-                                }
-                            }
-                            else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
-                            {
-                                if (!loggedFilePath)
-                                {
-                                    Log.Information("Randomizing map file: " + files[i]);
-                                    loggedFilePath = true;
-                                }
+                                      RandomizePawnMaterialInstances(exp, random);
+                                  }
+                              }
+                              else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
+                              {
+                                  if (!loggedFilePath)
+                                  {
+                                      Log.Information("Randomizing file: " + file);
+                                      loggedFilePath = true;
+                                  }
 
-                                RandomizeHeightFogComponent(exp, random);
-                            }
-                            else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
-                            {
-                                if (!loggedFilePath)
-                                {
-                                    Log.Information("Randomizing file: " + files[i]);
-                                    loggedFilePath = true;
-                                }
+                                  RandomizeHeightFogComponent(exp, random);
+                              }
+                              else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
+                              {
+                                  if (!loggedFilePath)
+                                  {
+                                      Log.Information("Randomizing file: " + file);
+                                      loggedFilePath = true;
+                                  }
 
-                                //Interpolation randomizer
-                                RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
-                            }
-                            else if (mainWindow.RANDSETTING_PAWN_FACEFX && exp.ClassName == "FaceFXAnimSet")
-                            {
-                                if (!loggedFilePath)
-                                {
-                                    Log.Information("Randomizing file: " + files[i]);
-                                    loggedFilePath = true;
-                                }
+                                  //Interpolation randomizer
+                                  RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
+                              }
+                              else if (mainWindow.RANDSETTING_PAWN_FACEFX && exp.ClassName == "FaceFXAnimSet")
+                              {
+                                  if (!loggedFilePath)
+                                  {
+                                      Log.Information("Randomizing file: " + file);
+                                      loggedFilePath = true;
+                                  }
 
-                                //Method contains SHouldSave in it (due to try catch).
-                                RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
-                            }
-                        }
-                    }
+                                  //Method contains SHouldSave in it (due to try catch).
+                                  RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
+                              }
+                          }
+                      }
 
-                    //if (mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES)
-                    //{
-                    //    RandomizeAINames(package, random);
-                    //}
+                      //if (mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES)
+                      //{
+                      //    RandomizeAINames(package, random);
+                      //}
 
-                    //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION && package.LocalTalkFiles.Any())
-                    //{
-                    //    if (!loggedFilePath)
-                    //    {
-                    //        Log.Information("Randomizing map file: " + files[i]);
-                    //        loggedFilePath = true;
-                    //    }
-                    //    UpdateGalaxyMapReferencesForTLKs(package.LocalTalkFiles, false, false);
-                    //}
+                      //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION && package.LocalTalkFiles.Any())
+                      //{
+                      //    if (!loggedFilePath)
+                      //    {
+                      //        Log.Information("Randomizing map file: " + files[i]);
+                      //        loggedFilePath = true;
+                      //    }
+                      //    UpdateGalaxyMapReferencesForTLKs(package.LocalTalkFiles, false, false);
+                      //}
 
-                    //if (mainWindow.RANDSETTING_WACK_SCOTTISH && package.LocalTalkFiles.Any())
-                    //{
-                    //    if (!loggedFilePath)
-                    //    {
-                    //        Log.Information("Randomizing map file: " + files[i]);
-                    //        loggedFilePath = true;
-                    //    }
+                      //if (mainWindow.RANDSETTING_WACK_SCOTTISH && package.LocalTalkFiles.Any())
+                      //{
+                      //    if (!loggedFilePath)
+                      //    {
+                      //        Log.Information("Randomizing map file: " + files[i]);
+                      //        loggedFilePath = true;
+                      //    }
 
-                    //    MakeTextPossiblyScottish(package.LocalTalkFiles, random, false);
-                    //}
+                      //    MakeTextPossiblyScottish(package.LocalTalkFiles, random, false);
+                      //}
 
-                    //foreach (var talkFile in package.LocalTalkFiles.Where(x => x.Modified))
-                    //{
-                    //    talkFile.saveToExport();
-                    //}
+                      //foreach (var talkFile in package.LocalTalkFiles.Where(x => x.Modified))
+                      //{
+                      //    talkFile.saveToExport();
+                      //}
 
-                    if (package.IsModified)
-                    {
-                        Debug.WriteLine("Saving package: " + package.FilePath);
-                        ModifiedFiles[package.FilePath] = package.FilePath;
-                        package.save();
-                    }
-                }
+                      if (package.IsModified)
+                      {
+                          Debug.WriteLine("Saving package: " + package.FilePath);
+                          ModifiedFiles[package.FilePath] = package.FilePath;
+                          package.save();
+                      }
+                  });
             }
 
             //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION)
@@ -676,7 +684,7 @@ namespace MassEffectRandomizer.Classes
                         //MaterialInstanceConstant
                         ExportEntry material = exp.FileRef.getUExport(materialObj.Value);
                         RandomizeMaterialInstance(material, random);
-                        
+
                     }
                 }
             }
@@ -927,20 +935,29 @@ namespace MassEffectRandomizer.Classes
 
             if (pawnsToShuffle.Count > 1)
             {
-                Log.Information("Randomizing pawns in interp: " + export.GetFullPath);
-                foreach (var refx in playerRefs)
+                int reshuffleAttemptsRemaining = 3;
+                while (reshuffleAttemptsRemaining > 0)
                 {
-                    refx.WriteProperty(new BoolProperty(true, "bReturnsPawns")); //Ensure the object returns pawns. It should, but maybe it doesn't.
-                }
+                    reshuffleAttemptsRemaining--;
+                    Log.Information("Randomizing pawns in interp: " + export.GetFullPath);
+                    foreach (var refx in playerRefs)
+                    {
+                        refx.WriteProperty(new BoolProperty(true, "bReturnsPawns")); //Ensure the object returns pawns. It should, but maybe it doesn't.
+                    }
 
-                var newAssignedValues = pawnsToShuffle.Select(x => x.Value).ToList();
-                newAssignedValues.Shuffle(random);
-                for (int i = 0; i < pawnsToShuffle.Count; i++)
-                {
-                    pawnsToShuffle[i].Value = newAssignedValues[i];
-                }
+                    var newAssignedValues = pawnsToShuffle.Select(x => x.Value).ToList();
+                    newAssignedValues.Shuffle(random);
+                    for (int i = 0; i < pawnsToShuffle.Count; i++)
+                    {
+                        pawnsToShuffle[i].Value = newAssignedValues[i];
+                    }
 
-                export.WriteProperty(variableLinks);
+                    export.WriteProperty(variableLinks);
+                    if (export.EntryHasPendingChanges)
+                    {
+                        break;
+                    }
+                }
             }
         }
 
@@ -981,12 +998,14 @@ namespace MassEffectRandomizer.Classes
         {
             try
             {
-                Log.Information($"Randomizing FaceFX export {exp.UIndex}");
+                Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");
                 ME2FaceFXAnimSet animSet = new ME2FaceFXAnimSet(exp);
                 for (int i = 0; i < animSet.Data.Data.Count(); i++)
                 {
                     var faceFxline = animSet.Data.Data[i];
                     //if (true)
+
+                    bool randomizedBoneList = false;
                     if (random.Next(10 - amount) == 0)
                     {
                         //Randomize the names used for animation
@@ -996,8 +1015,10 @@ namespace MassEffectRandomizer.Classes
                         {
                             faceFxline.animations[j].index = usedIndexes[j];
                         }
+
+                        randomizedBoneList = true;
                     }
-                    else
+                    if (!randomizedBoneList || random.Next(16 - amount) == 0)
                     {
                         //Randomize the points
                         for (int j = 0; j < faceFxline.points.Length; j++)
@@ -1022,7 +1043,7 @@ namespace MassEffectRandomizer.Classes
                                     }
 
                                     break;
-                                case 4: //Extreme
+                                case 4: //:O
                                     if (random.Next(6) == 0)
                                     {
                                         faceFxline.points[j].weight = random.NextFloat(-20, 20);
@@ -1032,6 +1053,9 @@ namespace MassEffectRandomizer.Classes
                                         faceFxline.points[j].weight *= 20;
                                     }
 
+                                    break;
+                                case 5: //Utter madness
+                                    faceFxline.points[j].weight = random.NextFloat(-20, 20);
                                     break;
                                 default:
                                     Debugger.Break();
@@ -1048,7 +1072,7 @@ namespace MassEffectRandomizer.Classes
                     //}
                 }
 
-                Log.Information("Randomized FaceFX for export " + exp.UIndex);
+                Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
                 animSet.Save();
             }
             catch (Exception e)
@@ -1277,7 +1301,7 @@ namespace MassEffectRandomizer.Classes
 
         private void RandomizeInterpTrackMove(ExportEntry export, Random random, double amount)
         {
-            Log.Information("Randomizing movement interpolations for " + export.UIndex + ": " + export.GetIndexedFullPath);
+            Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing movement interpolations for " + export.UIndex + ": " + export.GetIndexedFullPath);
             var props = export.GetProperties();
             var posTrack = props.GetProp<StructProperty>("PosTrack");
             if (posTrack != null)
@@ -1585,7 +1609,7 @@ namespace MassEffectRandomizer.Classes
 
         private void RandomizeBioPawnSize(ExportEntry export, Random random, double amount)
         {
-            Log.Information("Randomizing pawn size for " + export.UIndex + ": " + export.GetIndexedFullPath);
+            Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing pawn size for " + export.UIndex + ": " + export.GetIndexedFullPath);
             var props = export.GetProperties();
             StructProperty sp = props.GetProp<StructProperty>("DrawScale3D");
             if (sp == null)
@@ -1806,7 +1830,7 @@ namespace MassEffectRandomizer.Classes
             get => mainWindow.RANDSETTING_BIOMORPHFACES
                    || mainWindow.RANDSETTING_MISC_MAPPAWNSIZES
                    || mainWindow.RANDSETTING_MISC_INTERPS
-                   || mainWindow.RANDSETTING_MISC_INTERPPAWNS
+                   || mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS
                    || mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES
                    || mainWindow.RANDSETTING_MISC_HEIGHTFOG
                    || mainWindow.RANDSETTING_PAWN_FACEFX
@@ -1947,6 +1971,7 @@ namespace MassEffectRandomizer.Classes
             {
                 foreach (StructProperty colorParameter in colorOverrides)
                 {
+                    Debug.WriteLine("Randomizing Color Parameter");
                     RandomizeTint(random, colorParameter.GetProp<StructProperty>("cValue"), false);
                 }
             }
@@ -1964,6 +1989,7 @@ namespace MassEffectRandomizer.Classes
                             var currentValue = scalarParameter.GetProp<FloatProperty>("sValue");
                             if (currentValue != null)
                             {
+                                Debug.WriteLine("Randomizing FREK HAIR HEDSCAR");
 
                                 if (currentValue > 1)
                                 {

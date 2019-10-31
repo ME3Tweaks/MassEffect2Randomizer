@@ -105,6 +105,7 @@ namespace MassEffectRandomizer.Classes
         }
     }
 
+
     public static class RandomExtensions
     {
         public static float NextFloat(
@@ -183,6 +184,21 @@ namespace MassEffectRandomizer.Classes
 
     public static class StringExtensions
     {
+        /// <summary>
+        /// Returns if extension is pcc/sfm/u/upk
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static bool RepresentsPackageFilePath(this string path)
+        {
+            string extension = Path.GetExtension(path);
+            if (extension.Equals(".pcc", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (extension.Equals(".sfm", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (extension.Equals(".u", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (extension.Equals(".upk", StringComparison.InvariantCultureIgnoreCase)) return true;
+            return false;
+        }
+
         /// <summary>
         /// Truncates string so that it is no longer than the specified number of characters.
         /// </summary>
