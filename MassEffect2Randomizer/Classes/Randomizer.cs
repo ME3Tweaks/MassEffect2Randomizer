@@ -278,12 +278,12 @@ namespace MassEffectRandomizer.Classes
             //    RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\BIOG_MORPH_FACE.upk"), random); //Iconic and player (Not sure if this does anything...
             //}
             string cookedPC = Path.Combine(Utilities.GetGamePath(), "BioGame");
-            ME2Coalesced me2basegamecoalesced = new ME2Coalesced(Utilities.GetGameFile(@"BIOGame\Config\PC\Cooked\Coalesced.ini"));
+            ME2Coalesced me2basegamecoalesced = new ME2Coalesced(MERFS.GetGameFile(@"BIOGame\Config\PC\Cooked\Coalesced.ini"));
 
             if (mainWindow.RANDSETTING_ILLUSIVEEYES)
             {
                 //var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
-                var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BioD_ProCer_350BriefRoom.pcc"));
+                var headmorphpro = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile("BioD_ProCer_350BriefRoom.pcc"));
                 var eyes = headmorphpro.getUExport(2234); //Illusive man eyes
                 RandomizeMaterialInstance(eyes, random);
                 ModifiedFiles[headmorphpro.FilePath] = headmorphpro.FilePath;
@@ -529,6 +529,252 @@ namespace MassEffectRandomizer.Classes
             //AddMERSplash(random);
         }
 
+        public enum AnimationKeyFormat
+        {
+            AKF_ConstantKeyLerp,
+            AKF_VariableKeyLerp,
+        }
+        public enum AnimationCompressionFormat
+        {
+            ACF_None,
+            ACF_Float96NoW,
+            ACF_Fixed48NoW,
+            ACF_IntervalFixed32NoW,
+            ACF_Fixed32NoW,
+            ACF_Float32NoW,
+            ACF_BioFixed48,
+        }
+
+        private void RandomizeAnimSequence(ExportEntry export, Random random)
+        {
+            var game = export.FileRef.Game;
+            byte[] data = export.Data;
+            try
+            {
+                var TrackOffsets = export.GetProperty<ArrayProperty<IntProperty>>("CompressedTrackOffsets");
+                var animsetData = export.GetProperty<ObjectProperty>("m_pBioAnimSetData");
+                var boneList = export.FileRef.getUExport(animsetData.Value).GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
+                Enum.TryParse(export.GetProperty<EnumProperty>("RotationCompressionFormat").Value.Name, out AnimationCompressionFormat rotCompression);
+                int offset = export.propsEnd();
+
+                int binLength = BitConverter.ToInt32(data, offset);
+                //var LengthNode = new BinInterpNode
+                //{
+                //    Header = $"0x{offset:X4} AnimBinary length: {binLength}",
+                //    Name = "_" + offset,
+                //    Tag = NodeType.StructLeafInt
+                //};
+                //offset += 4;
+                //subnodes.Add(LengthNode);
+                var animBinStart = offset;
+
+                int bone = 0;
+
+                for (int i = 0; i < TrackOffsets.Count; i++)
+                {
+                    var bonePosOffset = TrackOffsets[i].Value;
+                    i++;
+                    var bonePosCount = TrackOffsets[i].Value;
+                    var boneName = boneList[bone].Value;
+
+                    //POSKEYS
+                    for (int j = 0; j < bonePosCount; j++)
+                    {
+                        offset = animBinStart + bonePosOffset + j * 12;
+                        //Key #
+                        //var PosKeys = new BinInterpNode
+                        //{
+                        //    Header = $"0x{offset:X5} PosKey {j}",
+                        //    Name = "_" + offset,
+                        //    Tag = NodeType.Unknown
+                        //};
+                        //BoneID.Items.Add(PosKeys);
+
+
+                        var posX = BitConverter.ToSingle(data, offset);
+                        //PosKeys.Items.Add(new BinInterpNode
+                        //{
+                        //    Header = $"0x{offset:X5} X: {posX} ",
+                        //    Name = "_" + offset,
+                        //    Tag = NodeType.StructLeafFloat
+                        //});
+                        offset += 4;
+                        var posY = BitConverter.ToSingle(data, offset);
+                        data.OverwriteRange(offset,BitConverter.GetBytes(random.NextFloat(posY-(posY * .3f), posY + (posY * .3f))));
+                        //PosKeys.Items.Add(new BinInterpNode
+                        //{
+                        //    Header = $"0x{offset:X5} Y: {posY} ",
+                        //    Name = "_" + offset,
+                        //    Tag = NodeType.StructLeafFloat
+                        //});
+                        offset += 4;
+                        var posZ = BitConverter.ToSingle(data, offset);
+                        //PosKeys.Items.Add(new BinInterpNode
+                        //{
+                        //    Header = $"0x{offset:X5} Z: {posZ} ",
+                        //    Name = "_" + offset,
+                        //    Tag = NodeType.StructLeafFloat
+                        //});
+                        offset += 4;
+
+                    }
+
+
+                    i++;
+                    var boneRotOffset = TrackOffsets[i].Value;
+                    i++;
+                    var boneRotCount = TrackOffsets[i].Value;
+                    int l = 12; // 12 length of rotation by default
+                    var offsetRotX = boneRotOffset;
+                    var offsetRotY = boneRotOffset;
+                    var offsetRotZ = boneRotOffset;
+                    var offsetRotW = boneRotOffset;
+                    for (int j = 0; j < boneRotCount; j++)
+                    {
+                        float rotX = 0;
+                        float rotY = 0;
+                        float rotZ = 0;
+                        float rotW = 0;
+
+                        switch (rotCompression)
+                        {
+                            case AnimationCompressionFormat.ACF_None:
+                                l = 16;
+                                offset = animBinStart + boneRotOffset + j * l;
+                                offsetRotX = offset;
+                                rotX = BitConverter.ToSingle(data, offset);
+                                offset += 4;
+                                offsetRotY = offset;
+                                rotY = BitConverter.ToSingle(data, offset);
+                                offset += 4;
+                                offsetRotZ = offset;
+                                rotZ = BitConverter.ToSingle(data, offset);
+                                offset += 4;
+                                offsetRotW = offset;
+                                rotW = BitConverter.ToSingle(data, offset);
+                                offset += 4;
+                                break;
+                            case AnimationCompressionFormat.ACF_Float96NoW:
+                                offset = animBinStart + boneRotOffset + j * l;
+                                offsetRotX = offset;
+                                rotX = BitConverter.ToSingle(data, offset);
+                                offset += 4;
+                                offsetRotY = offset;
+                                rotY = BitConverter.ToSingle(data, offset);
+                                offset += 4;
+                                offsetRotZ = offset;
+                                rotZ = BitConverter.ToSingle(data, offset);
+                                offset += 4;
+                                break;
+                            case AnimationCompressionFormat.ACF_Fixed48NoW: // normalized quaternion with 3 16-bit fixed point fields
+                                                                            //FQuat r;
+                                                                            //r.X = (X - 32767) / 32767.0f;
+                                                                            //r.Y = (Y - 32767) / 32767.0f;
+                                                                            //r.Z = (Z - 32767) / 32767.0f;
+                                                                            //RESTORE_QUAT_W(r);
+                                                                            //break;
+                            case AnimationCompressionFormat.ACF_Fixed32NoW:// normalized quaternion with 11/11/10-bit fixed point fields
+                                                                           //FQuat r;
+                                                                           //r.X = X / 1023.0f - 1.0f;
+                                                                           //r.Y = Y / 1023.0f - 1.0f;
+                                                                           //r.Z = Z / 511.0f - 1.0f;
+                                                                           //RESTORE_QUAT_W(r);
+                                                                           //break;
+                            case AnimationCompressionFormat.ACF_IntervalFixed32NoW:
+                            //FQuat r;
+                            //r.X = (X / 1023.0f - 1.0f) * Ranges.X + Mins.X;
+                            //r.Y = (Y / 1023.0f - 1.0f) * Ranges.Y + Mins.Y;
+                            //r.Z = (Z / 511.0f - 1.0f) * Ranges.Z + Mins.Z;
+                            //RESTORE_QUAT_W(r);
+                            //break;
+                            case AnimationCompressionFormat.ACF_Float32NoW:
+                                //FQuat r;
+
+                                //int _X = data >> 21;            // 11 bits
+                                //int _Y = (data >> 10) & 0x7FF;  // 11 bits
+                                //int _Z = data & 0x3FF;          // 10 bits
+
+                                //*(unsigned*)&r.X = ((((_X >> 7) & 7) + 123) << 23) | ((_X & 0x7F | 32 * (_X & 0xFFFFFC00)) << 16);
+                                //*(unsigned*)&r.Y = ((((_Y >> 7) & 7) + 123) << 23) | ((_Y & 0x7F | 32 * (_Y & 0xFFFFFC00)) << 16);
+                                //*(unsigned*)&r.Z = ((((_Z >> 6) & 7) + 123) << 23) | ((_Z & 0x3F | 32 * (_Z & 0xFFFFFE00)) << 17);
+
+                                //RESTORE_QUAT_W(r);
+
+
+                                break;
+                            case AnimationCompressionFormat.ACF_BioFixed48:
+                                offset = animBinStart + boneRotOffset + j * l;
+                                const float shift = 0.70710678118f;
+                                const float scale = 1.41421356237f;
+                                offsetRotX = offset;
+                                rotX = (data[0] & 0x7FFF) / 32767.0f * scale - shift;
+                                offset += 4;
+                                offsetRotY = offset;
+                                rotY = (data[1] & 0x7FFF) / 32767.0f * scale - shift;
+                                offset += 4;
+                                offsetRotZ = offset;
+                                rotZ = (data[2] & 0x7FFF) / 32767.0f * scale - shift;
+                                //float w = 1.0f - (rotX * rotX + rotY * rotY + rotZ * rotZ);
+                                //w = w >= 0.0f ? (float)Math.Sqrt(w) : 0.0f;
+                                //int s = ((data[0] >> 14) & 2) | ((data[1] >> 15) & 1);
+                                break;
+                        }
+
+                        if (rotCompression == AnimationCompressionFormat.ACF_BioFixed48 || rotCompression == AnimationCompressionFormat.ACF_Float96NoW || rotCompression == AnimationCompressionFormat.ACF_None)
+                        {
+                            //randomize here?
+                            //var RotKeys = new BinInterpNode
+                            //{
+                            //    Header = $"0x{offsetRotX:X5} RotKey {j}",
+                            //    Name = "_" + offsetRotX,
+                            //    Tag = NodeType.Unknown
+                            //};
+                            //BoneID.Items.Add(RotKeys);
+                            //RotKeys.Items.Add(new BinInterpNode
+                            //{
+                            //    Header = $"0x{offsetRotX:X5} RotX: {rotX} ",
+                            //    Name = "_" + offsetRotX,
+                            //    Tag = NodeType.StructLeafFloat
+                            //});
+                            //RotKeys.Items.Add(new BinInterpNode
+                            //{
+                            //    Header = $"0x{offsetRotY:X5} RotY: {rotY} ",
+                            //    Name = "_" + offsetRotY,
+                            //    Tag = NodeType.StructLeafFloat
+                            //});
+                            //RotKeys.Items.Add(new BinInterpNode
+                            //{
+                            //    Header = $"0x{offsetRotZ:X5} RotZ: {rotZ} ",
+                            //    Name = "_" + offsetRotZ,
+                            //    Tag = NodeType.StructLeafFloat
+                            //});
+                            if (rotCompression == AnimationCompressionFormat.ACF_None)
+                            {
+                                //RotKeys.Items.Add(new BinInterpNode
+                                //{
+                                //    Header = $"0x{offsetRotW:X5} RotW: {rotW} ",
+                                //    Name = "_" + offsetRotW,
+                                //    Tag = NodeType.StructLeafFloat
+                                //});
+                            }
+                        }
+                    }
+                    bone++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Error reading animsequence: " + ex.Message + ". Skipping");
+            }
+
+            export.Data = data; //write back
+        }
+
+        private void RandomizeBioDyanmicAnimSet(ExportEntry export)
+        {
+            
+        }
+
         private void RandomizeWeaponIni(DuplicatingIni bioweapon, Random random)
         {
             foreach (var section in bioweapon.Sections)
@@ -586,7 +832,7 @@ namespace MassEffectRandomizer.Classes
 
         private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks)
         {
-            var biop_char = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BioP_Char.pcc"));
+            var biop_char = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile("BioP_Char.pcc"));
             foreach (var export in biop_char.Exports)
             {
                 if (export.ClassName == "BioMorphFace")
@@ -1208,10 +1454,10 @@ namespace MassEffectRandomizer.Classes
             {
                 var merIntros = Directory.GetFiles(merIntroDir, "*.bik").ToList();
                 string merToExtract = merIntros[random.Next(merIntros.Count)];
-                File.Copy(merToExtract, Utilities.GetGameFile(@"BioGame\CookedPC\Movies\merintro.bik"), true);
+                File.Copy(merToExtract, MERFS.GetGameFile(@"BioGame\CookedPC\Movies\merintro.bik"), true);
                 entrymenu.save();
                 //Add to fileindex
-                var fileIndex = Utilities.GetGameFile(@"BioGame\CookedPC\FileIndex.txt");
+                var fileIndex = MERFS.GetGameFile(@"BioGame\CookedPC\FileIndex.txt");
                 var filesInIndex = File.ReadAllLines(fileIndex).ToList();
                 if (filesInIndex.All(x => x != @"Movies\MERIntro.bik"))
                 {
