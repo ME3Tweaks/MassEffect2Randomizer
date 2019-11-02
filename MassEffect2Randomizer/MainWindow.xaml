@@ -129,7 +129,7 @@
                         <Button DockPanel.Dock="Right" Click="RandomizeButton_Click" Padding="20,0,20,0">
                             <fonts:OutlinedTextBlock Text="Randomize" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
-                        
+
                     </DockPanel>
                 </StackPanel>
                 <Grid>
@@ -352,34 +352,12 @@
                                         <CheckBox Content="Randomize Bring Down The Sky" ToolTip="Randomize various parts of Bring Down The Sky. Will make the DLC more difficult" Margin="3" IsChecked="{Binding RANDSETTING_MAP_BDTS}" IsEnabled="{Binding BringDownTheSkyInstalled}" />
                                         <CheckBox Content="Randomize Pinnacle Station" ToolTip="Randomize the scoreboard names at Pinnacle Station" Margin="3" IsChecked="{Binding RANDSETTING_MAP_PINNACLESTATION}" IsEnabled="{Binding PinnacleStationInstalled}" />
                                     </StackPanel>-->
-                                    <!--<StackPanel>
+                                    <StackPanel>
                                         <fonts:OutlinedTextBlock Text="Galaxy Map" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
-                                            <CheckBox Content="Randomize cluster positions" Margin="3" IsChecked="{Binding RANDSETTING_GALAXYMAP_CLUSTERS}" ToolTip="Randomizes the location of each cluster on the main galaxy map"/>
-                                            <CheckBox Content="Randomize system positions" Margin="3" IsChecked="{Binding RANDSETTING_GALAXYMAP_SYSTEMS}" ToolTip="Randomizes the location of each system in a cluster"/>
-                                            <CheckBox Content="Randomize planet colors" Margin="3" IsChecked="{Binding RANDSETTING_GALAXYMAP_PLANETCOLOR}" ToolTip="Randomizes the colors used for the 3 layers of each planet"/>
-                                            <CheckBox Name="RandomizePlanetNames_CheckBox" Content="Rewrite the Galaxy Map" Margin="3" IsChecked="{Binding RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION}" ToolTip="Randomizes the name and descriptions of planets, using new ones written by the ME3Tweaks team.&#xA;Leaves some key and well known ones same-named" />
-                                            <CheckBox Content="Include plot planet names" Margin="25,0,0,0" ToolTip="Enables randomizing plot planet names like Virmire, Noveria, etc" IsChecked="{Binding RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET}">
-                                                <CheckBox.Style>
-                                                    <Style TargetType="CheckBox" BasedOn="{StaticResource MetroCheckBox}">
-                                                        <Setter Property="Opacity" Value="0.5"></Setter>
-                                                        <Setter Property="IsEnabled" Value="False"></Setter>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsChecked,ElementName=RandomizePlanetNames_CheckBox}" Value="True">
-                                                                <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Opacity" Value="1.0"></Setter>
-
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                        <Style.Resources>
-                                                            <SolidColorBrush x:Key="HighlightBrush" Color="Orchid" />
-                                                        </Style.Resources>
-                                                    </Style>
-                                                </CheckBox.Style>
-                                            </CheckBox>
-                                            <CheckBox Content="Randomize planet hazards" Margin="3" IsChecked="{Binding RANDSETTING_MISC_HAZARDS}" ToolTip="Randomizes what hazard you will get on maps that have hazards"/>
+                                            <CheckBox Content="Randomize Galaxy Map" Margin="3" IsChecked="{Binding RANDSETTING_GALAXYMAP}" ToolTip="Randomizes the locations and colors of items on the galaxy map" />
                                         </StackPanel>
-                                    </StackPanel>-->
+                                    </StackPanel>
                                     <StackPanel>
                                         <fonts:OutlinedTextBlock Text="Miscellaneous" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">

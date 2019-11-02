@@ -141,7 +141,7 @@ namespace MassEffectRandomizer.Classes
                 bool close = destStream != null;
                 if (destStream == null)
                 {
-                    destStream = new FileStream(destination, FileMode.Create, FileAccess.Write)
+                    destStream = new FileStream(destination, FileMode.Create, FileAccess.Write);
                 }
                 stream.CopyTo(destStream);
                 if (close) stream.Close();

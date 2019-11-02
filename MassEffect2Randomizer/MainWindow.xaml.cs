@@ -109,12 +109,8 @@ namespace MassEffectRandomizer
                 //RANDSETTING_MAP_NOVERIA = true;
                 //RANDSETTING_MAP_FEROS = true;
 
-                RANDSETTING_GALAXYMAP_CLUSTERS = true;
-                RANDSETTING_GALAXYMAP_SYSTEMS = true;
-                RANDSETTING_GALAXYMAP_PLANETCOLOR = true;
+                RANDSETTING_GALAXYMAP = true;
 
-                RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION = true;
-                RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET = true;
                // RANDSETTING_MISC_HAZARDS = true;
 
                 RANDSETTING_MISC_GAMEOVERTEXT = true;
@@ -211,11 +207,8 @@ namespace MassEffectRandomizer
 
         //RANDOMIZATION OPTION BINDINGS
         //Galaxy Map
-        public bool RANDSETTING_GALAXYMAP_PLANETCOLOR { get; set; }
-        public bool RANDSETTING_GALAXYMAP_SYSTEMS { get; set; }
-        public bool RANDSETTING_GALAXYMAP_CLUSTERS { get; set; }
-        public bool RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION { get; set; }
-        public bool RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET { get; set; }
+        public bool RANDSETTING_GALAXYMAP { get; set; }
+
 
 
         //Weapons
@@ -419,7 +412,7 @@ namespace MassEffectRandomizer
                 ProgressPanelVisible = Visibility.Visible;
                 randomizer = new Randomizer(this);
                 AllowOptionsChanging = false;
-                randomizer.Randomize();
+                randomizer.Randomize(true); //change later
             }
             else
             {

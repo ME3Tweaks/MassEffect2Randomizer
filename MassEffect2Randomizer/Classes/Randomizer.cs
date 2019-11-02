@@ -9,6 +9,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Gibbed.IO;
 using Serilog;
 using ME3Explorer.Unreal;
 using ME3Explorer.Packages;
@@ -76,10 +77,10 @@ namespace MassEffectRandomizer.Classes
                 }
             }
 
-            foreach (var v in faceFxBoneNames)
-            {
-                Debug.WriteLine(v);
-            }
+            //foreach (var v in faceFxBoneNames)
+            //{
+            //    Debug.WriteLine(v);
+            //}
         }
 
         private void RandomizeBioWaypointSet(ExportEntry export, Random random)
@@ -140,6 +141,34 @@ namespace MassEffectRandomizer.Classes
 
             acceptableTagsForPawnShuffling = Utilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split('\n').ToList();
 
+            ///svar testp = MERFS.GetBasegameFile("");
+
+            //var animseqs = p.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
+            //foreach (var v in animseqs)
+            //{
+            //    RandomizeAnimSequence(v, random);
+            //    //Enum.TryParse(v.GetProperty<EnumProperty>("RotationCompressionFormat").Value.Name, out AnimationCompressionFormat rotCompression);
+
+            //    //var ms = new MemoryStream(v.Data);
+            //    //ms.Position = v.propsEnd();
+            //    //ms.Position += 32;
+            //    //while (ms.Position + 4 < ms.Length)
+            //    //{
+            //    //    var currentData = BitConverter.ToSingle(ms.ReadToBuffer(4),0);
+            //    //    ms.Position -= 4;
+            //    //    var randomizedFloat = random.NextFloat(currentData - (currentData * .2), currentData + (currentData * .2));
+            //    //    switch (cf)
+            //    //    {
+            //    //        case 
+            //    //    }
+            //    //    ms.WriteBytes(BitConverter.GetBytes());
+            //    //}
+
+            //    //v.Data = ms.ToArray();
+            //}
+            //p.save();
+            //Debugger.Break();
+
             ////Test
             //MEPackage test = MEPackageHandler.OpenMEPackage(@"D:\Origin Games\Mass Effect\BioGame\CookedPC\Maps\STA\DSG\BIOA_STA60_06_DSG.SFM");
             //var morphFaces = test.Exports.Where(x => x.ClassName == "BioMorphFace").ToList();
@@ -170,18 +199,7 @@ namespace MassEffectRandomizer.Classes
             }
 
 
-            //Randomize ENGINE
-            var engine = MEPackageHandler.OpenMEPackage(Utilities.GetEngineFile());
-            foreach (ExportEntry export in engine.Exports)
-            {
 
-            }
-
-            if (engine.IsModified)
-            {
-                engine.save();
-                ModifiedFiles[engine.FilePath] = engine.FilePath;
-            }
 
             //RANDOMIZE ENTRYMENU
             //var entrymenu = MEPackageHandler.OpenMEPackage(Utilities.GetEntryMenuFile());
@@ -322,175 +340,190 @@ namespace MassEffectRandomizer.Classes
                 double faceFXRandomizationAmount = mainWindow.RANDSETTING_WACK_FACEFX_AMOUNT;
                 int currentFileNumber = 0;
                 Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (file) =>
-                  {
-                      //for (int i = 0; i < files.Count; i++)
-                      //{
-                      bool loggedFilePath = false;
-                      mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
-                      mainWindow.CurrentOperationText = "Randomizing game files [" + currentFileNumber + "/" + files.Count() + "]";
-                      //if (!mapBaseName.StartsWith("bioa_sta")) continue;
-                      bool hasLogged = false;
-                      var package = MEPackageHandler.OpenMEPackage(file);
-                      if (RunAllFilesRandomizerPass)
-                      {
-                          foreach (ExportEntry exp in package.Exports)
-                          {
-                              //Randomize faces
-                              if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
-                              {
-                                  //Face randomizer
-                                  if (!loggedFilePath)
-                                  {
-                                      Log.Information("Randomizing file: " + file);
-                                      loggedFilePath = true;
-                                  }
+                {
+                    //for (int i = 0; i < files.Count; i++)
+                    //{
+                    bool loggedFilePath = false;
+                    mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
+                    mainWindow.CurrentOperationText = "Randomizing game files [" + currentFileNumber + "/" + files.Count() + "]";
+                    if (!Path.GetFileName(file).Equals("BioD_ProFre_501Veetor_LOC_INT.pcc", StringComparison.InvariantCultureIgnoreCase))
+                        return;
+                    var package = MEPackageHandler.OpenMEPackage(file);
 
-                                  RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
-                              }
-                              //else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
-                              //{
-                              //    if (!loggedFilePath)
-                              //    {
-                              //        Log.Information("Randomizing map file: " + files[i]);
-                              //        loggedFilePath = true;
-                              //    }
-                              //    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
-                              //    {
-                              //        var tint = exp.GetProperty<StructProperty>("FlareTint");
-                              //        if (tint != null)
-                              //        {
-                              //            RandomizeTint(random, tint, false);
-                              //            exp.WriteProperty(tint);
-                              //        }
-                              //    }
-                              //    else if (exp.ClassName == "BioSunActor")
-                              //    {
-                              //        var tint = exp.GetProperty<StructProperty>("SunTint");
-                              //        if (tint != null)
-                              //        {
-                              //            RandomizeTint(random, tint, false);
-                              //            exp.WriteProperty(tint);
-                              //        }
-                              //    }
-                              //}
-                              else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
-                              {
-                                  if (!loggedFilePath)
-                                  {
-                                      //Log.Information("Randomizing map file: " + files[i]);
-                                      loggedFilePath = true;
-                                  }
+                    if (Path.GetFileName(file).Equals("BioD_Nor_103aGalaxyMap.pcc", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        if (mainWindow.RANDSETTING_GALAXYMAP)
+                        {
+                            RandomizeGalaxyMap(package, random);
+                        }
+                    }
+                    else
+                    {
+                        //if (!mapBaseName.StartsWith("bioa_sta")) continue;
+                        bool hasLogged = false;
+                        if (RunAllFilesRandomizerPass)
+                        {
+                            foreach (ExportEntry exp in package.Exports)
+                            {
+                                if (exp.IsDefaultObject)
+                                    continue; //Do not randomize default objects
+                                //Randomize faces
+                                if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
+                                {
+                                    //Face randomizer
+                                    if (!loggedFilePath)
+                                    {
+                                        Log.Information("Randomizing file: " + file);
+                                        loggedFilePath = true;
+                                    }
 
-                                  ShuffleCutscenePawns(exp, random);
-                              }
-                              else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
-                              {
-                                  if (!loggedFilePath)
-                                  {
-                                      //Log.Information("Randomizing map file: " + files[i]);
-                                      loggedFilePath = true;
-                                  }
+                                    RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
+                                }
+                                //else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
+                                //{
+                                //    if (!loggedFilePath)
+                                //    {
+                                //        Log.Information("Randomizing map file: " + files[i]);
+                                //        loggedFilePath = true;
+                                //    }
+                                //    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
+                                //    {
+                                //        var tint = exp.GetProperty<StructProperty>("FlareTint");
+                                //        if (tint != null)
+                                //        {
+                                //            RandomizeTint(random, tint, false);
+                                //            exp.WriteProperty(tint);
+                                //        }
+                                //    }
+                                //    else if (exp.ClassName == "BioSunActor")
+                                //    {
+                                //        var tint = exp.GetProperty<StructProperty>("SunTint");
+                                //        if (tint != null)
+                                //        {
+                                //            RandomizeTint(random, tint, false);
+                                //            exp.WriteProperty(tint);
+                                //        }
+                                //    }
+                                //}
+                                else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
+                                {
+                                    if (!loggedFilePath)
+                                    {
+                                        //Log.Information("Randomizing map file: " + files[i]);
+                                        loggedFilePath = true;
+                                    }
 
-                                  RandomizeBioLookAtDefinition(exp, random);
-                              }
-                              else if (exp.ClassName == "BioPawn")
-                              {
-                                  if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && random.Next(4) == 0)
-                                  {
-                                      if (!loggedFilePath)
-                                      {
-                                          Log.Information("Randomizing file: " + file);
-                                          loggedFilePath = true;
-                                      }
+                                    ShuffleCutscenePawns(exp, random);
+                                }
+                                else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
+                                {
+                                    if (!loggedFilePath)
+                                    {
+                                        //Log.Information("Randomizing map file: " + files[i]);
+                                        loggedFilePath = true;
+                                    }
 
-                                      //Pawn size randomizer
-                                      RandomizeBioPawnSize(exp, random, 0.4);
-                                  }
+                                    RandomizeBioLookAtDefinition(exp, random);
+                                }
+                                else if (exp.ClassName == "BioPawn")
+                                {
+                                    if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && random.Next(4) == 0)
+                                    {
+                                        if (!loggedFilePath)
+                                        {
+                                            Log.Information("Randomizing file: " + file);
+                                            loggedFilePath = true;
+                                        }
 
-                                  if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
-                                  {
-                                      if (!loggedFilePath)
-                                      {
-                                          Log.Information("Randomizing file: " + file);
-                                          loggedFilePath = true;
-                                      }
+                                        //Pawn size randomizer
+                                        RandomizeBioPawnSize(exp, random, 0.4);
+                                    }
 
-                                      RandomizePawnMaterialInstances(exp, random);
-                                  }
-                              }
-                              else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
-                              {
-                                  if (!loggedFilePath)
-                                  {
-                                      Log.Information("Randomizing file: " + file);
-                                      loggedFilePath = true;
-                                  }
+                                    if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
+                                    {
+                                        if (!loggedFilePath)
+                                        {
+                                            Log.Information("Randomizing file: " + file);
+                                            loggedFilePath = true;
+                                        }
 
-                                  RandomizeHeightFogComponent(exp, random);
-                              }
-                              else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
-                              {
-                                  if (!loggedFilePath)
-                                  {
-                                      Log.Information("Randomizing file: " + file);
-                                      loggedFilePath = true;
-                                  }
+                                        RandomizePawnMaterialInstances(exp, random);
+                                    }
+                                }
+                                else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
+                                {
+                                    if (!loggedFilePath)
+                                    {
+                                        Log.Information("Randomizing file: " + file);
+                                        loggedFilePath = true;
+                                    }
 
-                                  //Interpolation randomizer
-                                  RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
-                              }
-                              else if (mainWindow.RANDSETTING_PAWN_FACEFX && exp.ClassName == "FaceFXAnimSet")
-                              {
-                                  if (!loggedFilePath)
-                                  {
-                                      Log.Information("Randomizing file: " + file);
-                                      loggedFilePath = true;
-                                  }
+                                    RandomizeHeightFogComponent(exp, random);
+                                }
+                                else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
+                                {
+                                    if (!loggedFilePath)
+                                    {
+                                        Log.Information("Randomizing file: " + file);
+                                        loggedFilePath = true;
+                                    }
 
-                                  //Method contains SHouldSave in it (due to try catch).
-                                  RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
-                              }
-                          }
-                      }
+                                    //Interpolation randomizer
+                                    RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
+                                }
+                                else if (mainWindow.RANDSETTING_PAWN_FACEFX && exp.ClassName == "FaceFXAnimSet")
+                                {
+                                    if (!loggedFilePath)
+                                    {
+                                        Log.Information("Randomizing file: " + file);
+                                        loggedFilePath = true;
+                                    }
 
-                      //if (mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES)
-                      //{
-                      //    RandomizeAINames(package, random);
-                      //}
+                                    //Method contains SHouldSave in it (due to try catch).
+                                    RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
+                                }
+                            }
+                        }
+                    }
 
-                      //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION && package.LocalTalkFiles.Any())
-                      //{
-                      //    if (!loggedFilePath)
-                      //    {
-                      //        Log.Information("Randomizing map file: " + files[i]);
-                      //        loggedFilePath = true;
-                      //    }
-                      //    UpdateGalaxyMapReferencesForTLKs(package.LocalTalkFiles, false, false);
-                      //}
+                    //if (mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES)
+                    //{
+                    //    RandomizeAINames(package, random);
+                    //}
 
-                      //if (mainWindow.RANDSETTING_WACK_SCOTTISH && package.LocalTalkFiles.Any())
-                      //{
-                      //    if (!loggedFilePath)
-                      //    {
-                      //        Log.Information("Randomizing map file: " + files[i]);
-                      //        loggedFilePath = true;
-                      //    }
+                    //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION && package.LocalTalkFiles.Any())
+                    //{
+                    //    if (!loggedFilePath)
+                    //    {
+                    //        Log.Information("Randomizing map file: " + files[i]);
+                    //        loggedFilePath = true;
+                    //    }
+                    //    UpdateGalaxyMapReferencesForTLKs(package.LocalTalkFiles, false, false);
+                    //}
 
-                      //    MakeTextPossiblyScottish(package.LocalTalkFiles, random, false);
-                      //}
+                    //if (mainWindow.RANDSETTING_WACK_SCOTTISH && package.LocalTalkFiles.Any())
+                    //{
+                    //    if (!loggedFilePath)
+                    //    {
+                    //        Log.Information("Randomizing map file: " + files[i]);
+                    //        loggedFilePath = true;
+                    //    }
 
-                      //foreach (var talkFile in package.LocalTalkFiles.Where(x => x.Modified))
-                      //{
-                      //    talkFile.saveToExport();
-                      //}
+                    //    MakeTextPossiblyScottish(package.LocalTalkFiles, random, false);
+                    //}
 
-                      if (package.IsModified)
-                      {
-                          Debug.WriteLine("Saving package: " + package.FilePath);
-                          ModifiedFiles[package.FilePath] = package.FilePath;
-                          package.save();
-                      }
-                  });
+                    //foreach (var talkFile in package.LocalTalkFiles.Where(x => x.Modified))
+                    //{
+                    //    talkFile.saveToExport();
+                    //}
+
+                    if (package.IsModified)
+                    {
+                        Debug.WriteLine("Saving package: " + package.FilePath);
+                        ModifiedFiles[package.FilePath] = package.FilePath;
+                        package.save();
+                    }
+                });
             }
 
             //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION)
@@ -545,6 +578,35 @@ namespace MassEffectRandomizer.Classes
             ACF_BioFixed48,
         }
 
+        private static string[] bonesToNotRandomize = { "root", "God" };
+        public void RandomizeBioAnimSetData(ExportEntry export, Random random)
+        {
+            var trackbonenames = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames").Select(x => x.Value.Name).ToList(); //Make new list object.
+
+            trackbonenames.RemoveAll(x => bonesToNotRandomize.Contains(x));
+
+            trackbonenames.Shuffle(random);
+            var bones = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
+            foreach (var bonename in bones)
+            {
+                if (bonesToNotRandomize.Contains(bonename.Value.Name)) continue; //skip
+                bonename.Value = trackbonenames[0];
+                trackbonenames.RemoveAt(0);
+            }
+            export.WriteProperty(bones);
+        }
+
+        private bool shouldRandomizeBone(string boneName)
+        {
+            if (boneName.Contains("finger", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (boneName.Contains("eye", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (boneName.Contains("mouth", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (boneName.Contains("jaw", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (boneName.Contains("sneer", StringComparison.InvariantCultureIgnoreCase)) return true;
+            if (boneName.Contains("brow", StringComparison.InvariantCultureIgnoreCase)) return true;
+            return false;
+        }
+
         private void RandomizeAnimSequence(ExportEntry export, Random random)
         {
             var game = export.FileRef.Game;
@@ -553,6 +615,12 @@ namespace MassEffectRandomizer.Classes
             {
                 var TrackOffsets = export.GetProperty<ArrayProperty<IntProperty>>("CompressedTrackOffsets");
                 var animsetData = export.GetProperty<ObjectProperty>("m_pBioAnimSetData");
+                if (animsetData.Value <= 0)
+                {
+                    Debug.WriteLine("trackdata is an import skipping");
+                    return;
+                } // don't randomize;
+
                 var boneList = export.FileRef.getUExport(animsetData.Value).GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
                 Enum.TryParse(export.GetProperty<EnumProperty>("RotationCompressionFormat").Value.Name, out AnimationCompressionFormat rotCompression);
                 int offset = export.propsEnd();
@@ -576,7 +644,7 @@ namespace MassEffectRandomizer.Classes
                     i++;
                     var bonePosCount = TrackOffsets[i].Value;
                     var boneName = boneList[bone].Value;
-
+                    bool doSomething = shouldRandomizeBone(boneName);
                     //POSKEYS
                     for (int j = 0; j < bonePosCount; j++)
                     {
@@ -592,6 +660,9 @@ namespace MassEffectRandomizer.Classes
 
 
                         var posX = BitConverter.ToSingle(data, offset);
+                        if (doSomething)
+                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posX - (posX * .3f), posX + (posX * .3f))));
+
                         //PosKeys.Items.Add(new BinInterpNode
                         //{
                         //    Header = $"0x{offset:X5} X: {posX} ",
@@ -599,8 +670,10 @@ namespace MassEffectRandomizer.Classes
                         //    Tag = NodeType.StructLeafFloat
                         //});
                         offset += 4;
+
                         var posY = BitConverter.ToSingle(data, offset);
-                        data.OverwriteRange(offset,BitConverter.GetBytes(random.NextFloat(posY-(posY * .3f), posY + (posY * .3f))));
+                        if (doSomething)
+                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posY - (posY * .3f), posY + (posY * .3f))));
                         //PosKeys.Items.Add(new BinInterpNode
                         //{
                         //    Header = $"0x{offset:X5} Y: {posY} ",
@@ -608,7 +681,11 @@ namespace MassEffectRandomizer.Classes
                         //    Tag = NodeType.StructLeafFloat
                         //});
                         offset += 4;
+
                         var posZ = BitConverter.ToSingle(data, offset);
+                        if (doSomething)
+                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posZ - (posZ * .3f), posZ + (posZ * .3f))));
+
                         //PosKeys.Items.Add(new BinInterpNode
                         //{
                         //    Header = $"0x{offset:X5} Z: {posZ} ",
@@ -616,9 +693,9 @@ namespace MassEffectRandomizer.Classes
                         //    Tag = NodeType.StructLeafFloat
                         //});
                         offset += 4;
-
                     }
 
+                    var lookat = boneName.Name.Contains("lookat");
 
                     i++;
                     var boneRotOffset = TrackOffsets[i].Value;
@@ -643,27 +720,51 @@ namespace MassEffectRandomizer.Classes
                                 offset = animBinStart + boneRotOffset + j * l;
                                 offsetRotX = offset;
                                 rotX = BitConverter.ToSingle(data, offset);
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
                                 offset += 4;
                                 offsetRotY = offset;
                                 rotY = BitConverter.ToSingle(data, offset);
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
                                 offset += 4;
                                 offsetRotZ = offset;
                                 rotZ = BitConverter.ToSingle(data, offset);
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
                                 offset += 4;
                                 offsetRotW = offset;
                                 rotW = BitConverter.ToSingle(data, offset);
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotW - (rotW * .1f), rotW + (rotW * .1f))));
                                 offset += 4;
                                 break;
                             case AnimationCompressionFormat.ACF_Float96NoW:
                                 offset = animBinStart + boneRotOffset + j * l;
                                 offsetRotX = offset;
                                 rotX = BitConverter.ToSingle(data, offset);
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
+
                                 offset += 4;
                                 offsetRotY = offset;
                                 rotY = BitConverter.ToSingle(data, offset);
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
+
                                 offset += 4;
                                 offsetRotZ = offset;
                                 rotZ = BitConverter.ToSingle(data, offset);
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
+
                                 offset += 4;
                                 break;
                             case AnimationCompressionFormat.ACF_Fixed48NoW: // normalized quaternion with 3 16-bit fixed point fields
@@ -708,12 +809,25 @@ namespace MassEffectRandomizer.Classes
                                 const float scale = 1.41421356237f;
                                 offsetRotX = offset;
                                 rotX = (data[0] & 0x7FFF) / 32767.0f * scale - shift;
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
+
                                 offset += 4;
                                 offsetRotY = offset;
                                 rotY = (data[1] & 0x7FFF) / 32767.0f * scale - shift;
+                                if (lookat)
+
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
+
                                 offset += 4;
                                 offsetRotZ = offset;
                                 rotZ = (data[2] & 0x7FFF) / 32767.0f * scale - shift;
+                                if (lookat)
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
+
+
+
                                 //float w = 1.0f - (rotX * rotX + rotY * rotY + rotZ * rotZ);
                                 //w = w >= 0.0f ? (float)Math.Sqrt(w) : 0.0f;
                                 //int s = ((data[0] >> 14) & 2) | ((data[1] >> 15) & 1);
@@ -772,7 +886,7 @@ namespace MassEffectRandomizer.Classes
 
         private void RandomizeBioDyanmicAnimSet(ExportEntry export)
         {
-            
+
         }
 
         private void RandomizeWeaponIni(DuplicatingIni bioweapon, Random random)
@@ -968,16 +1082,16 @@ namespace MassEffectRandomizer.Classes
                         }
                         else
                         {
-                            Debug.WriteLine("Randomizing parameter " + scalar.GetProp<NameProperty>("ParameterName"));
+                            //Debug.WriteLine("Randomizing parameter " + scalar.GetProp<NameProperty>("ParameterName"));
                             scalar.GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0, 1);
                         }
                     }
 
-                    foreach (var vector in vectors)
-                    {
-                        var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                        RandomizeTint(random, paramValue, false);
-                    }
+                    //foreach (var scalar in vectors)
+                    //{
+                    //    var paramValue = vector.GetProp<StructProperty>("ParameterValue");
+                    //    RandomizeTint(random, paramValue, false);
+                    //}
                 }
             }
             material.WriteProperties(props);
@@ -1245,6 +1359,7 @@ namespace MassEffectRandomizer.Classes
             try
             {
                 Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");
+                var d = exp.Data;
                 ME2FaceFXAnimSet animSet = new ME2FaceFXAnimSet(exp);
                 for (int i = 0; i < animSet.Data.Data.Count(); i++)
                 {
@@ -1320,6 +1435,16 @@ namespace MassEffectRandomizer.Classes
 
                 Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
                 animSet.Save();
+                var x = exp.Data;
+                if (!d.SequenceEqual(x))
+                {
+                    Debug.WriteLine("Data has changed...");
+                }
+
+                if (d.Length != x.Length)
+                {
+                    Debug.WriteLine($"Data length has chagned. old: {d.Length} new: {x.Length}");
+                }
             }
             catch (Exception e)
             {
@@ -1921,54 +2046,129 @@ namespace MassEffectRandomizer.Classes
         }
 
 
-        //private void RandomizeGalaxyMap(Random random)
-        //{
-        //    MEPackage engine = MEPackageHandler.OpenMEPackage(Utilities.GetEngineFile());
+        private void RandomizeGalaxyMap(IMEPackage package, Random random)
+        {
+            foreach (ExportEntry export in package.Exports)
+            {
+                switch (export.ClassName)
+                {
+                    case "SFXCluster":
+                        {
+                            var props = export.GetProperties();
+                            var starColor = props.GetProp<StructProperty>("StarColor");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
+                            starColor = props.GetProp<StructProperty>("StarColor2");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
 
-        //    foreach (ExportEntry export in engine.Exports)
-        //    {
-        //        switch (export.ObjectName)
-        //        {
-        //            case "GalaxyMap_Cluster":
-        //                //RandomizeClustersXY(export, random);
-        //                break;
-        //            case "GalaxyMap_System":
-        //                //RandomizeSystems(export, random);
-        //                break;
-        //            case "GalaxyMap_Planet":
-        //                //RandomizePlanets(export, random);
-        //                break;
-        //            case "Characters_StartingEquipment":
-        //                //RandomizeStartingWeapons(export, random);
-        //                break;
-        //            case "Classes_ClassTalents":
-        //                int shuffleattempts = 0;
-        //                bool reattemptTalentShuffle = false;
-        //                while (reattemptTalentShuffle)
-        //                {
-        //                    if (shuffleattempts > 0)
-        //                    {
-        //                        mainWindow.CurrentOperationText = "Randomizing Class Talents... Attempt #" + (shuffleattempts + 1)));
-        //                    }
-        //                    reattemptTalentShuffle = !RandomizeTalentLists(export, random); //true if shuffle is OK, false if it failed
-        //                    shuffleattempts++;
-        //                }
-        //                break;
-        //            case "LevelUp_ChallengeScalingVars":
-        //                //RandomizeLevelUpChallenge(export, random);
-        //                break;
-        //            case "Items_ItemEffectLevels":
-        //                RandomizeWeaponStats(export, random);
-        //                break;
-        //            case "Characters_Character":
-        //                RandomizeCharacter(export, random);
-        //                break;
-        //        }
-        //    }
-        //    mainWindow.CurrentOperationText = "Finishing Galaxy Map Randomizing"));
+                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
+                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
 
-        //    engine.save();
-        //}
+
+                            var intensity = props.GetProp<FloatProperty>("SphereIntensity");
+                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
+                            intensity = props.GetProp<FloatProperty>("NebularDensity");
+                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
+                            intensity = props.GetProp<FloatProperty>("SphereSize");
+                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
+
+                            export.WriteProperties(props);
+                        }
+                        //RandomizeClustersXY(export, random);
+
+                        break;
+                    case "SFXSystem":
+                        {
+                            var props = export.GetProperties();
+                            var starColor = props.GetProp<StructProperty>("StarColor");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
+
+                            starColor = props.GetProp<StructProperty>("FlareTint");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
+
+
+                            starColor = props.GetProp<StructProperty>("SunColor");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
+
+                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
+                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
+
+
+                            var scale = props.GetProp<FloatProperty>("Scale");
+                            if (scale != null) scale.Value = random.NextFloat(.1, 2);
+
+
+                            export.WriteProperties(props);
+                        }
+                        break;
+                    case "BioPlanet":
+                        {
+                            var props = export.GetProperties();
+                            var starColor = props.GetProp<StructProperty>("SunColor");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
+
+                            starColor = props.GetProp<StructProperty>("FlareTint");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
+
+
+                            starColor = props.GetProp<StructProperty>("CloudColor");
+                            if (starColor != null)
+                            {
+                                RandomizeTint(random, starColor, false);
+                            }
+
+                            var resourceRichness = props.GetProp<FloatProperty>("ResourceRichness");
+                            if (resourceRichness != null)
+                            {
+                                resourceRichness.Value = random.NextFloat(0, 1.2);
+                            }
+                            else
+                            {
+                                props.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, .6), "ResourceRichness"));
+                            }
+
+                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
+                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
+
+
+                            var scale = props.GetProp<FloatProperty>("Scale");
+                            if (scale != null) scale.Value = random.NextFloat(.1, 6);
+
+
+                            export.WriteProperties(props);
+                        }
+                        break;
+                    case "MaterialInstanceConstant":
+                        RandomizeMaterialInstance(export, random);
+                        break;
+                }
+            }
+
+            if (package.IsModified)
+            {
+                package.save();
+            }
+        }
 
 
 
@@ -2217,7 +2417,7 @@ namespace MassEffectRandomizer.Classes
             {
                 foreach (StructProperty colorParameter in colorOverrides)
                 {
-                    Debug.WriteLine("Randomizing Color Parameter");
+                    //Debug.WriteLine("Randomizing Color Parameter");
                     RandomizeTint(random, colorParameter.GetProp<StructProperty>("cValue"), false);
                 }
             }
