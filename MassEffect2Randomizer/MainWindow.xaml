@@ -30,7 +30,7 @@
         <Style TargetType="{x:Type CheckBox}"
                    BasedOn="{StaticResource MetroCheckBox}">
             <Style.Resources>
-                <SolidColorBrush x:Key="HighlightBrush" Color="Orchid" />
+                <SolidColorBrush x:Key="HighlightBrush" Color="Red" />
             </Style.Resources>
         </Style>
     </Window.Resources>
@@ -129,7 +129,7 @@
                         <Button DockPanel.Dock="Right" Click="RandomizeButton_Click" Padding="20,0,20,0">
                             <fonts:OutlinedTextBlock Text="Randomize" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
-
+                        <CheckBox DockPanel.Dock="Right" Content="Use DLC mod for easy re-randomization" IsChecked="{Binding UseMERFS}" HorizontalAlignment="Right" Margin="0,0,10,0" ToolTip="Using a DLC mod will allow you to remove or re-randomize game without having to restore the entire game.&#10;This option can use significant disk space."/>
                     </DockPanel>
                 </StackPanel>
                 <Grid>
@@ -189,7 +189,7 @@
                                     <StackPanel>
                                         <fonts:OutlinedTextBlock Text="Movement" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
-                                            <CheckBox Content="Randomize movement speeds" Margin="3" ToolTip="Randomizes movement speeds of all characters" IsChecked="{Binding RANDSETTING_MOVEMENT_CREATURESPEED}" />
+                                            <CheckBox Content="Randomize movement speeds" Margin="3" ToolTip="Randomizes movement speeds of all characters" IsChecked="{Binding RANDSETTING_MOVEMENT_SPEED}" />
                                             <CheckBox Content="Randomize weapons types squadmates can use" Margin="3" ToolTip="Randomize the distances enemy AI prefer to fight at" IsChecked="{Binding RANDSETTING_MISC_ENEMYAIDISTANCES}" />
                                             <!-- SFXPlayerSquadLoadoutData -->
                                             <CheckBox Content="Randomize HammerHead" Margin="3" ToolTip="Randomizes speed of Hammerhead" IsChecked="{Binding RANDSETTING_MOVEMENT_HAMMERHEAD}" />
@@ -236,6 +236,7 @@
 
                                             <CheckBox Content="Randomize Illusive Man eyes" ToolTip="Randomize color of Illusive Man eyes" Margin="3" IsChecked="{Binding RANDSETTING_ILLUSIVEEYES}" />
 
+                                            <CheckBox Content="Randomize Animation data" ToolTip="Ruin anything you liked about ME2 cutscenes." Margin="3" IsChecked="{Binding RANDSETTING_PAWN_ANIMSEQUENCE}" />
                                             <CheckBox Name="Checkbox_RandomizeBioMorphFaceMaps" Content="Randomize NPC faces" ToolTip="Randomize humanoid faces through the headmorph&#10;Many faces of plot-heavy characters are mesh based in ME2 and can't be randomized." Margin="3" IsChecked="{Binding RANDSETTING_BIOMORPHFACES}" />
                                             <StackPanel>
                                                 <StackPanel Orientation="Horizontal" Margin="45,0,0,0">
@@ -326,7 +327,7 @@
                                         <CheckBox Content="Randomize talent and power stats" ToolTip="This feature is not yet complete and cannot be used at this time&#xA;Randomizes the stats of talents and powers" Margin="3" IsChecked="{Binding RANDSETTING_TALENTS_STATS}"  IsEnabled="False" />-->
 
 
-                                            <CheckBox Content="Randomize henchmen actor type" Foreground="Red" ToolTip="Randomizes the actor type for each henchmen, essentially shuffles squadmates. May cause some dialogue to skip" Margin="3" IsChecked="{Binding RANDSETTING_CHARACTER_HENCH_ARCHETYPES}" />
+                                            <CheckBox Content="Randomize wall text" ToolTip="Randomizes text" Margin="3" IsChecked="{Binding RANDSETTING_MISC_WALLTEXT}" />
                                         </StackPanel>
                                     </StackPanel>
                                     <StackPanel>
@@ -366,7 +367,7 @@
                                             <CheckBox Content="Randomize GUI sounds" ToolTip="Randomize sound effects for GUI audio" Margin="3" IsChecked="{Binding RANDSETTING_MISC_GUISFX}" />-->
                                             <CheckBox Content="Randomize game over text" ToolTip="Randomize the game over title text" Margin="3" IsChecked="{Binding RANDSETTING_MISC_GAMEOVERTEXT}" />
                                             <CheckBox Content="Randomize fog colors" ToolTip="Randomizes the colors of fog and slightly tweaks their densities" Margin="3" IsChecked="{Binding RANDSETTING_MISC_HEIGHTFOG}"/>
-                                            <!--<CheckBox Content="Randomize 'sun actor' colors" ToolTip="Randomizes the colors of stars in the sky of levels and some stage light sources.&#10;Note that not all stars are affected as some are designed differently.&#10;This won't change the color of the lighting as that is precomputed" Margin="3" IsChecked="{Binding RANDSETTING_MISC_STARCOLORS}"/>-->
+                                            <CheckBox Content="Randomize 'sun actor' colors" ToolTip="Randomizes the colors of stars in the sky of levels and some stage light sources.&#10;This won't change the color of the lighting as that is precomputed" Margin="3" IsChecked="{Binding RANDSETTING_MISC_STARCOLORS}"/>
                                             <!--<CheckBox Content="Randomize game ending screen" ToolTip="Changes the art shown at the very end of the game" Margin="3" IsChecked="{Binding RANDSETTING_MISC_ENDINGART}" />-->
                                             <CheckBox Content="Randomize splash screen" Margin="3" IsChecked="{Binding RANDSETTING_MISC_SPLASH}" ToolTip="Randomizes what the splash planet looks like and some other stuff on the splash"/>
                                             <CheckBox Content="Randomize pawns in cutscenes" ToolTip="Randomize who appears in what position in a cutscene. May create ridiculous things" Margin="3" IsChecked="{Binding RANDSETTING_SHUFFLE_CUTSCENE_ACTORS}" />

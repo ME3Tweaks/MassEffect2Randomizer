@@ -132,7 +132,7 @@ namespace MassEffectRandomizer.Classes
             //Load TLKs
             mainWindow.CurrentOperationText = "Loading TLKs";
             mainWindow.ProgressBarIndeterminate = true;
-            var Tlks = Directory.GetFiles(Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC"), "*_INT.tlk", SearchOption.AllDirectories).Select(x =>
+            var Tlks = Directory.GetFiles(Path.Combine(Utilities.GetGamePath(), "BioGame"), "*_INT.tlk", SearchOption.AllDirectories).Select(x =>
             {
                 TalkFile tf = new TalkFile();
                 tf.LoadTlkData(x);
@@ -322,6 +322,11 @@ namespace MassEffectRandomizer.Classes
                 }
             }
 
+            if (mainWindow.RANDSETTING_MOVEMENT_SPEED)
+            {
+                RandomizeMovementSpeed(random);
+            }
+
             Log.Information("Saving Coalesced.ini file");
             me2basegamecoalesced.Serialize();
 
@@ -339,15 +344,15 @@ namespace MassEffectRandomizer.Classes
                 double morphFaceRandomizationAmount = mainWindow.RANDSETTING_MISC_MAPFACES_AMOUNT;
                 double faceFXRandomizationAmount = mainWindow.RANDSETTING_WACK_FACEFX_AMOUNT;
                 int currentFileNumber = 0;
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 2 }, (file) =>
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 4 }, (file) =>
                 {
                     //for (int i = 0; i < files.Count; i++)
                     //{
                     bool loggedFilePath = false;
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = "Randomizing game files [" + currentFileNumber + "/" + files.Count() + "]";
-                    if (!Path.GetFileName(file).Equals("BioD_ProFre_501Veetor_LOC_INT.pcc", StringComparison.InvariantCultureIgnoreCase))
-                        return;
+                    //if (!file.Contains("BioD_Pro", StringComparison.InvariantCultureIgnoreCase))
+                    //    return;
                     var package = MEPackageHandler.OpenMEPackage(file);
 
                     if (Path.GetFileName(file).Equals("BioD_Nor_103aGalaxyMap.pcc", StringComparison.InvariantCultureIgnoreCase))
@@ -379,32 +384,32 @@ namespace MassEffectRandomizer.Classes
 
                                     RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
                                 }
-                                //else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
-                                //{
-                                //    if (!loggedFilePath)
-                                //    {
-                                //        Log.Information("Randomizing map file: " + files[i]);
-                                //        loggedFilePath = true;
-                                //    }
-                                //    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
-                                //    {
-                                //        var tint = exp.GetProperty<StructProperty>("FlareTint");
-                                //        if (tint != null)
-                                //        {
-                                //            RandomizeTint(random, tint, false);
-                                //            exp.WriteProperty(tint);
-                                //        }
-                                //    }
-                                //    else if (exp.ClassName == "BioSunActor")
-                                //    {
-                                //        var tint = exp.GetProperty<StructProperty>("SunTint");
-                                //        if (tint != null)
-                                //        {
-                                //            RandomizeTint(random, tint, false);
-                                //            exp.WriteProperty(tint);
-                                //        }
-                                //    }
-                                //}
+                                else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
+                                {
+                                    if (!loggedFilePath)
+                                    {
+                                        Log.Information("Randomizing map file: " + file);
+                                        loggedFilePath = true;
+                                    }
+                                    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
+                                    {
+                                        var tint = exp.GetProperty<StructProperty>("FlareTint");
+                                        if (tint != null)
+                                        {
+                                            RandomizeTint(random, tint, false);
+                                            exp.WriteProperty(tint);
+                                        }
+                                    }
+                                    else if (exp.ClassName == "BioSunActor")
+                                    {
+                                        var tint = exp.GetProperty<StructProperty>("SunTint");
+                                        if (tint != null)
+                                        {
+                                            RandomizeTint(random, tint, false);
+                                            exp.WriteProperty(tint);
+                                        }
+                                    }
+                                }
                                 else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
                                 {
                                     if (!loggedFilePath)
@@ -414,6 +419,16 @@ namespace MassEffectRandomizer.Classes
                                     }
 
                                     ShuffleCutscenePawns(exp, random);
+                                }
+                                else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
+                                {
+                                    if (!loggedFilePath)
+                                    {
+                                        //Log.Information("Randomizing map file: " + files[i]);
+                                        loggedFilePath = true;
+                                    }
+
+                                    RandomizeAnimSequence(exp, random);
                                 }
                                 else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
                                 {
@@ -560,6 +575,32 @@ namespace MassEffectRandomizer.Classes
 
             mainWindow.CurrentOperationText = "Finishing up";
             //AddMERSplash(random);
+        }
+
+        private void RandomizeMovementSpeed(Random random)
+        {
+            var femaleFile = MERFS.GetBasegameFile("BIOG_Female_Player_C.pcc");
+            var maleFile = MERFS.GetBasegameFile("BIOG_Male_Player_C.pcc");
+            var femalepackage = MEPackageHandler.OpenMEPackage(femaleFile);
+            var malepackage = MEPackageHandler.OpenMEPackage(femaleFile);
+            RandomizeMovementData(femalepackage.getUExport(2917), random);
+            RandomizeMovementData(malepackage.getUExport(2672), random);
+            femalepackage.save();
+            malepackage.save();
+        }
+
+        private void RandomizeMovementData(ExportEntry export, Random random)
+        {
+            var props = export.GetProperties();
+            foreach (var prop in props)
+            {
+                if (prop is FloatProperty fp)
+                {
+                    fp.Value = random.NextFloat(fp.Value - (fp * .75), fp.Value + (fp * .75));
+                }
+
+            }
+            export.WriteProperties(props);
         }
 
         public enum AnimationKeyFormat
@@ -927,7 +968,7 @@ namespace MassEffectRandomizer.Classes
 
                                         float range = Max - Min;
                                         if (range == 0) range = 0.1f * Max;
-                                        float rangeExtension = range * .5f; //50%
+                                        float rangeExtension = range * 15f; //50%
 
                                         float newMin = Math.Max(0, random.NextFloat(Min - rangeExtension, Min + rangeExtension));
                                         float newMax = random.NextFloat(Max - rangeExtension, Max + rangeExtension);
@@ -1002,7 +1043,6 @@ namespace MassEffectRandomizer.Classes
 
                 }
             }
-
             export.WriteProperty(boneDefinitions);
         }
 
@@ -1020,8 +1060,8 @@ namespace MassEffectRandomizer.Classes
                 var density = properties.GetProp<FloatProperty>("Density");
                 if (density != null)
                 {
-                    var twentyPercent = random.NextFloat(-density * .05, density * 0.75);
-                    density.Value = density + twentyPercent;
+                    var thicknessRandomizer = random.NextFloat(-density * .03, density * 1.15);
+                    density.Value = density + thicknessRandomizer;
                 }
 
                 exp.WriteProperties(properties);
@@ -1254,6 +1294,7 @@ namespace MassEffectRandomizer.Classes
             {
                 var expectedType = variableLink.GetProp<ObjectProperty>("ExpectedType");
                 var expectedTypeStr = export.FileRef.getEntry(expectedType.Value).ObjectName;
+                var DEBUG = variableLink.GetProp<StrProperty>("LinkDesc");
                 if (expectedTypeStr == "SeqVar_Object" || expectedTypeStr == "SeqVar_Player" || expectedTypeStr == "BioSeqVar_ObjectFindByTag")
                 {
                     //Investigate the links
@@ -1263,6 +1304,7 @@ namespace MassEffectRandomizer.Classes
                         var linkedObj = export.FileRef.getUExport(objRef.Value).GetProperty<ObjectProperty>("ObjValue");
                         if (linkedObj != null)
                         {
+                            //This is the data the node is referencing
                             var linkedObjectEntry = export.FileRef.getEntry(linkedObj.Value);
                             var linkedObjName = linkedObjectEntry.ObjectName;
                             if (linkedObjName == "BioPawn" && linkedObjectEntry is ExportEntry bioPawnExport)
@@ -1274,7 +1316,74 @@ namespace MassEffectRandomizer.Classes
                                 }
                             }
                         }
-
+                        else if (expectedTypeStr == "SeqVar_Object")
+                        {
+                            //We might be assigned to. We need to look at the parent sequence
+                            //and find what assigns me
+                            var node = export.FileRef.getUExport(objRef.Value);
+                            var parentRef = node.GetProperty<ObjectProperty>("ParentSequence");
+                            if (parentRef != null)
+                            {
+                                var parent = export.FileRef.getUExport(parentRef.Value);
+                                var sequenceObjects = parent.GetProperty<ArrayProperty<ObjectProperty>>("SequenceObjects");
+                                if (sequenceObjects != null)
+                                {
+                                    foreach (var obj in sequenceObjects)
+                                    {
+                                        if (obj.Value <= 0) continue;
+                                        var sequenceObject = export.FileRef.getUExport(obj.Value);
+                                        if (sequenceObject.InheritsFrom("SequenceAction") && sequenceObject.ClassName == "SeqAct_SetObject" && sequenceObject != export)
+                                        {
+                                            //check if target is my node
+                                            var varlinqs = sequenceObject.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
+                                            if (varlinqs != null)
+                                            {
+                                                var targetLink = varlinqs.FirstOrDefault(x =>
+                                                {
+                                                    var linkdesc = x.GetProp<StrProperty>("LinkDesc");
+                                                    return linkdesc != null && linkdesc == "Target";
+                                                });
+                                                var targetLinkedVariables = targetLink?.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
+                                                if (targetLinkedVariables != null)
+                                                {
+                                                    //see if target is node we are investigating for setting.
+                                                    foreach (var targetLinkedVariable in targetLinkedVariables)
+                                                    {
+                                                        var potentialTarget = export.FileRef.getUExport(targetLinkedVariable.Value);
+                                                        if (potentialTarget == node)
+                                                        {
+                                                            Debug.WriteLine("FOUND TARGET!");
+                                                            //See what value this is set to. If it inherits from BioPawn we can use it in the shuffling.
+                                                            var valueLink = varlinqs.FirstOrDefault(x =>
+                                                            {
+                                                                var linkdesc = x.GetProp<StrProperty>("LinkDesc");
+                                                                return linkdesc != null && linkdesc == "Value";
+                                                            });
+                                                            var valueLinkedVariables = valueLink?.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
+                                                            if (valueLinkedVariables != null && valueLinkedVariables.Count == 1)
+                                                            {
+                                                                var linkedNode = export.FileRef.getUExport(valueLinkedVariables[0].Value);
+                                                                var linkedNodeType = linkedNode.GetProperty<ObjectProperty>("ObjValue");
+                                                                if (linkedNodeType != null)
+                                                                {
+                                                                    var linkedNodeData = export.FileRef.getUExport(linkedNodeType.Value);
+                                                                    if (linkedNodeData.InheritsFrom("BioPawn"))
+                                                                    {
+                                                                        //We can shuffle this item.
+                                                                        Debug.WriteLine("Adding shuffle item: " + objRef.Value);
+                                                                        pawnsToShuffle.Add(objRef); //pointer to this node
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         string className = export.FileRef.getUExport(objRef.Value).ClassName;
                         if (className == "SeqVar_Player")
                         {
@@ -1384,6 +1493,7 @@ namespace MassEffectRandomizer.Classes
                         //Randomize the points
                         for (int j = 0; j < faceFxline.points.Length; j++)
                         {
+                            bool isLast = j == faceFxline.points.Length;
                             var currentWeight = faceFxline.points[j].weight;
                             switch (amount)
                             {
@@ -1396,7 +1506,11 @@ namespace MassEffectRandomizer.Classes
                                 case 3: //That's not how the face is supposed to work
                                     if (random.Next(5) == 0)
                                     {
-                                        faceFxline.points[j].weight = random.NextFloat(-10, 10);
+                                        faceFxline.points[j].weight = random.NextFloat(-3, 3);
+                                    }
+                                    else if (isLast && random.Next(3) == 0)
+                                    {
+                                        faceFxline.points[j].weight = random.NextFloat(.7, .7);
                                     }
                                     else
                                     {
@@ -1405,18 +1519,23 @@ namespace MassEffectRandomizer.Classes
 
                                     break;
                                 case 4: //:O
-                                    if (random.Next(6) == 0)
+                                    if (random.Next(12) == 0)
                                     {
-                                        faceFxline.points[j].weight = random.NextFloat(-20, 20);
+                                        faceFxline.points[j].weight = random.NextFloat(-5, 5);
+                                    }
+                                    else if (isLast && random.Next(3) == 0)
+                                    {
+                                        faceFxline.points[j].weight = random.NextFloat(.9, .9);
                                     }
                                     else
                                     {
-                                        faceFxline.points[j].weight *= 20;
+                                        faceFxline.points[j].weight *= 5;
                                     }
+                                    //Debug.WriteLine(faceFxline.points[j].weight);
 
                                     break;
                                 case 5: //Utter madness
-                                    faceFxline.points[j].weight = random.NextFloat(-20, 20);
+                                    faceFxline.points[j].weight = random.NextFloat(-10, 10);
                                     break;
                                 default:
                                     Debugger.Break();
@@ -1435,21 +1554,43 @@ namespace MassEffectRandomizer.Classes
 
                 Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
                 animSet.Save();
-                var x = exp.Data;
-                if (!d.SequenceEqual(x))
-                {
-                    Debug.WriteLine("Data has changed...");
-                }
-
-                if (d.Length != x.Length)
-                {
-                    Debug.WriteLine($"Data length has chagned. old: {d.Length} new: {x.Length}");
-                }
             }
             catch (Exception e)
             {
                 //Do nothing for now.
                 Log.Error("AnimSet error! " + App.FlattenException((e)));
+            }
+        }
+
+        public void RandomizeWallText(ExportEntry entry, Random random, List<TalkFile> Tlks)
+        {
+            var modules = entry.GetProperty<ArrayProperty<ObjectProperty>>("Modules");
+            if (modules != null)
+            {
+                foreach (var module in modules)
+                {
+                    var signModule = entry.FileRef.getUExport(module.Value);
+                    var srRef = signModule.GetProperty<StringRefProperty>("m_srGameName");
+                    if (srRef != null)
+                    {
+                        int newId = 0;
+                        var container = Tlks.FirstOrDefault(x => x.findDataById(srRef.Value) != "No data");
+                        var origStr = container?.findDataById(srRef.Value);
+                        if (origStr != null)
+                        {
+                            foreach (var tlk in Tlks)
+                            {
+                                var availableItems = tlk.StringRefs.Where(x => x.Data != null && x.Data.Length == origStr.Length).ToList();
+                                if (availableItems.Count > 0)
+                                {
+                                    srRef.Value = availableItems[random.Next(availableItems.Count)].StringID;
+                                    signModule.WriteProperty(srRef);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -2282,6 +2423,7 @@ namespace MassEffectRandomizer.Classes
                    || mainWindow.RANDSETTING_PAWN_FACEFX
                    || mainWindow.RANDSETTING_WACK_SCOTTISH
                    || mainWindow.RANDSETTING_PAWN_MATERIALCOLORS
+                   || mainWindow.RANDSETTING_MISC_WALLTEXT
                    || mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION
             ;
         }

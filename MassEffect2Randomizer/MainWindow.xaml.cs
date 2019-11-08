@@ -71,7 +71,7 @@ namespace MassEffectRandomizer
             try
             {
                 var hl = (Hyperlink)sender;
-               // System.Diagnostics.Process.Start(sen);
+                // System.Diagnostics.Process.Start(sen);
             }
             catch (Exception)
             {
@@ -111,11 +111,12 @@ namespace MassEffectRandomizer
 
                 RANDSETTING_GALAXYMAP = true;
 
-               // RANDSETTING_MISC_HAZARDS = true;
+                // RANDSETTING_MISC_HAZARDS = true;
 
                 RANDSETTING_MISC_GAMEOVERTEXT = true;
                 RANDSETTING_MISC_HEIGHTFOG = true;
                 RANDSETTING_MISC_STARCOLORS = true;
+                RANDSETTING_MISC_WALLTEXT = true;
                 //RANDSETTING_MISC_ENDINGART = true;
                 //RANDSETTING_MISC_SPLASH = true;
                 RANDSETTING_SHUFFLE_CUTSCENE_ACTORS = true;
@@ -226,7 +227,8 @@ namespace MassEffectRandomizer
         public double RANDSETTING_CHARACTER_ICONICFACE_AMOUNT { get; set; }
 
         //MOVEMENT
-        public bool RANDSETTING_MOVEMENT_CREATURESPEED { get; set; }
+        public bool RANDSETTING_MOVEMENT_SPEED { get; set; }
+        public bool UseMERFS { get; set; } = true;
 
         public bool RANDSETTING_MOVEMENT_HAMMERHEAD { get; set; }
         public bool RANDSETTING_MOVEMENT_MAKO_WHEELS { get; set; }
@@ -244,6 +246,7 @@ namespace MassEffectRandomizer
         public bool DiagnosticsFlyoutOpen { get; set; }
         public bool RANDSETTING_MISC_GAMEOVERTEXT { get; set; }
         public bool RANDSETTING_PAWN_MATERIALCOLORS { get; set; }
+        public bool RANDSETTING_MISC_WALLTEXT { get; set; }
 
         //Wackadoodle
         public bool RANDSETTING_MISC_MAPPAWNSIZES { get; set; }
@@ -252,6 +255,7 @@ namespace MassEffectRandomizer
         public bool RANDSETTING_PAWN_FACEFX { get; set; }
         public bool RANDSETTING_WACK_SCOTTISH { get; set; }
         public bool RANDSETTING_PAWN_BIOLOOKATDEFINITION { get; set; }
+        public bool RANDSETTING_PAWN_ANIMSEQUENCE { get; set; }
 
 
         //MAKO 
@@ -412,7 +416,7 @@ namespace MassEffectRandomizer
                 ProgressPanelVisible = Visibility.Visible;
                 randomizer = new Randomizer(this);
                 AllowOptionsChanging = false;
-                randomizer.Randomize(true); //change later
+                randomizer.Randomize(UseMERFS); //change later
             }
             else
             {

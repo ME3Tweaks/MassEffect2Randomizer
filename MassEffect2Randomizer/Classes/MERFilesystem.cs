@@ -27,7 +27,7 @@ namespace MassEffectRandomizer.Classes
             }
         }
 
-        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "IpDrv.pcc", "WwiseAudio.pcc","SFXOnlineFoundation.pcc","GFxUI.pcc" };
+        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
 
         public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc" };
 
@@ -46,7 +46,8 @@ namespace MassEffectRandomizer.Classes
             bool packageFile = subpath.RepresentsPackageFilePath();
             if (packageFile && UsingDLCModFS)
             {
-                var dlcModVersion = Path.Combine(dlcModCookedPath, subpath);
+                var packageName = Path.GetFileName(subpath);
+                var dlcModVersion = Path.Combine(dlcModCookedPath, packageName);
                 if (File.Exists(dlcModVersion))
                 {
                     return dlcModVersion;
@@ -58,10 +59,10 @@ namespace MassEffectRandomizer.Classes
 
         public void SavePackage(IMEPackage package)
         {
-            if (UsingDLCModFS && !alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase)) 
+            if (UsingDLCModFS && !alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
             {
                 var fname = Path.GetFileName(package.FilePath);
-                var packageNewPath = Path.Combine(dlcModPath, "CookedPC", fname);
+                var packageNewPath = Path.Combine(dlcModCookedPath, fname);
                 package.save(packageNewPath);
             }
             else
