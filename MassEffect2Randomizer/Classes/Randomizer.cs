@@ -187,6 +187,8 @@ namespace MassEffectRandomizer.Classes
                 foreach (TalkFile tlk in Tlks)
                 {
                     var replaced = tlk.replaceString(157152, gameOverText); //Todo: Update game over text ID
+                    //tlk.
+                    //    var hc = new HuffmanCompression();
                 }
             }
 
@@ -295,6 +297,25 @@ namespace MassEffectRandomizer.Classes
             //    RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\GameObjects\Characters\Faces\BIOG_Hench_FAC.upk"), random); //Henchmen
             //    RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\BIOG_MORPH_FACE.upk"), random); //Iconic and player (Not sure if this does anything...
             //}
+
+#if DEBUG
+            //Restore ini files first
+            var backupPath = Utilities.GetGameBackupPath();
+            var buDlcDir = Path.Combine(backupPath, "BioGame", "DLC");
+            var relativeInis = Directory.EnumerateFiles(buDlcDir, "*.ini", SearchOption.AllDirectories).Select(x => x.Substring(buDlcDir.Length + 1)).ToList();
+            var gamepath = Path.Combine(Utilities.GetGamePath(), "BioGame", "DLC");
+            foreach (var rel in relativeInis)
+            {
+                var bu = Path.Combine(buDlcDir, rel);
+                var ig = Path.Combine(gamepath, rel);
+                File.Copy(bu, ig, true);
+            }
+
+            var basegameCoal = Path.Combine(Path.Combine(Utilities.GetGamePath(), @"BIOGame\Config\PC\Cooked\Coalesced.ini"));
+            var buCoal = Path.Combine(backupPath, @"BIOGame\Config\PC\Cooked\Coalesced.ini");
+            File.Copy(buCoal, basegameCoal, true);
+#endif
+
             string cookedPC = Path.Combine(Utilities.GetGamePath(), "BioGame");
             ME2Coalesced me2basegamecoalesced = new ME2Coalesced(MERFS.GetGameFile(@"BIOGame\Config\PC\Cooked\Coalesced.ini"));
 
@@ -310,7 +331,7 @@ namespace MassEffectRandomizer.Classes
             if (mainWindow.RANDSETTING_WEAPONS)
             {
                 Log.Information("Randomizing basegame weapon ini");
-                var bioweapon = me2basegamecoalesced.Inis.FirstOrDefault(x => Path.GetFileName(x.Key) == "BIOGame.ini").Value;
+                var bioweapon = me2basegamecoalesced.Inis.FirstOrDefault(x => Path.GetFileName(x.Key) == "BIOWeapon.ini").Value;
                 RandomizeWeaponIni(bioweapon, random);
                 var weaponInis = Directory.GetFiles(Path.Combine(cookedPC, "DLC"), "BIOWeapon.ini", SearchOption.AllDirectories).ToList();
                 foreach (var wi in weaponInis)
@@ -318,7 +339,7 @@ namespace MassEffectRandomizer.Classes
                     //Log.Information("Randomizing weapons in ini: " + wi);
                     var dlcWeapIni = DuplicatingIni.LoadIni(wi);
                     RandomizeWeaponIni(dlcWeapIni, random);
-                    dlcWeapIni.SaveToDisk();
+                    File.WriteAllText(wi, dlcWeapIni.ToString());
                 }
             }
 
@@ -941,6 +962,8 @@ namespace MassEffectRandomizer.Classes
                     if (objectname.StartsWith("SFXWeapon") || objectname.StartsWith("SFXHeavyWeapon"))
                     {
                         //We can randomize this section of the ini.
+                        Debug.WriteLine($"Randomizing weapon {objectname}");
+
                         foreach (var entry in section.Entries)
                         {
                             if (entry.HasValue)
@@ -952,30 +975,103 @@ namespace MassEffectRandomizer.Classes
                                     var p = StringStructParser.GetCommaSplitValues(value);
                                     if (p.Count == 2)
                                     {
-                                        float x = float.Parse(p["X"].TrimEnd('f'));
-                                        float y = float.Parse(p["Y"].TrimEnd('f'));
-                                        if (x < 0 || y < 0)
+                                        try
                                         {
-                                            Debug.WriteLine(" BELOW ZERO: " + entry.Key);
+                                            bool isInt = false;
+                                            float x = 0;
+                                            float y = 0;
+                                            bool isZeroed = false;
+                                            if (int.TryParse(p["X"].TrimEnd('f'), out var intX) && int.TryParse(p["Y"].TrimEnd('f'), out var intY))
+                                            {
+                                                //integers
+                                                if (intX < 0 && intY < 0)
+                                                {
+                                                    Debug.WriteLine($" BELOW ZERO INT: {entry.Key} for {objectname}: {entry.RawText}");
+                                                }
+
+                                                bool validValue = false;
+                                                for (int i = 0; i < 10; i++)
+                                                {
+
+                                                    bool isMaxMin = intX > intY;
+                                                    bool isMinMax = intY < intX;
+                                                    isZeroed = intX == 0 && intY == 0;
+                                                    if (isZeroed)
+                                                    {
+                                                        validValue = true;
+                                                        break;
+                                                    }; //skip
+
+                                                    int Max = isMaxMin ? intX : intY;
+                                                    int Min = isMaxMin ? intY : intX;
+
+                                                    int range = Max - Min;
+                                                    if (range == 0) range = Max;
+                                                    if (range == 0)
+                                                        Debug.WriteLine("Range still 0");
+                                                    int rangeExtension = range * 2; //50%
+
+                                                    int newMin = Math.Max(0, random.Next(Min - rangeExtension, Min + rangeExtension));
+                                                    int newMax = random.Next(Max - rangeExtension, Max + rangeExtension);
+                                                    intX = isMaxMin ? newMax : newMin;
+                                                    intY = isMaxMin ? newMin : newMax; //might need to check zeros
+                                                    if (intX != 0 || intY != 0)
+                                                    {
+                                                        x = intX;
+                                                        y = intY;
+                                                        validValue = true;
+                                                        break; //break loop
+                                                    }
+                                                }
+
+                                                if (!validValue)
+                                                {
+                                                    Debug.WriteLine($"Failed rerolls: {entry.Key} for {objectname}: {entry.RawText}");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                //floats
+                                                float floatx = float.Parse(p["X"].TrimEnd('f'));
+                                                float floaty = float.Parse(p["Y"].TrimEnd('f'));
+                                                if (floatx < 0 || floaty < 0)
+                                                {
+                                                    Debug.WriteLine($" BELOW ZERO FLOAT: {entry.Key} for {objectname}: {entry.RawText}");
+                                                }
+
+                                                bool isMaxMin = floatx > floaty;
+                                                bool isMinMax = floaty < floatx;
+                                                isZeroed = floatx == 0 && floaty == 0;
+                                                if (isZeroed)
+                                                {
+                                                    continue;
+                                                }; //skip
+
+                                                float Max = isMaxMin ? floatx : floaty;
+                                                float Min = isMaxMin ? floaty : floatx;
+
+                                                float range = Max - Min;
+                                                if (range == 0) range = 0.1f * Max;
+                                                float rangeExtension = range * 15f; //50%
+
+                                                float newMin = Math.Max(0, random.NextFloat(Min - rangeExtension, Min + rangeExtension));
+                                                float newMax = random.NextFloat(Max - rangeExtension, Max + rangeExtension);
+                                                floatx = isMaxMin ? newMax : newMin;
+                                                floaty = isMaxMin ? newMin : newMax; //might need to check zeros
+                                                x = floatx;
+                                                y = floaty;
+                                            }
+
+                                            if (isZeroed)
+                                            {
+                                                continue; //skip
+                                            }
+                                            entry.Value = $"(X={x},Y={y})";
                                         }
-                                        bool isMaxMin = x > y;
-                                        bool isMinMax = y < x;
-                                        bool isZeroed = x == 0 && y == 0;
-                                        if (isZeroed) continue; //skip
-
-                                        float Max = isMaxMin ? x : y;
-                                        float Min = isMaxMin ? y : x;
-
-                                        float range = Max - Min;
-                                        if (range == 0) range = 0.1f * Max;
-                                        float rangeExtension = range * 15f; //50%
-
-                                        float newMin = Math.Max(0, random.NextFloat(Min - rangeExtension, Min + rangeExtension));
-                                        float newMax = random.NextFloat(Max - rangeExtension, Max + rangeExtension);
-                                        x = isMaxMin ? newMax : newMin;
-                                        y = isMaxMin ? newMin : newMax; //might need to check zeros
-                                        entry.Value = $"(X={x},Y={y})";
-                                        Debug.WriteLine($"{entry.Key}={entry.Value}");
+                                        catch (Exception e)
+                                        {
+                                            Log.Error($"Cannot randomize weapon stat {objectname} {entry.Key}: {e.Message}");
+                                        }
                                     }
                                 }
                             }

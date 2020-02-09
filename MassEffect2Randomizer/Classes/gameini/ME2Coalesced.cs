@@ -1,11 +1,13 @@
-﻿using MassEffectRandomizer.Classes;
-using ME3Explorer;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
+using MassEffectRandomizer.Classes;
+using ME3Explorer;
 
 namespace MassEffectModManagerCore.modmanager.gameini
 {
+    [Localizable(false)]
     public class ME2Coalesced
     {
         public SortedDictionary<string, DuplicatingIni> Inis = new SortedDictionary<string, DuplicatingIni>();
@@ -17,8 +19,7 @@ namespace MassEffectModManagerCore.modmanager.gameini
             int unknownInt = fs.ReadInt32();
             if (unknownInt != 0x1E)
             {
-                Console.WriteLine();
-                throw new Exception("First 4 bytes were not 0x1E.This does not appear to be a Coalesced file.");
+                throw new Exception("First 4 bytes were not 0x1E (was " + unknownInt.ToString("X8") + ").This does not appear to be a Coalesced file.");
             }
 
             while (fs.Position < fs.Length)
@@ -26,10 +27,30 @@ namespace MassEffectModManagerCore.modmanager.gameini
                 long pos = fs.Position;
                 string filename = fs.ReadUnrealString();
                 string contents = fs.ReadUnrealString();
-                Inis[filename] =  DuplicatingIni.ParseIni(contents);
+                Inis[filename] = DuplicatingIni.ParseIni(contents);
             }
         }
 
+        //public static ME2Coalesced OpenFromTarget(GameTarget target)
+        //{
+        //    var coalPath = Path.Combine(target.TargetPath, @"BioGame", @"Config", @"PC", @"Cooked", @"Coalesced.ini");
+        //    if (!File.Exists(coalPath)) return null;
+        //    try
+        //    {
+        //        return new ME2Coalesced(coalPath);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Log.Error("Cannot open ME2Coalesced file from target: " + e.Message);
+        //        return null;
+        //    }
+        //}
+
+        /// <summary>
+        /// Serializes this coalesced file to disk.
+        /// </summary>
+        /// <param name="outputfile">File to write to. If this is null the input filepath is used instead.</param>
+        /// <returns>True if serialization succeeded (always).</returns>
         public bool Serialize(string outputfile = null)
         {
             string outfile = outputfile ?? Inputfile;

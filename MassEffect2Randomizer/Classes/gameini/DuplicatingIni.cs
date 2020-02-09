@@ -1,24 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Input;
 
 namespace MassEffectModManagerCore.modmanager.gameini
 {
+    [Localizable(false)]
     public class DuplicatingIni
     {
-        public string FilePath;
         public List<Section> Sections = new List<Section>();
+
+        public IniEntry GetValue(string sectionname, string key)
+        {
+            var section = GetSection(sectionname);
+            return section?.GetValue(key);
+        }
+
+        public Section GetSection(string sectionname)
+        {
+            return Sections.FirstOrDefault(x => x.Header.Equals(sectionname, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public Section GetSection(Section section)
+        {
+            return Sections.FirstOrDefault(x => x.Header.Equals(section.Header, StringComparison.InvariantCultureIgnoreCase));
+        }
+
         public static DuplicatingIni LoadIni(string iniFile)
         {
             return ParseIni(File.ReadAllText(iniFile));
         }
 
-        public static DuplicatingIni ParseIni(string iniText, string filePath = null)
+        public static DuplicatingIni ParseIni(string iniText)
         {
             DuplicatingIni di = new DuplicatingIni();
-            di.FilePath = filePath;
             var splits = iniText.Split('\n');
             Section currentSection = null;
             foreach (var line in splits)
@@ -46,11 +65,11 @@ namespace MassEffectModManagerCore.modmanager.gameini
             return di;
         }
 
-        public void SaveToDisk()
-        {
-            if (FilePath == null) return; //can't save.
-            File.WriteAllText(FilePath, ToString(), new UTF8Encoding(false));
-        }
+
+        /// <summary>
+        /// Converts this DuplicatingIni object into an ini file as a string.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
@@ -85,12 +104,19 @@ namespace MassEffectModManagerCore.modmanager.gameini
             return sb.ToString();
         }
 
-
+        [DebuggerDisplay("Ini Section [{Header}] with {Entries.Count} entries")]
         public class Section
         {
             public string Header;
             public List<IniEntry> Entries = new List<IniEntry>();
+
+            public IniEntry GetValue(string key)
+            {
+                return Entries.FirstOrDefault(x => x.Key.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+            }
         }
+
+        [DebuggerDisplay("IniEntry {Key} = {Value}")]
 
         public class IniEntry
         {

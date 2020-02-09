@@ -171,6 +171,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Row="0" Grid.Column="0">
                                     <StackPanel>
@@ -330,15 +331,7 @@
                                             <CheckBox Content="Randomize wall text" ToolTip="Randomizes text" Margin="3" IsChecked="{Binding RANDSETTING_MISC_WALLTEXT}" />
                                         </StackPanel>
                                     </StackPanel>
-                                    <StackPanel>
-                                        <fonts:OutlinedTextBlock Text="Wackadoodle" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
-                                        <StackPanel Margin="10,0,0,0">
-                                            <CheckBox Content="Randomly randomize pawn sizes in maps" Foreground="Red" ToolTip="Warning: This breaks many cutscenes, ragdoll physics, and may make enemies immune to gun damage (but not melee)&#xA;Slightly changes the X,Y,Z scalars for pawn sizes.&#xA;This setting will not apply to all pawns, it will be randomly applied" Margin="3" IsChecked="{Binding RANDSETTING_MISC_MAPPAWNSIZES}" />
-                                            <CheckBox Content="Randomly randomize movement interpolations" Foreground="Red" ToolTip="Warning: This breaks a lot of camera pans, possibly other things&#xA;Slightly changes the movement and rotations of interpolations of everything&#xA;This setting will not apply to all interpolations, it will be randomly applied" Margin="3" IsChecked="{Binding RANDSETTING_MISC_INTERPS}" />
-                                            <CheckBox Content="Randomize vowels" Foreground="Red"  ToolTip="Translates game to some weird dialect of Scottish-Like English.&#10;If you are a streamer this could be fun if you like to read text out loud to your audience" Margin="3" IsChecked="{Binding RANDSETTING_WACK_SCOTTISH}" />
-                                            <CheckBox Content="Randomize NPC Head Colors" ToolTip="Randomizes the colors used for NPC heads" Margin="3" IsChecked="{Binding RANDSETTING_PAWN_MATERIALCOLORS}" />
-                                        </StackPanel>
-                                    </StackPanel>
+                                    
                                 </StackPanel>
                                 <StackPanel Grid.Row="0" Grid.Column="1">
 
@@ -373,6 +366,17 @@
                                             <CheckBox Content="Randomize pawns in cutscenes" ToolTip="Randomize who appears in what position in a cutscene. May create ridiculous things" Margin="3" IsChecked="{Binding RANDSETTING_SHUFFLE_CUTSCENE_ACTORS}" />
                                         </StackPanel>
                                     </StackPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="2">
+                                    <StackPanel>
+                                    <fonts:OutlinedTextBlock Text="Wackadoodle" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
+                                    <StackPanel Margin="10,0,0,0">
+                                        <CheckBox Content="Randomly randomize pawn sizes in maps" Foreground="Red" ToolTip="Warning: This breaks many cutscenes, ragdoll physics, and may make enemies immune to gun damage (but not melee)&#xA;Slightly changes the X,Y,Z scalars for pawn sizes.&#xA;This setting will not apply to all pawns, it will be randomly applied" Margin="3" IsChecked="{Binding RANDSETTING_MISC_MAPPAWNSIZES}" />
+                                        <CheckBox Content="Randomly randomize movement interpolations" Foreground="Red" ToolTip="Warning: This breaks a lot of camera pans, possibly other things&#xA;Slightly changes the movement and rotations of interpolations of everything&#xA;This setting will not apply to all interpolations, it will be randomly applied" Margin="3" IsChecked="{Binding RANDSETTING_MISC_INTERPS}" />
+                                        <CheckBox Content="Randomize vowels" Foreground="Red"  ToolTip="Translates game to some weird dialect of Scottish-Like English.&#10;If you are a streamer this could be fun if you like to read text out loud to your audience" Margin="3" IsChecked="{Binding RANDSETTING_WACK_SCOTTISH}" />
+                                        <CheckBox Content="Randomize NPC Head Colors" ToolTip="Randomizes the colors used for NPC heads" Margin="3" IsChecked="{Binding RANDSETTING_PAWN_MATERIALCOLORS}" />
+                                    </StackPanel>
+                                </StackPanel>
                                 </StackPanel>
 
                             </Grid>
