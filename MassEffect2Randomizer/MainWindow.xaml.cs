@@ -420,7 +420,7 @@ namespace MassEffectRandomizer
             }
             else
             {
-                await this.ShowMessageAsync("Mass Effect is running", "Cannot randomize the game while Mass Effect is running. Please close the game and try again.");
+                await this.ShowMessageAsync("Mass Effect 2 is running", "Cannot randomize the game while Mass Effect 2 is running. Please close the game and try again.");
             }
         }
 

@@ -12,8 +12,8 @@ namespace MassEffectRandomizer.Classes
     public class MERFileSystem
     {
         private string gameroot;
-        private string dlcModPath;
-        private string dlcModCookedPath;
+        public string dlcModPath { get; }
+        public string dlcModCookedPath { get; }
         private bool UsingDLCModFS;
 
         public MERFileSystem(string gameroot, bool usingDlcModFs)
@@ -73,7 +73,7 @@ namespace MassEffectRandomizer.Classes
 
         public string CreateRandomizerDLCMod()
         {
-            var dlcpath = Path.Combine(gameroot, "CookedPC", "DLC", "DLC_MOD_ME2Randomizer");
+            var dlcpath = Path.Combine(gameroot, "BioGame", "DLC", "DLC_MOD_ME2Randomizer");
             if (Directory.Exists(dlcpath)) Utilities.DeleteFilesAndFoldersRecursively(dlcpath);
             Directory.CreateDirectory(dlcpath);
 

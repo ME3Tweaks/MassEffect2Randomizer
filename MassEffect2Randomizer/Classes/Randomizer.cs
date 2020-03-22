@@ -330,16 +330,34 @@ namespace MassEffectRandomizer.Classes
 
             if (mainWindow.RANDSETTING_WEAPONS)
             {
+                DuplicatingIni dlcModIni = new DuplicatingIni();
                 Log.Information("Randomizing basegame weapon ini");
                 var bioweapon = me2basegamecoalesced.Inis.FirstOrDefault(x => Path.GetFileName(x.Key) == "BIOWeapon.ini").Value;
-                RandomizeWeaponIni(bioweapon, random);
+                var bioweaponUnmodified = bioweapon.ToString();
+                RandomizeWeaponIni(bioweapon, random, dlcModIni);
+                if (mainWindow.UseMERFS)
+                {
+                    bioweapon = DuplicatingIni.ParseIni(bioweaponUnmodified); //reset the coalesced file to vanilla as it'll be stored in DLC instead
+                }
                 var weaponInis = Directory.GetFiles(Path.Combine(cookedPC, "DLC"), "BIOWeapon.ini", SearchOption.AllDirectories).ToList();
                 foreach (var wi in weaponInis)
                 {
                     //Log.Information("Randomizing weapons in ini: " + wi);
                     var dlcWeapIni = DuplicatingIni.LoadIni(wi);
-                    RandomizeWeaponIni(dlcWeapIni, random);
-                    File.WriteAllText(wi, dlcWeapIni.ToString());
+                    RandomizeWeaponIni(dlcWeapIni, random, dlcModIni);
+                    if (!mainWindow.UseMERFS)
+                    {
+                        Log.Information("Writing DLC BioWeapon: " + wi);
+                        File.WriteAllText(wi, dlcWeapIni.ToString());
+                    }
+                }
+
+                if (mainWindow.UseMERFS)
+                {
+                    //Write out BioWeapon.ini file
+                    var bioweaponPath = Path.Combine(MERFS.dlcModCookedPath, "BioWeapon.ini");
+                    Log.Information("Writing MERFS DLC BioWeapon: " + bioweaponPath);
+                    File.WriteAllText(bioweaponPath, dlcModIni.ToString());
                 }
             }
 
@@ -951,7 +969,7 @@ namespace MassEffectRandomizer.Classes
 
         }
 
-        private void RandomizeWeaponIni(DuplicatingIni bioweapon, Random random)
+        private void RandomizeWeaponIni(DuplicatingIni bioweapon, Random random, DuplicatingIni merfsOut)
         {
             foreach (var section in bioweapon.Sections)
             {
@@ -968,7 +986,10 @@ namespace MassEffectRandomizer.Classes
                         {
                             if (entry.HasValue)
                             {
+                                // if (entry.Key == "Damage") Debugger.Break();
                                 string value = entry.Value;
+
+                                //range check
                                 if (value.StartsWith("("))
                                 {
                                     value = value.Substring(0, value.IndexOf(')') + 1); //trim off trash on end (like ; comment )
@@ -994,13 +1015,16 @@ namespace MassEffectRandomizer.Classes
                                                 {
 
                                                     bool isMaxMin = intX > intY;
-                                                    bool isMinMax = intY < intX;
+                                                    //bool isMinMax = intY < intX;
                                                     isZeroed = intX == 0 && intY == 0;
                                                     if (isZeroed)
                                                     {
                                                         validValue = true;
                                                         break;
                                                     }; //skip
+                                                    bool isSame = intX == intY;
+                                                    bool belowzeroInt = intX < 0 || intY < 0;
+                                                    bool abovezeroInt = intX > 0 || intY > 0;
 
                                                     int Max = isMaxMin ? intX : intY;
                                                     int Min = isMaxMin ? intY : intX;
@@ -1009,16 +1033,28 @@ namespace MassEffectRandomizer.Classes
                                                     if (range == 0) range = Max;
                                                     if (range == 0)
                                                         Debug.WriteLine("Range still 0");
-                                                    int rangeExtension = range * 2; //50%
+                                                    int rangeExtension = range / 2; //50%
 
                                                     int newMin = Math.Max(0, random.Next(Min - rangeExtension, Min + rangeExtension));
                                                     int newMax = random.Next(Max - rangeExtension, Max + rangeExtension);
                                                     intX = isMaxMin ? newMax : newMin;
                                                     intY = isMaxMin ? newMin : newMax; //might need to check zeros
+                                                    //if (entry.Key.Contains("MagSize")) Debugger.Break();
+
                                                     if (intX != 0 || intY != 0)
                                                     {
                                                         x = intX;
                                                         y = intY;
+                                                        if (isSame) x = intY;
+                                                        if (!belowzeroInt && (x <= 0 || y <= 0))
+                                                        {
+                                                            continue; //not valid. Redo this loop
+                                                        }
+                                                        if (abovezeroInt && (x <= 0 || y <= 0))
+                                                        {
+                                                            continue; //not valid. Redo this loop
+                                                        }
+
                                                         validValue = true;
                                                         break; //break loop
                                                     }
@@ -1031,16 +1067,23 @@ namespace MassEffectRandomizer.Classes
                                             }
                                             else
                                             {
+                                                //if (section.Header.Contains("SFXWeapon_GethShotgun")) Debugger.Break();
+
                                                 //floats
+                                                //Fix error in bioware's coalesced file
+                                                if (p["X"] == "0.65.0f") p["X"] = "0.65f";
                                                 float floatx = float.Parse(p["X"].TrimEnd('f'));
                                                 float floaty = float.Parse(p["Y"].TrimEnd('f'));
+                                                bool belowzeroFloat = false;
                                                 if (floatx < 0 || floaty < 0)
                                                 {
                                                     Debug.WriteLine($" BELOW ZERO FLOAT: {entry.Key} for {objectname}: {entry.RawText}");
+                                                    belowzeroFloat = true;
                                                 }
 
                                                 bool isMaxMin = floatx > floaty;
-                                                bool isMinMax = floaty < floatx;
+                                                bool isMinMax = floatx < floaty;
+                                                bool isSame = floatx == floaty;
                                                 isZeroed = floatx == 0 && floaty == 0;
                                                 if (isZeroed)
                                                 {
@@ -1056,10 +1099,22 @@ namespace MassEffectRandomizer.Classes
 
                                                 float newMin = Math.Max(0, random.NextFloat(Min - rangeExtension, Min + rangeExtension));
                                                 float newMax = random.NextFloat(Max - rangeExtension, Max + rangeExtension);
+                                                if (!belowzeroFloat)
+                                                {
+                                                    //ensure they don't fall below 0
+                                                    if (newMin < 0)
+                                                        newMin = Math.Max(newMin, Min / 2);
+
+                                                    if (newMax < 0)
+                                                        newMax = Math.Max(newMax, Max / 2);
+
+                                                    //i have no idea what i'm doing
+                                                }
                                                 floatx = isMaxMin ? newMax : newMin;
                                                 floaty = isMaxMin ? newMin : newMax; //might need to check zeros
                                                 x = floatx;
                                                 y = floaty;
+                                                if (isSame) x = y;
                                             }
 
                                             if (isZeroed)
@@ -1074,8 +1129,38 @@ namespace MassEffectRandomizer.Classes
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    //Debug.WriteLine(entry.Key);
+                                    var isInt = int.TryParse(entry.Value, out var burstVal);
+                                    var isFloat = float.TryParse(entry.Value, out var floatVal);
+                                    switch (entry.Key)
+                                    {
+                                        case "BurstRounds":
+                                            {
+                                                var burstMax = burstVal * 2;
+                                                entry.Value = (random.Next(burstMax) + 1).ToString();
+                                            }
+                                            break;
+                                        case "RateOfFireAI":
+                                        case "DamageAI":
+                                            {
+                                                entry.Value = random.NextFloat(.1, 2).ToString();
+                                            }
+                                            break;
+                                            //case 
+                                    }
+                                }
                             }
                         }
+
+                        if (section.Entries.All(x => x.Key != "Damage"))
+                        {
+                            float X = random.NextFloat(2, 7);
+                            float Y = random.NextFloat(2, 7);
+                            section.Entries.Add(new DuplicatingIni.IniEntry($"Damage=(X={X},Y={Y})"));
+                        }
+                        merfsOut.Sections.Add(section); //add this section for out-writing
                     }
                 }
             }
