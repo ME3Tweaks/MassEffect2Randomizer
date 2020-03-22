@@ -172,6 +172,19 @@ namespace MassEffectRandomizer.Classes
             stream.Write(BitConverter.GetBytes(data), 0, sizeof(int));
         }
 
+        public static float ReadFloat(this Stream stream)
+        {
+            var buffer = new byte[sizeof(float)];
+            if (stream.Read(buffer, 0, sizeof(float)) != sizeof(float))
+                throw new Exception();
+            return BitConverter.ToSingle(buffer, 0);
+        }
+
+        public static void WriteFloat(this Stream stream, float data)
+        {
+            stream.Write(BitConverter.GetBytes(data), 0, sizeof(float));
+        }
+
         public static ushort ReadUInt16(this Stream stream)
         {
             byte[] buffer = new byte[sizeof(ushort)];

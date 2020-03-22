@@ -197,10 +197,24 @@ namespace MassEffectRandomizer.Classes
 
             if (mainWindow.RANDSETTING_CHARACTER_CHARCREATOR)
             {
-                RandomizeCharacterCreator(random, Tlks);
+                mainWindow.CurrentOperationText = "Randomizing character creator";
+
+                //basegame
+                //For ME3 - it has two biop_char files.
+                // var dhme1path = MERFS.GetGameFile(@"DLC\DLC_DHME1\CookedPC\BioP_Char.pcc");
+                // var biop_char = MEPackageHandler.OpenMEPackage(File.Exists(dhme1path) ? dhme1path : MERFS.GetBasegameFile("BioP_Char.pcc"));
+                var biop_char = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile("BioP_Char.pcc"));
+                RandomizeCharacterCreator(random, Tlks, biop_char);
+                if (mainWindow.UseMERFS)
+                {
+                    biop_char.save(Path.Combine(MERFS.dlcModCookedPath, "BioP_Char.pcc"));
+                    ModifiedFiles[biop_char.FilePath] = biop_char.FilePath;
+                }
+                else
+                {
+                    biop_char.save();
+                }
             }
-
-
 
 
             //RANDOMIZE ENTRYMENU
@@ -1166,41 +1180,185 @@ namespace MassEffectRandomizer.Classes
             }
         }
 
-        private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks)
+        private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks, IMEPackage biop_char)
         {
-            var biop_char = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile("BioP_Char.pcc"));
+            var maleFrontEndData = biop_char.getUExport(18753);
+            randomizeFrontEnd(random, maleFrontEndData);
+            //var femaleFrontEndData = biop_char.getUExport(18754);
+
+            //RandomizeSFXFrontEnd(maleFrontEndData);
+
+            //Copy the final skeleton from female into male.
+            var femBase = biop_char.getUExport(3480);
+            var maleBase = biop_char.getUExport(3481);
+            maleBase.WriteProperty(femBase.GetProperty<ArrayProperty<StructProperty>>("m_aFinalSkeleton"));
+
             foreach (var export in biop_char.Exports)
             {
                 if (export.ClassName == "BioMorphFace")
                 {
-                    RandomizeBioMorphFace(export, random); //.3 default
-                    continue;
+                    RandomizeBioMorphFace(export, random, 10); //.3 default
                 }
-
-                if (export.ClassName == "BioMorphFaceFESliderColour")
+                else if (export.ClassName == "MorphTarget")
                 {
-
+                    if (export.ObjectName.StartsWith("jaw")
+                        || export.ObjectName.StartsWith("mouth")
+                        || export.ObjectName.StartsWith("eye")
+                        || export.ObjectName.StartsWith("cheek")
+                        || export.ObjectName.StartsWith("nose")
+                        || export.ObjectName.StartsWith("teeth"))
+                    {
+                        //randomizeMorphTarget(random, export);
+                    }
+                }
+                else if (export.ClassName == "BioMorphFaceFESliderColour")
+                {
+                    var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
+                    foreach (var color in colors)
+                    {
+                        RandomizeColor(random, color, true);
+                    }
+                    export.WriteProperty(colors);
                 }
                 else if (export.ClassName == "BioMorphFaceFESliderMorph")
                 {
-
+                    //not sure if this one actually works due to how face morphs are limited
                 }
-                else if (export.ClassName == "BioMorphFaceFESliderScalar")
+                else if (export.ClassName == "BioMorphFaceFESliderScalar" || export.ClassName == "BioMorphFaceFESliderSetMorph")
                 {
+                    //no idea how to randomize this lol
+                    var floats = export.GetProperty<ArrayProperty<FloatProperty>>("m_afValues");
+                    var minfloat = floats.Min();
+                    var maxfloat = floats.Max();
+                    if (minfloat == maxfloat)
+                    {
+                        if (minfloat == 0)
+                        {
+                            maxfloat = 1;
+                        }
+                        else
+                        {
+                            var vari = minfloat / 2;
+                            maxfloat = random.NextFloat(-vari, vari) + minfloat; //+/- 50%
+                        }
 
-                }
-                else if (export.ClassName == "BioMorphFaceFESliderSetMorph")
-                {
-
+                    }
+                    foreach (var floatval in floats)
+                    {
+                        floatval.Value = random.NextFloat(minfloat, maxfloat);
+                    }
+                    export.WriteProperty(floats);
                 }
                 else if (export.ClassName == "BioMorphFaceFESliderTexture")
                 {
 
                 }
             }
+        }
 
-            biop_char.save();
-            ModifiedFiles[biop_char.FilePath] = biop_char.FilePath;
+        private void randomizeFrontEnd(Random random, ExportEntry frontEnd)
+        {
+            var props = frontEnd.GetProperties();
+
+            //read categories
+            var morphCategories = props.GetProp<ArrayProperty<StructProperty>>("MorphCategories");
+            var sliders = new Dictionary<string, StructProperty>();
+            foreach (var cat in morphCategories)
+            {
+                var catSliders = cat.GetProp<ArrayProperty<StructProperty>>("m_aoSliders");
+                foreach (var cSlider in catSliders)
+                {
+                    var name = cSlider.GetProp<StrProperty>("m_sName");
+                    sliders[name.Value] = cSlider;
+                }
+            }
+
+            //Default Settings
+            var defaultSettings = props.GetProp<ArrayProperty<StructProperty>>("m_aDefaultSettings");
+            foreach (var basehead in defaultSettings)
+            {
+                randomizeBaseHead(random, basehead, frontEnd, sliders);
+            }
+
+            //randomize base heads ?
+            var baseHeads = props.GetProp<ArrayProperty<StructProperty>>("m_aBaseHeads");
+            foreach (var basehead in baseHeads)
+            {
+                randomizeBaseHead(random, basehead, frontEnd, sliders);
+            }
+
+
+            frontEnd.WriteProperties(props);
+        }
+
+        private void randomizeMorphTarget(Random random, ExportEntry morphTarget)
+        {
+            MemoryStream ms = new MemoryStream(morphTarget.Data);
+            ms.Position = morphTarget.propsEnd();
+            var numLods = ms.ReadInt32();
+
+            for (int i = 0; i < numLods; i++)
+            {
+                var numVertices = ms.ReadInt32();
+                var diff = random.NextFloat(-0.2, 0.2);
+                for (int k = 0; k < numVertices; k++)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        var fVal = ms.ReadFloat();
+                        ms.Position -= 4;
+                        ms.WriteFloat(fVal + diff);
+                    }
+                    ms.WriteByte((byte)random.Next(256));
+                    ms.ReadByte();
+                    ms.ReadByte();
+                    ms.ReadByte();
+                    ms.SkipInt16(); //idx
+                }
+                ms.SkipInt32(); //Vertices?/s
+            }
+
+            morphTarget.Data = ms.ToArray();
+        }
+
+        private void randomizeBaseHead(Random random, StructProperty basehead, ExportEntry frontEnd, Dictionary<string, StructProperty> sliders)
+        {
+            var bhSettings = basehead.GetProp<ArrayProperty<StructProperty>>("m_fBaseHeadSettings");
+            foreach (var baseSlider in bhSettings)
+            {
+                var sliderName = baseSlider.GetProp<StrProperty>("m_sSliderName");
+                //is slider stepped?
+                if (sliderName.Value == "Scar")
+                {
+                    baseSlider.GetProp<FloatProperty>("m_fValue").Value = 1;
+                    continue;
+                }
+                var slider = sliders[sliderName.Value];
+                var notched = slider.GetProp<BoolProperty>("m_bNotched");
+                var val = baseSlider.GetProp<FloatProperty>("m_fValue");
+
+                if (notched)
+                {
+                    //it's indexed
+                    var maxIndex = slider.GetProp<IntProperty>("m_iSteps");
+                    val.Value = random.Next(maxIndex); //will have to see if isteps is inclusive or not.
+                }
+                else
+                {
+                    //it's variable, we have to look up the m_fRange in the SliderMorph.
+                    var sliderDatas = slider.GetProp<ArrayProperty<ObjectProperty>>("m_aoSliderData");
+                    if (sliderDatas.Count == 1)
+                    {
+                        var slDataExport = frontEnd.FileRef.getUExport(sliderDatas[0].Value);
+                        var range = slDataExport.GetProperty<FloatProperty>("m_fRange");
+                        val.Value = random.NextFloat(0, range * 100);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("wrong count of slider datas!");
+                    }
+                }
+            }
         }
 
         private void RandomizeBioLookAtDefinition(ExportEntry export, Random random)
@@ -2561,6 +2719,36 @@ namespace MassEffectRandomizer.Classes
                 Debug.WriteLine("Writing Character_Character to export");
                 character2da.Write2DAToExport();
             }*/
+        }
+
+        private void RandomizeColor(Random random, StructProperty color, bool randomizeAlpha)
+        {
+            var a = color.GetProp<ByteProperty>("A");
+            var r = color.GetProp<ByteProperty>("R");
+            var g = color.GetProp<ByteProperty>("G");
+            var b = color.GetProp<ByteProperty>("B");
+
+            int totalcolorValue = r.Value + g.Value + b.Value;
+
+            //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
+            //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
+            var randomOrderChooser = new List<ByteProperty>();
+            randomOrderChooser.Add(r);
+            randomOrderChooser.Add(g);
+            randomOrderChooser.Add(b);
+            randomOrderChooser.Shuffle(random);
+
+            randomOrderChooser[0].Value = (byte)random.Next(0, Math.Min(totalcolorValue, 256));
+            totalcolorValue -= randomOrderChooser[0].Value;
+
+            randomOrderChooser[1].Value = (byte)random.Next(0, Math.Min(totalcolorValue, 256));
+            totalcolorValue -= randomOrderChooser[1].Value;
+
+            randomOrderChooser[2].Value = (byte)totalcolorValue;
+            if (randomizeAlpha)
+            {
+                a.Value = (byte)random.Next(0, 256);
+            }
         }
 
         private void RandomizeTint(Random random, StructProperty tint, bool randomizeAlpha)
