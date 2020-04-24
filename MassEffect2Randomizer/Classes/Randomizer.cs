@@ -205,15 +205,7 @@ namespace MassEffectRandomizer.Classes
                 // var biop_char = MEPackageHandler.OpenMEPackage(File.Exists(dhme1path) ? dhme1path : MERFS.GetBasegameFile("BioP_Char.pcc"));
                 var biop_char = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile("BioP_Char.pcc"));
                 RandomizeCharacterCreator(random, Tlks, biop_char);
-                if (mainWindow.UseMERFS)
-                {
-                    biop_char.save(Path.Combine(MERFS.dlcModCookedPath, "BioP_Char.pcc"));
-                    ModifiedFiles[biop_char.FilePath] = biop_char.FilePath;
-                }
-                else
-                {
-                    biop_char.save();
-                }
+                SavePackage(biop_char);
             }
 
 
@@ -333,15 +325,6 @@ namespace MassEffectRandomizer.Classes
             string cookedPC = Path.Combine(Utilities.GetGamePath(), "BioGame");
             ME2Coalesced me2basegamecoalesced = new ME2Coalesced(MERFS.GetGameFile(@"BIOGame\Config\PC\Cooked\Coalesced.ini"));
 
-            if (mainWindow.RANDSETTING_ILLUSIVEEYES)
-            {
-                //var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
-                var headmorphpro = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile("BioD_ProCer_350BriefRoom.pcc"));
-                var eyes = headmorphpro.getUExport(2234); //Illusive man eyes
-                RandomizeMaterialInstance(eyes, random);
-                ModifiedFiles[headmorphpro.FilePath] = headmorphpro.FilePath;
-            }
-
             if (mainWindow.RANDSETTING_WEAPONS)
             {
                 DuplicatingIni dlcModIni = new DuplicatingIni();
@@ -377,7 +360,12 @@ namespace MassEffectRandomizer.Classes
 
             if (mainWindow.RANDSETTING_MOVEMENT_SPEED)
             {
-                RandomizeMovementSpeed(random);
+                RandomizePlayerMovementSpeed(random);
+            }
+
+            if (true)
+            {
+                RandomizeTheLongWalk(random);
             }
 
             Log.Information("Saving Coalesced.ini file");
@@ -389,7 +377,8 @@ namespace MassEffectRandomizer.Classes
 
                 mainWindow.ProgressBarIndeterminate = true;
 
-                var files = Directory.GetFiles(cookedPC, "*.pcc", SearchOption.AllDirectories).ToList();
+                var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.ToList();
+                //var files = Directory.GetFiles(cookedPC, "*.pcc", SearchOption.AllDirectories).ToList();
 
                 mainWindow.ProgressBarIndeterminate = false;
                 mainWindow.ProgressBar_Bottom_Max = files.Count();
@@ -415,8 +404,9 @@ namespace MassEffectRandomizer.Classes
                             RandomizeGalaxyMap(package, random);
                         }
                     }
-                    else
+                    else if (/*file.Contains("_Pro") || */file.Contains("EndGm2") /*|| file.Contains("EntryMenu")*/)
                     {
+                        Debug.WriteLine(file);
                         //if (!mapBaseName.StartsWith("bioa_sta")) continue;
                         bool hasLogged = false;
                         if (RunAllFilesRandomizerPass)
@@ -463,6 +453,10 @@ namespace MassEffectRandomizer.Classes
                                         }
                                     }
                                 }
+                                else if (exp.ClassName == "BioAnimSetData" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS) //UPDATE THIS TO DO BIOANIMDATA!!
+                                {
+                                    RandomizeBioAnimSetData(exp, random);
+                                }
                                 else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
                                 {
                                     if (!loggedFilePath)
@@ -472,6 +466,21 @@ namespace MassEffectRandomizer.Classes
                                     }
 
                                     ShuffleCutscenePawns(exp, random);
+                                }
+                                else if (mainWindow.RANDSETTING_ILLUSIVEEYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName == "HMM_HED_EYEillusiveman_MAT_1a")
+                                {
+                                    Log.Information("Randomizing illusive eye color");
+                                    //var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
+                                    var props = exp.GetProperties();
+
+                                    //eye color
+                                    var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
+                                    //tint is float based
+                                    RandomizeTint(random, emisVector, false);
+
+                                    var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
+                                    emisScalar.Value = 3; //very vibrant
+                                    exp.WriteProperties(props);
                                 }
                                 else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
                                 {
@@ -550,6 +559,14 @@ namespace MassEffectRandomizer.Classes
                                     //Method contains SHouldSave in it (due to try catch).
                                     RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
                                 }
+                                else if (mainWindow.RANDSETTING_MOVEMENT_SPEED && exp.ClassName == "SFXMovementData" && !exp.FileRef.FilePath.EndsWith("_Player_C.pcc"))
+                                {
+                                    RandomizeMovementSpeed2DA(exp, random);
+                                }
+                                else if ( /*mainWindow.RANDSETTING_HOLOGRAM_COLORS && */exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName.StartsWith("Holo"))
+                                {
+                                    RandomizeMaterialInstance(exp, random);
+                                }
                             }
                         }
                     }
@@ -585,12 +602,7 @@ namespace MassEffectRandomizer.Classes
                     //    talkFile.saveToExport();
                     //}
 
-                    if (package.IsModified)
-                    {
-                        Debug.WriteLine("Saving package: " + package.FilePath);
-                        ModifiedFiles[package.FilePath] = package.FilePath;
-                        package.save();
-                    }
+                    SavePackage(package);
                 });
             }
 
@@ -607,6 +619,7 @@ namespace MassEffectRandomizer.Classes
             {
                 MakeTextPossiblyScottish(Tlks, random, true);
             }
+
 
 
             mainWindow.ProgressBarIndeterminate = true;
@@ -630,19 +643,85 @@ namespace MassEffectRandomizer.Classes
             //AddMERSplash(random);
         }
 
-        private void RandomizeMovementSpeed(Random random)
+        /// <summary>
+        /// Saves a package, with support for the MERFS option.
+        /// </summary>
+        /// <param name="package"></param>
+        private void SavePackage(IMEPackage package)
+        {
+            if (package.IsModified)
+            {
+                if (mainWindow.UseMERFS && fileWorksInMERFS(package.FilePath))
+                {
+                    var path = Path.Combine(MERFS.dlcModCookedPath, Path.GetFileName(package.FilePath));
+                    Debug.WriteLine("Saving package (MERFS): " + path);
+                    package.save(path);
+                }
+                else
+                {
+                    Debug.WriteLine("Saving package (basegame): " + package.FilePath);
+                    ModifiedFiles[package.FilePath] = package.FilePath;
+                    package.save();
+                }
+            }
+        }
+
+        private void RandomizeTheLongWalk(Random random)
+        {
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.Where(x => Path.GetFileNameWithoutExtension(x).StartsWith("BioD_EndGm2_300Walk")).ToList();
+            foreach (var f in files)
+            {
+                var package = MEPackageHandler.OpenMEPackage(f);
+                var animExports = package.Exports.Where(x => x.ClassName == "InterpTrackAnimControl");
+                foreach (var anim in animExports)
+                {
+                    var animseqs = anim.GetProperty<ArrayProperty<StructProperty>>("AnimSeqs");
+                    if (animseqs != null)
+                    {
+                        foreach (var animseq in animseqs)
+                        {
+                            var seqname = animseq.GetProp<NameProperty>("AnimSeqName").Value.Name;
+                            if (seqname.StartsWith("Walk_"))
+                            {
+                                var playrate = animseq.GetProp<FloatProperty>("AnimPlayRate");
+                                var oldrate = playrate.Value;
+                                if (oldrate != 1) Debugger.Break();
+                                playrate.Value = random.NextFloat(.2, 6);
+                                var data = anim.Parent.Parent as ExportEntry;
+                                var len = data.GetProperty<FloatProperty>("InterpLength");
+                                len.Value = len.Value * playrate; //this might need to be changed if its not 1
+                                data.WriteProperty(len);
+                            }
+                        }
+                    }
+                    anim.WriteProperty(animseqs);
+                }
+                SavePackage(package);
+            }
+        }
+
+        private string[] filesThatCantBeInDLC =
+        {
+            "SFXGame",
+            "EntryMenu",
+            "Startup_INT",
+            "BIOG_Male_Player_C" //loads in entrymenu
+        };
+        private bool fileWorksInMERFS(string packageFilePath) => !filesThatCantBeInDLC.Contains(Path.GetFileNameWithoutExtension(packageFilePath), StringComparer.InvariantCultureIgnoreCase);
+
+        private void RandomizePlayerMovementSpeed(Random random)
         {
             var femaleFile = MERFS.GetBasegameFile("BIOG_Female_Player_C.pcc");
             var maleFile = MERFS.GetBasegameFile("BIOG_Male_Player_C.pcc");
             var femalepackage = MEPackageHandler.OpenMEPackage(femaleFile);
             var malepackage = MEPackageHandler.OpenMEPackage(femaleFile);
-            RandomizeMovementData(femalepackage.getUExport(2917), random);
-            RandomizeMovementData(malepackage.getUExport(2672), random);
-            femalepackage.save();
-            malepackage.save();
+            SlightlyRandomizeMovementData(femalepackage.getUExport(2917), random);
+            SlightlyRandomizeMovementData(malepackage.getUExport(2672), random);
+            SavePackage(femalepackage);
+            SavePackage(malepackage);
         }
 
-        private void RandomizeMovementData(ExportEntry export, Random random)
+        private void SlightlyRandomizeMovementData(ExportEntry export, Random random)
         {
             var props = export.GetProperties();
             foreach (var prop in props)
@@ -672,22 +751,50 @@ namespace MassEffectRandomizer.Classes
             ACF_BioFixed48,
         }
 
-        private static string[] bonesToNotRandomize = { "root", "God" };
+        private static string[] boneGroupNamesToRandomize = new[]
+        {
+            "ankle",
+            "wrist",
+            "finger",
+            "elbow",
+            "toe"
+        };
         public void RandomizeBioAnimSetData(ExportEntry export, Random random)
         {
-            var trackbonenames = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames").Select(x => x.Value.Name).ToList(); //Make new list object.
 
-            trackbonenames.RemoveAll(x => bonesToNotRandomize.Contains(x));
+            //build groups
+            var actualList = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
 
-            trackbonenames.Shuffle(random);
-            var bones = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
-            foreach (var bonename in bones)
+            Dictionary<string, List<string>> randomizationGroups = new Dictionary<string, List<string>>();
+            foreach (var key in boneGroupNamesToRandomize)
             {
-                if (bonesToNotRandomize.Contains(bonename.Value.Name)) continue; //skip
-                bonename.Value = trackbonenames[0];
-                trackbonenames.RemoveAt(0);
+                randomizationGroups[key] = actualList.Where(x => x.Value.Name.Contains(key, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Value.Name).ToList();
+                randomizationGroups[key].Shuffle(random);
             }
-            export.WriteProperty(bones);
+
+            foreach (var prop in actualList)
+            {
+                var propname = prop.Value.Name;
+                var randoKey = randomizationGroups.Keys.FirstOrDefault(x => propname.Contains(x, StringComparison.InvariantCultureIgnoreCase));
+                //Debug.WriteLine(propname);
+                if (randoKey != null)
+                {
+                    var randoKeyList = randomizationGroups[randoKey];
+                    prop.Value = randoKeyList[0];
+                    randoKeyList.RemoveAt(0);
+                }
+            }
+
+            //var trackbonenames = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames").Select(x => x.Value.Name).ToList(); //Make new list object.
+
+            //var bones = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
+            //foreach (var bonename in bones)
+            //{
+            //    if (bonesToNotRandomize.Contains(bonename.Value.Name)) continue; //skip
+            //    bonename.Value = trackbonenames[0];
+            //    trackbonenames.RemoveAt(0);
+            //}
+            export.WriteProperty(actualList);
         }
 
         private bool shouldRandomizeBone(string boneName)
@@ -718,7 +825,8 @@ namespace MassEffectRandomizer.Classes
                 var boneList = export.FileRef.getUExport(animsetData.Value).GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
                 Enum.TryParse(export.GetProperty<EnumProperty>("RotationCompressionFormat").Value.Name, out AnimationCompressionFormat rotCompression);
                 int offset = export.propsEnd();
-
+                //ME2 SPECIFIC
+                offset += 16; //3 0's, 1 offset of data point
                 int binLength = BitConverter.ToInt32(data, offset);
                 //var LengthNode = new BinInterpNode
                 //{
@@ -1053,7 +1161,7 @@ namespace MassEffectRandomizer.Classes
                                                     int newMax = random.Next(Max - rangeExtension, Max + rangeExtension);
                                                     intX = isMaxMin ? newMax : newMin;
                                                     intY = isMaxMin ? newMin : newMax; //might need to check zeros
-                                                    //if (entry.Key.Contains("MagSize")) Debugger.Break();
+                                                                                       //if (entry.Key.Contains("MagSize")) Debugger.Break();
 
                                                     if (intX != 0 || intY != 0)
                                                     {
@@ -1799,8 +1907,21 @@ namespace MassEffectRandomizer.Classes
             planetMaterial.WriteProperties(props);
         }
 
+        private void RandomizeMovementSpeed2DA(ExportEntry exp, Random random)
+        {
+            var props = exp.GetProperties();
+            foreach (var prop in props)
+            {
+                if (prop is FloatProperty fp)
+                {
+                    var min = fp.Value / 3;
+                    var max = fp.Value * 3;
 
-
+                    fp.Value = random.NextFloat(min, max);
+                }
+            }
+            exp.WriteProperties(props);
+        }
 
         private void RandomizeFaceFX(ExportEntry exp, Random random, int amount)
         {
@@ -1933,6 +2054,10 @@ namespace MassEffectRandomizer.Classes
             }
         }
 
+        /// <summary>
+        /// I don't think this is workable in ME2. Since it calls these videos natively. Would have to be done in entrymenu i guess
+        /// </summary>
+        /// <param name="random"></param>
         public void AddMERSplash(Random random)
         {
             IMEPackage entrymenu = MEPackageHandler.OpenMEPackage(Utilities.GetEntryMenuFile());
@@ -2060,7 +2185,7 @@ namespace MassEffectRandomizer.Classes
                 var merIntros = Directory.GetFiles(merIntroDir, "*.bik").ToList();
                 string merToExtract = merIntros[random.Next(merIntros.Count)];
                 File.Copy(merToExtract, MERFS.GetGameFile(@"BioGame\CookedPC\Movies\merintro.bik"), true);
-                entrymenu.save();
+                SavePackage(entrymenu);
                 //Add to fileindex
                 var fileIndex = MERFS.GetGameFile(@"BioGame\CookedPC\FileIndex.txt");
                 var filesInIndex = File.ReadAllLines(fileIndex).ToList();
@@ -2520,8 +2645,7 @@ namespace MassEffectRandomizer.Classes
                         }
                     }
                 }
-                ModifiedFiles[package.FilePath] = package.FilePath;
-                package.save();
+                SavePackage(package);
             }
         }
 
@@ -2643,11 +2767,7 @@ namespace MassEffectRandomizer.Classes
                         break;
                 }
             }
-
-            if (package.IsModified)
-            {
-                package.save();
-            }
+            SavePackage(package);
         }
 
 
@@ -2794,6 +2914,8 @@ namespace MassEffectRandomizer.Classes
                    || mainWindow.RANDSETTING_PAWN_MATERIALCOLORS
                    || mainWindow.RANDSETTING_MISC_WALLTEXT
                    || mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION
+                   || mainWindow.RANDSETTING_ILLUSIVEEYES
+                   || mainWindow.RANDSETTING_MOVEMENT_SPEED
             ;
         }
 

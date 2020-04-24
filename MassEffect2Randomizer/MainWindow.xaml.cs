@@ -22,6 +22,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace MassEffectRandomizer
@@ -344,6 +345,36 @@ namespace MassEffectRandomizer
 
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            //var files = File.ReadAllLines(@"C:\users\mgame\desktop\fileslist.txt");
+            //var dest = @"E:\Documents\BioWare\Mass Effect 2\BIOGame\Movies";
+            //var src = @"E:\Documents\BioWare\Mass Effect 2\BIOGame\Movies\load_f01.bik";
+            //foreach (var file in files)
+            //{
+            //    var rdest = Path.Combine(dest, file);
+            //    if (File.Exists(rdest)) continue;
+            //    File.Copy(src, rdest);
+            //}
+
+            List<(string, string)> strs = new List<(string, string)>();
+            var fils = Directory.GetFiles(@"D:\Origin Games\Mass Effect 2\BioGame\CookedPC\BIOGame_INT");
+            foreach (var fil in fils)
+            {
+                var x = XDocument.Load(fil);
+                foreach (var str in x.Descendants("String"))
+                {
+                    if (str.Value.Contains("plague", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        strs.Add((str.Attribute("id").ToString(), str.Value));
+                    }
+                }
+            }
+
+            foreach (var str in strs)
+            {
+                Debug.WriteLine($"<String id=\"{str.Item1}\">{str.Item2}</String>");
+            }
+
+
             string me2Path = Utilities.GetGamePath(allowMissing: true);
 
             //int installedGames = 5;
@@ -394,7 +425,6 @@ namespace MassEffectRandomizer
                         Environment.Exit(1);
                     }
                 }
-
             }
             else
             {
