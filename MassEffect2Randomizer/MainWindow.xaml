@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<Controls:MetroWindow xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro" 
+﻿<Controls:MetroWindow xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro" 
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
                       xmlns:converters="clr-namespace:MassEffectRandomizer.Classes.Converters" 
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
@@ -235,7 +234,9 @@
                                             <CheckBox Content="Randomize squadmate faces" ToolTip="Randomize the face morphs used by squadmates that support face morphs&#10;Due to how Unreal Engine 3 handles loading, their face may change over time if their face is embedded in a level, for a cutscene for example.&#10;This typically only occurs during early game" Margin="3" IsChecked="{Binding RANDSETTING_CHARACTER_HENCHFACE}" />
                                             <!--<CheckBox Content="Randomize LookAt limits" ToolTip="Randomizes the values the game uses when making a character turn to face a certain point" Margin="3" IsChecked="{Binding RANDSETTING_PAWN_BIOLOOKATDEFINITION}" />-->
 
+                                            <CheckBox Content="Randomize eyes (excluding TIM)" ToolTip="Randomize color of eyes, excluding illusive man" Margin="3" IsChecked="{Binding RANDSETTING_PAWN_EYES}" />
                                             <CheckBox Content="Randomize Illusive Man eyes" ToolTip="Randomize color of Illusive Man eyes" Margin="3" IsChecked="{Binding RANDSETTING_ILLUSIVEEYES}" />
+                                            <CheckBox Content="Randomize Hologram Colors" ToolTip="Randomize color of holograms (where possible)" Margin="3" IsChecked="{Binding RANDSETTING_HOLOGRAM_COLORS}" />
 
                                             <CheckBox Content="Randomize Animation data" ToolTip="Ruin anything you liked about ME2 cutscenes." Margin="3" IsChecked="{Binding RANDSETTING_PAWN_ANIMSEQUENCE}" />
                                             <CheckBox Name="Checkbox_RandomizeBioMorphFaceMaps" Content="Randomize NPC faces" ToolTip="Randomize humanoid faces through the headmorph&#10;Many faces of plot-heavy characters are mesh based in ME2 and can't be randomized." Margin="3" IsChecked="{Binding RANDSETTING_BIOMORPHFACES}" />

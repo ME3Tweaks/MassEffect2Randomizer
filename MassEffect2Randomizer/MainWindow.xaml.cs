@@ -219,6 +219,7 @@ namespace MassEffectRandomizer
 
 
         public bool RANDSETTING_PAWN_EYES { get; set; }
+        public bool RANDSETTING_HOLOGRAM_COLORS { get; set; }
         public bool RANDSETTING_CHARACTER_INVENTORY { get; set; }
         public bool RANDSETTING_CHARACTER_CHARCREATOR { get; set; }
         public bool RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE { get; set; }

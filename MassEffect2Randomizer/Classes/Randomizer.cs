@@ -404,7 +404,7 @@ namespace MassEffectRandomizer.Classes
                             RandomizeGalaxyMap(package, random);
                         }
                     }
-                    else if (/*file.Contains("_Pro") || */file.Contains("EndGm2") /*|| file.Contains("EntryMenu")*/)
+                    else if (file.Contains("_Pro") || file.Contains("EndGm2") /*|| file.Contains("EntryMenu")*/)
                     {
                         Debug.WriteLine(file);
                         //if (!mapBaseName.StartsWith("bioa_sta")) continue;
@@ -481,6 +481,22 @@ namespace MassEffectRandomizer.Classes
                                     var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
                                     emisScalar.Value = 3; //very vibrant
                                     exp.WriteProperties(props);
+                                }
+                                else if (mainWindow.RANDSETTING_PAWN_EYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName != "HMM_HED_EYEillusiveman_MAT_1a" && exp.ObjectName.Contains("_EYE"))
+                                {
+                                    Log.Information("Randomizing eye color");
+                                    RandomizeMaterialInstance(exp, random);
+                                    ////var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
+                                    //var props = exp.GetProperties();
+
+                                    ////eye color
+                                    //var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
+                                    ////tint is float based
+                                    //RandomizeTint(random, emisVector, false);
+
+                                    //var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
+                                    //emisScalar.Value = 3; //very vibrant
+                                    //exp.WriteProperties(props);
                                 }
                                 else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
                                 {
@@ -563,8 +579,9 @@ namespace MassEffectRandomizer.Classes
                                 {
                                     RandomizeMovementSpeed2DA(exp, random);
                                 }
-                                else if ( /*mainWindow.RANDSETTING_HOLOGRAM_COLORS && */exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName.StartsWith("Holo"))
+                                else if (mainWindow.RANDSETTING_HOLOGRAM_COLORS && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName.StartsWith("Holo"))
                                 {
+                                    Debug.WriteLine("RAndomizing hologram colors");
                                     RandomizeMaterialInstance(exp, random);
                                 }
                             }
@@ -2915,6 +2932,8 @@ namespace MassEffectRandomizer.Classes
                    || mainWindow.RANDSETTING_MISC_WALLTEXT
                    || mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION
                    || mainWindow.RANDSETTING_ILLUSIVEEYES
+                   || mainWindow.RANDSETTING_PAWN_EYES
+                   || mainWindow.RANDSETTING_HOLOGRAM_COLORS
                    || mainWindow.RANDSETTING_MOVEMENT_SPEED
             ;
         }
