@@ -128,6 +128,9 @@
                         <Button DockPanel.Dock="Right" Click="RandomizeButton_Click" Padding="20,0,20,0">
                             <fonts:OutlinedTextBlock Text="Randomize" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
+                        <Button DockPanel.Dock="Right" Click="DataFinder_Click" Padding="20,0,20,0" Visibility="Visible">
+                            <fonts:OutlinedTextBlock Text="Run Data Finder" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
+                        </Button>
                         <CheckBox DockPanel.Dock="Right" Content="Use DLC mod for easy re-randomization" IsChecked="{Binding UseMERFS}" HorizontalAlignment="Right" Margin="0,0,10,0" ToolTip="Using a DLC mod will allow you to remove or re-randomize game without having to restore the entire game.&#10;This option can use significant disk space."/>
                     </DockPanel>
                 </StackPanel>
@@ -365,11 +368,18 @@
                                             <!--<CheckBox Content="Randomize game ending screen" ToolTip="Changes the art shown at the very end of the game" Margin="3" IsChecked="{Binding RANDSETTING_MISC_ENDINGART}" />-->
                                             <CheckBox Content="Randomize splash screen" Margin="3" IsChecked="{Binding RANDSETTING_MISC_SPLASH}" ToolTip="Randomizes what the splash planet looks like and some other stuff on the splash"/>
                                             <CheckBox Content="Randomize pawns in cutscenes" ToolTip="Randomize who appears in what position in a cutscene. May create ridiculous things" Margin="3" IsChecked="{Binding RANDSETTING_SHUFFLE_CUTSCENE_ACTORS}" />
+                                            <!--<CheckBox Content="Hard mode" ToolTip="Makes several changes to the game that will make it significantly more difficult and punishing" Margin="3" IsChecked="{Binding RANDSETTING_HARD_MODE}" />-->
+                                            <CheckBox Content="Randomize drone colors" ToolTip="Randomizes combat drone colors" Margin="3" IsChecked="{Binding RANDSETTING_DRONE_COLORS}" />
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
                                 <StackPanel Grid.Row="0" Grid.Column="2">
                                     <StackPanel>
+                                        <fonts:OutlinedTextBlock Text="Levels" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
+                                        <StackPanel Margin="10,0,0,0">
+                                            <CheckBox Content="Randomize The Long Walk" Margin="3" IsChecked="{Binding RANDSETTING_LEVEL_LONGWALK}" />
+                                            </StackPanel>
+                                    </StackPanel>
                                     <fonts:OutlinedTextBlock Text="Wackadoodle" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                     <StackPanel Margin="10,0,0,0">
                                         <CheckBox Content="Randomly randomize pawn sizes in maps" Foreground="Red" ToolTip="Warning: This breaks many cutscenes, ragdoll physics, and may make enemies immune to gun damage (but not melee)&#xA;Slightly changes the X,Y,Z scalars for pawn sizes.&#xA;This setting will not apply to all pawns, it will be randomly applied" Margin="3" IsChecked="{Binding RANDSETTING_MISC_MAPPAWNSIZES}" />
@@ -378,8 +388,6 @@
                                         <CheckBox Content="Randomize NPC Head Colors" ToolTip="Randomizes the colors used for NPC heads" Margin="3" IsChecked="{Binding RANDSETTING_PAWN_MATERIALCOLORS}" />
                                     </StackPanel>
                                 </StackPanel>
-                                </StackPanel>
-
                             </Grid>
                         </ScrollViewer>
                     </DockPanel>

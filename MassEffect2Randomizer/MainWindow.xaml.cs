@@ -24,6 +24,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Xml;
 using System.Xml.Linq;
+using ME3Explorer.Packages;
 
 namespace MassEffectRandomizer
 {
@@ -234,6 +235,7 @@ namespace MassEffectRandomizer
 
         public bool RANDSETTING_MOVEMENT_HAMMERHEAD { get; set; }
         public bool RANDSETTING_MOVEMENT_MAKO_WHEELS { get; set; }
+        public bool RANDSETTING_LEVEL_LONGWALK { get; set; }
 
         //Misc
         public bool RANDSETTING_BIOMORPHFACES { get; set; }
@@ -242,6 +244,7 @@ namespace MassEffectRandomizer
         public double RANDSETTING_MISC_MAPFACES_AMOUNT { get; set; }
         public bool RANDSETTING_MAP_CITADEL { get; set; }
         public bool RANDSETTING_MISC_HEIGHTFOG { get; set; }
+        public bool RANDSETTING_DRONE_COLORS { get; set; }
         public bool RANDSETTING_MISC_STARCOLORS { get; set; }
         public int RANDSETTING_WACK_FACEFX_AMOUNT { get; set; }
         public bool LogUploaderFlyoutOpen { get; set; }
@@ -258,7 +261,7 @@ namespace MassEffectRandomizer
         public bool RANDSETTING_WACK_SCOTTISH { get; set; }
         public bool RANDSETTING_PAWN_BIOLOOKATDEFINITION { get; set; }
         public bool RANDSETTING_PAWN_ANIMSEQUENCE { get; set; }
-
+        public bool RANDSETTING_HARD_MODE { get; set; }
 
         //MAKO 
         //        BIOC_Base.u -> 4940 Default__BioAttributesPawnVehicle m_initialThrusterAmountMax
@@ -356,24 +359,24 @@ namespace MassEffectRandomizer
             //    File.Copy(src, rdest);
             //}
 
-            List<(string, string)> strs = new List<(string, string)>();
-            var fils = Directory.GetFiles(@"D:\Origin Games\Mass Effect 2\BioGame\CookedPC\BIOGame_INT");
-            foreach (var fil in fils)
-            {
-                var x = XDocument.Load(fil);
-                foreach (var str in x.Descendants("String"))
-                {
-                    if (str.Value.Contains("plague", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        strs.Add((str.Attribute("id").ToString(), str.Value));
-                    }
-                }
-            }
+            //List<(string, string)> strs = new List<(string, string)>();
+            //var fils = Directory.GetFiles(@"D:\Origin Games\Mass Effect 2\BioGame\CookedPC\BIOGame_INT");
+            //foreach (var fil in fils)
+            //{
+            //    var x = XDocument.Load(fil);
+            //    foreach (var str in x.Descendants("String"))
+            //    {
+            //        if (str.Value.Contains("plague", StringComparison.InvariantCultureIgnoreCase))
+            //        {
+            //            strs.Add((str.Attribute("id").ToString(), str.Value));
+            //        }
+            //    }
+            //}
 
-            foreach (var str in strs)
-            {
-                Debug.WriteLine($"<String id=\"{str.Item1}\">{str.Item2}</String>");
-            }
+            //foreach (var str in strs)
+            //{
+            //    Debug.WriteLine($"<String id=\"{str.Item1}\">{str.Item2}</String>");
+            //}
 
 
             string me2Path = Utilities.GetGamePath(allowMissing: true);
@@ -446,6 +449,7 @@ namespace MassEffectRandomizer
                 ButtonPanelVisible = Visibility.Collapsed;
                 ProgressPanelVisible = Visibility.Visible;
                 randomizer = new Randomizer(this);
+
                 AllowOptionsChanging = false;
                 randomizer.Randomize(UseMERFS); //change later
             }
@@ -711,6 +715,11 @@ namespace MassEffectRandomizer
         {
             //ME3Tweaks Discord
             Utilities.OpenWebPage(App.DISCORD_INVITE_LINK);
+        }
+
+        private void DataFinder_Click(object sender, RoutedEventArgs e)
+        {
+            DataFinder df = new DataFinder(this);
         }
     }
 }

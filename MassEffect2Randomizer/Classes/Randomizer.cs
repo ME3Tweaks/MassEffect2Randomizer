@@ -129,6 +129,10 @@ namespace MassEffectRandomizer.Classes
                 ME3ExplorerMinified.DLL.Startup();
             }
 
+
+            //AddHostileSquadToPackage(MEPackageHandler.OpenMEPackage(@"D:\Origin Games\Mass Effect 2\BioGame\CookedPC\BioD_CitHub_100Dock.pcc"));
+            //Debugger.Break();
+
             //Load TLKs
             mainWindow.CurrentOperationText = "Loading TLKs";
             mainWindow.ProgressBarIndeterminate = true;
@@ -314,7 +318,10 @@ namespace MassEffectRandomizer.Classes
             {
                 var bu = Path.Combine(buDlcDir, rel);
                 var ig = Path.Combine(gamepath, rel);
-                File.Copy(bu, ig, true);
+                if (Directory.Exists(Path.GetDirectoryName(ig)))
+                {
+                    File.Copy(bu, ig, true);
+                }
             }
 
             var basegameCoal = Path.Combine(Path.Combine(Utilities.GetGamePath(), @"BIOGame\Config\PC\Cooked\Coalesced.ini"));
@@ -363,9 +370,14 @@ namespace MassEffectRandomizer.Classes
                 RandomizePlayerMovementSpeed(random);
             }
 
-            if (true)
+            if (mainWindow.RANDSETTING_LEVEL_LONGWALK)
             {
                 RandomizeTheLongWalk(random);
+            }
+
+            if (true)
+            {
+                RandomizeNormandyHolo(random);
             }
 
             Log.Information("Saving Coalesced.ini file");
@@ -377,8 +389,8 @@ namespace MassEffectRandomizer.Classes
 
                 mainWindow.ProgressBarIndeterminate = true;
 
-                var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.ToList();
-                //var files = Directory.GetFiles(cookedPC, "*.pcc", SearchOption.AllDirectories).ToList();
+                //var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.ToList();
+                var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.Where(x => x.Contains("Engineer")).ToList();
 
                 mainWindow.ProgressBarIndeterminate = false;
                 mainWindow.ProgressBar_Bottom_Max = files.Count();
@@ -404,7 +416,7 @@ namespace MassEffectRandomizer.Classes
                             RandomizeGalaxyMap(package, random);
                         }
                     }
-                    else if (file.Contains("_Pro") || file.Contains("EndGm2") /*|| file.Contains("EntryMenu")*/)
+                    else if (file.Contains("SFXC") /*|| file.Contains("EndGm2") /*|| file.Contains("EntryMenu")*/)
                     {
                         Debug.WriteLine(file);
                         //if (!mapBaseName.StartsWith("bioa_sta")) continue;
@@ -414,113 +426,150 @@ namespace MassEffectRandomizer.Classes
                             foreach (ExportEntry exp in package.Exports)
                             {
                                 if (exp.IsDefaultObject)
-                                    continue; //Do not randomize default objects
-                                //Randomize faces
-                                if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
                                 {
-                                    //Face randomizer
-                                    if (!loggedFilePath)
+                                    //DEFAULT OBJECTS GO HERE
+                                    if (mainWindow.RANDSETTING_DRONE_COLORS && (exp.ArchtypeName == "Default__SFXPawn_EngineerCombatDrone" || exp.ClassName == "SFXPawn_EngineerCombatDrone" ||
+                                         exp.ArchtypeName == "Default__SFXPower_CombatDrone"))
                                     {
-                                        Log.Information("Randomizing file: " + file);
-                                        loggedFilePath = true;
+                                        Debug.WriteLine("Randomize combat drone " + exp.GetInstancedFullPath);
+                                        AddRandomDroneColors(exp, random);
                                     }
 
-                                    RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
                                 }
-                                else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
+                                else
                                 {
-                                    if (!loggedFilePath)
+
+                                    // NO MORE DEFAULT OBJECTS AFTER THIS LINE
+                                    //Randomize faces
+                                    if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
                                     {
-                                        Log.Information("Randomizing map file: " + file);
-                                        loggedFilePath = true;
-                                    }
-                                    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
-                                    {
-                                        var tint = exp.GetProperty<StructProperty>("FlareTint");
-                                        if (tint != null)
+                                        //Face randomizer
+                                        if (!loggedFilePath)
                                         {
-                                            RandomizeTint(random, tint, false);
-                                            exp.WriteProperty(tint);
+                                            Log.Information("Randomizing file: " + file);
+                                            loggedFilePath = true;
+                                        }
+
+                                        RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
+                                    }
+                                    else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
+                                    {
+                                        if (!loggedFilePath)
+                                        {
+                                            Log.Information("Randomizing map file: " + file);
+                                            loggedFilePath = true;
+                                        }
+
+                                        if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
+                                        {
+                                            var tint = exp.GetProperty<StructProperty>("FlareTint");
+                                            if (tint != null)
+                                            {
+                                                RandomizeTint(random, tint, false);
+                                                exp.WriteProperty(tint);
+                                            }
+                                        }
+                                        else if (exp.ClassName == "BioSunActor")
+                                        {
+                                            var tint = exp.GetProperty<StructProperty>("SunTint");
+                                            if (tint != null)
+                                            {
+                                                RandomizeTint(random, tint, false);
+                                                exp.WriteProperty(tint);
+                                            }
                                         }
                                     }
-                                    else if (exp.ClassName == "BioSunActor")
+                                    else if (exp.ClassName == "BioAnimSetData" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS) //UPDATE THIS TO DO BIOANIMDATA!!
                                     {
-                                        var tint = exp.GetProperty<StructProperty>("SunTint");
-                                        if (tint != null)
+                                        RandomizeBioAnimSetData(exp, random);
+                                    }
+                                    else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
+                                    {
+                                        if (!loggedFilePath)
                                         {
-                                            RandomizeTint(random, tint, false);
-                                            exp.WriteProperty(tint);
+                                            //Log.Information("Randomizing map file: " + files[i]);
+                                            loggedFilePath = true;
+                                        }
+
+                                        ShuffleCutscenePawns(exp, random);
+                                    }
+                                    else if (mainWindow.RANDSETTING_ILLUSIVEEYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName == "HMM_HED_EYEillusiveman_MAT_1a")
+                                    {
+                                        Log.Information("Randomizing illusive eye color");
+                                        //var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
+                                        var props = exp.GetProperties();
+
+                                        //eye color
+                                        var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
+                                        //tint is float based
+                                        RandomizeTint(random, emisVector, false);
+
+                                        var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
+                                        emisScalar.Value = 3; //very vibrant
+                                        exp.WriteProperties(props);
+                                    }
+                                    else if (mainWindow.RANDSETTING_PAWN_EYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName != "HMM_HED_EYEillusiveman_MAT_1a" && exp.ObjectName.Contains("_EYE"))
+                                    {
+                                        Log.Information("Randomizing eye color");
+                                        RandomizeMaterialInstance(exp, random);
+                                        ////var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
+                                        //var props = exp.GetProperties();
+
+                                        ////eye color
+                                        //var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
+                                        ////tint is float based
+                                        //RandomizeTint(random, emisVector, false);
+
+                                        //var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
+                                        //emisScalar.Value = 3; //very vibrant
+                                        //exp.WriteProperties(props);
+                                    }
+                                    else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
+                                    {
+                                        if (!loggedFilePath)
+                                        {
+                                            //Log.Information("Randomizing map file: " + files[i]);
+                                            loggedFilePath = true;
+                                        }
+
+                                        RandomizeAnimSequence(exp, random);
+                                    }
+                                    else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
+                                    {
+                                        if (!loggedFilePath)
+                                        {
+                                            //Log.Information("Randomizing map file: " + files[i]);
+                                            loggedFilePath = true;
+                                        }
+
+                                        RandomizeBioLookAtDefinition(exp, random);
+                                    }
+                                    else if (exp.ClassName == "BioPawn")
+                                    {
+                                        if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && random.Next(4) == 0)
+                                        {
+                                            if (!loggedFilePath)
+                                            {
+                                                Log.Information("Randomizing file: " + file);
+                                                loggedFilePath = true;
+                                            }
+
+                                            //Pawn size randomizer
+                                            RandomizeBioPawnSize(exp, random, 0.4);
+                                        }
+
+                                        if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
+                                        {
+                                            if (!loggedFilePath)
+                                            {
+                                                Log.Information("Randomizing file: " + file);
+                                                loggedFilePath = true;
+                                            }
+
+                                            RandomizePawnMaterialInstances(exp, random);
                                         }
                                     }
-                                }
-                                else if (exp.ClassName == "BioAnimSetData" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS) //UPDATE THIS TO DO BIOANIMDATA!!
-                                {
-                                    RandomizeBioAnimSetData(exp, random);
-                                }
-                                else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
-                                {
-                                    if (!loggedFilePath)
-                                    {
-                                        //Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilePath = true;
-                                    }
-
-                                    ShuffleCutscenePawns(exp, random);
-                                }
-                                else if (mainWindow.RANDSETTING_ILLUSIVEEYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName == "HMM_HED_EYEillusiveman_MAT_1a")
-                                {
-                                    Log.Information("Randomizing illusive eye color");
-                                    //var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
-                                    var props = exp.GetProperties();
-
-                                    //eye color
-                                    var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
-                                    //tint is float based
-                                    RandomizeTint(random, emisVector, false);
-
-                                    var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
-                                    emisScalar.Value = 3; //very vibrant
-                                    exp.WriteProperties(props);
-                                }
-                                else if (mainWindow.RANDSETTING_PAWN_EYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName != "HMM_HED_EYEillusiveman_MAT_1a" && exp.ObjectName.Contains("_EYE"))
-                                {
-                                    Log.Information("Randomizing eye color");
-                                    RandomizeMaterialInstance(exp, random);
-                                    ////var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
-                                    //var props = exp.GetProperties();
-
-                                    ////eye color
-                                    //var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
-                                    ////tint is float based
-                                    //RandomizeTint(random, emisVector, false);
-
-                                    //var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
-                                    //emisScalar.Value = 3; //very vibrant
-                                    //exp.WriteProperties(props);
-                                }
-                                else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
-                                {
-                                    if (!loggedFilePath)
-                                    {
-                                        //Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilePath = true;
-                                    }
-
-                                    RandomizeAnimSequence(exp, random);
-                                }
-                                else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
-                                {
-                                    if (!loggedFilePath)
-                                    {
-                                        //Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilePath = true;
-                                    }
-
-                                    RandomizeBioLookAtDefinition(exp, random);
-                                }
-                                else if (exp.ClassName == "BioPawn")
-                                {
-                                    if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && random.Next(4) == 0)
+                                    else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
                                     {
                                         if (!loggedFilePath)
                                         {
@@ -528,11 +577,9 @@ namespace MassEffectRandomizer.Classes
                                             loggedFilePath = true;
                                         }
 
-                                        //Pawn size randomizer
-                                        RandomizeBioPawnSize(exp, random, 0.4);
+                                        RandomizeHeightFogComponent(exp, random);
                                     }
-
-                                    if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
+                                    else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
                                     {
                                         if (!loggedFilePath)
                                         {
@@ -540,49 +587,29 @@ namespace MassEffectRandomizer.Classes
                                             loggedFilePath = true;
                                         }
 
-                                        RandomizePawnMaterialInstances(exp, random);
+                                        //Interpolation randomizer
+                                        RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
                                     }
-                                }
-                                else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
-                                {
-                                    if (!loggedFilePath)
+                                    else if (mainWindow.RANDSETTING_PAWN_FACEFX && exp.ClassName == "FaceFXAnimSet")
                                     {
-                                        Log.Information("Randomizing file: " + file);
-                                        loggedFilePath = true;
-                                    }
+                                        if (!loggedFilePath)
+                                        {
+                                            Log.Information("Randomizing file: " + file);
+                                            loggedFilePath = true;
+                                        }
 
-                                    RandomizeHeightFogComponent(exp, random);
-                                }
-                                else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
-                                {
-                                    if (!loggedFilePath)
+                                        //Method contains SHouldSave in it (due to try catch).
+                                        RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
+                                    }
+                                    else if (mainWindow.RANDSETTING_MOVEMENT_SPEED && exp.ClassName == "SFXMovementData" && !exp.FileRef.FilePath.EndsWith("_Player_C.pcc"))
                                     {
-                                        Log.Information("Randomizing file: " + file);
-                                        loggedFilePath = true;
+                                        RandomizeMovementSpeed2DA(exp, random);
                                     }
-
-                                    //Interpolation randomizer
-                                    RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
-                                }
-                                else if (mainWindow.RANDSETTING_PAWN_FACEFX && exp.ClassName == "FaceFXAnimSet")
-                                {
-                                    if (!loggedFilePath)
+                                    else if (mainWindow.RANDSETTING_HOLOGRAM_COLORS && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName.StartsWith("Holo"))
                                     {
-                                        Log.Information("Randomizing file: " + file);
-                                        loggedFilePath = true;
+                                        Debug.WriteLine("RAndomizing hologram colors");
+                                        RandomizeMaterialInstance(exp, random);
                                     }
-
-                                    //Method contains SHouldSave in it (due to try catch).
-                                    RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
-                                }
-                                else if (mainWindow.RANDSETTING_MOVEMENT_SPEED && exp.ClassName == "SFXMovementData" && !exp.FileRef.FilePath.EndsWith("_Player_C.pcc"))
-                                {
-                                    RandomizeMovementSpeed2DA(exp, random);
-                                }
-                                else if (mainWindow.RANDSETTING_HOLOGRAM_COLORS && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName.StartsWith("Holo"))
-                                {
-                                    Debug.WriteLine("RAndomizing hologram colors");
-                                    RandomizeMaterialInstance(exp, random);
                                 }
                             }
                         }
@@ -660,6 +687,102 @@ namespace MassEffectRandomizer.Classes
             //AddMERSplash(random);
         }
 
+        private void AddRandomDroneColors(ExportEntry exp, Random random)
+        {
+            var props = exp.GetProperties();
+            if (exp.ObjectName.Contains("SFXPower"))
+            {
+
+                props.AddOrReplaceProp(new BoolProperty(true, "bCustomDroneColor"));
+                props.AddOrReplaceProp(new BoolProperty(true, "bCustomDroneColor2"));
+            }
+            else
+            {
+                //sfxpawn
+                props.AddOrReplaceProp(new BoolProperty(true, "bCustomColor"));
+                props.AddOrReplaceProp(new BoolProperty(true, "bCustomColor2"));
+            }
+
+            PropertyCollection randColors = new PropertyCollection();
+            randColors.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 60), "X"));
+            randColors.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 60), "Y"));
+            randColors.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 60), "Z"));
+
+            PropertyCollection randColors2 = new PropertyCollection();
+            randColors2.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 128), "X"));
+            randColors2.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 128), "Y"));
+            randColors2.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 128), "Z"));
+
+            if (exp.ObjectName.Contains("SFXPower"))
+            {
+                props.AddOrReplaceProp(new StructProperty("Vector", randColors, "CustomDroneColor", true));
+                props.AddOrReplaceProp(new StructProperty("Vector", randColors2, "CustomDroneColor2", true));
+            }
+            else
+            {
+                //sfxpawn
+                props.AddOrReplaceProp(new StructProperty("Vector", randColors, "DroneColor", true));
+                props.AddOrReplaceProp(new StructProperty("Vector", randColors2, "DroneColor2", true));
+            }
+
+            exp.WriteProperties(props);
+        }
+
+        private void RandomizeNormandyHolo(Random random)
+        {
+            string[] packages = { "BioD_Nor_104Comm.pcc", "BioA_Nor_110.pcc" };
+            foreach (var packagef in packages)
+            {
+                var package = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile(packagef));
+
+                //WIREFRAME COLOR
+                var wireframeMaterial = package.Exports.First(x => x.ObjectName == "Wireframe_mat_Master");
+                var data = wireframeMaterial.Data;
+
+                var wireColorR = random.NextFloat(0.01, 2);
+                var wireColorG = random.NextFloat(0.01, 2);
+                var wireColorB = random.NextFloat(0.01, 2);
+
+                List<float> allColors = new List<float>();
+                allColors.Add(wireColorR);
+                allColors.Add(wireColorG);
+                allColors.Add(wireColorB);
+
+                data.OverwriteRange(0x33C, BitConverter.GetBytes(wireColorR)); //R
+                data.OverwriteRange(0x340, BitConverter.GetBytes(wireColorG)); //G
+                data.OverwriteRange(0x344, BitConverter.GetBytes(wireColorB)); //B
+                wireframeMaterial.Data = data;
+
+                //INTERNAL HOLO
+                var norHoloLargeMat = package.Exports.First(x => x.ObjectName == "Nor_Hologram_Large");
+                data = norHoloLargeMat.Data;
+
+                float holoR = 0, holoG = 0, holoB = 0;
+                holoR = wireColorR * 5;
+                holoG = wireColorG * 5;
+                holoB = wireColorB * 5;
+
+                data.OverwriteRange(0x314, BitConverter.GetBytes(holoR)); //R
+                data.OverwriteRange(0x318, BitConverter.GetBytes(holoG)); //G
+                data.OverwriteRange(0x31C, BitConverter.GetBytes(holoB)); //B
+                norHoloLargeMat.Data = data;
+
+                if (packagef == "BioA_Nor_110.pcc")
+                {
+                    //need to also adjust the glow under the CIC. It's controlled by a interp apparently
+                    var lightColorInterp = package.getUExport(300);
+                    var vectorTrack = lightColorInterp.GetProperty<StructProperty>("VectorTrack");
+                    var blueToOrangePoints = vectorTrack.GetProp<ArrayProperty<StructProperty>>("Points");
+                    //var maxColor = allColors.Max();
+                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("X").Value = wireColorR;
+                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("Y").Value = wireColorG;
+                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("Z").Value = wireColorB;
+                    lightColorInterp.WriteProperty(vectorTrack);
+                }
+                SavePackage(package);
+            }
+        }
+
         /// <summary>
         /// Saves a package, with support for the MERFS option.
         /// </summary>
@@ -685,8 +808,31 @@ namespace MassEffectRandomizer.Classes
 
         private void RandomizeTheLongWalk(Random random)
         {
+            //Todo switch to MERFS
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.Where(x => Path.GetFileNameWithoutExtension(x).StartsWith("BioD_EndGm2_300Walk")).ToList();
-            foreach (var f in files)
+            //randomize long walk lengths.
+            var endwalkexportmap = new Dictionary<string, int>()
+            {
+                {"BioD_EndGm2_300Walk01", 40},
+                {"BioD_EndGm2_300Walk02", 5344},
+                {"BioD_EndGm2_300Walk03", 8884},
+                {"BioD_EndGm2_300Walk04", 6370},
+                {"BioD_EndGm2_300Walk05", 3190}
+            };
+
+            foreach (var map in endwalkexportmap)
+            {
+                var file = files.Find(x => Path.GetFileNameWithoutExtension(x).Equals(map.Key, StringComparison.InvariantCultureIgnoreCase));
+                if (file != null)
+                {
+                    var package = MEPackageHandler.OpenMEPackage(file);
+                    var export = package.getUExport(map.Value);
+                    export.WriteProperty(new FloatProperty(random.NextFloat(.5, 2.5), "PlayRate"));
+                    SavePackage(package);
+                }
+            }
+
+            /*foreach (var f in files)
             {
                 var package = MEPackageHandler.OpenMEPackage(f);
                 var animExports = package.Exports.Where(x => x.ClassName == "InterpTrackAnimControl");
@@ -714,7 +860,7 @@ namespace MassEffectRandomizer.Classes
                     anim.WriteProperty(animseqs);
                 }
                 SavePackage(package);
-            }
+            }*/
         }
 
         private string[] filesThatCantBeInDLC =
@@ -2935,6 +3081,7 @@ namespace MassEffectRandomizer.Classes
                    || mainWindow.RANDSETTING_PAWN_EYES
                    || mainWindow.RANDSETTING_HOLOGRAM_COLORS
                    || mainWindow.RANDSETTING_MOVEMENT_SPEED
+                   || mainWindow.RANDSETTING_DRONE_COLORS
             ;
         }
 
@@ -3120,6 +3267,181 @@ namespace MassEffectRandomizer.Classes
         static string GetRandomColorRBGStr(Random random)
         {
             return $"RGB({random.Next(255)},{random.Next(255)},{random.Next(255)})";
+        }
+
+        public void AddHostileSquadToPackage(IMEPackage package)
+        {
+            if (package.Exports.Any(x => x.ClassName == "BioFaction_Hostile")) return; //already has it
+            if (package.Imports.All(x => x.ObjectName != "SFXGame")) return; //need SFXGame import
+            if (package.Imports.All(x => x.GetFullPath != "Core.Package")) return; //need SFXGame import
+
+            // Add required imports: SFXGame.BioFaction, SFXGame.Default__BioFaction
+
+            ImportEntry sfxgameimp = package.Imports.First(x => x.GetFullPath == "SFXGame");
+            ImportEntry coreobj = package.Imports.First(x => x.GetFullPath == "Core.Object");
+            ImportEntry packageimp = package.Imports.First(x => x.GetFullPath == "Core.Package");
+            ImportEntry biofaction = package.Imports.FirstOrDefault(x => x.GetFullPath == "SFXGame.BioFaction");
+            ImportEntry biofactionDefaults = package.Imports.FirstOrDefault(x => x.GetFullPath == "SFXGame.BioFaction");
+            ImportEntry sfxai_humanoid = package.Imports.FirstOrDefault(x => x.GetFullPath == "SFXGame.SFXAI_Humanoid");
+            ImportEntry biosquadcombatimp = package.Imports.FirstOrDefault(x => x.GetFullPath == "SFXGameContent.BioSquadCombat");
+
+            if (biofaction == null)
+            {
+                //add
+                biofaction = new ImportEntry(package)
+                {
+                    idxClassName = package.FindNameOrAdd("Class"),
+                    idxObjectName = package.FindNameOrAdd("BioFaction"),
+                    idxLink = sfxgameimp.UIndex,
+                    idxPackageFile = package.FindNameOrAdd("Core")
+                };
+                package.addImport(biofaction);
+            }
+
+            if (biofactionDefaults == null)
+            {
+                //add
+                biofactionDefaults = new ImportEntry(package)
+                {
+                    idxClassName = package.FindNameOrAdd("BioFaction"),
+                    idxObjectName = package.FindNameOrAdd("Default__BioFaction"),
+                    idxLink = sfxgameimp.UIndex,
+                    idxPackageFile = package.FindNameOrAdd("SFXGame")
+                };
+                package.addImport(biofactionDefaults);
+            }
+
+            if (sfxai_humanoid == null)
+            {
+                //add
+                sfxai_humanoid = new ImportEntry(package)
+                {
+                    idxClassName = package.FindNameOrAdd("Class"),
+                    idxObjectName = package.FindNameOrAdd("SFXAI_Humanoid"),
+                    idxLink = sfxgameimp.UIndex,
+                    idxPackageFile = package.FindNameOrAdd("SFXGame")
+                };
+                package.addImport(sfxai_humanoid);
+            }
+
+
+            //Add required package export
+            ExportEntry sfxGameContent = package.Exports.FirstOrDefault(x => x.GetFullPath == "SFXGameContent");
+            if (sfxGameContent == null)
+            {
+                sfxGameContent = new ExportEntry(package);
+                sfxGameContent.idxClass = packageimp.UIndex;
+                sfxGameContent.idxObjectName = package.FindNameOrAdd("SFXGameContent");
+                //do we need to set a GUID? This is SP so no?
+                package.addExport(sfxGameContent);
+            }
+
+            if (biosquadcombatimp == null)
+            {
+                //add
+                biosquadcombatimp = new ImportEntry(package)
+                {
+                    idxClassName = package.FindNameOrAdd("Class"),
+                    idxObjectName = package.FindNameOrAdd("BioSquadCombat"),
+                    idxLink = sfxGameContent.UIndex,
+                    idxPackageFile = package.FindNameOrAdd("Core")
+                };
+                package.addImport(biosquadcombatimp);
+            }
+
+
+            MemoryStream classBin = new MemoryStream();
+            ExportEntry hostileClassEntry = new ExportEntry(package)
+            {
+                idxObjectName = package.FindNameOrAdd("BioFaction_Hostile1"),
+                idxSuperClass = biofaction.UIndex,
+                idxLink = sfxGameContent.UIndex
+            };
+
+            classBin.WriteInt32(0); //unreal index?
+            classBin.WriteInt32(biofaction.UIndex); //Superclass <<<<
+            classBin.WriteInt32(0); //unknown 1
+            classBin.WriteInt32(0); //childlist (none)
+            classBin.WriteInt64(0); //ignoremask
+
+            //State block (empty)
+            classBin.WriteInt32(-1);
+            classBin.WriteInt32(-1);
+            classBin.WriteInt32(0);
+            classBin.WriteInt32(0);
+            classBin.WriteInt32(0);
+            classBin.WriteInt32(-1);
+            classBin.WriteInt32(-1);
+            classBin.WriteInt16(-1);
+
+            classBin.WriteInt32(2); //state flags
+            classBin.WriteInt32(0); //local functions count
+
+            //class flags
+            classBin.WriteInt32(0x1210); //class flags main chunk
+            classBin.WriteByte(0); //extra byte?
+
+            classBin.WriteInt32(coreobj.UIndex); //Outer Class <<<<<
+            classBin.WriteInt32(package.FindNameOrAdd("None")); //Implemented interfaces
+            classBin.WriteInt32(0); //0index
+            classBin.WriteInt32(0); //0count of interfaces
+            classBin.WriteInt32(0); //components
+            classBin.WriteInt32(0); //UNK1
+            classBin.WriteInt32(0); //UNK2
+            classBin.WriteInt32(0); //Class Defaults, will rewrite later
+
+            hostileClassEntry.Data = classBin.ToArray();
+            package.addExport(hostileClassEntry);
+
+
+            ExportEntry hostileClassDefaults = new ExportEntry(package) { idxObjectName = package.FindNameOrAdd("Default__BioFaction_Hostile1"), idxClass = hostileClassEntry.UIndex, idxLink = sfxGameContent.UIndex, idxArchtype = biofactionDefaults.UIndex };
+
+            PropertyCollection props = new PropertyCollection(hostileClassDefaults, "BioFaction_Hostile1");
+            props.Add(new EnumProperty("BIO_Faction_Hostile1", "EBioFactionTypes", MEGame.ME2, "SquadFaction"));
+            var values = new List<EnumProperty>(new[]
+            {
+                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
+                new EnumProperty("BIO_Relation_Friendly","EBioFactionRelationship",MEGame.ME2),
+                new EnumProperty("BIO_Relation_Neutral","EBioFactionRelationship",MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
+                new EnumProperty("BIO_Relation_Friendly","EBioFactionRelationship",MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2)
+            });
+            var relations = (new ArrayProperty<EnumProperty>(values, "SquadRelations"));
+            props.Add(relations);
+            hostileClassDefaults.WriteProperties(props);
+            package.addExport(hostileClassDefaults);
+
+            var rewrittenData = hostileClassEntry.Data;
+            rewrittenData.OverwriteRange(rewrittenData.Length - 4, BitConverter.GetBytes(hostileClassDefaults.UIndex));
+            hostileClassEntry.Data = rewrittenData;
+
+            //write squad
+            ExportEntry squad = new ExportEntry(package)
+            {
+                idxObjectName = package.FindNameOrAdd("BioSquadCombat"),
+                idxClass = biosquadcombatimp.UIndex,
+                idxLink = package.Exports.First(x => x.ObjectName == "PersistentLevel").UIndex
+            };
+
+            //debug only
+            var loadouts = package.Exports.Where(x => x.ClassName == "SFXLoadoutData").ToList();
+            if (loadouts.Any())
+            {
+                var pawns = package.Exports.Where(x => x.ObjectName == "BioPawn");
+                foreach (var p in pawns)
+                {
+                    var pprops = p.GetProperties();
+                    pprops.AddOrReplaceProp(new ObjectProperty(hostileClassEntry.UIndex, "FactionClass")); //make hostile
+                    pprops.AddOrReplaceProp(new ObjectProperty(loadouts[0].UIndex, "Loadout"));
+                    pprops.AddOrReplaceProp(new ObjectProperty(sfxai_humanoid, "AIController"));
+                    p.WriteProperties(pprops);
+                }
+            }
+
+            package.save();
         }
 
     }
