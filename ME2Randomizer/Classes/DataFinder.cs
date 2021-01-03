@@ -25,9 +25,7 @@ namespace ME2Randomizer.Classes
             dataworker.DoWork += FindDatapads;
             dataworker.RunWorkerCompleted += ResetUI;
 
-
-            mainWindow.ButtonPanelVisible = Visibility.Collapsed;
-            mainWindow.ProgressPanelVisible = Visibility.Visible;
+            mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync();
         }
 
@@ -35,8 +33,7 @@ namespace ME2Randomizer.Classes
         {
             mainWindow.ProgressBarIndeterminate = false;
             mainWindow.CurrentProgressValue = 0;
-            mainWindow.ButtonPanelVisible = Visibility.Collapsed;
-            mainWindow.ProgressPanelVisible = Visibility.Visible;
+            mainWindow.ShowProgressPanel = false;
             mainWindow.CurrentOperationText = "Data finder done";
         }
 
@@ -59,9 +56,8 @@ namespace ME2Randomizer.Classes
                   foreach (var skm in skeletalMeshes)
                   {
                       var sm = skm.GetProperty<ObjectProperty>("SkeletalMesh");
-                      if (sm != null && sm.Value != 0)
+                      if (sm != null && sm.ResolveToEntry(package) is ExportEntry entry)
                       {
-                          var entry = package.GetUExport(sm.Value);
                           if (entry.ObjectName.Name.Contains("datapad", StringComparison.InvariantCultureIgnoreCase))
                           {
                               Debug.WriteLine($"{entry.UIndex} {entry.InstancedFullPath} in {file}");

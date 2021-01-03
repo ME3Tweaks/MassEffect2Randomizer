@@ -64,8 +64,7 @@ namespace ME2Randomizer.Classes
             mainWindow.CurrentOperationText = "Randomization complete";
             mainWindow.AllowOptionsChanging = true;
 
-            mainWindow.ProgressPanelVisible = System.Windows.Visibility.Collapsed;
-            mainWindow.ButtonPanelVisible = System.Windows.Visibility.Visible;
+            mainWindow.ShowProgressPanel = false;
             string backupPath = Utilities.GetGameBackupPath();
             string gamePath = Utilities.GetGamePath();
             if (backupPath != null)

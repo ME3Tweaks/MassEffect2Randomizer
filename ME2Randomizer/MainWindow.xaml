@@ -4,7 +4,7 @@
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:fonts="clr-namespace:ME2Randomizer.fonts"
-                      xmlns:converters="clr-namespace:MassEffectRandomizer.Classes.Converters"
+                      xmlns:converters="clr-namespace:ME2Randomizer.Classes.Converters"
                       x:Class="ME2Randomizer.MainWindow" 
                       IconScalingMode="ScaleDownLargerFrame" 
                       mc:Ignorable="d" 
@@ -13,11 +13,13 @@
                       MinHeight="680" 
                       MinWidth="825"
                       Height="900"
+                      DataContext="{Binding RelativeSource={RelativeSource Self}}"
                       WindowStartupLocation="CenterScreen"
                       Width="825">
     <Window.Resources>
         <converters:EnumMatchToBooleanConverter x:Key="enumConverter" />
         <converters:FaceFXRandomizationLevelIntToStringConverter x:Key="FaceFXRandomizationLevelIntToStringConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <FontFamily x:Key="AeroLight">
             pack://application:,,,/fonts/#AeroLight
             <!-- Note: NameOfFont can be font by double clicking
@@ -102,13 +104,14 @@
         <DockPanel Margin="7" LastChildFill="True">
             <DockPanel DockPanel.Dock="Bottom" LastChildFill="True">
                 <StackPanel DockPanel.Dock="Bottom">
-                    <StackPanel Visibility="{Binding ProgressPanelVisible}">
+                    <StackPanel Visibility="{Binding ShowProgressPanel, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Name="Textblock_CurrentTask" Text="{Binding CurrentOperationText}" HorizontalAlignment="Center" />
                         <Border Padding="4,4,4,4" Background="#88caaafc" CornerRadius="3">
                             <ProgressBar Name="Progressbar_Bottom" Height="15" Value="{Binding CurrentProgressValue}" IsIndeterminate="{Binding ProgressBarIndeterminate}" Minimum="{Binding ProgressBar_Bottom_Min}" Maximum="{Binding ProgressBar_Bottom_Max}" />
                         </Border>
                     </StackPanel>
-                    <DockPanel LastChildFill="False" Margin="0,0,0,0" Visibility="{Binding ButtonPanelVisible}" MinHeight="20">
+                    <DockPanel LastChildFill="False" Margin="0,0,0,0" Visibility="{Binding ShowProgressPanel, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter='Not'}" 
+                               MinHeight="20">
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
                             <Button Click="Logs_Click" MinWidth="20" ToolTip="Generate a diagnostics log for troubleshooting">
                                 <fonts:OutlinedTextBlock Text="Logs" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
@@ -181,12 +184,6 @@
 
                                         </StackPanel>
                                     </StackPanel>
-                                    <!--<StackPanel>
-                                    <fonts:OutlinedTextBlock Text="Enemies" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
-                                    <StackPanel Margin="10,0,0,0">
-                                        <CheckBox Content="????" Margin="3" />
-                                    </StackPanel>
-                                </StackPanel>-->
                                     <StackPanel>
                                         <fonts:OutlinedTextBlock Text="Movement" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                         <StackPanel Margin="10,0,0,0">
@@ -333,7 +330,7 @@
                                             <CheckBox Content="Randomize wall text" ToolTip="Randomizes text" Margin="3" IsChecked="{Binding RANDSETTING_MISC_WALLTEXT}" />
                                         </StackPanel>
                                     </StackPanel>
-                                    
+
                                 </StackPanel>
                                 <StackPanel Grid.Row="0" Grid.Column="1">
 
@@ -378,7 +375,7 @@
                                             <CheckBox Content="Randomize The Long Walk" Margin="3" IsChecked="{Binding RANDSETTING_LEVEL_LONGWALK}" />
                                             <CheckBox Content="Randomize Arrival" Margin="3" IsChecked="{Binding RANDSETTING_LEVEL_ARRIVAL}" />
                                             <CheckBox Content="Randomize Normandy" Margin="3" IsChecked="{Binding RANDSETTING_LEVEL_NORMANDY}" />
-                                            </StackPanel>
+                                        </StackPanel>
                                     </StackPanel>
                                     <fonts:OutlinedTextBlock Text="Wackadoodle" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                     <StackPanel Margin="10,0,0,0">

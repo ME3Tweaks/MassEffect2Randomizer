@@ -2,25 +2,27 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Navigation;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using MassEffectRandomizer.Classes;
 using MassEffectRandomizer.Classes.Updater;
 using ME2Randomizer.Classes;
+using ME3ExplorerCore;
 using ME3ExplorerCore.Helpers;
+using ME3ExplorerCore.Packages;
 using Microsoft.Win32;
 using Octokit;
 using Serilog;
-using Utilities = MassEffectRandomizer.Classes.Utilities;
 
 namespace ME2Randomizer
 {
@@ -39,16 +41,12 @@ namespace ME2Randomizer
             ERAndomizationMode_Screed = 2
         }
 
-        private RandomizationMode _randomizationMode;
+        public bool ShowProgressPanel { get; set; }
+        public RandomizationMode SelectedRandomizeMode { get; set; }
 
-        public RandomizationMode SelectedRandomizeMode
+        public void OnSelectedRandomizationModeChanged()
         {
-            get => _randomizationMode;
-            set
-            {
-                SetProperty(ref _randomizationMode, value);
-                UpdateCheckboxSettings();
-            }
+            UpdateCheckboxSettings();
         }
 
         public bool AllowOptionsChanging { get; set; } = true;
@@ -57,14 +55,10 @@ namespace ME2Randomizer
         public double ProgressBar_Bottom_Min { get; set; }
         public double ProgressBar_Bottom_Max { get; set; }
         public bool ProgressBarIndeterminate { get; set; }
-        public Visibility ProgressPanelVisible { get; set; }
-
         private Randomizer randomizer;
-
-        public Visibility ButtonPanelVisible { get; set; }
         ProgressDialogController updateprogresscontroller;
 
-        private void Hyperlink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             try
             {
@@ -277,8 +271,7 @@ namespace ME2Randomizer
             RANDSETTING_WACK_FACEFX_AMOUNT = 2;
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
-            ProgressPanelVisible = Visibility.Visible;
-            ButtonPanelVisible = Visibility.Collapsed;
+            ShowProgressPanel = true;
             InitializeComponent();
 
 #if DEBUG
@@ -312,38 +305,6 @@ namespace ME2Randomizer
                 }
             }
         }
-
-        #region Property Changed Notification
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Notifies listeners when given property is updated.
-        /// </summary>
-        /// <param name="propertyname">Name of property to give notification for. If called in property, argument can be ignored as it will be default.</param>
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyname = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
-        }
-
-        /// <summary>
-        /// Sets given property and notifies listeners of its change. IGNORES setting the property to same value.
-        /// Should be called in property setters.
-        /// </summary>
-        /// <typeparam name="T">Type of given property.</typeparam>
-        /// <param name="field">Backing field to update.</param>
-        /// <param name="value">New value of property.</param>
-        /// <param name="propertyName">Name of property.</param>
-        /// <returns>True if success, false if backing field and new value aren't compatible.</returns>
-        protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
-        {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
-
-        #endregion
 
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -444,8 +405,7 @@ namespace ME2Randomizer
         {
             if (!Utilities.isGameRunning())
             {
-                ButtonPanelVisible = Visibility.Collapsed;
-                ProgressPanelVisible = Visibility.Visible;
+                ShowProgressPanel = true;
                 randomizer = new Randomizer(this);
 
                 AllowOptionsChanging = false;
@@ -461,7 +421,7 @@ namespace ME2Randomizer
         {
             try
             {
-                System.Diagnostics.Process.Start("https://me3tweaks.com");
+                Process.Start("https://me3tweaks.com");
             }
             catch (Exception)
             {
@@ -474,8 +434,8 @@ namespace ME2Randomizer
             Log.Information("Checking for application updates from github");
             ProgressBarIndeterminate = true;
             CurrentOperationText = "Checking for application updates";
-            var versInfo = System.Reflection.Assembly.GetEntryAssembly().GetName().Version;
-            var client = new GitHubClient(new Octokit.ProductHeaderValue("MassEffect2Randomizer"));
+            var versInfo = Assembly.GetEntryAssembly().GetName().Version;
+            var client = new GitHubClient(new ProductHeaderValue("MassEffect2Randomizer"));
             try
             {
                 int myReleaseAge = 0;
@@ -537,7 +497,7 @@ namespace ME2Randomizer
                             mds.NegativeButtonText = "Later";
                             mds.DefaultButtonFocus = MessageDialogResult.Affirmative;
 
-                            string message = "Mass Effect Randomizer " + releaseName + " is available. You are currently using version " + versInfo.ToString() + "." + versionInfo;
+                            string message = "Mass Effect Randomizer " + releaseName + " is available. You are currently using version " + versInfo + "." + versionInfo;
                             UpdateAvailableDialog uad = new UpdateAvailableDialog(message, latest.Body, this);
                             await this.ShowMetroDialogAsync(uad, mds);
                             await uad.WaitUntilUnloadedAsync();
@@ -556,7 +516,7 @@ namespace ME2Randomizer
 
                                 downloadClient.Headers["Accept"] = "application/vnd.github.v3+json";
                                 downloadClient.Headers["user-agent"] = "MassEffectRandomizer";
-                                string temppath = System.IO.Path.GetTempPath();
+                                string temppath = Path.GetTempPath();
                                 int downloadProgress = 0;
                                 downloadClient.DownloadProgressChanged += (s, e) =>
                                 {
@@ -581,7 +541,7 @@ namespace ME2Randomizer
                                     }
                                 };
                                 downloadClient.DownloadFileCompleted += UpdateDownloadCompleted;
-                                string downloadPath = System.IO.Path.Combine(temppath, "MassEffectRandomizer-Update.exe");
+                                string downloadPath = Path.Combine(temppath, "MassEffectRandomizer-Update.exe");
                                 //DEBUG ONLY
                                 Uri downloadUri = new Uri(latest.Assets[0].BrowserDownloadUrl);
                                 downloadClient.DownloadFileAsync(downloadUri, downloadPath, new KeyValuePair<ProgressDialogController, string>(updateprogresscontroller, downloadPath));
@@ -607,10 +567,15 @@ namespace ME2Randomizer
             {
                 Log.Error("Error checking for update: " + e);
             }
-            //FetchManifest();
+
+            // Load ME3ExplorerCore
+            ME3ExplorerCoreLib.InitLib(TaskScheduler.FromCurrentSynchronizationContext());
+            MEPackageHandler.GlobalSharedCacheEnabled = false;
+            ShowProgressPanel = false;
         }
 
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+
+        protected override void OnClosing(CancelEventArgs e)
         {
             // close all active threads
             //if (randomizer != null && randomizer.Busy){
@@ -622,10 +587,10 @@ namespace ME2Randomizer
         private void UpdateDownloadCompleted(object sender, AsyncCompletedEventArgs e)
         {
             Log.Information("Update downloaded - rebooting to new downloaded file, in update mode");
-            string temppath = System.IO.Path.GetTempPath();
-            string exe = System.IO.Path.Combine(temppath, "MassEffectRandomizer-Update.exe");
+            string temppath = Path.GetTempPath();
+            string exe = Path.Combine(temppath, "MassEffectRandomizer-Update.exe");
 
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            Assembly assembly = Assembly.GetExecutingAssembly();
             string exePath = assembly.Location;
 
             string args = "--update-dest-path \"" + exePath + "\"";
@@ -667,10 +632,6 @@ namespace ME2Randomizer
                     //RestoreGame();
                 }
             }
-            else
-            {
-                //BackupGame();
-            }
         }
 
         private void DebugCloseDiagnostics_Click(object sender, RoutedEventArgs e)
@@ -689,18 +650,18 @@ namespace ME2Randomizer
         private void Flyout_Mousedown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
-                this.DragMove();
+                DragMove();
         }
 
         private void Flyout_Doubleclick(object sender, MouseButtonEventArgs e)
         {
-            if (this.WindowState == System.Windows.WindowState.Normal)
+            if (WindowState == WindowState.Normal)
             {
-                this.WindowState = System.Windows.WindowState.Maximized;
+                WindowState = WindowState.Maximized;
             }
             else
             {
-                this.WindowState = System.Windows.WindowState.Normal;
+                WindowState = WindowState.Normal;
             }
         }
 
@@ -739,5 +700,7 @@ namespace ME2Randomizer
         {
 
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }
