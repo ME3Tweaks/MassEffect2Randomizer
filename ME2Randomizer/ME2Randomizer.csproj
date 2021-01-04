@@ -5,6 +5,7 @@
     <TargetFramework>net5.0-windows8.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
+    <Configurations>ME2Debug;ME2Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +14,29 @@
     <Resource Include="fonts\aerolight.ttf" />
     <Content Include="masseffectmodder.ico" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='ME2Debug'">
+    <DefineConstants>Debug;__ME2__</DefineConstants>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='ME2Release'">
+    <DefineConstants>__ME2__</DefineConstants>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='ME3Debug'">
+    <DefineConstants>Debug;__ME3__</DefineConstants>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='ME3Release'">
+    <DefineConstants>__ME3__</DefineConstants>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />

@@ -77,15 +77,17 @@ namespace ME2Randomizer
         }
         private void UpdateCheckboxSettings()
         {
-            //both as common requires clear
-            if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_SelectAny || SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common)
+            foreach (var group in RandomizationGroups)
             {
-                foreach (CheckBox cb in FindVisualChildren<CheckBox>(randomizationOptionsPanel))
+                foreach (var option in group.Options)
                 {
-                    // do something with cb here
-                    cb.IsChecked = false;
+                    if (SelectedRandomizeMode == RandomizationMode.ERAndomizationMode_Screed) option.OptionIsSelected = true;
+                    if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_SelectAny) option.OptionIsSelected = false;
+                    if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common) option.OptionIsSelected = option.IsRecommended;
                 }
             }
+
+            return;
 
             if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common)
             {
@@ -118,17 +120,6 @@ namespace ME2Randomizer
                 //RANDSETTING_MISC_SPLASH = true;
                 RANDSETTING_SHUFFLE_CUTSCENE_ACTORS = true;
 
-            }
-            else if (SelectedRandomizeMode == RandomizationMode.ERAndomizationMode_Screed)
-            {
-                foreach (CheckBox cb in FindVisualChildren<CheckBox>(randomizationOptionsPanel))
-                {
-                    if (cb.IsEnabled)
-                    {
-                        // do something with cb here
-                        cb.IsChecked = true;
-                    }
-                }
             }
         }
 
@@ -311,8 +302,8 @@ namespace ME2Randomizer
                         },
                         SliderValue = 2},  // This must come after the converter
                     new RandomizationOption() { HumanName = "Squadmate faces"},
-                    new RandomizationOption() { HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = 
-                        rSetting => $"Randomization amount: {rSetting}", 
+                    new RandomizationOption() { HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
+                        rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3},  // This must come after the converter
                     new RandomizationOption() { HumanName = "NPC head colors"},
                     new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)"},

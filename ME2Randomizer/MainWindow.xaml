@@ -6,6 +6,7 @@
                       xmlns:fonts="clr-namespace:ME2Randomizer.fonts"
                       xmlns:converters="clr-namespace:ME2Randomizer.Classes.Converters"
                       xmlns:classes="clr-namespace:ME2Randomizer.Classes"
+                      xmlns:ui="clr-namespace:ME2Randomizer.ui"
                       x:Class="ME2Randomizer.MainWindow" 
                       IconScalingMode="ScaleDownLargerFrame" 
                       mc:Ignorable="d" 
@@ -176,7 +177,7 @@
                             <ItemsControl ItemsSource="{Binding RandomizationGroups}" Width="1000">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <WrapPanel />
+                                        <ui:StretchyWrapPanel StretchToFill="True" Orientation="Vertical" StretchProportionally="True"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>

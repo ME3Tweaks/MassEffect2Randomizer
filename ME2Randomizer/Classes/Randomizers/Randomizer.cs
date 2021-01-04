@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.gameini;
 using ME2Randomizer.Classes.Randomizers;
+using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.TLK.ME2ME3;
@@ -36,11 +37,20 @@ namespace ME2Randomizer.Classes
             upperScottishVowelOrdering = null;
         }
 
+        /// <summary>
+        /// Are we busy randomizing?
+        /// </summary>
         public bool Busy => randomizationWorker != null && randomizationWorker.IsBusy;
-        public MERFileSystem MERFS;
 
-        public void Randomize(bool usingDLCModFS)
+        /// <summary>
+        /// The list of chosen randomization options for this randomization pass.
+        /// </summary>
+        public List<RandomizationOption> SelectedOptions { get; set; }
+
+
+        public void Randomize(bool usingDLCModFS, List<RandomizationOption> selectedOptions)
         {
+            this.SelectedOptions = selectedOptions;
             randomizationWorker = new BackgroundWorker();
             randomizationWorker.DoWork += PerformRandomization;
             randomizationWorker.RunWorkerCompleted += Randomization_Completed;
@@ -56,6 +66,7 @@ namespace ME2Randomizer.Classes
             randomizationWorker.RunWorkerAsync((usingDLCModFS, seed));
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Indeterminate, mainWindow);
         }
+
 
 
         private void Randomization_Completed(object sender, RunWorkerCompletedEventArgs e)
@@ -83,48 +94,15 @@ namespace ME2Randomizer.Classes
             //}
         }
 
-        private void RandomizeBioWaypointSet(ExportEntry export, Random random)
-        {
-            Log.Information("Randomizing BioWaypointSet " + export.UIndex + " in " + Path.GetFileName(export.FileRef.FilePath));
-            var waypointReferences = export.GetProperty<ArrayProperty<StructProperty>>("WaypointReferences");
-            if (waypointReferences != null)
-            {
-                //Get list of valid targets
-                var pcc = export.FileRef;
-                var waypoints = pcc.Exports.Where(x => x.ClassName == "BioPathPoint" || x.ClassName == "PathNode").ToList();
-                waypoints.Shuffle(random);
-
-                foreach (var waypoint in waypointReferences)
-                {
-                    var nav = waypoint.GetProp<ObjectProperty>("Nav");
-                    if (nav != null && nav.Value > 0)
-                    {
-                        ExportEntry currentPoint = export.FileRef.GetUExport(nav.Value);
-                        if (currentPoint.ClassName == "BioPathPoint" || currentPoint.ClassName == "PathNode")
-                        {
-                            nav.Value = waypoints[0].UIndex;
-                            waypoints.RemoveAt(0);
-                        }
-                        else
-                        {
-                            Debug.WriteLine("SKIPPING NODE TYPE " + currentPoint.ClassName);
-                        }
-                    }
-                }
-            }
-
-            export.WriteProperty(waypointReferences);
-        }
-
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
+            // Init
             ModifiedFiles = new ConcurrentDictionary<string, string>(); //this will act as a Set since there is no ConcurrentSet
-            var parms = ((bool usingMerFS, int seed))e.Argument;
-            MERFS = new MERFileSystem(Utilities.GetGamePath(), parms.usingMerFS);
-            Random random = new Random(parms.seed);
-            //AddHostileSquadToPackage(MEPackageHandler.OpenMEPackage(@"D:\Origin Games\Mass Effect 2\BioGame\CookedPC\BioD_CitHub_100Dock.pcc"));
-            //Debugger.Break();
-
+            var (usingMerFs, seed) = ((bool usingMerFS, int seed))e.Argument;
+            MERFileSystem.InitMERFS(usingMerFs);
+            Random random = new Random(seed);
+            acceptableTagsForPawnShuffling = Utilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split('\n').ToList();
+            
             //Load TLKs
             mainWindow.CurrentOperationText = "Loading TLKs";
             mainWindow.ProgressBarIndeterminate = true;
@@ -135,7 +113,6 @@ namespace ME2Randomizer.Classes
                 return tf;
             }).ToList();
 
-            acceptableTagsForPawnShuffling = Utilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split('\n').ToList();
 
             ///svar testp = MERFS.GetBasegameFile("");
 
@@ -462,7 +439,7 @@ namespace ME2Randomizer.Classes
                                             var tint = exp.GetProperty<StructProperty>("FlareTint");
                                             if (tint != null)
                                             {
-                                                RandomizeTint(random, tint, false);
+                                                RStructs.RandomizeTint(random, tint, false);
                                                 exp.WriteProperty(tint);
                                             }
                                         }
@@ -471,7 +448,7 @@ namespace ME2Randomizer.Classes
                                             var tint = exp.GetProperty<StructProperty>("SunTint");
                                             if (tint != null)
                                             {
-                                                RandomizeTint(random, tint, false);
+                                                RStructs.RandomizeTint(random, tint, false);
                                                 exp.WriteProperty(tint);
                                             }
                                         }
@@ -499,7 +476,7 @@ namespace ME2Randomizer.Classes
                                         //eye color
                                         var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
                                         //tint is float based
-                                        RandomizeTint(random, emisVector, false);
+                                        RStructs.RandomizeTint(random, emisVector, false);
 
                                         var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
                                         emisScalar.Value = 3; //very vibrant
@@ -735,7 +712,7 @@ namespace ME2Randomizer.Classes
             string[] packages = { "BioD_Nor_104Comm.pcc", "BioA_Nor_110.pcc" };
             foreach (var packagef in packages)
             {
-                var package = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile(packagef));
+                var package = MEPackageHandler.OpenMEPackage(MERFS.GetPackageFile(packagef));
 
                 //WIREFRAME COLOR
                 var wireframeMaterial = package.Exports.First(x => x.ObjectName == "Wireframe_mat_Master");
@@ -876,8 +853,8 @@ namespace ME2Randomizer.Classes
 
         private void RandomizePlayerMovementSpeed(Random random)
         {
-            var femaleFile = MERFS.GetBasegameFile("BIOG_Female_Player_C.pcc");
-            var maleFile = MERFS.GetBasegameFile("BIOG_Male_Player_C.pcc");
+            var femaleFile = MERFS.GetPackageFile("BIOG_Female_Player_C.pcc", Game);
+            var maleFile = MERFS.GetPackageFile("BIOG_Male_Player_C.pcc", Game);
             var femalepackage = MEPackageHandler.OpenMEPackage(femaleFile);
             var malepackage = MEPackageHandler.OpenMEPackage(femaleFile);
             SlightlyRandomizeMovementData(femalepackage.GetUExport(2917), random);
@@ -1453,81 +1430,7 @@ namespace ME2Randomizer.Classes
             }
         }
 
-        private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks, IMEPackage biop_char)
-        {
-            var maleFrontEndData = biop_char.GetUExport(18753);
-            randomizeFrontEnd(random, maleFrontEndData);
-            //var femaleFrontEndData = biop_char.GetUExport(18754);
 
-            //RandomizeSFXFrontEnd(maleFrontEndData);
-
-            //Copy the final skeleton from female into male.
-            var femBase = biop_char.GetUExport(3480);
-            var maleBase = biop_char.GetUExport(3481);
-            maleBase.WriteProperty(femBase.GetProperty<ArrayProperty<StructProperty>>("m_aFinalSkeleton"));
-
-            foreach (var export in biop_char.Exports)
-            {
-                if (export.ClassName == "BioMorphFace")
-                {
-                    RandomizeBioMorphFace(export, random, 10); //.3 default
-                }
-                else if (export.ClassName == "MorphTarget")
-                {
-                    if (export.ObjectName.Name.StartsWith("jaw")
-                        || export.ObjectName.Name.StartsWith("mouth")
-                        || export.ObjectName.Name.StartsWith("eye")
-                        || export.ObjectName.Name.StartsWith("cheek")
-                        || export.ObjectName.Name.StartsWith("nose")
-                        || export.ObjectName.Name.StartsWith("teeth"))
-                    {
-                        //randomizeMorphTarget(random, export);
-                    }
-                }
-                else if (export.ClassName == "BioMorphFaceFESliderColour")
-                {
-                    var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
-                    foreach (var color in colors)
-                    {
-                        RandomizeColor(random, color, true);
-                    }
-                    export.WriteProperty(colors);
-                }
-                else if (export.ClassName == "BioMorphFaceFESliderMorph")
-                {
-                    //not sure if this one actually works due to how face morphs are limited
-                }
-                else if (export.ClassName == "BioMorphFaceFESliderScalar" || export.ClassName == "BioMorphFaceFESliderSetMorph")
-                {
-                    //no idea how to randomize this lol
-                    var floats = export.GetProperty<ArrayProperty<FloatProperty>>("m_afValues");
-                    var minfloat = floats.Min();
-                    var maxfloat = floats.Max();
-                    if (minfloat == maxfloat)
-                    {
-                        if (minfloat == 0)
-                        {
-                            maxfloat = 1;
-                        }
-                        else
-                        {
-                            var vari = minfloat / 2;
-                            maxfloat = random.NextFloat(-vari, vari) + minfloat; //+/- 50%
-                        }
-
-                    }
-                    foreach (var floatval in floats)
-                    {
-                        floatval.Value = random.NextFloat(minfloat, maxfloat);
-                    }
-                    export.WriteProperty(floats);
-                }
-                else if (export.ClassName == "BioMorphFaceFESliderTexture")
-                {
-
-                }
-            }
-        }
 
         private void randomizeFrontEnd(Random random, ExportEntry frontEnd)
         {
@@ -1715,7 +1618,7 @@ namespace ME2Randomizer.Classes
                         var pc = vector.GetProp<StructProperty>("ParameterValue");
                         if (pc != null)
                         {
-                            RandomizeTint(random, pc, false);
+                            RStructs.RandomizeTint(random, pc, false);
                         }
                     }
                 }
@@ -1762,7 +1665,7 @@ namespace ME2Randomizer.Classes
                 var vectors = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues");
                 scalars[0].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0.01, 0.05); //Bloom
                 scalars[1].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(1, 10); //Opacity
-                RandomizeTint(random, vectors[0].GetProp<StructProperty>("ParameterValue"), false);
+                RStructs.RandomizeTint(random, vectors[0].GetProp<StructProperty>("ParameterValue"), false);
             }
             coronaMaterial.WriteProperties(props);
 
@@ -2066,7 +1969,7 @@ namespace ME2Randomizer.Classes
                 foreach (var vector in vectors)
                 {
                     var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                    RandomizeTint(random, paramValue, false);
+                    RStructs.RandomizeTint(random, paramValue, false);
                 }
             }
             planetMaterial.WriteProperties(props);
@@ -2212,196 +2115,6 @@ namespace ME2Randomizer.Classes
                                 }
                             }
                         }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// I don't think this is workable in ME2. Since it calls these videos natively. Would have to be done in entrymenu i guess
-        /// </summary>
-        /// <param name="random"></param>
-        public void AddMERSplash(Random random)
-        {
-            IMEPackage entrymenu = MEPackageHandler.OpenMEPackage(Utilities.GetEntryMenuFile());
-
-            //Connect attract to BWLogo
-            var attractMovie = entrymenu.GetUExport(729);
-            var props = attractMovie.GetProperties();
-            var movieName = props.GetProp<StrProperty>("m_sMovieName");
-            movieName.Value = "merintro";
-            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[1].GetProp<ArrayProperty<StructProperty>>("Links")[0].GetProp<ObjectProperty>("LinkedOp").Value = 732; //Bioware logo
-            attractMovie.WriteProperties(props);
-
-            //Rewrite ShowSplash to BWLogo to point to merintro instead
-            var showSplash = entrymenu.GetUExport(736);
-            props = showSplash.GetProperties();
-            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[0].GetProp<ArrayProperty<StructProperty>>("Links")[1].GetProp<ObjectProperty>("LinkedOp").Value = 729; //attractmovie logo
-            showSplash.WriteProperties(props);
-
-            //Visual only (for debugging): Remove connection to 
-
-            //Update inputs to point to merintro comparebool
-            var guiinput = entrymenu.GetUExport(738);
-            props = guiinput.GetProperties();
-            foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
-            {
-                outlink.GetProp<ArrayProperty<StructProperty>>("Links")[0].GetProp<ObjectProperty>("LinkedOp").Value = 2936; //Comparebool
-            }
-
-            guiinput.WriteProperties(props);
-
-            var playerinput = entrymenu.GetUExport(739);
-            props = playerinput.GetProperties();
-            foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
-            {
-                var links = outlink.GetProp<ArrayProperty<StructProperty>>("Links");
-                foreach (var link in links)
-                {
-                    link.GetProp<ObjectProperty>("LinkedOp").Value = 2936; //Comparebool
-                }
-            }
-
-            playerinput.WriteProperties(props);
-
-            //Clear old unused inputs for attract
-            guiinput = entrymenu.GetUExport(737);
-            props = guiinput.GetProperties();
-            foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
-            {
-                outlink.GetProp<ArrayProperty<StructProperty>>("Links").Clear();
-            }
-
-            guiinput.WriteProperties(props);
-
-            playerinput = entrymenu.GetUExport(740);
-            props = playerinput.GetProperties();
-            foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
-            {
-                outlink.GetProp<ArrayProperty<StructProperty>>("Links").Clear();
-            }
-
-            playerinput.WriteProperties(props);
-
-            //Connect CompareBool outputs
-            var mercomparebool = entrymenu.GetUExport(2936);
-            props = mercomparebool.GetProperties();
-            var outlinks = props.GetProp<ArrayProperty<StructProperty>>("OutputLinks");
-            //True
-            var outlink1 = outlinks[0].GetProp<ArrayProperty<StructProperty>>("Links");
-            StructProperty newLink = null;
-            if (outlink1.Count == 0)
-            {
-                PropertyCollection p = new PropertyCollection();
-                p.Add(new ObjectProperty(2938, "LinkedOp"));
-                p.Add(new IntProperty(0, "InputLinkIdx"));
-                p.Add(new NoneProperty());
-                newLink = new StructProperty("SeqOpOutputInputLink", p);
-                outlink1.Add(newLink);
-            }
-            else
-            {
-                newLink = outlink1[0];
-            }
-
-            newLink.GetProp<ObjectProperty>("LinkedOp").Value = 2938;
-
-            //False
-            var outlink2 = outlinks[1].GetProp<ArrayProperty<StructProperty>>("Links");
-            newLink = null;
-            if (outlink2.Count == 0)
-            {
-                PropertyCollection p = new PropertyCollection();
-                p.Add(new ObjectProperty(2934, "LinkedOp"));
-                p.Add(new IntProperty(0, "InputLinkIdx"));
-                p.Add(new NoneProperty());
-                newLink = new StructProperty("SeqOpOutputInputLink", p);
-                outlink2.Add(newLink);
-            }
-            else
-            {
-                newLink = outlink2[0];
-            }
-
-            newLink.GetProp<ObjectProperty>("LinkedOp").Value = 2934;
-
-            mercomparebool.WriteProperties(props);
-
-            //Update output of setbool to next comparebool, point to shared true value
-            var setBool = entrymenu.GetUExport(2934);
-            props = setBool.GetProperties();
-            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[0].GetProp<ArrayProperty<StructProperty>>("Links")[0].GetProp<ObjectProperty>("LinkedOp").Value = 729; //CompareBool (step 2)
-            props.GetProp<ArrayProperty<StructProperty>>("VariableLinks")[1].GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables")[0].Value = 2952; //Shared True
-            setBool.WriteProperties(props);
-
-
-            //Default setbool should be false, not true
-            var boolValueForMERSkip = entrymenu.GetUExport(2955);
-            var bValue = boolValueForMERSkip.GetProperty<IntProperty>("bValue");
-            bValue.Value = 0;
-            boolValueForMERSkip.WriteProperty(bValue);
-
-            //Extract MER Intro
-            var merIntroDir = Path.Combine(Utilities.GetAppDataFolder(), "merintros");
-            if (Directory.Exists(merIntroDir))
-            {
-                var merIntros = Directory.GetFiles(merIntroDir, "*.bik").ToList();
-                string merToExtract = merIntros[random.Next(merIntros.Count)];
-                File.Copy(merToExtract, MERFS.GetGameFile(@"BioGame\CookedPC\Movies\merintro.bik"), true);
-                SavePackage(entrymenu);
-                //Add to fileindex
-                var fileIndex = MERFS.GetGameFile(@"BioGame\CookedPC\FileIndex.txt");
-                var filesInIndex = File.ReadAllLines(fileIndex).ToList();
-                if (filesInIndex.All(x => x != @"Movies\MERIntro.bik"))
-                {
-                    filesInIndex.Add(@"Movies\MERIntro.bik");
-                    File.WriteAllLines(fileIndex, filesInIndex);
-                }
-
-                ModifiedFiles[entrymenu.FilePath] = entrymenu.FilePath;
-            }
-
-        }
-
-        private static string[] hazardTypes = { "Cold", "Heat", "Toxic", "Radiation", "Vacuum" };
-
-        private void RandomizeHazard(ExportEntry export, Random random)
-        {
-            Log.Information("Randomizing hazard sequence objects for " + export.UIndex + ": " + export.InstancedFullPath);
-            var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
-            if (variableLinks != null)
-            {
-                foreach (var variableLink in variableLinks)
-                {
-                    var expectedType = export.FileRef.GetEntry(variableLink.GetProp<ObjectProperty>("ExpectedType").Value).ObjectName;
-                    var linkedVariable = export.FileRef.GetUExport(variableLink.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables")[0].Value); //hoochie mama that is one big statement.
-
-                    switch (expectedType)
-                    {
-                        case "SeqVar_Name":
-                            //Hazard type
-                            var hazardTypeProp = linkedVariable.GetProperty<NameProperty>("NameValue");
-                            hazardTypeProp.Value = hazardTypes[random.Next(hazardTypes.Length)];
-                            Log.Information(" >> Hazard type: " + hazardTypeProp.Value);
-                            linkedVariable.WriteProperty(hazardTypeProp);
-                            break;
-                        case "SeqVar_Bool":
-                            //Force helmet
-                            var hazardHelmetProp = new IntProperty(random.Next(2), "bValue");
-                            Log.Information(" >> Force helmet on: " + hazardHelmetProp.Value);
-                            linkedVariable.WriteProperty(hazardHelmetProp);
-                            break;
-                        case "SeqVar_Int":
-                            //Hazard level
-                            var hazardLevelProp = new IntProperty(random.Next(4), "IntValue");
-                            if (random.Next(8) == 0) //oof, for the player
-                            {
-                                hazardLevelProp.Value = 4;
-                            }
-
-                            Log.Information(" >> Hazard level: " + hazardLevelProp.Value);
-                            linkedVariable.WriteProperty(hazardLevelProp);
-                            break;
                     }
                 }
             }
@@ -2789,152 +2502,6 @@ namespace ME2Randomizer.Classes
             //}
         }
 
-        /// <summary>
-        /// Randomizes bio morph faces in a specified file. Will check if file exists first
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="random"></param>
-        private void RandomizeBioMorphFaceWrapper(string file, Random random)
-        {
-            if (File.Exists(file))
-            {
-                var package = MEPackageHandler.OpenMEPackage(file);
-                {
-                    foreach (ExportEntry export in package.Exports)
-                    {
-                        if (export.ClassName == "BioMorphFace")
-                        {
-                            RandomizeBioMorphFace(export, random);
-                        }
-                    }
-                }
-                SavePackage(package);
-            }
-        }
-
-
-        private void RandomizeGalaxyMap(IMEPackage package, Random random)
-        {
-            foreach (ExportEntry export in package.Exports)
-            {
-                switch (export.ClassName)
-                {
-                    case "SFXCluster":
-                        {
-                            var props = export.GetProperties();
-                            var starColor = props.GetProp<StructProperty>("StarColor");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-                            starColor = props.GetProp<StructProperty>("StarColor2");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-
-                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
-                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
-
-
-                            var intensity = props.GetProp<FloatProperty>("SphereIntensity");
-                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
-                            intensity = props.GetProp<FloatProperty>("NebularDensity");
-                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
-                            intensity = props.GetProp<FloatProperty>("SphereSize");
-                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
-
-                            export.WriteProperties(props);
-                        }
-                        //RandomizeClustersXY(export, random);
-
-                        break;
-                    case "SFXSystem":
-                        {
-                            var props = export.GetProperties();
-                            var starColor = props.GetProp<StructProperty>("StarColor");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-
-                            starColor = props.GetProp<StructProperty>("FlareTint");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-
-
-                            starColor = props.GetProp<StructProperty>("SunColor");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-
-                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
-                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
-
-
-                            var scale = props.GetProp<FloatProperty>("Scale");
-                            if (scale != null) scale.Value = random.NextFloat(.1, 2);
-
-
-                            export.WriteProperties(props);
-                        }
-                        break;
-                    case "BioPlanet":
-                        {
-                            var props = export.GetProperties();
-                            var starColor = props.GetProp<StructProperty>("SunColor");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-
-                            starColor = props.GetProp<StructProperty>("FlareTint");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-
-
-                            starColor = props.GetProp<StructProperty>("CloudColor");
-                            if (starColor != null)
-                            {
-                                RandomizeTint(random, starColor, false);
-                            }
-
-                            var resourceRichness = props.GetProp<FloatProperty>("ResourceRichness");
-                            if (resourceRichness != null)
-                            {
-                                resourceRichness.Value = random.NextFloat(0, 1.2);
-                            }
-                            else
-                            {
-                                props.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, .6), "ResourceRichness"));
-                            }
-
-                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
-                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
-
-
-                            var scale = props.GetProp<FloatProperty>("Scale");
-                            if (scale != null) scale.Value = random.NextFloat(.1, 6);
-
-
-                            export.WriteProperties(props);
-                        }
-                        break;
-                    case "MaterialInstanceConstant":
-                        RandomizeMaterialInstance(export, random);
-                        break;
-                }
-            }
-            SavePackage(package);
-        }
-
-
-
         private void RandomizeCharacter(ExportEntry export, Random random)
         {
             /*bool hasChanges = false;
@@ -3004,65 +2571,7 @@ namespace ME2Randomizer.Classes
             }*/
         }
 
-        private void RandomizeColor(Random random, StructProperty color, bool randomizeAlpha)
-        {
-            var a = color.GetProp<ByteProperty>("A");
-            var r = color.GetProp<ByteProperty>("R");
-            var g = color.GetProp<ByteProperty>("G");
-            var b = color.GetProp<ByteProperty>("B");
 
-            int totalcolorValue = r.Value + g.Value + b.Value;
-
-            //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
-            //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
-            var randomOrderChooser = new List<ByteProperty>();
-            randomOrderChooser.Add(r);
-            randomOrderChooser.Add(g);
-            randomOrderChooser.Add(b);
-            randomOrderChooser.Shuffle(random);
-
-            randomOrderChooser[0].Value = (byte)random.Next(0, Math.Min(totalcolorValue, 256));
-            totalcolorValue -= randomOrderChooser[0].Value;
-
-            randomOrderChooser[1].Value = (byte)random.Next(0, Math.Min(totalcolorValue, 256));
-            totalcolorValue -= randomOrderChooser[1].Value;
-
-            randomOrderChooser[2].Value = (byte)totalcolorValue;
-            if (randomizeAlpha)
-            {
-                a.Value = (byte)random.Next(0, 256);
-            }
-        }
-
-        private void RandomizeTint(Random random, StructProperty tint, bool randomizeAlpha)
-        {
-            var a = tint.GetProp<FloatProperty>("A");
-            var r = tint.GetProp<FloatProperty>("R");
-            var g = tint.GetProp<FloatProperty>("G");
-            var b = tint.GetProp<FloatProperty>("B");
-
-            float totalTintValue = r + g + b;
-
-            //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
-            //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
-            List<FloatProperty> randomOrderChooser = new List<FloatProperty>();
-            randomOrderChooser.Add(r);
-            randomOrderChooser.Add(g);
-            randomOrderChooser.Add(b);
-            randomOrderChooser.Shuffle(random);
-
-            randomOrderChooser[0].Value = random.NextFloat(0, totalTintValue);
-            totalTintValue -= randomOrderChooser[0].Value;
-
-            randomOrderChooser[1].Value = random.NextFloat(0, totalTintValue);
-            totalTintValue -= randomOrderChooser[1].Value;
-
-            randomOrderChooser[2].Value = totalTintValue;
-            if (randomizeAlpha)
-            {
-                a.Value = random.NextFloat(0, 1);
-            }
-        }
 
         public bool RunAllFilesRandomizerPass
         {
@@ -3160,99 +2669,7 @@ namespace ME2Randomizer.Classes
             prop.GetProp<FloatProperty>("Z").Value = z;
         }
 
-        private void RandomizeBioMorphFace(ExportEntry export, Random random, double amount = 0.3)
-        {
-            var props = export.GetProperties();
-            ArrayProperty<StructProperty> m_aMorphFeatures = props.GetProp<ArrayProperty<StructProperty>>("m_aMorphFeatures");
-            if (m_aMorphFeatures != null)
-            {
-                foreach (StructProperty morphFeature in m_aMorphFeatures)
-                {
-                    FloatProperty offset = morphFeature.GetProp<FloatProperty>("Offset");
-                    if (offset != null)
-                    {
-                        //Debug.WriteLine("Randomizing morph face " + Path.GetFilePath(export.FileRef.FilePath) + " " + export.UIndex + " " + export.FullPath + " offset");
-                        offset.Value = offset.Value * random.NextFloat(1 - (amount / 3), 1 + (amount / 3));
-                    }
-                }
-            }
 
-            ArrayProperty<StructProperty> m_aFinalSkeleton = props.GetProp<ArrayProperty<StructProperty>>("m_aFinalSkeleton");
-            if (m_aFinalSkeleton != null)
-            {
-                foreach (StructProperty offsetBonePos in m_aFinalSkeleton)
-                {
-                    StructProperty vPos = offsetBonePos.GetProp<StructProperty>("vPos");
-                    if (vPos != null)
-                    {
-                        //Debug.WriteLine("Randomizing morph face " + Path.GetFilePath(export.FileRef.FilePath) + " " + export.UIndex + " " + export.FullPath + " vPos");
-                        FloatProperty x = vPos.GetProp<FloatProperty>("X");
-                        FloatProperty y = vPos.GetProp<FloatProperty>("Y");
-                        FloatProperty z = vPos.GetProp<FloatProperty>("Z");
-                        x.Value = x.Value * random.NextFloat(1 - amount, 1 + amount);
-                        y.Value = y.Value * random.NextFloat(1 - amount, 1 + amount);
-                        z.Value = z.Value * random.NextFloat(1 - (amount / .85), 1 + (amount / .85));
-                    }
-                }
-            }
-
-            export.WriteProperties(props);
-            if (mainWindow.RANDSETTING_PAWN_CLOWNMODE)
-            {
-                var materialoverride = props.GetProp<ObjectProperty>("m_oMaterialOverrides");
-                if (materialoverride != null)
-                {
-                    var overrides = export.FileRef.GetUExport(materialoverride.Value);
-                    RandomizeMaterialOverride(overrides, random);
-                }
-            }
-        }
-
-        private void RandomizeMaterialOverride(ExportEntry export, Random random)
-        {
-            PropertyCollection props = export.GetProperties();
-            var colorOverrides = props.GetProp<ArrayProperty<StructProperty>>("m_aColorOverrides");
-            if (colorOverrides != null)
-            {
-                foreach (StructProperty colorParameter in colorOverrides)
-                {
-                    //Debug.WriteLine("Randomizing Color Parameter");
-                    RandomizeTint(random, colorParameter.GetProp<StructProperty>("cValue"), false);
-                }
-            }
-            var scalarOverrides = props.GetProp<ArrayProperty<StructProperty>>("m_aScalarOverrides");
-            if (scalarOverrides != null)
-            {
-                foreach (StructProperty scalarParameter in scalarOverrides)
-                {
-                    var name = scalarParameter.GetProp<NameProperty>("nName");
-                    if (name != null)
-                    {
-                        if (name.Value.Name.Contains("_Frek_") || name.Value.Name.StartsWith("HAIR") || name.Value.Name.StartsWith("HED_Scar"))
-                        {
-
-                            var currentValue = scalarParameter.GetProp<FloatProperty>("sValue");
-                            if (currentValue != null)
-                            {
-                                Debug.WriteLine("Randomizing FREK HAIR HEDSCAR");
-
-                                if (currentValue > 1)
-                                {
-                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = random.NextFloat(0, currentValue * 1.3);
-                                }
-                                else
-                                {
-                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = random.NextFloat(0, 1);
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            export.WriteProperties(props);
-        }
 
         private List<char> scottishVowelOrdering;
         private List<char> upperScottishVowelOrdering;
