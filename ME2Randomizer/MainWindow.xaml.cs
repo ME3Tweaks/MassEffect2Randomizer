@@ -19,6 +19,7 @@ using MassEffectRandomizer.Classes.Updater;
 using ME2Randomizer.Classes;
 using ME3ExplorerCore;
 using ME3ExplorerCore.Helpers;
+using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using Microsoft.Win32;
 using Octokit;
@@ -49,6 +50,10 @@ namespace ME2Randomizer
             UpdateCheckboxSettings();
         }
 
+        /// <summary>
+        /// The list of options shown
+        /// </summary>
+        public ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ObservableCollectionExtended<RandomizationGroup>();
         public bool AllowOptionsChanging { get; set; } = true;
         public int CurrentProgressValue { get; set; }
         public string CurrentOperationText { get; set; }
@@ -272,6 +277,7 @@ namespace ME2Randomizer
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
+            SetupOptions();
             InitializeComponent();
 
 #if DEBUG
@@ -284,6 +290,100 @@ namespace ME2Randomizer
             Title += " " + version;
             SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
             PerformUpdateCheck();
+        }
+
+        private void SetupOptions()
+        {
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Faces",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() { HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
+                        rSetting switch
+                        {
+                            1 => "Oblivion",
+                            2 => "Knights of the old Republic",
+                            3 => "Sonic Adventure",
+                            4 => "Source filmmaker",
+                            5 => "Total madness",
+                            _ => "Error"
+                        },
+                        SliderValue = 2},  // This must come after the converter
+                    new RandomizationOption() { HumanName = "Squadmate faces"},
+                    new RandomizationOption() { HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = 
+                        rSetting => $"Randomization amount: {rSetting}", 
+                        SliderValue = .3},  // This must come after the converter
+                    new RandomizationOption() { HumanName = "NPC head colors"},
+                    new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)"},
+                    new RandomizationOption() { HumanName = "Illusive Man eyes"},
+                    new RandomizationOption() { HumanName = "Character creator premade faces"},
+                    new RandomizationOption() { HumanName = "Character creator skin tones"},
+                    new RandomizationOption() { HumanName = "Iconic FemShep face"},
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Miscellaneous",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "'Sun actor' colors"},
+                    new RandomizationOption() {HumanName = "Fog colors"},
+                    new RandomizationOption() {HumanName = "Game over text"},
+                    new RandomizationOption() {HumanName = "Drone colors"}
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Movement & pawns",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Enemy movement speeds"},
+                    new RandomizationOption() {HumanName = "Player movement speeds"},
+                    new RandomizationOption() {HumanName = "Hammerhead"}
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Weapons",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() { HumanName = "Weapon stats" },
+                    new RandomizationOption() { HumanName = "Squadmate weapon types" },
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Level-specific",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() { HumanName = "Galaxy Map" },
+                    new RandomizationOption() { HumanName = "Normandy" },
+                    new RandomizationOption() { HumanName = "Prologue" },
+                    new RandomizationOption() { HumanName = "Arrival" },
+                    new RandomizationOption() { HumanName = "The Long Walk" },
+                }
+            });
+
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Wackadoodle",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Actors in cutscenes"},
+                    new RandomizationOption() {HumanName = "Animation data"},
+                    new RandomizationOption() {HumanName = "Random movement interpolations"},
+                    new RandomizationOption() {HumanName = "Hologram colors"},
+                    new RandomizationOption() {HumanName = "Vowels"},
+                    new RandomizationOption() {HumanName = "Game over text"},
+                    new RandomizationOption() {HumanName = "Drone colors"}
+                }
+            });
         }
 
         public static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
