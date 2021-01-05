@@ -103,7 +103,7 @@ namespace ME2Randomizer.Classes
             Directory.CreateDirectory(dlcpath);
 
             MemoryStream zipMemory = new MemoryStream();
-            Utilities.ExtractInternalFileToMemory("starterkit.dlcmodcomponents.zip", false, zipMemory);
+            Utilities.ExtractInternalFileToMemory($"starterkit.{Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
             using ZipArchive archive = new ZipArchive(zipMemory);
             archive.ExtractToDirectory(dlcpath);
             return dlcpath;

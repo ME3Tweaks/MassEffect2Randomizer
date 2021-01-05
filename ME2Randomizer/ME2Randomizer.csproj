@@ -11,6 +11,7 @@
   <ItemGroup>
     <Resource Include="images\*.png" />
     <Resource Include="images\*.jpg" />
+    <None Remove="staticfiles\starterkit\me2starterkit.zip" />
     <Resource Include="fonts\aerolight.ttf" />
     <Content Include="masseffectmodder.ico" />
   </ItemGroup>
@@ -36,6 +37,9 @@
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="staticfiles\starterkit\me2starterkit.zip" />
+  </ItemGroup>
 
 
   <ItemGroup>
