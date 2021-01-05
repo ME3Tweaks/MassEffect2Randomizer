@@ -19,7 +19,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='ME2Debug'">
     <DefineConstants>DEBUG;__ME2__</DefineConstants>
     <XamlDebuggingInformation>True</XamlDebuggingInformation>
-    <DebugType>portable</DebugType>
+    <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='ME2Release'">
@@ -40,7 +40,7 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="staticfiles\starterkit\me2starterkit.zip" />
+    <EmbeddedResource Include="staticfiles\**\*" />
   </ItemGroup>
 
 
@@ -67,6 +67,7 @@
   
   <ItemGroup>
     <Folder Include="MainWindowUIComponents\" />
+    <Folder Include="staticfiles\binary\" />
   </ItemGroup>
   
   <ItemGroup>
@@ -75,5 +76,9 @@
 
   <PropertyGroup>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ME2Debug|x64'">
+    <Optimize>false</Optimize>
   </PropertyGroup>
 </Project>

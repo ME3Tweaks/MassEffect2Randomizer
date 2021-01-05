@@ -76,8 +76,7 @@ namespace MassEffectRandomizer.Classes
         {
             string result = string.Empty;
             var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
-            using (Stream stream = typeof(MainWindow).Assembly.
-                       GetManifestResourceStream("MassEffectRandomizer.staticfiles.text." + filename))
+            using (Stream stream = typeof(MainWindow).Assembly.GetManifestResourceStream("ME2Randomizer.staticfiles.text." + filename))
             {
                 using (StreamReader sr = new StreamReader(stream))
                 {
@@ -87,11 +86,16 @@ namespace MassEffectRandomizer.Classes
             return result;
         }
 
+        /// <summary>
+        /// Fetches a file from the staticfiles/binary resource folder
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
         public static byte[] GetEmbeddedStaticFilesBinaryFile(string filename, bool fullName = false)
         {
             var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
-            using (Stream stream = typeof(MainWindow).Assembly.
-                GetManifestResourceStream(fullName ? filename : "MassEffectRandomizer.staticfiles." + filename))
+            using (Stream stream = typeof(MainWindow).Assembly.GetManifestResourceStream(fullName ? filename : "ME2Randomizer.staticfiles.binary." + filename))
             {
                 byte[] ba = new byte[stream.Length];
                 stream.Read(ba, 0, ba.Length);
@@ -136,7 +140,8 @@ namespace MassEffectRandomizer.Classes
             Log.Information("Extracting file: " + internalResourceName);
             if (destStream != null || (destination != null && (!File.Exists(destination) || overwrite)))
             {
-                using Stream stream = Utilities.GetResourceStream(fullname ? internalResourceName : "MassEffectRandomizer.staticfiles." + internalResourceName);
+                // Todo: might need adjusted for ME3
+                using Stream stream = Utilities.GetResourceStream(fullname ? internalResourceName : "ME2Randomizer.staticfiles." + internalResourceName);
                 bool close = destStream != null;
                 if (destStream == null)
                 {
@@ -442,6 +447,7 @@ namespace MassEffectRandomizer.Classes
 
         public static string GetGameBackupPath()
         {
+            // NEEDS CHANGED FOR ME3
             string entry = "ME2VanillaBackupLocation";
             string path = Utilities.GetBackupRegistrySettingString(entry);
             if (path == null || !Directory.Exists(path))
@@ -455,9 +461,12 @@ namespace MassEffectRandomizer.Classes
             return path;
         }
 
-        public static Stream GetResourceStream(string assemblyResource)
+        private static Stream GetResourceStream(string assemblyResource)
         {
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+#if DEBUG
+            var resources = assembly.GetManifestResourceNames();
+#endif
             return assembly.GetManifestResourceStream(assemblyResource);
         }
 

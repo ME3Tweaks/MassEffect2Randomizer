@@ -9,7 +9,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     public class Normandy
     {
-        public static bool RandomizeNormandy(Random random, RandomizationOption option)
+        public static bool PerformRandomization(Random random, RandomizationOption option)
         {
             RandomizeNormandyHolo(random);
             return true;

@@ -209,7 +209,7 @@ namespace ME2Randomizer
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
-            SetupOptions();
+            Randomizer.SetupOptions(RandomizationGroups);
             LoadCommands();
             InitializeComponent();
 
@@ -236,119 +236,9 @@ namespace ME2Randomizer
 
 
 
-        private void SetupOptions()
-        {
-            RandomizationGroups.Add(new RandomizationGroup()
-            {
-                GroupName = "Faces",
-                Options = new ObservableCollectionExtended<RandomizationOption>()
-                {
-                    new RandomizationOption() { HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
-                        rSetting switch
-                        {
-                            1 => "Oblivion",
-                            2 => "Knights of the old Republic",
-                            3 => "Sonic Adventure",
-                            4 => "Source filmmaker",
-                            5 => "Total madness",
-                            _ => "Error"
-                        },
-                        SliderValue = 2},  // This must come after the converter
-                    new RandomizationOption() { HumanName = "Squadmate faces"},
-                    new RandomizationOption() { HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
-                        rSetting => $"Randomization amount: {rSetting}",
-                        SliderValue = .3},  // This must come after the converter
-                    new RandomizationOption() { HumanName = "NPC head colors"},
-                    new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)"},
-                    new RandomizationOption() { HumanName = "Illusive Man eyes"},
-                    new RandomizationOption() { HumanName = "Character creator premade faces"},
-                    new RandomizationOption() { HumanName = "Character creator skin tones"},
-                    new RandomizationOption() { HumanName = "Iconic FemShep face"},
-                }
-            });
-
-            RandomizationGroups.Add(new RandomizationGroup()
-            {
-                GroupName = "Miscellaneous",
-                Options = new ObservableCollectionExtended<RandomizationOption>()
-                {
-                    new RandomizationOption() {HumanName = "'Sun actor' colors"},
-                    new RandomizationOption() {HumanName = "Fog colors"},
-                    new RandomizationOption() {HumanName = "Game over text"},
-                    new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
-                }
-            });
-
-            RandomizationGroups.Add(new RandomizationGroup()
-            {
-                GroupName = "Movement & pawns",
-                Options = new ObservableCollectionExtended<RandomizationOption>()
-                {
-                    new RandomizationOption() {HumanName = "Enemy movement speeds"},
-                    new RandomizationOption() {HumanName = "Player movement speeds"},
-                    new RandomizationOption() {HumanName = "Hammerhead"}
-                }
-            });
-
-            RandomizationGroups.Add(new RandomizationGroup()
-            {
-                GroupName = "Weapons",
-                Options = new ObservableCollectionExtended<RandomizationOption>()
-                {
-                    new RandomizationOption() { HumanName = "Weapon stats" },
-                    new RandomizationOption() { HumanName = "Squadmate weapon types" },
-                }
-            });
-
-            RandomizationGroups.Add(new RandomizationGroup()
-            {
-                GroupName = "Level-specific",
-                Options = new ObservableCollectionExtended<RandomizationOption>()
-                {
-                    new RandomizationOption() { HumanName = "Galaxy Map" },
-                    new RandomizationOption() { HumanName = "Normandy" },
-                    new RandomizationOption() { HumanName = "Prologue" },
-                    new RandomizationOption() { HumanName = "Arrival" },
-                    new RandomizationOption() { HumanName = "The Long Walk" },
-                }
-            });
+        
 
 
-            RandomizationGroups.Add(new RandomizationGroup()
-            {
-                GroupName = "Wackadoodle",
-                Options = new ObservableCollectionExtended<RandomizationOption>()
-                {
-                    new RandomizationOption() {HumanName = "Actors in cutscenes"},
-                    new RandomizationOption() {HumanName = "Animation data"},
-                    new RandomizationOption() {HumanName = "Random movement interpolations"},
-                    new RandomizationOption() {HumanName = "Hologram colors"},
-                    new RandomizationOption() {HumanName = "Vowels"},
-                    new RandomizationOption() {HumanName = "Game over text"},
-                    new RandomizationOption() {HumanName = "Drone colors"}
-                }
-            });
-        }
-
-        public static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
-        {
-            if (depObj != null)
-            {
-                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-                {
-                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
-                    if (child != null && child is T)
-                    {
-                        yield return (T)child;
-                    }
-
-                    foreach (T childOfChild in FindVisualChildren<T>(child))
-                    {
-                        yield return childOfChild;
-                    }
-                }
-            }
-        }
 
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -444,7 +334,7 @@ namespace ME2Randomizer
         }
 
         public string BackupRestoreText { get; set; }
-        private bool CanStartRandomization() => int.TryParse(SeedTextBox.Text, out var value) && value != 0;
+        private bool CanStartRandomization() => SeedTextBox != null && int.TryParse(SeedTextBox.Text, out var value) && value != 0;
         private async void StartRandomization()
         {
             if (!Utilities.isGameRunning())

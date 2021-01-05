@@ -5,14 +5,14 @@ using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 
-namespace ME2Randomizer.Classes.Randomizers
+namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     public static class ArrivalDLC
     {
-        public static void RandomizeAsteroidRelayColor(Randomizer randomizer, Random random)
+        private static void RandomizeAsteroidRelayColor(Random random)
         {
-            // Relay at end of ArvLvl1 with Kenson
-            var shuttleFile = MERFileSystem.GetPackageFile(@"BioD_ArvLvl1_710Shuttle.pcc");
+            // Relay at the end of the DLC
+            var shuttleFile = MERFileSystem.GetPackageFile(@"BioD_ArvLvl5_110_Asteroid.pcc");
             if (shuttleFile != null && File.Exists(shuttleFile))
             {
                 var shuttleP = MEPackageHandler.OpenMEPackage(shuttleFile);
@@ -78,8 +78,8 @@ namespace ME2Randomizer.Classes.Randomizers
                 MERFileSystem.SavePackage(shuttleP);
             }
 
-            // Relay ring color at the end of the mission
-            var asteroidf = MERFileSystem.GetPackageFile(@"BioD_ArvLvl5_110_Asteroid.pcc");
+            // Relay shown in the shuttle at the end of act 1
+            var asteroidf = MERFileSystem.GetPackageFile(@"BioD_ArvLvl1_710Shuttle.pcc");
             if (asteroidf != null && File.Exists(asteroidf))
             {
                 var skhuttleP = MEPackageHandler.OpenMEPackage(asteroidf);
@@ -144,6 +144,13 @@ namespace ME2Randomizer.Classes.Randomizers
 
                 MERFileSystem.SavePackage(skhuttleP);
             }
+        }
+
+        internal static bool PerformRandomization(Random random, RandomizationOption notUsed)
+        {
+            RandomizeAsteroidRelayColor(random);
+
+            return true;
         }
     }
 }

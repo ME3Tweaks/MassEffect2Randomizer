@@ -21,6 +21,8 @@ using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Serilog;
+using ME3ExplorerCore.Misc;
+using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 
 namespace ME2Randomizer.Classes
 {
@@ -120,7 +122,7 @@ namespace ME2Randomizer.Classes
                 sr.PerformSpecificRandomizationDelegate?.Invoke(random, sr);
             }
 
-            return;
+            //return;
 
             ///svar testp = MERFS.GetBasegameFile("");
 
@@ -184,22 +186,25 @@ namespace ME2Randomizer.Classes
 #if DEBUG
             //Restore ini files first
             var backupPath = Utilities.GetGameBackupPath();
-            var buDlcDir = Path.Combine(backupPath, "BioGame", "DLC");
-            var relativeInis = Directory.EnumerateFiles(buDlcDir, "*.ini", SearchOption.AllDirectories).Select(x => x.Substring(buDlcDir.Length + 1)).ToList();
-            var gamepath = Path.Combine(Utilities.GetGamePath(), "BioGame", "DLC");
-            foreach (var rel in relativeInis)
+            if (backupPath != null)
             {
-                var bu = Path.Combine(buDlcDir, rel);
-                var ig = Path.Combine(gamepath, rel);
-                if (Directory.Exists(Path.GetDirectoryName(ig)))
+                var buDlcDir = Path.Combine(backupPath, "BioGame", "DLC");
+                var relativeInis = Directory.EnumerateFiles(buDlcDir, "*.ini", SearchOption.AllDirectories).Select(x => x.Substring(buDlcDir.Length + 1)).ToList();
+                var gamepath = Path.Combine(Utilities.GetGamePath(), "BioGame", "DLC");
+                foreach (var rel in relativeInis)
                 {
-                    File.Copy(bu, ig, true);
+                    var bu = Path.Combine(buDlcDir, rel);
+                    var ig = Path.Combine(gamepath, rel);
+                    if (Directory.Exists(Path.GetDirectoryName(ig)))
+                    {
+                        File.Copy(bu, ig, true);
+                    }
                 }
-            }
 
-            var basegameCoal = Path.Combine(Path.Combine(Utilities.GetGamePath(), @"BIOGame\Config\PC\Cooked\Coalesced.ini"));
-            var buCoal = Path.Combine(backupPath, @"BIOGame\Config\PC\Cooked\Coalesced.ini");
-            File.Copy(buCoal, basegameCoal, true);
+                var basegameCoal = Path.Combine(Path.Combine(Utilities.GetGamePath(), @"BIOGame\Config\PC\Cooked\Coalesced.ini"));
+                var buCoal = Path.Combine(backupPath, @"BIOGame\Config\PC\Cooked\Coalesced.ini");
+                File.Copy(buCoal, basegameCoal, true);
+            }
 #endif
 
             // ME2 ----
@@ -256,12 +261,16 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     // Debug
-                    //if (!file.Contains("BioD_Pro", StringComparison.InvariantCultureIgnoreCase))
-                    //    return;
+                    if (!file.Contains("BioD_ProNor", StringComparison.InvariantCultureIgnoreCase))
+                        return;
 
                     var package = MEPackageHandler.OpenMEPackage(file);
                     foreach (var exp in package.Exports)
                     {
+                        foreach (var r in perExportRandomizers)
+                        {
+                            r.PerformRandomizationOnExportDelegate(exp, random, r);
+                        }
                         /*
 
                         // NO MORE DEFAULT OBJECTS AFTER THIS LINE
@@ -511,9 +520,104 @@ namespace ME2Randomizer.Classes
             //AddMERSplash(random);
         }
 
-        private void RandomizeArrivalDLC(Random random)
+        /// <summary>
+        /// Sets the options up that can be selected and their methods they call
+        /// </summary>
+        /// <param name="RandomizationGroups"></param>
+        internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups)
         {
-            ArrivalDLC.RandomizeAsteroidRelayColor(this, random);
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Faces",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() { HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
+                        rSetting switch
+                        {
+                            1 => "Oblivion",
+                            2 => "Knights of the old Republic",
+                            3 => "Sonic Adventure",
+                            4 => "Source filmmaker",
+                            5 => "Total madness",
+                            _ => "Error"
+                        },
+                        SliderValue = 2, // This must come after the converter
+                        PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport
+                    },
+                    new RandomizationOption() { HumanName = "Squadmate faces"},
+                    new RandomizationOption() { HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
+                        rSetting => $"Randomization amount: {rSetting}",
+                        SliderValue = .3},  // This must come after the converter
+                    new RandomizationOption() { HumanName = "NPC head colors"},
+                    new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)"},
+                    new RandomizationOption() { HumanName = "Illusive Man eyes"},
+                    new RandomizationOption() { HumanName = "Character creator premade faces"},
+                    new RandomizationOption() { HumanName = "Character creator skin tones"},
+                    new RandomizationOption() { HumanName = "Iconic FemShep face"},
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Miscellaneous",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "'Sun actor' colors"},
+                    new RandomizationOption() {HumanName = "Fog colors"},
+                    new RandomizationOption() {HumanName = "Game over text"},
+                    new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Movement & pawns",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Enemy movement speeds"},
+                    new RandomizationOption() {HumanName = "Player movement speeds"},
+                    new RandomizationOption() {HumanName = "Hammerhead"}
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Weapons",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() { HumanName = "Weapon stats" },
+                    new RandomizationOption() { HumanName = "Squadmate weapon types" },
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Level-specific",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() { HumanName = "Galaxy Map" },
+                    new RandomizationOption() { HumanName = "Normandy", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization },
+                    new RandomizationOption() { HumanName = "Prologue" },
+                    new RandomizationOption() { HumanName = "Arrival", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization },
+                    new RandomizationOption() { HumanName = "Collector Base" },
+                }
+            });
+
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Wackadoodle",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Actors in cutscenes"},
+                    new RandomizationOption() {HumanName = "Animation data", PerformRandomizationOnExportDelegate = RAnimSequence.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Random movement interpolations"},
+                    new RandomizationOption() {HumanName = "Hologram colors"},
+                    new RandomizationOption() {HumanName = "Vowels"},
+                    new RandomizationOption() {HumanName = "Game over text"},
+                    new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
+                }
+            });
         }
 
         private void RandomizeTheLongWalk(Random random)
@@ -583,342 +687,11 @@ namespace ME2Randomizer.Classes
             ACF_BioFixed48,
         }
 
-        private static string[] boneGroupNamesToRandomize = new[]
-        {
-            "ankle",
-            "wrist",
-            "finger",
-            "elbow",
-            "toe"
-        };
-        public void RandomizeBioAnimSetData(ExportEntry export, Random random)
-        {
-
-            //build groups
-            var actualList = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
-
-            Dictionary<string, List<string>> randomizationGroups = new Dictionary<string, List<string>>();
-            foreach (var key in boneGroupNamesToRandomize)
-            {
-                randomizationGroups[key] = actualList.Where(x => x.Value.Name.Contains(key, StringComparison.InvariantCultureIgnoreCase)).Select(x => x.Value.Name).ToList();
-                randomizationGroups[key].Shuffle(random);
-            }
-
-            foreach (var prop in actualList)
-            {
-                var propname = prop.Value.Name;
-                var randoKey = randomizationGroups.Keys.FirstOrDefault(x => propname.Contains(x, StringComparison.InvariantCultureIgnoreCase));
-                //Debug.WriteLine(propname);
-                if (randoKey != null)
-                {
-                    var randoKeyList = randomizationGroups[randoKey];
-                    prop.Value = randoKeyList[0];
-                    randoKeyList.RemoveAt(0);
-                }
-            }
-
-            //var trackbonenames = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames").Select(x => x.Value.Name).ToList(); //Make new list object.
-
-            //var bones = export.GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
-            //foreach (var bonename in bones)
-            //{
-            //    if (bonesToNotRandomize.Contains(bonename.Value.Name)) continue; //skip
-            //    bonename.Value = trackbonenames[0];
-            //    trackbonenames.RemoveAt(0);
-            //}
-            export.WriteProperty(actualList);
-        }
-
-        private bool shouldRandomizeBone(string boneName)
-        {
-            if (boneName.Contains("finger", StringComparison.InvariantCultureIgnoreCase)) return true;
-            if (boneName.Contains("eye", StringComparison.InvariantCultureIgnoreCase)) return true;
-            if (boneName.Contains("mouth", StringComparison.InvariantCultureIgnoreCase)) return true;
-            if (boneName.Contains("jaw", StringComparison.InvariantCultureIgnoreCase)) return true;
-            if (boneName.Contains("sneer", StringComparison.InvariantCultureIgnoreCase)) return true;
-            if (boneName.Contains("brow", StringComparison.InvariantCultureIgnoreCase)) return true;
-            return false;
-        }
-
-        private void RandomizeAnimSequence(ExportEntry export, Random random)
-        {
-            var game = export.FileRef.Game;
-            byte[] data = export.Data;
-            try
-            {
-                var TrackOffsets = export.GetProperty<ArrayProperty<IntProperty>>("CompressedTrackOffsets");
-                var animsetData = export.GetProperty<ObjectProperty>("m_pBioAnimSetData");
-                if (animsetData.Value <= 0)
-                {
-                    Debug.WriteLine("trackdata is an import skipping");
-                    return;
-                } // don't randomize;
-
-                var boneList = export.FileRef.GetUExport(animsetData.Value).GetProperty<ArrayProperty<NameProperty>>("TrackBoneNames");
-                Enum.TryParse(export.GetProperty<EnumProperty>("RotationCompressionFormat").Value.Name, out AnimationCompressionFormat rotCompression);
-                int offset = export.propsEnd();
-                //ME2 SPECIFIC
-                offset += 16; //3 0's, 1 offset of data point
-                int binLength = BitConverter.ToInt32(data, offset);
-                //var LengthNode = new BinInterpNode
-                //{
-                //    Header = $"0x{offset:X4} AnimBinary length: {binLength}",
-                //    Name = "_" + offset,
-                //    Tag = NodeType.StructLeafInt
-                //};
-                //offset += 4;
-                //subnodes.Add(LengthNode);
-                var animBinStart = offset;
-
-                int bone = 0;
-
-                for (int i = 0; i < TrackOffsets.Count; i++)
-                {
-                    var bonePosOffset = TrackOffsets[i].Value;
-                    i++;
-                    var bonePosCount = TrackOffsets[i].Value;
-                    var boneName = boneList[bone].Value;
-                    bool doSomething = shouldRandomizeBone(boneName);
-                    //POSKEYS
-                    for (int j = 0; j < bonePosCount; j++)
-                    {
-                        offset = animBinStart + bonePosOffset + j * 12;
-                        //Key #
-                        //var PosKeys = new BinInterpNode
-                        //{
-                        //    Header = $"0x{offset:X5} PosKey {j}",
-                        //    Name = "_" + offset,
-                        //    Tag = NodeType.Unknown
-                        //};
-                        //BoneID.Items.Add(PosKeys);
-
-
-                        var posX = BitConverter.ToSingle(data, offset);
-                        if (doSomething)
-                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posX - (posX * .3f), posX + (posX * .3f))));
-
-                        //PosKeys.Items.Add(new BinInterpNode
-                        //{
-                        //    Header = $"0x{offset:X5} X: {posX} ",
-                        //    Name = "_" + offset,
-                        //    Tag = NodeType.StructLeafFloat
-                        //});
-                        offset += 4;
-
-                        var posY = BitConverter.ToSingle(data, offset);
-                        if (doSomething)
-                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posY - (posY * .3f), posY + (posY * .3f))));
-                        //PosKeys.Items.Add(new BinInterpNode
-                        //{
-                        //    Header = $"0x{offset:X5} Y: {posY} ",
-                        //    Name = "_" + offset,
-                        //    Tag = NodeType.StructLeafFloat
-                        //});
-                        offset += 4;
-
-                        var posZ = BitConverter.ToSingle(data, offset);
-                        if (doSomething)
-                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posZ - (posZ * .3f), posZ + (posZ * .3f))));
-
-                        //PosKeys.Items.Add(new BinInterpNode
-                        //{
-                        //    Header = $"0x{offset:X5} Z: {posZ} ",
-                        //    Name = "_" + offset,
-                        //    Tag = NodeType.StructLeafFloat
-                        //});
-                        offset += 4;
-                    }
-
-                    var lookat = boneName.Name.Contains("lookat");
-
-                    i++;
-                    var boneRotOffset = TrackOffsets[i].Value;
-                    i++;
-                    var boneRotCount = TrackOffsets[i].Value;
-                    int l = 12; // 12 length of rotation by default
-                    var offsetRotX = boneRotOffset;
-                    var offsetRotY = boneRotOffset;
-                    var offsetRotZ = boneRotOffset;
-                    var offsetRotW = boneRotOffset;
-                    for (int j = 0; j < boneRotCount; j++)
-                    {
-                        float rotX = 0;
-                        float rotY = 0;
-                        float rotZ = 0;
-                        float rotW = 0;
-
-                        switch (rotCompression)
-                        {
-                            case AnimationCompressionFormat.ACF_None:
-                                l = 16;
-                                offset = animBinStart + boneRotOffset + j * l;
-                                offsetRotX = offset;
-                                rotX = BitConverter.ToSingle(data, offset);
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
-                                offset += 4;
-                                offsetRotY = offset;
-                                rotY = BitConverter.ToSingle(data, offset);
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
-                                offset += 4;
-                                offsetRotZ = offset;
-                                rotZ = BitConverter.ToSingle(data, offset);
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
-                                offset += 4;
-                                offsetRotW = offset;
-                                rotW = BitConverter.ToSingle(data, offset);
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotW - (rotW * .1f), rotW + (rotW * .1f))));
-                                offset += 4;
-                                break;
-                            case AnimationCompressionFormat.ACF_Float96NoW:
-                                offset = animBinStart + boneRotOffset + j * l;
-                                offsetRotX = offset;
-                                rotX = BitConverter.ToSingle(data, offset);
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
-
-                                offset += 4;
-                                offsetRotY = offset;
-                                rotY = BitConverter.ToSingle(data, offset);
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
-
-                                offset += 4;
-                                offsetRotZ = offset;
-                                rotZ = BitConverter.ToSingle(data, offset);
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
-
-                                offset += 4;
-                                break;
-                            case AnimationCompressionFormat.ACF_Fixed48NoW: // normalized quaternion with 3 16-bit fixed point fields
-                                                                            //FQuat r;
-                                                                            //r.X = (X - 32767) / 32767.0f;
-                                                                            //r.Y = (Y - 32767) / 32767.0f;
-                                                                            //r.Z = (Z - 32767) / 32767.0f;
-                                                                            //RESTORE_QUAT_W(r);
-                                                                            //break;
-                            case AnimationCompressionFormat.ACF_Fixed32NoW:// normalized quaternion with 11/11/10-bit fixed point fields
-                                                                           //FQuat r;
-                                                                           //r.X = X / 1023.0f - 1.0f;
-                                                                           //r.Y = Y / 1023.0f - 1.0f;
-                                                                           //r.Z = Z / 511.0f - 1.0f;
-                                                                           //RESTORE_QUAT_W(r);
-                                                                           //break;
-                            case AnimationCompressionFormat.ACF_IntervalFixed32NoW:
-                            //FQuat r;
-                            //r.X = (X / 1023.0f - 1.0f) * Ranges.X + Mins.X;
-                            //r.Y = (Y / 1023.0f - 1.0f) * Ranges.Y + Mins.Y;
-                            //r.Z = (Z / 511.0f - 1.0f) * Ranges.Z + Mins.Z;
-                            //RESTORE_QUAT_W(r);
-                            //break;
-                            case AnimationCompressionFormat.ACF_Float32NoW:
-                                //FQuat r;
-
-                                //int _X = data >> 21;            // 11 bits
-                                //int _Y = (data >> 10) & 0x7FF;  // 11 bits
-                                //int _Z = data & 0x3FF;          // 10 bits
-
-                                //*(unsigned*)&r.X = ((((_X >> 7) & 7) + 123) << 23) | ((_X & 0x7F | 32 * (_X & 0xFFFFFC00)) << 16);
-                                //*(unsigned*)&r.Y = ((((_Y >> 7) & 7) + 123) << 23) | ((_Y & 0x7F | 32 * (_Y & 0xFFFFFC00)) << 16);
-                                //*(unsigned*)&r.Z = ((((_Z >> 6) & 7) + 123) << 23) | ((_Z & 0x3F | 32 * (_Z & 0xFFFFFE00)) << 17);
-
-                                //RESTORE_QUAT_W(r);
-
-
-                                break;
-                            case AnimationCompressionFormat.ACF_BioFixed48:
-                                offset = animBinStart + boneRotOffset + j * l;
-                                const float shift = 0.70710678118f;
-                                const float scale = 1.41421356237f;
-                                offsetRotX = offset;
-                                rotX = (data[0] & 0x7FFF) / 32767.0f * scale - shift;
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
-
-                                offset += 4;
-                                offsetRotY = offset;
-                                rotY = (data[1] & 0x7FFF) / 32767.0f * scale - shift;
-                                if (lookat)
-
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
-
-                                offset += 4;
-                                offsetRotZ = offset;
-                                rotZ = (data[2] & 0x7FFF) / 32767.0f * scale - shift;
-                                if (lookat)
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
 
 
 
-                                //float w = 1.0f - (rotX * rotX + rotY * rotY + rotZ * rotZ);
-                                //w = w >= 0.0f ? (float)Math.Sqrt(w) : 0.0f;
-                                //int s = ((data[0] >> 14) & 2) | ((data[1] >> 15) & 1);
-                                break;
-                        }
 
-                        if (rotCompression == AnimationCompressionFormat.ACF_BioFixed48 || rotCompression == AnimationCompressionFormat.ACF_Float96NoW || rotCompression == AnimationCompressionFormat.ACF_None)
-                        {
-                            //randomize here?
-                            //var RotKeys = new BinInterpNode
-                            //{
-                            //    Header = $"0x{offsetRotX:X5} RotKey {j}",
-                            //    Name = "_" + offsetRotX,
-                            //    Tag = NodeType.Unknown
-                            //};
-                            //BoneID.Items.Add(RotKeys);
-                            //RotKeys.Items.Add(new BinInterpNode
-                            //{
-                            //    Header = $"0x{offsetRotX:X5} RotX: {rotX} ",
-                            //    Name = "_" + offsetRotX,
-                            //    Tag = NodeType.StructLeafFloat
-                            //});
-                            //RotKeys.Items.Add(new BinInterpNode
-                            //{
-                            //    Header = $"0x{offsetRotY:X5} RotY: {rotY} ",
-                            //    Name = "_" + offsetRotY,
-                            //    Tag = NodeType.StructLeafFloat
-                            //});
-                            //RotKeys.Items.Add(new BinInterpNode
-                            //{
-                            //    Header = $"0x{offsetRotZ:X5} RotZ: {rotZ} ",
-                            //    Name = "_" + offsetRotZ,
-                            //    Tag = NodeType.StructLeafFloat
-                            //});
-                            if (rotCompression == AnimationCompressionFormat.ACF_None)
-                            {
-                                //RotKeys.Items.Add(new BinInterpNode
-                                //{
-                                //    Header = $"0x{offsetRotW:X5} RotW: {rotW} ",
-                                //    Name = "_" + offsetRotW,
-                                //    Tag = NodeType.StructLeafFloat
-                                //});
-                            }
-                        }
-                    }
-                    bone++;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Error reading animsequence: " + ex.Message + ". Skipping");
-            }
 
-            export.Data = data; //write back
-        }
-
-       
 
         private void randomizeMorphTarget(Random random, ExportEntry morphTarget)
         {
@@ -1211,102 +984,6 @@ namespace ME2Randomizer.Classes
             exp.WriteProperties(props);
         }
 
-        private void RandomizeFaceFX(ExportEntry exp, Random random, int amount)
-        {
-            try
-            {
-                Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");
-                var d = exp.Data;
-                var animSet = ObjectBinary.From<FaceFXAnimSet>(exp);
-                for (int i = 0; i < animSet.Lines.Count(); i++)
-                {
-                    var faceFxline = animSet.Lines[i];
-                    //if (true)
-
-                    bool randomizedBoneList = false;
-                    if (random.Next(10 - amount) == 0)
-                    {
-                        //Randomize the names used for animation
-                        faceFxline.AnimationNames.Shuffle(random);
-                        randomizedBoneList = true;
-                    }
-                    if (!randomizedBoneList || random.Next(16 - amount) == 0)
-                    {
-                        //Randomize the points
-                        for (int j = 0; j < faceFxline.Points.Count; j++)
-                        {
-                            bool isLast = j == faceFxline.Points.Count;
-                            var currentWeight = faceFxline.Points[j].weight;
-
-                            var currentPoint = faceFxline.Points[j];
-                            switch (amount)
-                            {
-                                case 1: //A few broken bones
-                                    currentPoint.weight += random.NextFloat(-.25, .25);
-                                    break;
-                                case 2: //A significant amount of broken bones
-                                    currentPoint.weight += random.NextFloat(-.5, .5);
-                                    break;
-                                case 3: //That's not how the face is supposed to work
-                                    if (random.Next(5) == 0)
-                                    {
-                                        currentPoint.weight = random.NextFloat(-3, 3);
-                                    }
-                                    else if (isLast && random.Next(3) == 0)
-                                    {
-                                        currentPoint.weight = random.NextFloat(.7, .7);
-                                    }
-                                    else
-                                    {
-                                        currentPoint.weight *= 8;
-                                    }
-
-                                    break;
-                                case 4: //:O
-                                    if (random.Next(12) == 0)
-                                    {
-                                        currentPoint.weight = random.NextFloat(-5, 5);
-                                    }
-                                    else if (isLast && random.Next(3) == 0)
-                                    {
-                                        currentPoint.weight = random.NextFloat(.9, .9);
-                                    }
-                                    else
-                                    {
-                                        currentPoint.weight *= 5;
-                                    }
-                                    //Debug.WriteLine(currentPoint.weight);
-
-                                    break;
-                                case 5: //Utter madness
-                                    currentPoint.weight = random.NextFloat(-10, 10);
-                                    break;
-                                default:
-                                    Debugger.Break();
-                                    break;
-                            }
-
-                            faceFxline.Points[j] = currentPoint; //Reassign the struct
-                        }
-                    }
-
-                    //Debugging only: Get list of all animation names
-                    //for (int j = 0; j < faceFxline.animations.Length; j++)
-                    //{
-                    //    var animationName = animSet.Header.Names[faceFxline.animations[j].index]; //animation name
-                    //    faceFxBoneNames.Add(animationName);
-                    //}
-                }
-
-                Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
-                exp.WriteBinary(animSet);
-            }
-            catch (Exception e)
-            {
-                //Do nothing for now.
-                Log.Error("AnimSet error! " + App.FlattenException((e)));
-            }
-        }
 
         private void scaleHeadMesh(ExportEntry meshRef, float headScale)
         {

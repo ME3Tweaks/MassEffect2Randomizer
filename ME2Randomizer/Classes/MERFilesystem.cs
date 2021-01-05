@@ -33,16 +33,24 @@ namespace ME2Randomizer.Classes
 
         public static void InitMERFS(bool usingDlcModFS)
         {
+            ReloadLoadedFiles();
             UsingDLCModFS = usingDlcModFS;
+
+            var dlcmodPath = Path.Combine(MEDirectories.GetDefaultGamePath(Game), "BioGame", "DLC", $"DLC_MOD_{Game}Randomizer");
+            if (Directory.Exists(dlcmodPath)) Utilities.DeleteFilesAndFoldersRecursively(dlcmodPath);
+
             if (UsingDLCModFS)
             {
-                dlcModPath = CreateRandomizerDLCMod();
+                dlcModPath = dlcmodPath;
+                CreateRandomizerDLCMod(dlcmodPath);
                 DLCModCookedPath = Path.Combine(dlcModPath, Game == MEGame.ME2 ? "CookedPC" : "CookedPCConsole"); // Must be changed for ME3
             }
             else
             {
                 // Todo: Delete any existing randomizer mod that is installed.
+                dlcModPath = null; // do not set this var
             }
+            ReloadLoadedFiles();
         }
 
 
@@ -102,17 +110,14 @@ namespace ME2Randomizer.Classes
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        private static string CreateRandomizerDLCMod()
+        private static void CreateRandomizerDLCMod(string dlcpath)
         {
-            var dlcpath = Path.Combine(MEDirectories.GetDefaultGamePath(Game), "BioGame", "DLC", $"DLC_MOD_{Game}Randomizer");
-            if (Directory.Exists(dlcpath)) Utilities.DeleteFilesAndFoldersRecursively(dlcpath);
             Directory.CreateDirectory(dlcpath);
 
             MemoryStream zipMemory = new MemoryStream();
             Utilities.ExtractInternalFileToMemory($"starterkit.{Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
             using ZipArchive archive = new ZipArchive(zipMemory);
             archive.ExtractToDirectory(dlcpath);
-            return dlcpath;
         }
 
         /// <summary>
