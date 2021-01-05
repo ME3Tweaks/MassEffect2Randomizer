@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
@@ -12,9 +13,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     class GalaxyMap
     {
-        public void RandomizeGalaxyMap(Random random)
+        public static bool RandomizeGalaxyMap(Random random, RandomizationOption option)
         {
-            var package = MERFileSystem.GetPackageFile(@"BioD_Nor_103aGalaxyMap.pcc");
+            var packageF = MERFileSystem.GetPackageFile(@"BioD_Nor_103aGalaxyMap.pcc");
+            var package = MEPackageHandler.OpenMEPackage(packageF);
             foreach (ExportEntry export in package.Exports)
             {
                 switch (export.ClassName)
@@ -126,11 +128,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         }
                         break;
                     case "MaterialInstanceConstant":
-                        RandomizeMaterialInstance(export, random);
+                        RMaterialInstance.RandomizeExport(export, null, random);
                         break;
                 }
             }
             MERFileSystem.SavePackage(package);
+            return true;
         }
     }
 }

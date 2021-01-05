@@ -18,6 +18,9 @@ using MahApps.Metro.Controls.Dialogs;
 using MassEffectRandomizer.Classes;
 using MassEffectRandomizer.Classes.Updater;
 using ME2Randomizer.Classes;
+using ME2Randomizer.Classes.Randomizers;
+using ME2Randomizer.Classes.Randomizers.ME2.Misc;
+using ME2Randomizer.ui;
 using ME3ExplorerCore;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Misc;
@@ -40,7 +43,7 @@ namespace ME2Randomizer
         {
             ERandomizationMode_SelectAny = 0,
             ERandomizationMode_Common = 1,
-            ERAndomizationMode_Screed = 2
+            ERandomizationMode_Screed = 2
         }
 
         public bool ShowProgressPanel { get; set; }
@@ -82,7 +85,7 @@ namespace ME2Randomizer
             {
                 foreach (var option in group.Options)
                 {
-                    if (SelectedRandomizeMode == RandomizationMode.ERAndomizationMode_Screed) option.OptionIsSelected = true;
+                    if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Screed) option.OptionIsSelected = true;
                     if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_SelectAny) option.OptionIsSelected = false;
                     if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common) option.OptionIsSelected = option.IsRecommended;
                 }
@@ -124,70 +127,7 @@ namespace ME2Randomizer
             }
         }
 
-        [DebuggerDisplay("RandomPlanetInfo ({PlanetName}) - Playable: {Playable}")]
-        public class RandomizedPlanetInfo
-        {
-            /// <summary>
-            /// What 0-based row this planet information is for in the Bio2DA
-            /// </summary>
-            public int RowID;
 
-            /// <summary>
-            /// Prevents shuffling this item outside of it's row ID
-            /// </summary>
-            public bool PreventShuffle;
-
-            /// <summary>
-            /// Indicator that this is an MSV planet
-            /// </summary>
-            public bool IsMSV;
-
-            /// <summary>
-            /// Indicator that this is an Asteroid Belt
-            /// </summary>
-            public bool IsAsteroidBelt;
-
-            /// <summary>
-            /// Indicator that this is an Asteroid
-            /// </summary>
-            public bool IsAsteroid;
-
-            /// <summary>
-            /// Name to assign for randomization. If this is a plot planet, this value is the original planet name
-            /// </summary>
-            public string PlanetName;
-
-            /// <summary>
-            /// Name used for randomizing if it is a plot planet and the plot planet option is on
-            /// </summary>
-            public string PlanetName2;
-
-            /// <summary>
-            /// Description of the planet in the Galaxy Map
-            /// </summary>
-            public string PlanetDescription;
-
-            /// <summary>
-            /// WHen updating 2DA_AreaMap, labels that begin with these prefixes will be analyzed and updated accordingly by full (if no :) or anything before :.
-            /// NOTE: THIS IS UNUSED... I THINK
-            /// </summary>
-            public List<string> MapBaseNames { get; internal set; }
-
-            /// <summary>
-            /// Category of image to use. Ensure there are enough images in the imagegroup folder.
-            /// </summary>
-            public string ImageGroup { get; internal set; }
-            /// <summary>
-            /// DLC folder this RPI belongs to. Can be UNC, Vegas, or null. Used with PreventShuffle as some Row ID's will be the same.
-            /// </summary>
-            public string DLC { get; internal set; }
-
-            /// <summary>
-            /// Text to assign the action button if the row has an action button (like Land or Survey)
-            /// </summary>
-            public string ButtonLabel { get; set; }
-            public bool Playable { get; internal set; }
-        }
 
         public class OpeningCrawl
         {
@@ -270,6 +210,7 @@ namespace ME2Randomizer
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
             SetupOptions();
+            LoadCommands();
             InitializeComponent();
 
 #if DEBUG
@@ -283,6 +224,17 @@ namespace ME2Randomizer
             SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
             PerformUpdateCheck();
         }
+        #region Commands
+        public GenericCommand StartRandomizationCommand { get; set; }
+
+        private void LoadCommands()
+        {
+            StartRandomizationCommand = new GenericCommand(StartRandomization, CanStartRandomization);
+        }
+
+        #endregion
+
+
 
         private void SetupOptions()
         {
@@ -323,7 +275,7 @@ namespace ME2Randomizer
                     new RandomizationOption() {HumanName = "'Sun actor' colors"},
                     new RandomizationOption() {HumanName = "Fog colors"},
                     new RandomizationOption() {HumanName = "Game over text"},
-                    new RandomizationOption() {HumanName = "Drone colors"}
+                    new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
                 }
             });
 
@@ -492,8 +444,8 @@ namespace ME2Randomizer
         }
 
         public string BackupRestoreText { get; set; }
-
-        private async void RandomizeButton_Click(object sender, RoutedEventArgs e)
+        private bool CanStartRandomization() => int.TryParse(SeedTextBox.Text, out var value) && value != 0;
+        private async void StartRandomization()
         {
             if (!Utilities.isGameRunning())
             {
@@ -501,7 +453,14 @@ namespace ME2Randomizer
                 randomizer = new Randomizer(this);
 
                 AllowOptionsChanging = false;
-                randomizer.Randomize(UseMERFS, RandomizationGroups.SelectMany(x=>x.Options.Where(x=>x.OptionIsSelected)).ToList());
+
+                var op = new OptionsPackage()
+                {
+                    Seed = int.Parse(SeedTextBox.Text),
+                    UseMERFS = UseMERFS,
+                    SelectedOptions = RandomizationGroups.SelectMany(x => x.Options.Where(x => x.OptionIsSelected)).ToList()
+                };
+                randomizer.Randomize(op);
             }
             else
             {

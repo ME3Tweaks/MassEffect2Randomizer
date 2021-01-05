@@ -17,7 +17,8 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='ME2Debug'">
-    <DefineConstants>Debug;__ME2__</DefineConstants>
+    <DefineConstants>DEBUG;__ME2__</DefineConstants>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
@@ -28,7 +29,8 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='ME3Debug'">
-    <DefineConstants>Debug;__ME3__</DefineConstants>
+    <DefineConstants>DEBUG;__ME3__</DefineConstants>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>

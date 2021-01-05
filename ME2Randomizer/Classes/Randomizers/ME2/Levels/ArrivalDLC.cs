@@ -75,7 +75,7 @@ namespace ME2Randomizer.Classes.Randomizers
                 lookupTable.Add(new FloatProperty(allColors[2] + numToAdd == 2 ? .3f : 0f)); //b
                 pe.WriteProperties(props);
 
-                randomizer.SavePackage(shuttleP);
+                MERFileSystem.SavePackage(shuttleP);
             }
 
             // Relay ring color at the end of the mission
@@ -142,10 +142,8 @@ namespace ME2Randomizer.Classes.Randomizers
                 lookupTable.Add(new FloatProperty(allColors[2] + numToAdd == 2 ? .3f : 0f)); //b
                 pe.WriteProperties(props);
 
-                randomizer.SavePackage(skhuttleP);
+                MERFileSystem.SavePackage(skhuttleP);
             }
-
-
         }
     }
 }

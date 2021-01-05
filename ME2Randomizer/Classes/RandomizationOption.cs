@@ -59,9 +59,19 @@ namespace ME2Randomizer.Classes
         public Func<double, string> SliderToTextConverter { get; set; }
 
         /// <summary>
-        /// The randomization method pointer. It takes an export entry, random, and returns a bool if the operation was run on the export.
+        /// The export-specific randomization method pointer. It takes an export entry, random, and returns a bool if the operation was run on the export.
         /// </summary>
-        public Func<ExportEntry, Random, bool> PerformRandomizationOnExport { get; set; }
+        public Func<ExportEntry, Random, RandomizationOption, bool> PerformRandomizationOnExportDelegate { get; set; }
+        /// <summary>
+        /// The callback to perform is this is not an export randomizer
+        /// </summary>
+        public Func<Random, RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
+
+
+        /// <summary>
+        /// Specifies if this is an export randomizer, or if it's a specialized randomizer that operates in a specific context.
+        /// </summary>
+        public bool IsExportRandomizer => PerformRandomizationOnExportDelegate != null;
 
 #pragma warning disable
         public event PropertyChangedEventHandler PropertyChanged;
