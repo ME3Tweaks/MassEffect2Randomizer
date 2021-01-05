@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -500,7 +501,7 @@ namespace ME2Randomizer
                 randomizer = new Randomizer(this);
 
                 AllowOptionsChanging = false;
-                randomizer.Randomize(UseMERFS); //change later
+                randomizer.Randomize(UseMERFS, RandomizationGroups.SelectMany(x=>x.Options.Where(x=>x.OptionIsSelected)).ToList());
             }
             else
             {
