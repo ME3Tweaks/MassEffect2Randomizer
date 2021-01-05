@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.TLK.ME2ME3;
@@ -15,6 +17,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     /// </summary>
     public class CharacterCreator
     {
+        private static RandomizationOption SuperRandomOption = new RandomizationOption() {SliderValue = 10};
 
         private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks, IMEPackage biop_char)
         {
@@ -33,7 +36,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             {
                 if (export.ClassName == "BioMorphFace")
                 {
-                    RandomizeBioMorphFace(export, random, 10); //.3 default
+                    RBioMorphFace.RandomizeExport(export, SuperRandomOption, random); //.3 default
                 }
                 else if (export.ClassName == "MorphTarget")
                 {
@@ -88,6 +91,81 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 else if (export.ClassName == "BioMorphFaceFESliderTexture")
                 {
 
+                }
+            }
+        }
+
+        private void randomizeFrontEnd(Random random, ExportEntry frontEnd)
+        {
+            var props = frontEnd.GetProperties();
+
+            //read categories
+            var morphCategories = props.GetProp<ArrayProperty<StructProperty>>("MorphCategories");
+            var sliders = new Dictionary<string, StructProperty>();
+            foreach (var cat in morphCategories)
+            {
+                var catSliders = cat.GetProp<ArrayProperty<StructProperty>>("m_aoSliders");
+                foreach (var cSlider in catSliders)
+                {
+                    var name = cSlider.GetProp<StrProperty>("m_sName");
+                    sliders[name.Value] = cSlider;
+                }
+            }
+
+            //Default Settings
+            var defaultSettings = props.GetProp<ArrayProperty<StructProperty>>("m_aDefaultSettings");
+            foreach (var basehead in defaultSettings)
+            {
+                randomizeBaseHead(random, basehead, frontEnd, sliders);
+            }
+
+            //randomize base heads ?
+            var baseHeads = props.GetProp<ArrayProperty<StructProperty>>("m_aBaseHeads");
+            foreach (var basehead in baseHeads)
+            {
+                randomizeBaseHead(random, basehead, frontEnd, sliders);
+            }
+
+
+            frontEnd.WriteProperties(props);
+        }
+
+        private void randomizeBaseHead(Random random, StructProperty basehead, ExportEntry frontEnd, Dictionary<string, StructProperty> sliders)
+        {
+            var bhSettings = basehead.GetProp<ArrayProperty<StructProperty>>("m_fBaseHeadSettings");
+            foreach (var baseSlider in bhSettings)
+            {
+                var sliderName = baseSlider.GetProp<StrProperty>("m_sSliderName");
+                //is slider stepped?
+                if (sliderName.Value == "Scar")
+                {
+                    baseSlider.GetProp<FloatProperty>("m_fValue").Value = 1;
+                    continue;
+                }
+                var slider = sliders[sliderName.Value];
+                var notched = slider.GetProp<BoolProperty>("m_bNotched");
+                var val = baseSlider.GetProp<FloatProperty>("m_fValue");
+
+                if (notched)
+                {
+                    //it's indexed
+                    var maxIndex = slider.GetProp<IntProperty>("m_iSteps");
+                    val.Value = random.Next(maxIndex); //will have to see if isteps is inclusive or not.
+                }
+                else
+                {
+                    //it's variable, we have to look up the m_fRange in the SliderMorph.
+                    var sliderDatas = slider.GetProp<ArrayProperty<ObjectProperty>>("m_aoSliderData");
+                    if (sliderDatas.Count == 1)
+                    {
+                        var slDataExport = frontEnd.FileRef.GetUExport(sliderDatas[0].Value);
+                        var range = slDataExport.GetProperty<FloatProperty>("m_fRange");
+                        val.Value = random.NextFloat(0, range * 100);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("wrong count of slider datas!");
+                    }
                 }
             }
         }

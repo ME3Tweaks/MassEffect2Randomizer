@@ -8,10 +8,10 @@ using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
-    class RBioMorphFace : IExportRandomizer
+    class RBioMorphFace
     {
-        private bool CanRandomize(ExportEntry export) => export.ClassName == @"BioMorphFace";
-        public bool RandomizeExport(ExportEntry export, RandomizationOption option, Random random)
+        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioMorphFace";
+        public static bool RandomizeExport(ExportEntry export, RandomizationOption option, Random random)
         {
             if (!CanRandomize(export)) return false;
             var props = export.GetProperties();

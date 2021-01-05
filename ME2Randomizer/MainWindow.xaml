@@ -17,7 +17,7 @@
                       Height="500"
                       DataContext="{Binding RelativeSource={RelativeSource Self}}"
                       WindowStartupLocation="CenterScreen"
-                      Width="1280">
+                      Width="800">
     <Window.Resources>
         <converters:EnumMatchToBooleanConverter x:Key="enumConverter" />
         <converters:FaceFXRandomizationLevelIntToStringConverter x:Key="FaceFXRandomizationLevelIntToStringConverter" />
@@ -130,7 +130,7 @@
                                 <Image Source="/images/discord.png" Height="16" Width="16"/>
                             </Button>
                         </StackPanel>
-                        <Button DockPanel.Dock="Right" Click="RandomizeButton_Click" Padding="20,0,20,0">
+                        <Button DockPanel.Dock="Right" Command="{Binding StartRandomizationCommand}"  Padding="20,0,20,0">
                             <fonts:OutlinedTextBlock Text="Randomize" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
                         <Button DockPanel.Dock="Right" Click="DataFinder_Click" Padding="20,0,20,0" Visibility="Visible">
@@ -160,7 +160,7 @@
                     </StackPanel>
                 </Grid>
             </DockPanel>
-            <TabControl Background="Transparent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Width="1100">
+            <TabControl Background="Transparent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Width="798">
                 <TabControl.Resources>
                     <Style TargetType="{x:Type TabPanel}">
                         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -173,16 +173,15 @@
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" />
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" />
                         </StackPanel>
-                        <ScrollViewer HorizontalScrollBarVisibility="Visible" HorizontalAlignment="Stretch">
-                            <ItemsControl ItemsSource="{Binding RandomizationGroups}" Width="1000">
+                            <ItemsControl ItemsSource="{Binding RandomizationGroups}" Width="900">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <ui:StretchyWrapPanel StretchToFill="True" Orientation="Vertical" StretchProportionally="True"/>
+                                        <WrapPanel Orientation="Vertical"/>
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type classes:RandomizationGroup}">
-                                        <StackPanel Width="300" Margin="10">
+                                        <StackPanel Margin="10">
                                             <fonts:OutlinedTextBlock Text="{Binding GroupName}" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
                                             <ItemsControl ItemsSource="{Binding Options}">
                                                 <ItemsControl.ItemTemplate>
@@ -223,7 +222,6 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </ScrollViewer>
                         <!--<ScrollViewer>
                             <Grid Name="randomizationOptionsPanel">
                                 <Grid.RowDefinitions>
