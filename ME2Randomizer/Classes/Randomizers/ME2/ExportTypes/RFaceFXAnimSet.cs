@@ -17,7 +17,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         public static bool RandomizeExport(ExportEntry exp, Random random, RandomizationOption option)
         {
             if (!CanRandomize(exp)) return false;
-            if (exp.UIndex != 1999) return false;
+            //if (exp.UIndex != 1999) return false;
             try
             {
                 Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");

@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using MassEffectRandomizer.Classes;
-using ME2Randomizer.Classes.gameini;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
@@ -18,7 +17,6 @@ using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.TLK.ME2ME3;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Unreal;
-using ME3ExplorerCore.Unreal.BinaryConverters;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Serilog;
 using ME3ExplorerCore.Misc;
@@ -103,7 +101,6 @@ namespace ME2Randomizer.Classes
             ModifiedFiles = new ConcurrentDictionary<string, string>(); //this will act as a Set since there is no ConcurrentSet
             MERFileSystem.InitMERFS(SelectedOptions.UseMERFS);
             Random random = new Random(SelectedOptions.Seed);
-            acceptableTagsForPawnShuffling = Utilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split('\n').ToList();
 
             //Load TLKs
             mainWindow.CurrentOperationText = "Loading TLKs";
@@ -119,6 +116,7 @@ namespace ME2Randomizer.Classes
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => !x.IsExportRandomizer).ToList();
             foreach (var sr in specificRandomizers)
             {
+                mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
                 sr.PerformSpecificRandomizationDelegate?.Invoke(random, sr);
             }
 
@@ -167,21 +165,6 @@ namespace ME2Randomizer.Classes
                     //    var hc = new HuffmanCompression();
                 }
             }
-
-
-            // ME2
-            //if (mainWindow.RANDSETTING_CHARACTER_CHARCREATOR)
-            //{
-            //    mainWindow.CurrentOperationText = "Randomizing character creator";
-
-            //    //basegame
-            //    //For ME3 - it has two biop_char files.
-            //    // var dhme1path = MERFS.GetGameFile(@"DLC\DLC_DHME1\CookedPC\BioP_Char.pcc");
-            //    // var biop_char = MEPackageHandler.OpenMEPackage(File.Exists(dhme1path) ? dhme1path : MERFS.GetBasegameFile("BioP_Char.pcc"));
-            //    var biop_char = MEPackageHandler.OpenMEPackage(MERFS.GetBasegameFile("BioP_Char.pcc"));
-            //    RandomizeCharacterCreator(random, Tlks, biop_char);
-            //    MERFileSystem.SavePackage(biop_char);
-            //}
 
 #if DEBUG
             //Restore ini files first
@@ -294,40 +277,12 @@ namespace ME2Randomizer.Classes
                                 loggedFilePath = true;
                             }
 
-                            if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
-                            {
-                                var tint = exp.GetProperty<StructProperty>("FlareTint");
-                                if (tint != null)
-                                {
-                                    RStructs.RandomizeTint(random, tint, false);
-                                    exp.WriteProperty(tint);
-                                }
-                            }
-                            else if (exp.ClassName == "BioSunActor")
-                            {
-                                var tint = exp.GetProperty<StructProperty>("SunTint");
-                                if (tint != null)
-                                {
-                                    RStructs.RandomizeTint(random, tint, false);
-                                    exp.WriteProperty(tint);
-                                }
-                            }
+                            
                         }
                         else if (exp.ClassName == "BioAnimSetData" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS) //UPDATE THIS TO DO BIOANIMDATA!!
                         {
                             RandomizeBioAnimSetData(exp, random);
                         }
-                        else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS)
-                        {
-                            if (!loggedFilePath)
-                            {
-                                //Log.Information("Randomizing map file: " + files[i]);
-                                loggedFilePath = true;
-                            }
-
-                            ShuffleCutscenePawns(exp, random);
-                        }
-
                         else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
                         {
                             if (!loggedFilePath)
@@ -517,11 +472,13 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() { HumanName = "Squadmate faces"},
                     new RandomizationOption() { HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
                         rSetting => $"Randomization amount: {rSetting}",
-                        SliderValue = .3},  // This must come after the converter
+                        SliderValue = .3,// This must come after the converter
+
+                    },
                     new RandomizationOption() { HumanName = "NPC head colors"},
                     new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)", IsRecommended = true, PerformRandomizationOnExportDelegate = REyes.RandomizeExport},
                     new RandomizationOption() { HumanName = "Illusive Man eyes", IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport},
-                    new RandomizationOption() { HumanName = "Character creator premade faces"},
+                    new RandomizationOption() { HumanName = "Character creator premade faces", IsRecommended=true, PerformSpecificRandomizationDelegate=CharacterCreator.RandomizeCharacterCreator},
                     new RandomizationOption() { HumanName = "Character creator skin tones"},
                     new RandomizationOption() { HumanName = "Iconic FemShep face"},
                     new RandomizationOption() { HumanName = "Look At Definitions", PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport},
@@ -569,7 +526,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() { HumanName = "Normandy", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization },
                     new RandomizationOption() { HumanName = "Prologue" },
                     new RandomizationOption() { HumanName = "Arrival", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization },
-                    new RandomizationOption() { HumanName = "Collector Base" },
+                    new RandomizationOption() { HumanName = "Collector Base", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization },
                 }
             });
 
@@ -578,7 +535,7 @@ namespace ME2Randomizer.Classes
                 GroupName = "Level components",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "'Sun actor' colors"},
+                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate=RBioSun.PerformRandomization},
                     new RandomizationOption() {HumanName = "Fog colors", IsRecommended=true, PerformRandomizationOnExportDelegate=RHeightFogComponent.RandomizeExport},
                     new RandomizationOption() {HumanName = "Post Processing volumes", PerformRandomizationOnExportDelegate=RPostProcessingVolume.RandomizeExport},
                     new RandomizationOption() {HumanName = "Light colors", PerformRandomizationOnExportDelegate=RLighting.RandomizeExport},
@@ -602,62 +559,6 @@ namespace ME2Randomizer.Classes
             });
         }
 
-        private void RandomizeTheLongWalk(Random random)
-        {
-            //Todo switch to MERFS
-            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.Where(x => Path.GetFileNameWithoutExtension(x).StartsWith("BioD_EndGm2_300Walk")).ToList();
-            //randomize long walk lengths.
-            var endwalkexportmap = new Dictionary<string, int>()
-            {
-                {"BioD_EndGm2_300Walk01", 40},
-                {"BioD_EndGm2_300Walk02", 5344},
-                {"BioD_EndGm2_300Walk03", 8884},
-                {"BioD_EndGm2_300Walk04", 6370},
-                {"BioD_EndGm2_300Walk05", 3190}
-            };
-
-            foreach (var map in endwalkexportmap)
-            {
-                var file = files.Find(x => Path.GetFileNameWithoutExtension(x).Equals(map.Key, StringComparison.InvariantCultureIgnoreCase));
-                if (file != null)
-                {
-                    var package = MEPackageHandler.OpenMEPackage(file);
-                    var export = package.GetUExport(map.Value);
-                    export.WriteProperty(new FloatProperty(random.NextFloat(.5, 2.5), "PlayRate"));
-                    MERFileSystem.SavePackage(package);
-                }
-            }
-
-            /*foreach (var f in files)
-            {
-                var package = MEPackageHandler.OpenMEPackage(f);
-                var animExports = package.Exports.Where(x => x.ClassName == "InterpTrackAnimControl");
-                foreach (var anim in animExports)
-                {
-                    var animseqs = anim.GetProperty<ArrayProperty<StructProperty>>("AnimSeqs");
-                    if (animseqs != null)
-                    {
-                        foreach (var animseq in animseqs)
-                        {
-                            var seqname = animseq.GetProp<NameProperty>("AnimSeqName").Value.Name;
-                            if (seqname.StartsWith("Walk_"))
-                            {
-                                var playrate = animseq.GetProp<FloatProperty>("AnimPlayRate");
-                                var oldrate = playrate.Value;
-                                if (oldrate != 1) Debugger.Break();
-                                playrate.Value = random.NextFloat(.2, 6);
-                                var data = anim.Parent.Parent as ExportEntry;
-                                var len = data.GetProperty<FloatProperty>("InterpLength");
-                                len.Value = len.Value * playrate; //this might need to be changed if its not 1
-                                data.WriteProperty(len);
-                            }
-                        }
-                    }
-                    anim.WriteProperty(animseqs);
-                }
-                SavePackage(package);
-            }*/
-        }
         public enum AnimationCompressionFormat
         {
             ACF_None,
@@ -723,154 +624,6 @@ namespace ME2Randomizer.Classes
                         //MaterialInstanceConstant
                         ExportEntry material = exp.FileRef.GetUExport(materialObj.Value);
                         RMaterialInstance.RandomizeExport(material, null, random);
-                    }
-                }
-            }
-        }
-
-        private List<string> acceptableTagsForPawnShuffling = new List<string>();
-
-        private void ShuffleCutscenePawns(ExportEntry export, Random random)
-        {
-            var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
-
-            List<ObjectProperty> pawnsToShuffle = new List<ObjectProperty>();
-            var playerRefs = new List<ExportEntry>();
-            foreach (var variableLink in variableLinks)
-            {
-                var expectedType = variableLink.GetProp<ObjectProperty>("ExpectedType");
-                var expectedTypeStr = export.FileRef.GetEntry(expectedType.Value).ObjectName;
-                var DEBUG = variableLink.GetProp<StrProperty>("LinkDesc");
-                if (expectedTypeStr == "SeqVar_Object" || expectedTypeStr == "SeqVar_Player" || expectedTypeStr == "BioSeqVar_ObjectFindByTag")
-                {
-                    //Investigate the links
-                    var linkedVariables = variableLink.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
-                    foreach (var objRef in linkedVariables)
-                    {
-                        var linkedObj = export.FileRef.GetUExport(objRef.Value).GetProperty<ObjectProperty>("ObjValue");
-                        if (linkedObj != null)
-                        {
-                            //This is the data the node is referencing
-                            var linkedObjectEntry = export.FileRef.GetEntry(linkedObj.Value);
-                            var linkedObjName = linkedObjectEntry.ObjectName;
-                            if (linkedObjName == "BioPawn" && linkedObjectEntry is ExportEntry bioPawnExport)
-                            {
-                                var flyingpawn = bioPawnExport.GetProperty<BoolProperty>("bCanFly")?.Value;
-                                if (flyingpawn == null || flyingpawn == false)
-                                {
-                                    pawnsToShuffle.Add(objRef); //pointer to this node
-                                }
-                            }
-                        }
-                        else if (expectedTypeStr == "SeqVar_Object")
-                        {
-                            //We might be assigned to. We need to look at the parent sequence
-                            //and find what assigns me
-                            var node = export.FileRef.GetUExport(objRef.Value);
-                            var parentRef = node.GetProperty<ObjectProperty>("ParentSequence");
-                            if (parentRef != null)
-                            {
-                                var parent = export.FileRef.GetUExport(parentRef.Value);
-                                var sequenceObjects = parent.GetProperty<ArrayProperty<ObjectProperty>>("SequenceObjects");
-                                if (sequenceObjects != null)
-                                {
-                                    foreach (var obj in sequenceObjects)
-                                    {
-                                        if (obj.Value <= 0) continue;
-                                        var sequenceObject = export.FileRef.GetUExport(obj.Value);
-                                        if (sequenceObject.InheritsFrom("SequenceAction") && sequenceObject.ClassName == "SeqAct_SetObject" && sequenceObject != export)
-                                        {
-                                            //check if target is my node
-                                            var varlinqs = sequenceObject.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
-                                            if (varlinqs != null)
-                                            {
-                                                var targetLink = varlinqs.FirstOrDefault(x =>
-                                                {
-                                                    var linkdesc = x.GetProp<StrProperty>("LinkDesc");
-                                                    return linkdesc != null && linkdesc == "Target";
-                                                });
-                                                var targetLinkedVariables = targetLink?.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
-                                                if (targetLinkedVariables != null)
-                                                {
-                                                    //see if target is node we are investigating for setting.
-                                                    foreach (var targetLinkedVariable in targetLinkedVariables)
-                                                    {
-                                                        var potentialTarget = export.FileRef.GetUExport(targetLinkedVariable.Value);
-                                                        if (potentialTarget == node)
-                                                        {
-                                                            Debug.WriteLine("FOUND TARGET!");
-                                                            //See what value this is set to. If it inherits from BioPawn we can use it in the shuffling.
-                                                            var valueLink = varlinqs.FirstOrDefault(x =>
-                                                            {
-                                                                var linkdesc = x.GetProp<StrProperty>("LinkDesc");
-                                                                return linkdesc != null && linkdesc == "Value";
-                                                            });
-                                                            var valueLinkedVariables = valueLink?.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
-                                                            if (valueLinkedVariables != null && valueLinkedVariables.Count == 1)
-                                                            {
-                                                                var linkedNode = export.FileRef.GetUExport(valueLinkedVariables[0].Value);
-                                                                var linkedNodeType = linkedNode.GetProperty<ObjectProperty>("ObjValue");
-                                                                if (linkedNodeType != null)
-                                                                {
-                                                                    var linkedNodeData = export.FileRef.GetUExport(linkedNodeType.Value);
-                                                                    if (linkedNodeData.InheritsFrom("BioPawn"))
-                                                                    {
-                                                                        //We can shuffle this item.
-                                                                        Debug.WriteLine("Adding shuffle item: " + objRef.Value);
-                                                                        pawnsToShuffle.Add(objRef); //pointer to this node
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        string className = export.FileRef.GetUExport(objRef.Value).ClassName;
-                        if (className == "SeqVar_Player")
-                        {
-                            playerRefs.Add(export.FileRef.GetUExport(objRef.Value));
-                            pawnsToShuffle.Add(objRef); //pointer to this node
-                        }
-                        else if (className == "BioSeqVar_ObjectFindByTag")
-                        {
-                            var tagToFind = export.FileRef.GetUExport(objRef.Value).GetProperty<StrProperty>("m_sObjectTagToFind")?.Value;
-                            if (tagToFind != null && acceptableTagsForPawnShuffling.Contains(tagToFind))
-                            {
-                                pawnsToShuffle.Add(objRef); //pointer to this node
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (pawnsToShuffle.Count > 1)
-            {
-                int reshuffleAttemptsRemaining = 3;
-                while (reshuffleAttemptsRemaining > 0)
-                {
-                    reshuffleAttemptsRemaining--;
-                    Log.Information("Randomizing pawns in interp: " + export.FullPath);
-                    foreach (var refx in playerRefs)
-                    {
-                        refx.WriteProperty(new BoolProperty(true, "bReturnsPawns")); //Ensure the object returns pawns. It should, but maybe it doesn't.
-                    }
-
-                    var newAssignedValues = pawnsToShuffle.Select(x => x.Value).ToList();
-                    newAssignedValues.Shuffle(random);
-                    for (int i = 0; i < pawnsToShuffle.Count; i++)
-                    {
-                        pawnsToShuffle[i].Value = newAssignedValues[i];
-                    }
-
-                    export.WriteProperty(variableLinks);
-                    if (export.EntryHasPendingChanges)
-                    {
-                        break;
                     }
                 }
             }
@@ -1045,66 +798,7 @@ namespace ME2Randomizer.Classes
         }
 
 
-        private void RandomizerHammerHead(MEPackage package, Random random)
-        {
-            ExportEntry SVehicleSimTank = package.Exports[23314];
-            var props = SVehicleSimTank.GetProperties();
-            StructProperty torqueCurve = SVehicleSimTank.GetProperty<StructProperty>("m_TorqueCurve");
-            ArrayProperty<StructProperty> points = torqueCurve.GetProp<ArrayProperty<StructProperty>>("Points");
-            var minOut = random.Next(4000, 5600);
-            var maxOut = random.Next(6000, 22000);
-            minOut = 5600;
-            maxOut = 20000;
-            var stepping = (maxOut - minOut) / 3; //starts at 0 with 3 upgrades
-            for (int i = 0; i < points.Count; i++)
-            {
-                float newVal = minOut + (stepping * i);
-                Log.Information($"Setting MakoTorque[{i}] to {newVal}");
-                points[i].GetProp<FloatProperty>("OutVal").Value = newVal;
-            }
 
-            SVehicleSimTank.WriteProperty(torqueCurve);
-
-            if (mainWindow.RANDSETTING_MOVEMENT_MAKO_WHEELS)
-            {
-                //Reverse the steering to back wheels
-                //Front
-                ExportEntry LFWheel = package.Exports[36984];
-                ExportEntry RFWheel = package.Exports[36987];
-                //Rear
-                ExportEntry LRWheel = package.Exports[36986];
-                ExportEntry RRWheel = package.Exports[36989];
-
-                var LFSteer = LFWheel.GetProperty<FloatProperty>("SteerFactor");
-                var LRSteer = LRWheel.GetProperty<FloatProperty>("SteerFactor");
-                var RFSteer = RFWheel.GetProperty<FloatProperty>("SteerFactor");
-                var RRSteer = RRWheel.GetProperty<FloatProperty>("SteerFactor");
-
-                LFSteer.Value = 0f;
-                LRSteer.Value = 4f;
-                RFSteer.Value = 0f;
-                RRSteer.Value = 4f;
-
-                LFWheel.WriteProperty(LFSteer);
-                RFWheel.WriteProperty(RFSteer);
-                LRWheel.WriteProperty(LRSteer);
-                RRWheel.WriteProperty(RRSteer);
-            }
-
-            //Randomize the jumpjets
-            ExportEntry BioVehicleBehaviorBase = package.Exports[23805];
-            var behaviorProps = BioVehicleBehaviorBase.GetProperties();
-            foreach (var prop in behaviorProps)
-            {
-                if (prop.Name.Name.StartsWith("m_fThrusterScalar"))
-                {
-                    var floatprop = prop as FloatProperty;
-                    floatprop.Value = random.NextFloat(.1, 6);
-                }
-            }
-
-            BioVehicleBehaviorBase.WriteProperties(behaviorProps);
-        }
 
 
 

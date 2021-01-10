@@ -18,6 +18,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject &&
             (export.ClassName == @"SpotLightComponent" ||
              export.ClassName == @"PointLightComponent" ||
+             export.ClassName == @"DirectionalLightComponent" ||
              export.ClassName == @"SkyLightComponent");
 
         public static bool RandomizeExport(ExportEntry export, Random random, RandomizationOption option)

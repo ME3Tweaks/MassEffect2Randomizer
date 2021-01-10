@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.TLK.ME2ME3;
 using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
@@ -19,13 +16,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     {
         private static RandomizationOption SuperRandomOption = new RandomizationOption() {SliderValue = 10};
 
-        private void RandomizeCharacterCreator(Random random, List<TalkFile> tlks, IMEPackage biop_char)
+        public static bool RandomizeCharacterCreator(Random random, RandomizationOption option)
         {
+            var biop_charF = MERFileSystem.GetPackageFile(@"BioP_Char.pcc");
+            var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
             var maleFrontEndData = biop_char.GetUExport(18753);
+            var femaleFrontEndData = biop_char.GetUExport(18754);
             randomizeFrontEnd(random, maleFrontEndData);
-            //var femaleFrontEndData = biop_char.GetUExport(18754);
-
-            //RandomizeSFXFrontEnd(maleFrontEndData);
+            randomizeFrontEnd(random, femaleFrontEndData);
 
             //Copy the final skeleton from female into male.
             var femBase = biop_char.GetUExport(3480);
@@ -93,9 +91,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 }
             }
+            MERFileSystem.SavePackage(biop_char);
+            return true;
         }
 
-        private void randomizeFrontEnd(Random random, ExportEntry frontEnd)
+        private static void randomizeFrontEnd(Random random, ExportEntry frontEnd)
         {
             var props = frontEnd.GetProperties();
 
@@ -128,9 +128,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
 
             frontEnd.WriteProperties(props);
+
         }
 
-        private void randomizeBaseHead(Random random, StructProperty basehead, ExportEntry frontEnd, Dictionary<string, StructProperty> sliders)
+        private static void randomizeBaseHead(Random random, StructProperty basehead, ExportEntry frontEnd, Dictionary<string, StructProperty> sliders)
         {
             var bhSettings = basehead.GetProp<ArrayProperty<StructProperty>>("m_fBaseHeadSettings");
             foreach (var baseSlider in bhSettings)

@@ -23,6 +23,7 @@
         <converters:FaceFXRandomizationLevelIntToStringConverter x:Key="FaceFXRandomizationLevelIntToStringConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:NullVisibilityConverter x:Key="NullVisibilityConverter"/>
+        <converters:ImplementedConverter x:Key="ImplementedConverter"/>
         <FontFamily x:Key="AeroLight">
             pack://application:,,,/fonts/#AeroLight
             <!-- Note: NameOfFont can be font by double clicking
@@ -49,9 +50,7 @@
                         </TextBlock>
 
                         <TextBlock x:Name="LogSelectorHeader" Width="350" HorizontalAlignment="Center" Margin="0,10,0,25" Foreground="Indigo" Text="Select a log file for upload. In most cases, you will want to use the most recent one." FontFamily="{StaticResource AeroLight}" FontSize="14" TextWrapping="Wrap" TextAlignment="Center"/>
-                        <ComboBox x:Name="Combobox_LogSelector" 
-
-                  SelectionChanged="Combobox_LogSelector_SelectionChanged"/>
+                        <ComboBox x:Name="Combobox_LogSelector" SelectionChanged="Combobox_LogSelector_SelectionChanged"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button Margin="5,20,6,0" Content="Cancel" Width="95" HorizontalAlignment="Center" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Controls:ControlsHelper.ContentCharacterCasing="Upper" Click="Button_CancelLog_Click"/>
                             <Button Margin="5,20,6,0" Content="Upload log" Width="95" ToolTip="Uploads log to log parsing server" HorizontalAlignment="Center" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Controls:ControlsHelper.ContentCharacterCasing="Upper" Click="Button_SelectLog_Click"/>
@@ -73,7 +72,6 @@
                             <TextBlock Text="Do I randomize before or after MEUITM/ALOT?" Margin="0,10,0,0" FontSize="20"/>
                             <TextBlock FontSize="13">It is recommended that you run the randomizer before MEUITM/ALOT. You can technically run it after, but you will lose support from the ALOT team if you do so.</TextBlock>
                             <TextBlock Margin="0,10,0,0" FontSize="20">Does this work with other mods?</TextBlock>
-
                             <TextBlock FontSize="13">
                             Mods that replace files in the game directory itself should work with this randomizer, however translation mods will not work and will not be supported. DLC mods will be mostly unaffected by this program.</TextBlock>
                         </StackPanel>
@@ -186,7 +184,7 @@
                                             <ItemsControl ItemsSource="{Binding Options}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate DataType="{x:Type classes:RandomizationOption}">
-                                                        <StackPanel>
+                                                        <StackPanel Background="{Binding Converter={StaticResource ImplementedConverter}}">
                                                             <CheckBox Content="{Binding HumanName}" Margin="3" IsChecked="{Binding OptionIsSelected}"/>
                                                             <StackPanel
                                                                 Visibility="{Binding HasSliderOption, Converter={StaticResource BoolToVisibilityConverter}}"
