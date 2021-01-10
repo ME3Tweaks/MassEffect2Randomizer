@@ -90,7 +90,7 @@ namespace ME2Randomizer.Classes
         /// <param name="package"></param>
         public static void SavePackage(IMEPackage package)
         {
-            if (package.IsModified)
+            if ((package as UnrealPackageFile).IsModified)
             {
                 if (UsingDLCModFS && !alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
                 {

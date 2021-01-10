@@ -261,7 +261,7 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     // Debug
-                    if (!file.Contains("BioD_ProNor", StringComparison.InvariantCultureIgnoreCase))
+                    if (!file.Contains("_pro", StringComparison.InvariantCultureIgnoreCase))
                         return;
 
                     var package = MEPackageHandler.OpenMEPackage(file);
@@ -327,37 +327,7 @@ namespace ME2Randomizer.Classes
 
                             ShuffleCutscenePawns(exp, random);
                         }
-                        else if (mainWindow.RANDSETTING_ILLUSIVEEYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName == "HMM_HED_EYEillusiveman_MAT_1a")
-                        {
-                            Log.Information("Randomizing illusive eye color");
-                            //var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
-                            var props = exp.GetProperties();
 
-                            //eye color
-                            var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
-                            //tint is float based
-                            RStructs.RandomizeTint(random, emisVector, false);
-
-                            var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
-                            emisScalar.Value = 3; //very vibrant
-                            exp.WriteProperties(props);
-                        }
-                        else if (mainWindow.RANDSETTING_PAWN_EYES && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName != "HMM_HED_EYEillusiveman_MAT_1a" && exp.ObjectName.Name.Contains("_EYE"))
-                        {
-                            Log.Information("Randomizing eye color");
-                            RandomizeMaterialInstance(exp, random);
-                            ////var headmorphpro = MEPackageHandler.OpenMEPackage(Utilities.GetBasegameFile("BIOG_HMM_HED_PROMorph.pcc"));
-                            //var props = exp.GetProperties();
-
-                            ////eye color
-                            //var emisVector = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Color").GetProp<StructProperty>("ParameterValue");
-                            ////tint is float based
-                            //RandomizeTint(random, emisVector, false);
-
-                            //var emisScalar = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues").First(x => x.GetProp<NameProperty>("ParameterName").Value.Name == "Emis_Scalar").GetProp<FloatProperty>("ParameterValue");
-                            //emisScalar.Value = 3; //very vibrant
-                            //exp.WriteProperties(props);
-                        }
                         else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
                         {
                             if (!loggedFilePath)
@@ -528,7 +498,7 @@ namespace ME2Randomizer.Classes
         {
             RandomizationGroups.Add(new RandomizationGroup()
             {
-                GroupName = "Faces",
+                GroupName = "Faces & Characters",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption() { HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
@@ -549,11 +519,13 @@ namespace ME2Randomizer.Classes
                         rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3},  // This must come after the converter
                     new RandomizationOption() { HumanName = "NPC head colors"},
-                    new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)"},
-                    new RandomizationOption() { HumanName = "Illusive Man eyes"},
+                    new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)", IsRecommended = true, PerformRandomizationOnExportDelegate = REyes.RandomizeExport},
+                    new RandomizationOption() { HumanName = "Illusive Man eyes", IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport},
                     new RandomizationOption() { HumanName = "Character creator premade faces"},
                     new RandomizationOption() { HumanName = "Character creator skin tones"},
                     new RandomizationOption() { HumanName = "Iconic FemShep face"},
+                    new RandomizationOption() { HumanName = "Look At Definitions", PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport},
+                    new RandomizationOption() { HumanName = "Look At Targets", PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport},
                 }
             });
 
@@ -562,9 +534,7 @@ namespace ME2Randomizer.Classes
                 GroupName = "Miscellaneous",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "'Sun actor' colors"},
-                    new RandomizationOption() {HumanName = "Fog colors"},
-                    new RandomizationOption() {HumanName = "Game over text"},
+                                 new RandomizationOption() {HumanName = "Game over text"},
                     new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
                 }
             });
@@ -600,6 +570,18 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() { HumanName = "Prologue" },
                     new RandomizationOption() { HumanName = "Arrival", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization },
                     new RandomizationOption() { HumanName = "Collector Base" },
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Level components",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "'Sun actor' colors"},
+                    new RandomizationOption() {HumanName = "Fog colors", IsRecommended=true, PerformRandomizationOnExportDelegate=RHeightFogComponent.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Post Processing volumes", PerformRandomizationOnExportDelegate=RPostProcessingVolume.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Light colors", PerformRandomizationOnExportDelegate=RLighting.RandomizeExport},
                 }
             });
 
@@ -723,51 +705,7 @@ namespace ME2Randomizer.Classes
             morphTarget.Data = ms.ToArray();
         }
 
-        private void RandomizeBioLookAtDefinition(ExportEntry export, Random random)
-        {
-            Log.Information("Randomizing BioLookAtDefinition " + export.UIndex);
-            var boneDefinitions = export.GetProperty<ArrayProperty<StructProperty>>("BoneDefinitions");
-            if (boneDefinitions != null)
-            {
-                foreach (var item in boneDefinitions)
-                {
-                    if (item.GetProp<NameProperty>("m_nBoneName").Value.Name.StartsWith("Eye"))
-                    {
-                        item.GetProp<FloatProperty>("m_fLimit").Value = random.Next(1, 5);
-                        item.GetProp<FloatProperty>("m_fUpDownLimit").Value = random.Next(1, 5);
-                    }
-                    else
-                    {
-                        item.GetProp<FloatProperty>("m_fLimit").Value = random.Next(1, 170);
-                        item.GetProp<FloatProperty>("m_fUpDownLimit").Value = random.Next(70, 170);
-                    }
 
-                }
-            }
-            export.WriteProperty(boneDefinitions);
-        }
-
-
-        private void RandomizeHeightFogComponent(ExportEntry exp, Random random)
-        {
-            var properties = exp.GetProperties();
-            var lightColor = properties.GetProp<StructProperty>("LightColor");
-            if (lightColor != null)
-            {
-                lightColor.GetProp<ByteProperty>("R").Value = (byte)random.Next(256);
-                lightColor.GetProp<ByteProperty>("G").Value = (byte)random.Next(256);
-                lightColor.GetProp<ByteProperty>("B").Value = (byte)random.Next(256);
-
-                var density = properties.GetProp<FloatProperty>("Density");
-                if (density != null)
-                {
-                    var thicknessRandomizer = random.NextFloat(-density * .03, density * 1.15);
-                    density.Value = density + thicknessRandomizer;
-                }
-
-                exp.WriteProperties(properties);
-            }
-        }
 
 
         private void RandomizePawnMaterialInstances(ExportEntry exp, Random random)
@@ -1438,82 +1376,6 @@ namespace ME2Randomizer.Classes
 
 
 
-        public static void SetLocation(ExportEntry export, float x, float y, float z)
-        {
-            StructProperty prop = export.GetProperty<StructProperty>("location");
-            SetLocation(prop, x, y, z);
-            export.WriteProperty(prop);
-        }
-
-        public static Point3D GetLocation(ExportEntry export)
-        {
-            float x = 0, y = 0, z = int.MinValue;
-            var prop = export.GetProperty<StructProperty>("location");
-            if (prop != null)
-            {
-                foreach (var locprop in prop.Properties)
-                {
-                    switch (locprop)
-                    {
-                        case FloatProperty fltProp when fltProp.Name == "X":
-                            x = fltProp;
-                            break;
-                        case FloatProperty fltProp when fltProp.Name == "Y":
-                            y = fltProp;
-                            break;
-                        case FloatProperty fltProp when fltProp.Name == "Z":
-                            z = fltProp;
-                            break;
-                    }
-                }
-
-                return new Point3D(x, y, z);
-            }
-
-            return null;
-        }
-
-        public class Point3D
-        {
-            public double X { get; set; }
-            public double Y { get; set; }
-            public double Z { get; set; }
-
-            public Point3D()
-            {
-
-            }
-
-            public Point3D(double X, double Y, double Z)
-            {
-                this.X = X;
-                this.Y = Y;
-                this.Z = Z;
-            }
-
-            public double getDistanceToOtherPoint(Point3D other)
-            {
-                double deltaX = X - other.X;
-                double deltaY = Y - other.Y;
-                double deltaZ = Z - other.Z;
-
-                return Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-            }
-
-            public override string ToString()
-            {
-                return $"{X},{Y},{Z}";
-            }
-        }
-
-        public static void SetLocation(StructProperty prop, float x, float y, float z)
-        {
-            prop.GetProp<FloatProperty>("X").Value = x;
-            prop.GetProp<FloatProperty>("Y").Value = y;
-            prop.GetProp<FloatProperty>("Z").Value = z;
-        }
-
-
 
         private List<char> scottishVowelOrdering;
         private List<char> upperScottishVowelOrdering;
@@ -1696,9 +1558,7 @@ namespace ME2Randomizer.Classes
                     p.WriteProperties(pprops);
                 }
             }
-
             package.Save();
         }
-
     }
 }
