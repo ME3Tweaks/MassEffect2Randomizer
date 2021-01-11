@@ -12,8 +12,64 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         public static bool PerformRandomization(Random random, RandomizationOption option)
         {
             RandomizeNormandyHolo(random);
+            RandomizeRomance(random);
             return true;
         }
+
+        /// <summary>
+        /// Technically this is not part of Nor (It's EndGm). But it takes place on normandy so users
+        /// will think it is part of the normandy.
+        /// </summary>
+        /// <param name="random"></param>
+        private static void RandomizeRomance(Random random)
+        {
+            var romChooserPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("BioD_EndGm1_110Romance.pcc"));
+
+            var names = new List<(int index, string name)>();
+
+            for(int i = 0; i < romChooserPackage.NameCount; i++)
+            {
+                var nv = romChooserPackage.GetNameEntry(i);
+                if (nv.StartsWith("SS_") && nv.EndsWith("ROMANCE") && !nv.Contains("ACTIVE") && !nv.Contains("POST") && !nv.Contains("ME1"))
+                {
+                    names.Add((i, nv));
+                }
+            }
+            var indicies = names.Select(x => x.index).ToList();
+            var nameValues = names.Select(x => x.name).ToList();
+            indicies.Shuffle(random);
+
+            foreach(var index in indicies)
+            {
+                var name = nameValues[0];
+                nameValues.RemoveAt(0);
+                romChooserPackage.replaceName(index, name);
+            }
+
+            // OLD CODE
+            /*
+            var uindexesOfStates = new[] {108, 109, 110, 111, 106, 107 };
+
+            List<NameProperty> stateNames = new List<NameProperty>();
+
+            foreach(var uindex in uindexesOfStates)
+            {
+                var exp = romChooserPackage.GetUExport(uindex);
+                stateNames.Add(exp.GetProperty<NameProperty>("NameValue"));
+            }
+
+            stateNames.Shuffle(random);
+            foreach (var uindex in uindexesOfStates)
+            {
+                var exp = romChooserPackage.GetUExport(uindex);
+                var nsn = stateNames[0];
+                exp.WriteProperty(nsn);
+                stateNames.RemoveAt(0);
+            }*/
+
+            MERFileSystem.SavePackage(romChooserPackage);
+        }
+
         private static void RandomizeNormandyHolo(Random random)
         {
             string[] packages = { "BioD_Nor_104Comm.pcc", "BioA_Nor_110.pcc" };
