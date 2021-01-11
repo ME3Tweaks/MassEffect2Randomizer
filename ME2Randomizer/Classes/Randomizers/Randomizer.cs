@@ -105,7 +105,7 @@ namespace ME2Randomizer.Classes
             //Load TLKs
             mainWindow.CurrentOperationText = "Loading TLKs";
             mainWindow.ProgressBarIndeterminate = true;
-            var Tlks = Directory.GetFiles(Path.Combine(Utilities.GetGamePath(), "BioGame"), "*_INT.tlk", SearchOption.AllDirectories).Select(x =>
+            LoadedTalkFiles = Directory.GetFiles(Path.Combine(Utilities.GetGamePath(), "BioGame"), "*_INT.tlk", SearchOption.AllDirectories).Select(x =>
             {
                 TalkFile tf = new TalkFile();
                 tf.LoadTlkData(x);
@@ -158,7 +158,7 @@ namespace ME2Randomizer.Classes
                 XElement rootElement = XElement.Parse(fileContents);
                 var gameoverTexts = rootElement.Elements("gameovertext").Select(x => x.Value).ToList();
                 var gameOverText = gameoverTexts[random.Next(gameoverTexts.Count)];
-                foreach (TalkFile tlk in Tlks)
+                foreach (TalkFile tlk in LoadedTalkFiles)
                 {
                     var replaced = tlk.ReplaceString(157152, gameOverText); //Todo: Update game over text ID
                     //tlk.
@@ -244,7 +244,10 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     // Debug
-                    if (!file.Contains("_pro", StringComparison.InvariantCultureIgnoreCase))
+                    if (!file.Contains("nor", StringComparison.InvariantCultureIgnoreCase) &&
+                        !file.Contains("pro", StringComparison.CurrentCultureIgnoreCase) &&
+                            !file.Contains("sfxgame", StringComparison.CurrentCultureIgnoreCase)
+                        )
                         return;
 
                     var package = MEPackageHandler.OpenMEPackage(file);
@@ -254,6 +257,7 @@ namespace ME2Randomizer.Classes
                         {
                             r.PerformRandomizationOnExportDelegate(exp, random, r);
                         }
+
                         /*
 
                         // NO MORE DEFAULT OBJECTS AFTER THIS LINE
@@ -371,6 +375,7 @@ namespace ME2Randomizer.Classes
                         }
                         */
                     }
+
                     MERFileSystem.SavePackage(package);
                 });
 
@@ -419,13 +424,13 @@ namespace ME2Randomizer.Classes
 
             if (mainWindow.RANDSETTING_WACK_SCOTTISH)
             {
-                MakeTextPossiblyScottish(Tlks, random, true);
+                MakeTextPossiblyScottish(random, true);
             }
 
 
 
             mainWindow.ProgressBarIndeterminate = true;
-            foreach (TalkFile tf in Tlks)
+            foreach (TalkFile tf in LoadedTalkFiles)
             {
                 if (tf.IsModified)
                 {
@@ -442,8 +447,11 @@ namespace ME2Randomizer.Classes
             }
 
             mainWindow.CurrentOperationText = "Finishing up";
+            LoadedTalkFiles = null; // Remove from memory
             //AddMERSplash(random);
         }
+
+        public static List<TalkFile> LoadedTalkFiles { get; set; }
 
         /// <summary>
         /// Sets the options up that can be selected and their methods they call
@@ -456,33 +464,37 @@ namespace ME2Randomizer.Classes
                 GroupName = "Faces & Characters",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() { HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
-                        rSetting switch
-                        {
-                            1 => "Oblivion",
-                            2 => "Knights of the old Republic",
-                            3 => "Sonic Adventure",
-                            4 => "Source filmmaker",
-                            5 => "Total madness",
-                            _ => "Error"
-                        },
+                    new RandomizationOption()
+                    {
+                        HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
+                            rSetting switch
+                            {
+                                1 => "Oblivion",
+                                2 => "Knights of the old Republic",
+                                3 => "Sonic Adventure",
+                                4 => "Source filmmaker",
+                                5 => "Total madness",
+                                _ => "Error"
+                            },
                         SliderValue = 2, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport
                     },
-                    new RandomizationOption() { HumanName = "Squadmate faces"},
-                    new RandomizationOption() { HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
-                        rSetting => $"Randomization amount: {rSetting}",
-                        SliderValue = .3,// This must come after the converter
+                    new RandomizationOption() {HumanName = "Squadmate faces"},
+                    new RandomizationOption()
+                    {
+                        HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
+                            rSetting => $"Randomization amount: {rSetting}",
+                        SliderValue = .3, // This must come after the converter
 
                     },
-                    new RandomizationOption() { HumanName = "NPC head colors"},
-                    new RandomizationOption() { HumanName = "Eyes (exluding Illusive Man)", IsRecommended = true, PerformRandomizationOnExportDelegate = REyes.RandomizeExport},
-                    new RandomizationOption() { HumanName = "Illusive Man eyes", IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport},
-                    new RandomizationOption() { HumanName = "Character creator premade faces", IsRecommended=true, PerformSpecificRandomizationDelegate=CharacterCreator.RandomizeCharacterCreator},
-                    new RandomizationOption() { HumanName = "Character creator skin tones"},
-                    new RandomizationOption() { HumanName = "Iconic FemShep face"},
-                    new RandomizationOption() { HumanName = "Look At Definitions", PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport},
-                    new RandomizationOption() { HumanName = "Look At Targets", PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport},
+                    new RandomizationOption() {HumanName = "NPC head colors"},
+                    new RandomizationOption() {HumanName = "Eyes (exluding Illusive Man)", IsRecommended = true, PerformRandomizationOnExportDelegate = REyes.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Illusive Man eyes", IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Character creator premade faces", IsRecommended = true, PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator},
+                    new RandomizationOption() {HumanName = "Character creator skin tones"},
+                    new RandomizationOption() {HumanName = "Iconic FemShep face"},
+                    new RandomizationOption() {HumanName = "Look At Definitions", PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Look At Targets", PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport},
                 }
             });
 
@@ -491,7 +503,7 @@ namespace ME2Randomizer.Classes
                 GroupName = "Miscellaneous",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                                 new RandomizationOption() {HumanName = "Game over text"},
+                    new RandomizationOption() {HumanName = "Game over text"},
                     new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
                 }
             });
@@ -512,8 +524,8 @@ namespace ME2Randomizer.Classes
                 GroupName = "Weapons",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() { HumanName = "Weapon stats" },
-                    new RandomizationOption() { HumanName = "Squadmate weapon types" },
+                    new RandomizationOption() {HumanName = "Weapon stats"},
+                    new RandomizationOption() {HumanName = "Squadmate weapon types"},
                 }
             });
 
@@ -522,11 +534,11 @@ namespace ME2Randomizer.Classes
                 GroupName = "Level-specific",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() { HumanName = "Galaxy Map" },
-                    new RandomizationOption() { HumanName = "Normandy", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization },
-                    new RandomizationOption() { HumanName = "Prologue" },
-                    new RandomizationOption() { HumanName = "Arrival", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization },
-                    new RandomizationOption() { HumanName = "Collector Base", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization },
+                    new RandomizationOption() {HumanName = "Galaxy Map"},
+                    new RandomizationOption() {HumanName = "Normandy", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Prologue"},
+                    new RandomizationOption() {HumanName = "Arrival", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Collector Base", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
                 }
             });
 
@@ -535,10 +547,10 @@ namespace ME2Randomizer.Classes
                 GroupName = "Level components",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate=RBioSun.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Fog colors", IsRecommended=true, PerformRandomizationOnExportDelegate=RHeightFogComponent.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Post Processing volumes", PerformRandomizationOnExportDelegate=RPostProcessingVolume.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Light colors", PerformRandomizationOnExportDelegate=RLighting.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Fog colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Post Processing volumes", PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Light colors", PerformRandomizationOnExportDelegate = RLighting.RandomizeExport},
                 }
             });
 
@@ -548,11 +560,12 @@ namespace ME2Randomizer.Classes
                 GroupName = "Wackadoodle",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Actors in cutscenes"},
+                    new RandomizationOption() {HumanName = "Actors in cutscenes", PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns},
                     new RandomizationOption() {HumanName = "Animation data", PerformRandomizationOnExportDelegate = RAnimSequence.RandomizeExport},
                     new RandomizationOption() {HumanName = "Random movement interpolations"},
                     new RandomizationOption() {HumanName = "Hologram colors"},
                     new RandomizationOption() {HumanName = "Vowels"},
+                    new RandomizationOption() {HumanName = "Conversations", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport},
                     new RandomizationOption() {HumanName = "Game over text"},
                     new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
                 }
@@ -594,12 +607,14 @@ namespace ME2Randomizer.Classes
                         ms.Position -= 4;
                         ms.WriteFloat(fVal + diff);
                     }
+
                     ms.WriteByte((byte)random.Next(256));
                     ms.ReadByte();
                     ms.ReadByte();
                     ms.ReadByte();
                     ms.SkipInt16(); //idx
                 }
+
                 ms.SkipInt32(); //Vertices?/s
             }
 
@@ -672,6 +687,7 @@ namespace ME2Randomizer.Classes
                     fp.Value = random.NextFloat(min, max);
                 }
             }
+
             exp.WriteProperties(props);
         }
 
@@ -809,7 +825,7 @@ namespace ME2Randomizer.Classes
         /// Swap the vowels around
         /// </summary>
         /// <param name="Tlks"></param>
-        private void MakeTextPossiblyScottish(List<TalkFile> Tlks, Random random, bool updateProgressbar)
+        private void MakeTextPossiblyScottish(Random random, bool updateProgressbar)
         {
             /*Log.Information("Making text possibly scottish");
             if (scottishVowelOrdering == null)
@@ -1212,14 +1228,14 @@ namespace ME2Randomizer.Classes
             props.Add(new EnumProperty("BIO_Faction_Hostile1", "EBioFactionTypes", MEGame.ME2, "SquadFaction"));
             var values = new List<EnumProperty>(new[]
             {
-                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
-                new EnumProperty("BIO_Relation_Friendly","EBioFactionRelationship",MEGame.ME2),
-                new EnumProperty("BIO_Relation_Neutral","EBioFactionRelationship",MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
-                new EnumProperty("BIO_Relation_Friendly","EBioFactionRelationship",MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile","EBioFactionRelationship",MEGame.ME2)
+                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
+                new EnumProperty("BIO_Relation_Friendly", "EBioFactionRelationship", MEGame.ME2),
+                new EnumProperty("BIO_Relation_Neutral", "EBioFactionRelationship", MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
+                new EnumProperty("BIO_Relation_Friendly", "EBioFactionRelationship", MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
+                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2)
             });
             var relations = (new ArrayProperty<EnumProperty>(values, "SquadRelations"));
             props.Add(relations);
@@ -1252,7 +1268,23 @@ namespace ME2Randomizer.Classes
                     p.WriteProperties(pprops);
                 }
             }
+
             package.Save();
+        }
+
+        public static string TLKLookup(int stringId, IMEPackage package)
+        {
+            if (stringId <= 0) return null; // No data
+            if (LoadedTalkFiles != null)
+            {
+                foreach (TalkFile tf in LoadedTalkFiles)
+                {
+                    var data = tf.findDataById(stringId);
+                    if (data != "No Data")
+                        return data;
+                }
+            }
+            return null;
         }
     }
 }

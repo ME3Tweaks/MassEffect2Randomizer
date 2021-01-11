@@ -21,7 +21,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             try
             {
                 Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");
-                var d = exp.Data;
+                //var d = exp.Data;
                 var animSet = ObjectBinary.From<FaceFXAnimSet>(exp);
                 for (int i = 0; i < animSet.Lines.Count(); i++)
                 {
@@ -40,9 +40,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         //Randomize the points
                         for (int j = 0; j < faceFxline.Points.Count; j++)
                         {
-                            bool isLast = j == faceFxline.Points.Count;
-                            var currentWeight = faceFxline.Points[j].weight;
-
+                            bool isLast = j == faceFxline.Points.Count - 1;
                             var currentPoint = faceFxline.Points[j];
                             switch (option.SliderValue)
                             {
@@ -103,17 +101,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     //}
                 }
 
-                var dataBefore = exp.Data;
+                //var dataBefore = exp.Data;
                 exp.WriteBinary(animSet);
-                var dataAfter = exp.Data;
-                if (dataBefore.SequenceEqual(dataAfter))
-                {
-                    //Debugger.Break();
-                }
-                else
-                {
-                    Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
-                }
+                //var dataAfter = exp.Data;
+                //if (dataBefore.SequenceEqual(dataAfter))
+                //{
+                //Debugger.Break();
+                //}
+                //else
+                //{
+                //    Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
+                // }
                 return true;
             }
             catch (Exception e)

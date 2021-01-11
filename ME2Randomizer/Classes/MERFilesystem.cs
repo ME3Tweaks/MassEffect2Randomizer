@@ -130,5 +130,21 @@ namespace ME2Randomizer.Classes
             return Path.Combine(MEDirectories.GetDefaultGamePath(Game), relativeSubPath);
 
         }
+
+        /// <summary>
+        /// Gets the path to the TFC used by MER
+        /// </summary>
+        /// <returns></returns>
+        public static string GetTFCPath()
+        {
+            if (UsingDLCModFS)
+            {
+                return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{Game}Randomizer.tfc");
+            }
+            else
+            {
+                return Path.Combine(MEDirectories.GetCookedPath(Game), $"Textures_{Game}Randomizer.tfc");
+            }
+        }
     }
 }
