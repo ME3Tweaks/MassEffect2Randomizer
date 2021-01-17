@@ -6,74 +6,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class HammerHead
     {
-        public static bool PerformRandomization(Random random, RandomizationOption option)
+        public static bool PerformRandomization(RandomizationOption option)
         {
-            // This code appears to still be for ME1.
-            var package = MEPackageHandler.OpenMEPackage("");
-            ExportEntry SVehicleSimTank = package.Exports[23314];
-            var props = SVehicleSimTank.GetProperties();
-            StructProperty torqueCurve = SVehicleSimTank.GetProperty<StructProperty>("m_TorqueCurve");
-            ArrayProperty<StructProperty> points = torqueCurve.GetProp<ArrayProperty<StructProperty>>("Points");
-            var minOut = random.Next(4000, 5600);
-            var maxOut = random.Next(6000, 22000);
-            minOut = 5600;
-            maxOut = 20000;
-            var stepping = (maxOut - minOut) / 3; //starts at 0 with 3 upgrades
-            for (int i = 0; i < points.Count; i++)
-            {
-                float newVal = minOut + (stepping * i);
-                Log.Information($"Setting MakoTorque[{i}] to {newVal}");
-                points[i].GetProp<FloatProperty>("OutVal").Value = newVal;
-            }
+            var ini = CoalescedHandler.GetIniFile("BioGame.ini");
 
-            SVehicleSimTank.WriteProperty(torqueCurve);
+            var section = ini.GetOrAddSection("SFXGame.SFXVehicleHover");
+            section.SetSingleEntry("JumpForce", GenerateRandomVectorStruct(-400, 400, 0, 0, 1200, 4000));
+            section.SetSingleEntry("OnGroundJumpMultiplier", ThreadSafeRandom.NextFloat(.5, 2));
+            section.SetSingleEntry("MaxThrustJuice", ThreadSafeRandom.NextFloat(0.5, 1));
+            section.SetSingleEntry("BoostForce", GenerateRandomVectorStruct(600, 2000, 0, 0, -200, 50));
+            section.SetSingleEntry("ThrustRegenerationFactor", ThreadSafeRandom.NextFloat(0.45, 0.7));
+            section.SetSingleEntry("SelfRepairRate", ThreadSafeRandom.NextFloat(50, 150));
+            section.SetSingleEntry("SelfRepairDelay", ThreadSafeRandom.NextFloat(3, 8));
+            section.SetSingleEntry("OffGroundForce", GenerateRandomVectorStruct(0, 0, 0, 0, -2200, -10));
+            section.SetSingleEntry("ThrustRegenerationDelay", ThreadSafeRandom.NextFloat(0.2, 1));
+            section.SetSingleEntry("VerticalThrustBurnRate", ThreadSafeRandom.NextFloat(0.5, 1.5));
+            section.SetSingleEntry("BurnOutPercentage", ThreadSafeRandom.NextFloat(0.1, 0.3));
+            section.SetSingleEntry("MaxPitchAngle", ThreadSafeRandom.NextFloat(25, 55));
 
-            //if (mainWindow.RANDSETTING_MOVEMENT_MAKO_WHEELS)
-            //{
-            //    //Reverse the steering to back wheels
-            //    //Front
-            //    ExportEntry LFWheel = package.Exports[36984];
-            //    ExportEntry RFWheel = package.Exports[36987];
-            //    //Rear
-            //    ExportEntry LRWheel = package.Exports[36986];
-            //    ExportEntry RRWheel = package.Exports[36989];
-
-            //    var LFSteer = LFWheel.GetProperty<FloatProperty>("SteerFactor");
-            //    var LRSteer = LRWheel.GetProperty<FloatProperty>("SteerFactor");
-            //    var RFSteer = RFWheel.GetProperty<FloatProperty>("SteerFactor");
-            //    var RRSteer = RRWheel.GetProperty<FloatProperty>("SteerFactor");
-
-            //    LFSteer.Value = 0f;
-            //    LRSteer.Value = 4f;
-            //    RFSteer.Value = 0f;
-            //    RRSteer.Value = 4f;
-
-            //    LFWheel.WriteProperty(LFSteer);
-            //    RFWheel.WriteProperty(RFSteer);
-            //    LRWheel.WriteProperty(LRSteer);
-            //    RRWheel.WriteProperty(RRSteer);
-            //}
-
-            //Randomize the jumpjets
-            ExportEntry BioVehicleBehaviorBase = package.Exports[23805];
-            var behaviorProps = BioVehicleBehaviorBase.GetProperties();
-            foreach (var prop in behaviorProps)
-            {
-                if (prop.Name.Name.StartsWith("m_fThrusterScalar"))
-                {
-                    var floatprop = prop as FloatProperty;
-                    floatprop.Value = random.NextFloat(.1, 6);
-                }
-            }
-
-            BioVehicleBehaviorBase.WriteProperties(behaviorProps);
-
+            ini = CoalescedHandler.GetIniFile("BioWeapon.ini");
+            section = ini.GetOrAddSection("SFXGameContent_Inventory.SFXHeavyWeapon_VehicleMissileLauncher");
+            section.SetSingleEntry("Damage", ThreadSafeRandom.NextFloat(200, 500));
+            section.SetSingleEntry("RateOfFire", ThreadSafeRandom.NextFloat(100, 300));
             return true;
+        }
+
+        private static string GenerateRandomRangeStruct(float min1, float max1, float min2, float max2)
+        {
+            var x = ThreadSafeRandom.NextFloat(min1, max1);
+            var y = ThreadSafeRandom.NextFloat(min2, max2);
+            return $"(X={x},Y={y})";
+        }
+
+        private static string GenerateRandomVectorStruct(float min1, float max1, float min2, float max2, float min3, float max3)
+        {
+            var x = ThreadSafeRandom.NextFloat(min1, max1);
+            var y = ThreadSafeRandom.NextFloat(min2, max2);
+            var z = ThreadSafeRandom.NextFloat(min3, max3);
+            return $"(X={x},Y={y},Z={z})";
         }
     }
 }

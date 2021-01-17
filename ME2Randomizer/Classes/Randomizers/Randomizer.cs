@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
+using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.GameFilesystem;
@@ -21,6 +23,8 @@ using Microsoft.WindowsAPICodePack.Taskbar;
 using Serilog;
 using ME3ExplorerCore.Misc;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
+using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
+using ME2Randomizer.Classes.Randomizers.Utility;
 
 namespace ME2Randomizer.Classes
 {
@@ -28,8 +32,18 @@ namespace ME2Randomizer.Classes
     {
         private MainWindow mainWindow;
         private BackgroundWorker randomizationWorker;
-        private ConcurrentDictionary<string, string> ModifiedFiles;
-        private SortedSet<string> faceFxBoneNames = new SortedSet<string>();
+        private List<char> scottishVowelOrdering;
+        private List<char> upperScottishVowelOrdering;
+
+        // Files that should not be generally passed over
+#if __ME2__
+        private static List<string> SpecializedFiles { get; } = new List<string>()
+        {
+            "BioP_Char"
+        };
+#elif __ME3__
+
+#endif
 
         public Randomizer(MainWindow mainWindow)
         {
@@ -52,6 +66,12 @@ namespace ME2Randomizer.Classes
         public void Randomize(OptionsPackage op)
         {
             SelectedOptions = op;
+            ThreadSafeRandom.Reset();
+            if (!SelectedOptions.UseMultiThread)
+            {
+                ThreadSafeRandom.SetSingleThread(SelectedOptions.Seed);
+            }
+
             randomizationWorker = new BackgroundWorker();
             randomizationWorker.DoWork += PerformRandomization;
             randomizationWorker.RunWorkerCompleted += Randomization_Completed;
@@ -75,148 +95,31 @@ namespace ME2Randomizer.Classes
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress, mainWindow);
             mainWindow.CurrentOperationText = "Randomization complete";
             mainWindow.AllowOptionsChanging = true;
-
             mainWindow.ShowProgressPanel = false;
-            string backupPath = Utilities.GetGameBackupPath();
-            string gamePath = Utilities.GetGamePath();
-            if (backupPath != null)
-            {
-                foreach (KeyValuePair<string, string> kvp in ModifiedFiles)
-                {
-                    string filepathrel = kvp.Key.Substring(gamePath.Length + 1);
-
-                    Debug.WriteLine($"copy /y \"{Path.Combine(backupPath, filepathrel)}\" \"{Path.Combine(gamePath, filepathrel)}\"");
-                }
-            }
-
-            //foreach (var v in faceFxBoneNames)
-            //{
-            //    Debug.WriteLine(v);
-            //}
         }
 
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
-            // Init
-            ModifiedFiles = new ConcurrentDictionary<string, string>(); //this will act as a Set since there is no ConcurrentSet
-            MERFileSystem.InitMERFS(SelectedOptions.UseMERFS);
-            Random random = new Random(SelectedOptions.Seed);
-
-            //Load TLKs
-            mainWindow.CurrentOperationText = "Loading TLKs";
+            mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
-            LoadedTalkFiles = Directory.GetFiles(Path.Combine(Utilities.GetGamePath(), "BioGame"), "*_INT.tlk", SearchOption.AllDirectories).Select(x =>
-            {
-                TalkFile tf = new TalkFile();
-                tf.LoadTlkData(x);
-                return tf;
-            }).ToList();
+            MERFileSystem.InitMERFS(SelectedOptions.UseMERFS);
+
+
+            // Prepare the TLK
+#if __ME2__
+            ME2Textures.SetupME2Textures();
+#elif __ME3__
+            ME3Textures.SetupME3Textures();
+#endif
 
             // Pass 1: All randomizers that are file specific
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => !x.IsExportRandomizer).ToList();
             foreach (var sr in specificRandomizers)
             {
                 mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
-                sr.PerformSpecificRandomizationDelegate?.Invoke(random, sr);
+                sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
             }
 
-            //return;
-
-            ///svar testp = MERFS.GetBasegameFile("");
-
-            //var animseqs = p.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
-            //foreach (var v in animseqs)
-            //{
-            //    RandomizeAnimSequence(v, random);
-            //    //Enum.TryParse(v.GetProperty<EnumProperty>("RotationCompressionFormat").Value.Name, out AnimationCompressionFormat rotCompression);
-
-            //    //var ms = new MemoryStream(v.Data);
-            //    //ms.Position = v.propsEnd();
-            //    //ms.Position += 32;
-            //    //while (ms.Position + 4 < ms.Length)
-            //    //{
-            //    //    var currentData = BitConverter.ToSingle(ms.ReadToBuffer(4),0);
-            //    //    ms.Position -= 4;
-            //    //    var randomizedFloat = random.NextFloat(currentData - (currentData * .2), currentData + (currentData * .2));
-            //    //    switch (cf)
-            //    //    {
-            //    //        case 
-            //    //    }
-            //    //    ms.WriteBytes(BitConverter.GetBytes());
-            //    //}
-
-            //    //v.Data = ms.ToArray();
-            //}
-            //p.save();
-            //Debugger.Break();
-
-            //RANDOMIZE TEXTS
-            if (mainWindow.RANDSETTING_MISC_GAMEOVERTEXT)
-            {
-                mainWindow.CurrentOperationText = "Randoming Game Over text";
-                string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("gameovertexts.xml");
-                XElement rootElement = XElement.Parse(fileContents);
-                var gameoverTexts = rootElement.Elements("gameovertext").Select(x => x.Value).ToList();
-                var gameOverText = gameoverTexts[random.Next(gameoverTexts.Count)];
-                foreach (TalkFile tlk in LoadedTalkFiles)
-                {
-                    var replaced = tlk.ReplaceString(157152, gameOverText); //Todo: Update game over text ID
-                    //tlk.
-                    //    var hc = new HuffmanCompression();
-                }
-            }
-
-#if DEBUG
-            //Restore ini files first
-            var backupPath = Utilities.GetGameBackupPath();
-            if (backupPath != null)
-            {
-                var buDlcDir = Path.Combine(backupPath, "BioGame", "DLC");
-                var relativeInis = Directory.EnumerateFiles(buDlcDir, "*.ini", SearchOption.AllDirectories).Select(x => x.Substring(buDlcDir.Length + 1)).ToList();
-                var gamepath = Path.Combine(Utilities.GetGamePath(), "BioGame", "DLC");
-                foreach (var rel in relativeInis)
-                {
-                    var bu = Path.Combine(buDlcDir, rel);
-                    var ig = Path.Combine(gamepath, rel);
-                    if (Directory.Exists(Path.GetDirectoryName(ig)))
-                    {
-                        File.Copy(bu, ig, true);
-                    }
-                }
-
-                var basegameCoal = Path.Combine(Path.Combine(Utilities.GetGamePath(), @"BIOGame\Config\PC\Cooked\Coalesced.ini"));
-                var buCoal = Path.Combine(backupPath, @"BIOGame\Config\PC\Cooked\Coalesced.ini");
-                File.Copy(buCoal, basegameCoal, true);
-            }
-#endif
-
-            // ME2 ----
-            /*
-            if (mainWindow.RANDSETTING_MOVEMENT_SPEED)
-            {
-                RandomizePlayerMovementSpeed(random);
-            }
-
-            if (mainWindow.RANDSETTING_LEVEL_LONGWALK)
-            {
-                RandomizeTheLongWalk(random);
-            }
-
-            if (mainWindow.RANDSETTING_LEVEL_ARRIVAL)
-            {
-                RandomizeArrivalDLC(random);
-            }
-
-            if (mainWindow.RANDSETTING_LEVEL_NORMANDY)
-            {
-                RandomizeNormandyHolo(random);
-            }
-
-
-
-            Log.Information("Saving Coalesced.ini file");
-            me2basegamecoalesced.Serialize();
-            */
 
             // Pass 2: All exports
             var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
@@ -225,7 +128,6 @@ namespace ME2Randomizer.Classes
                 mainWindow.CurrentOperationText = "Getting list of files...";
                 mainWindow.ProgressBarIndeterminate = true;
 
-
                 var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false, false).Values.ToList();
 
                 mainWindow.ProgressBarIndeterminate = false;
@@ -233,29 +135,35 @@ namespace ME2Randomizer.Classes
                 mainWindow.ProgressBar_Bottom_Min = 0;
                 int currentFileNumber = 0;
 #if DEBUG
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 1 }, (file) =>
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 3 : 1 }, (file) =>
 #else
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 4 }, (file) =>
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
 #endif
                 {
+                    var name = Path.GetFileNameWithoutExtension(file);
+                    if (SpecializedFiles.Contains(name)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
                     // Todo: Filter out BioD_Nor_103aGalaxyMap.pcc
+
                     bool loggedFilePath = false;
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    // Debug
-                    if (!file.Contains("nor", StringComparison.InvariantCultureIgnoreCase) &&
-                        !file.Contains("pro", StringComparison.CurrentCultureIgnoreCase) &&
-                            !file.Contains("sfxgame", StringComparison.CurrentCultureIgnoreCase)
-                        )
+                    if (//!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Cit", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Blb", StringComparison.InvariantCultureIgnoreCase)
+                    //    &&
+                    !file.Contains("TwrAsA", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("startup", StringComparison.InvariantCultureIgnoreCase)
+                    )
                         return;
 
                     var package = MEPackageHandler.OpenMEPackage(file);
-                    foreach (var exp in package.Exports)
+                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
                     {
                         foreach (var r in perExportRandomizers)
                         {
-                            r.PerformRandomizationOnExportDelegate(exp, random, r);
+                            r.PerformRandomizationOnExportDelegate(exp, r);
                         }
 
                         /*
@@ -271,45 +179,12 @@ namespace ME2Randomizer.Classes
                                 loggedFilePath = true;
                             }
 
-                            RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
+                            RandomizeBioMorphFace(exp,  morphFaceRandomizationAmount);
                         }
-                        else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
-                        {
-                            if (!loggedFilePath)
-                            {
-                                Log.Information("Randomizing map file: " + file);
-                                loggedFilePath = true;
-                            }
 
-                            
-                        }
-                        else if (exp.ClassName == "BioAnimSetData" && mainWindow.RANDSETTING_SHUFFLE_CUTSCENE_ACTORS) //UPDATE THIS TO DO BIOANIMDATA!!
-                        {
-                            RandomizeBioAnimSetData(exp, random);
-                        }
-                        else if (exp.ClassName == "AnimSequence" && mainWindow.RANDSETTING_PAWN_ANIMSEQUENCE)
-                        {
-                            if (!loggedFilePath)
-                            {
-                                //Log.Information("Randomizing map file: " + files[i]);
-                                loggedFilePath = true;
-                            }
-
-                            RandomizeAnimSequence(exp, random);
-                        }
-                        else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
-                        {
-                            if (!loggedFilePath)
-                            {
-                                //Log.Information("Randomizing map file: " + files[i]);
-                                loggedFilePath = true;
-                            }
-
-                            RandomizeBioLookAtDefinition(exp, random);
-                        }
                         else if (exp.ClassName == "BioPawn")
                         {
-                            if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && random.Next(4) == 0)
+                            if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && ThreadSafeRandom.Next(4) == 0)
                             {
                                 if (!loggedFilePath)
                                 {
@@ -318,31 +193,13 @@ namespace ME2Randomizer.Classes
                                 }
 
                                 //Pawn size randomizer
-                                RandomizeBioPawnSize(exp, random, 0.4);
+                                RandomizeBioPawnSize(exp,  0.4);
                             }
 
-                            if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
-                            {
-                                if (!loggedFilePath)
-                                {
-                                    Log.Information("Randomizing file: " + file);
-                                    loggedFilePath = true;
-                                }
 
-                                RandomizePawnMaterialInstances(exp, random);
-                            }
                         }
-                        else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
-                        {
-                            if (!loggedFilePath)
-                            {
-                                Log.Information("Randomizing file: " + file);
-                                loggedFilePath = true;
-                            }
 
-                            RandomizeHeightFogComponent(exp, random);
-                        }
-                        else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && random.Next(4) == 0)
+                        else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && ThreadSafeRandom.Next(4) == 0)
                         {
                             if (!loggedFilePath)
                             {
@@ -351,27 +208,7 @@ namespace ME2Randomizer.Classes
                             }
 
                             //Interpolation randomizer
-                            RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
-                        }
-                        else if (mainWindow.RANDSETTING_PAWN_FACEFX && exp.ClassName == "FaceFXAnimSet")
-                        {
-                            if (!loggedFilePath)
-                            {
-                                Log.Information("Randomizing file: " + file);
-                                loggedFilePath = true;
-                            }
-
-                            //Method contains SHouldSave in it (due to try catch).
-                            RandomizeFaceFX(exp, random, (int)faceFXRandomizationAmount);
-                        }
-                        else if (mainWindow.RANDSETTING_MOVEMENT_SPEED && exp.ClassName == "SFXMovementData" && !exp.FileRef.FilePath.EndsWith("_Player_C.pcc"))
-                        {
-                            RandomizeMovementSpeed2DA(exp, random);
-                        }
-                        else if (mainWindow.RANDSETTING_HOLOGRAM_COLORS && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName.Name.StartsWith("Holo"))
-                        {
-                            Debug.WriteLine("RAndomizing hologram colors");
-                            RandomizeMaterialInstance(exp, random);
+                            RandomizeInterpTrackMove(exp,  morphFaceRandomizationAmount);
                         }
                         */
                     }
@@ -383,75 +220,18 @@ namespace ME2Randomizer.Classes
                 //{
                 //    RandomizeAINames(package, random);
                 //}
-
-                //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION && package.LocalTalkFiles.Any())
-                //{
-                //    if (!loggedFilePath)
-                //    {
-                //        Log.Information("Randomizing map file: " + files[i]);
-                //        loggedFilePath = true;
-                //    }
-                //    UpdateGalaxyMapReferencesForTLKs(package.LocalTalkFiles, false, false);
-                //}
-
-                //if (mainWindow.RANDSETTING_WACK_SCOTTISH && package.LocalTalkFiles.Any())
-                //{
-                //    if (!loggedFilePath)
-                //    {
-                //        Log.Information("Randomizing map file: " + files[i]);
-                //        loggedFilePath = true;
-                //    }
-
-                //    MakeTextPossiblyScottish(package.LocalTalkFiles, random, false);
-                //}
-
-                //foreach (var talkFile in package.LocalTalkFiles.Where(x => x.Modified))
-                //{
-                //    talkFile.saveToExport();
-                //}
-
-
             }
-
-            //if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION)
-            //{
-            //    Log.Information("Apply galaxy map background transparency fix");
-            //    MEPackage p = MEPackageHandler.OpenMEPackage(Utilities.GetGameFile(@"BioGame\CookedPC\Maps\NOR\DSG\BIOA_NOR10_03_DSG.SFM"));
-            //    p.GetUExport(1655).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.PC_GalaxyMap_BGFix_1655.bin");
-            //    p.save();
-            //    ModifiedFiles[p.FilePath] = p.FilePath;
-            //}
-
-            if (mainWindow.RANDSETTING_WACK_SCOTTISH)
-            {
-                MakeTextPossiblyScottish(random, true);
-            }
-
-
 
             mainWindow.ProgressBarIndeterminate = true;
-            foreach (TalkFile tf in LoadedTalkFiles)
-            {
-                if (tf.IsModified)
-                {
-                    //string xawText = tf.findDataById(138077); //Earth.
-                    //Debug.WriteLine($"------------AFTER REPLACEMENT----{tf.export.ObjectName}------------------");
-                    //Debug.WriteLine("New description:\n" + xawText);
-                    //Debug.WriteLine("----------------------------------");
-                    //Debugger.Break(); //Xawin
-                    mainWindow.CurrentOperationText = "Saving TLKs";
-                    ModifiedFiles[tf.path] = tf.path;
-                    //HuffmanCompression hc = new ME3Explorer.HuffmanCompression();
-                    // hc.SavetoFile(tf.path);
-                }
-            }
-
             mainWindow.CurrentOperationText = "Finishing up";
-            LoadedTalkFiles = null; // Remove from memory
-            //AddMERSplash(random);
+
+            // Close out files and free memory
+            TFCBuilder.EndTFCs();
+            CoalescedHandler.EndHandler();
+            TLKHandler.EndHandler();
+            NonSharedPackageCache.ReleasePackages();
         }
 
-        public static List<TalkFile> LoadedTalkFiles { get; set; }
 
         /// <summary>
         /// Sets the options up that can be selected and their methods they call
@@ -459,6 +239,7 @@ namespace ME2Randomizer.Classes
         /// <param name="RandomizationGroups"></param>
         internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups)
         {
+#if __ME2__
             RandomizationGroups.Add(new RandomizationGroup()
             {
                 GroupName = "Faces & Characters",
@@ -466,6 +247,7 @@ namespace ME2Randomizer.Classes
                 {
                     new RandomizationOption()
                     {
+                        Description="Changes facial animation. The best feature of MER",
                         HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
                             rSetting switch
                             {
@@ -476,25 +258,35 @@ namespace ME2Randomizer.Classes
                                 5 => "Total madness",
                                 _ => "Error"
                             },
-                        SliderValue = 2, // This must come after the converter
+                        SliderValue = 4, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport
                     },
-                    new RandomizationOption() {HumanName = "Squadmate faces"},
+                    new RandomizationOption() {HumanName = "Squadmate faces", Description = "Only works on Wilson and Jacob, unfortunately. Other squadmates are fully modeled", PerformSpecificRandomizationDelegate = RBioMorphFace.RandomizeSquadmateFaces},
                     new RandomizationOption()
                     {
                         HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
                             rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
-
+                        PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExport,
+                        Description="Changes the face morph used by some pawns",
                     },
-                    new RandomizationOption() {HumanName = "NPC head colors"},
-                    new RandomizationOption() {HumanName = "Eyes (exluding Illusive Man)", IsRecommended = true, PerformRandomizationOnExportDelegate = REyes.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Illusive Man eyes", IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport},
+                    new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport},
+                    new RandomizationOption() {HumanName = "Eyes (excluding Illusive Man)",Description="Changes the colors of eyes", IsRecommended = true, PerformRandomizationOnExportDelegate = REyes.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Illusive Man eyes",Description="Changes the Illusive Man's eye color", IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport},
                     new RandomizationOption() {HumanName = "Character creator premade faces", IsRecommended = true, PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator},
-                    new RandomizationOption() {HumanName = "Character creator skin tones"},
-                    new RandomizationOption() {HumanName = "Iconic FemShep face"},
-                    new RandomizationOption() {HumanName = "Look At Definitions", PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Look At Targets", PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Iconic FemShep face",Description="Changes the default FemShep face"},
+                    new RandomizationOption() {HumanName = "Look At Definitions", Description="Changes how pawns look at things",PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Look At Targets",Description="Changes where pawns look", PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Animation Set Bones",
+                        PerformRandomizationOnExportDelegate = RBioAnimSetData.RandomizeExport,
+                        SliderToTextConverter = RBioAnimSetData.UIConverter,
+                        HasSliderOption = true,
+                        SliderValue = 1,
+                        Ticks = "1,2,3,4,5",
+                        Description = "Changes the order of animations mapped to bones. E.g. arm rotation will be swapped with eyes"
+                    },
                 }
             });
 
@@ -503,8 +295,10 @@ namespace ME2Randomizer.Classes
                 GroupName = "Miscellaneous",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Game over text"},
-                    new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
+                    new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RHolograms.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs}
                 }
             });
 
@@ -513,19 +307,23 @@ namespace ME2Randomizer.Classes
                 GroupName = "Movement & pawns",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Enemy movement speeds"},
-                    new RandomizationOption() {HumanName = "Player movement speeds"},
-                    new RandomizationOption() {HumanName = "Hammerhead"}
+                    new RandomizationOption() {HumanName = "NPC movement speeds", Description = "Changes non-player movement stats", PerformRandomizationOnExportDelegate = PawnMovementSpeed.RandomizeMovementSpeed},
+                    new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed},
+                    //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
+                    new RandomizationOption() {HumanName = "Hammerhead", Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization}
                 }
             });
 
             RandomizationGroups.Add(new RandomizationGroup()
             {
-                GroupName = "Weapons",
+                GroupName = "Weapons & Enemies",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Weapon stats"},
-                    new RandomizationOption() {HumanName = "Squadmate weapon types"},
+                    new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable"},
+                    new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use. Requires DLC option for Zaeed and Kasumi", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons},
+                    new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport},
                 }
             });
 
@@ -534,11 +332,15 @@ namespace ME2Randomizer.Classes
                 GroupName = "Level-specific",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Galaxy Map"},
-                    new RandomizationOption() {HumanName = "Normandy", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Galaxy Map", Description = "Changes systems and planets in clusters"},
+                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes some holos", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization},
                     new RandomizationOption() {HumanName = "Prologue"},
-                    new RandomizationOption() {HumanName = "Arrival", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Collector Base", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Citadel", Description = "Changes various things", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Overlord", Description = "Changes many things", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Arrival", Description = "Changes the relay", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Collector Base", Description = "Changes The Long Walk", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
                 }
             });
 
@@ -548,48 +350,60 @@ namespace ME2Randomizer.Classes
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Fog colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Post Processing volumes", PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Light colors", PerformRandomizationOnExportDelegate = RLighting.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Post Processing volumes", Description = "Can potentially break visibility", PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting", PerformRandomizationOnExportDelegate = RLighting.RandomizeExport},
                 }
             });
 
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Text",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText},
+                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText},
+                    new RandomizationOption() {HumanName = "Vowels", Description="Swaps vowels in text", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels},
+                }
+            });
 
             RandomizationGroups.Add(new RandomizationGroup()
             {
                 GroupName = "Wackadoodle",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Actors in cutscenes", PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns},
-                    new RandomizationOption() {HumanName = "Animation data", PerformRandomizationOnExportDelegate = RAnimSequence.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Actors in cutscenes", Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious", PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns},
+                    new RandomizationOption() {
+                            HumanName = "Animation data",
+                            PerformRandomizationOnExportDelegate = RAnimSequence.RandomizeExport,
+                            SliderToTextConverter = RAnimSequence.UIConverter,
+                            HasSliderOption = true,
+                            SliderValue = 1,
+                            Ticks = "1,2",
+                            Description="Shifts rigged bone positions"
+                    },
                     new RandomizationOption() {HumanName = "Random movement interpolations"},
-                    new RandomizationOption() {HumanName = "Hologram colors"},
-                    new RandomizationOption() {HumanName = "Vowels"},
-                    new RandomizationOption() {HumanName = "Conversations", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Game over text"},
-                    new RandomizationOption() {HumanName = "Drone colors", PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport}
+                    new RandomizationOption()
+                    {
+                        HumanName = "Conversation Wheel", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport,
+                        Description = "Changes replies in wheel. Can make conversations hard to exit"
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Actors in conversations",
+                        PerformRandomizationOnExportDelegate = RSFXSeqAct_StartConversation.RandomizeExport,
+                        Description = "Changes pawn roles in conversations"
+                    },
                 }
             });
-        }
 
-        public enum AnimationCompressionFormat
-        {
-            ACF_None,
-            ACF_Float96NoW,
-            ACF_Fixed48NoW,
-            ACF_IntervalFixed32NoW,
-            ACF_Fixed32NoW,
-            ACF_Float32NoW,
-            ACF_BioFixed48,
+#endif
+
         }
 
 
 
-
-
-
-
-        private void randomizeMorphTarget(Random random, ExportEntry morphTarget)
+        private void randomizeMorphTarget(ExportEntry morphTarget)
         {
             MemoryStream ms = new MemoryStream(morphTarget.Data);
             ms.Position = morphTarget.propsEnd();
@@ -598,7 +412,7 @@ namespace ME2Randomizer.Classes
             for (int i = 0; i < numLods; i++)
             {
                 var numVertices = ms.ReadInt32();
-                var diff = random.NextFloat(-0.2, 0.2);
+                var diff = ThreadSafeRandom.NextFloat(-0.2, 0.2);
                 for (int k = 0; k < numVertices; k++)
                 {
                     for (int j = 0; j < 3; j++)
@@ -608,7 +422,7 @@ namespace ME2Randomizer.Classes
                         ms.WriteFloat(fVal + diff);
                     }
 
-                    ms.WriteByte((byte)random.Next(256));
+                    ms.WriteByte((byte)ThreadSafeRandom.Next(256));
                     ms.ReadByte();
                     ms.ReadByte();
                     ms.ReadByte();
@@ -622,73 +436,34 @@ namespace ME2Randomizer.Classes
         }
 
 
-
-
-        private void RandomizePawnMaterialInstances(ExportEntry exp, Random random)
-        {
-            //Don't know if this works
-            var hairMeshObj = exp.GetProperty<ObjectProperty>("m_oHairMesh");
-            if (hairMeshObj != null)
-            {
-                var headMesh = exp.FileRef.GetUExport(hairMeshObj.Value);
-                var materials = headMesh.GetProperty<ArrayProperty<ObjectProperty>>("Materials");
-                if (materials != null)
-                {
-                    foreach (var materialObj in materials)
-                    {
-                        //MaterialInstanceConstant
-                        ExportEntry material = exp.FileRef.GetUExport(materialObj.Value);
-                        RMaterialInstance.RandomizeExport(material, null, random);
-                    }
-                }
-            }
-        }
-
-        private void RandomizePlanetMaterialInstanceConstant(ExportEntry planetMaterial, Random random, bool realistic = false)
+        private void RandomizePlanetMaterialInstanceConstant(ExportEntry planetMaterial, bool realistic = false)
         {
             var props = planetMaterial.GetProperties();
             {
                 var scalars = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues");
                 var vectors = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues");
-                scalars[0].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0, 1.0); //Horizon Atmosphere Intensity
-                if (random.Next(4) == 0)
+                scalars[0].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(0, 1.0); //Horizon Atmosphere Intensity
+                if (ThreadSafeRandom.Next(4) == 0)
                 {
-                    scalars[2].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0, 0.7); //Atmosphere Min (how gas-gianty it looks)
+                    scalars[2].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(0, 0.7); //Atmosphere Min (how gas-gianty it looks)
                 }
                 else
                 {
                     scalars[2].GetProp<FloatProperty>("ParameterValue").Value = 0; //Atmosphere Min (how gas-gianty it looks)
                 }
 
-                scalars[3].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(.5, 1.5); //Atmosphere Tiling U
-                scalars[4].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(.5, 1.5); //Atmosphere Tiling V
-                scalars[5].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(.5, 4); //Atmosphere Speed
-                scalars[6].GetProp<FloatProperty>("ParameterValue").Value = random.NextFloat(0.5, 12); //Atmosphere Fall off...? seems like corona intensity
+                scalars[3].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(.5, 1.5); //Atmosphere Tiling U
+                scalars[4].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(.5, 1.5); //Atmosphere Tiling V
+                scalars[5].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(.5, 4); //Atmosphere Speed
+                scalars[6].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(0.5, 12); //Atmosphere Fall off...? seems like corona intensity
 
                 foreach (var vector in vectors)
                 {
                     var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                    RStructs.RandomizeTint(random, paramValue, false);
+                    RStructs.RandomizeTint(paramValue, false);
                 }
             }
             planetMaterial.WriteProperties(props);
-        }
-
-        private void RandomizeMovementSpeed2DA(ExportEntry exp, Random random)
-        {
-            var props = exp.GetProperties();
-            foreach (var prop in props)
-            {
-                if (prop is FloatProperty fp)
-                {
-                    var min = fp.Value / 3;
-                    var max = fp.Value * 3;
-
-                    fp.Value = random.NextFloat(min, max);
-                }
-            }
-
-            exp.WriteProperties(props);
         }
 
 
@@ -723,7 +498,7 @@ namespace ME2Randomizer.Classes
             }
         }
 
-        private void RandomizeInterpTrackMove(ExportEntry export, Random random, double amount)
+        private void RandomizeInterpTrackMove(ExportEntry export, double amount)
         {
             Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing movement interpolations for " + export.UIndex + ": " + export.InstancedFullPath);
             var props = export.GetProperties();
@@ -741,9 +516,9 @@ namespace ME2Randomizer.Classes
                             FloatProperty x = outVal.GetProp<FloatProperty>("X");
                             FloatProperty y = outVal.GetProp<FloatProperty>("Y");
                             FloatProperty z = outVal.GetProp<FloatProperty>("Z");
-                            x.Value = x.Value * random.NextFloat(1 - amount, 1 + amount);
-                            y.Value = y.Value * random.NextFloat(1 - amount, 1 + amount);
-                            z.Value = z.Value * random.NextFloat(1 - amount, 1 + amount);
+                            x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
+                            y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
+                            z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
                         }
                     }
                 }
@@ -765,29 +540,29 @@ namespace ME2Randomizer.Classes
                             FloatProperty z = outVal.GetProp<FloatProperty>("Z");
                             if (x.Value != 0)
                             {
-                                x.Value = x.Value * random.NextFloat(1 - amount * 3, 1 + amount * 3);
+                                x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
                             }
                             else
                             {
-                                x.Value = random.NextFloat(0, 360);
+                                x.Value = ThreadSafeRandom.NextFloat(0, 360);
                             }
 
                             if (y.Value != 0)
                             {
-                                y.Value = y.Value * random.NextFloat(1 - amount * 3, 1 + amount * 3);
+                                y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
                             }
                             else
                             {
-                                y.Value = random.NextFloat(0, 360);
+                                y.Value = ThreadSafeRandom.NextFloat(0, 360);
                             }
 
                             if (z.Value != 0)
                             {
-                                z.Value = z.Value * random.NextFloat(1 - amount * 3, 1 + amount * 3);
+                                z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
                             }
                             else
                             {
-                                z.Value = random.NextFloat(0, 360);
+                                z.Value = ThreadSafeRandom.NextFloat(0, 360);
                             }
                         }
                     }
@@ -797,182 +572,7 @@ namespace ME2Randomizer.Classes
             export.WriteProperties(props);
         }
 
-        public string GetResourceFileText(string FilePath, string assemblyName)
-        {
-            string result = string.Empty;
-
-            using (Stream stream =
-                System.Reflection.Assembly.Load(assemblyName).GetManifestResourceStream($"{assemblyName}.{FilePath}"))
-            {
-                using (StreamReader sr = new StreamReader(stream))
-                {
-                    result = sr.ReadToEnd();
-                }
-            }
-
-            return result;
-        }
-
-
-
-
-
-
-        static readonly List<char> englishVowels = new List<char>(new[] { 'a', 'e', 'i', 'o', 'u' });
-        static readonly List<char> upperCaseVowels = new List<char>(new[] { 'A', 'E', 'I', 'O', 'U' });
-
-        /// <summary>
-        /// Swap the vowels around
-        /// </summary>
-        /// <param name="Tlks"></param>
-        private void MakeTextPossiblyScottish(Random random, bool updateProgressbar)
-        {
-            /*Log.Information("Making text possibly scottish");
-            if (scottishVowelOrdering == null)
-            {
-                scottishVowelOrdering = new List<char>(new char[] { 'a', 'e', 'i', 'o', 'u' });
-                scottishVowelOrdering.Shuffle(random);
-                upperScottishVowelOrdering = new List<char>();
-                foreach (var c in scottishVowelOrdering)
-                {
-                    upperScottishVowelOrdering.Add(char.ToUpper(c, CultureInfo.InvariantCulture));
-                }
-            }
-
-            int currentTlkIndex = 0;
-            foreach (TalkFile tf in Tlks)
-            {
-                currentTlkIndex++;
-                int max = tf.StringRefs.Count();
-                int current = 0;
-                if (updateProgressbar)
-                {
-                    mainWindow.CurrentOperationText = $"Applying Scottish accent [{currentTlkIndex}/{Tlks.Count()}]";
-                    mainWindow.ProgressBar_Bottom_Max = tf.StringRefs.Length;
-                    mainWindow.ProgressBarIndeterminate = false;
-                }
-
-                foreach (var sref in tf.StringRefs)
-                {
-                    current++;
-                    if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
-                    if (updateProgressbar)
-                    {
-                        mainWindow.CurrentProgressValue = current;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(sref.Data))
-                    {
-                        string originalString = sref.Data;
-                        if (originalString.Length == 1)
-                        {
-                            continue; //Don't modify I, A
-                        }
-
-                        string[] words = originalString.Split(' ');
-                        for (int j = 0; j < words.Length; j++)
-                        {
-                            string word = words[j];
-                            if (word.Length == 1)
-                            {
-                                continue; //Don't modify I, A
-                            }
-
-                            char[] newStringAsChars = word.ToArray();
-                            for (int i = 0; i < word.Length; i++)
-                            {
-                                //Undercase
-                                var vowelIndex = englishVowels.IndexOf(word[i]);
-                                if (vowelIndex >= 0)
-                                {
-                                    if (i + 1 < word.Length && englishVowels.Contains(word[i + 1]))
-                                    {
-                                        continue; //don't modify dual vowel first letters.
-                                    }
-                                    else
-                                    {
-                                        newStringAsChars[i] = scottishVowelOrdering[vowelIndex];
-                                    }
-                                }
-                                else
-                                {
-                                    var upperVowelIndex = upperCaseVowels.IndexOf(word[i]);
-                                    if (upperVowelIndex >= 0)
-                                    {
-                                        if (i + 1 < word.Length && upperCaseVowels.Contains(word[i + 1]))
-                                        {
-                                            continue; //don't modify dual vowel first letters.
-                                        }
-                                        else
-                                        {
-                                            newStringAsChars[i] = upperScottishVowelOrdering[upperVowelIndex];
-                                        }
-                                    }
-                                }
-                            }
-
-                            words[j] = new string(newStringAsChars);
-                        }
-
-                        string rebuiltStr = string.Join(" ", words);
-                        tf.replaceString(sref.StringID, rebuiltStr);
-                    }
-                }
-            }*/
-        }
-
-
-        static string FormatXml(string xml)
-        {
-            try
-            {
-                XDocument doc = XDocument.Parse(xml);
-                return doc.ToString();
-            }
-            catch (Exception)
-            {
-                // Handle and throw if fatal exception here; don't just ignore them
-                return xml;
-            }
-        }
-
-        private void RandomizeOpeningCrawl(Random random, List<TalkFile> Tlks)
-        {
-            /* Log.Information($"Randomizing opening crawl text");
-
-             string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("openingcrawls.xml");
-
-             XElement rootElement = XElement.Parse(fileContents);
-             var crawls = (from e in rootElement.Elements("CrawlText")
-                           select new OpeningCrawl()
-                           {
-                               CrawlText = e.Value,
-                               RequiresFaceRandomizer = e.Element("requiresfacerandomizer") != null && ((bool)e.Element("requiresfacerandomizer"))
-                           }).ToList();
-             crawls = crawls.Where(x => x.CrawlText != "").ToList();
-
-             if (!mainWindow.RANDSETTING_PAWN_MAPFACES)
-             {
-                 crawls = crawls.Where(x => !x.RequiresFaceRandomizer).ToList();
-             }
-
-             string crawl = crawls[random.Next(crawls.Count)].CrawlText;
-             crawl = crawl.TrimLines();
-             //For length testing.
-             //crawl = "It is a period of civil war. Rebel spaceships, striking from a hidden base, " +
-             //        "have won their first victory against the evil Galactic Empire. During the battle, Rebel spies " +
-             //        "managed to steal secret plans to the Empire's ultimate weapon, the DEATH STAR, an armored space station " +
-             //        "with enough power to destroy an entire planet.\n\n" +
-             //        "Pursued by the Empire's sinister agents, Princess Leia races home aboard her starship, custodian of the stolen plans that can " +
-             //        "save her people and restore freedom to the galaxy.....";
-             foreach (TalkFile tf in Tlks)
-             {
-                 tf.replaceString(153106, crawl);
-             }
-             */
-        }
-
-        private void RandomizeBioPawnSize(ExportEntry export, Random random, double amount)
+        private void RandomizeBioPawnSize(ExportEntry export, double amount)
         {
             Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing pawn size for " + export.UIndex + ": " + export.InstancedFullPath);
             var props = export.GetProperties();
@@ -993,9 +593,9 @@ namespace ME2Randomizer.Classes
                 if (x.Value == 0) x.Value = 1;
                 if (y.Value == 0) y.Value = 1;
                 if (z.Value == 0) z.Value = 1;
-                x.Value = x.Value * random.NextFloat(1 - amount, 1 + amount);
-                y.Value = y.Value * random.NextFloat(1 - amount, 1 + amount);
-                z.Value = z.Value * random.NextFloat(1 - amount, 1 + amount);
+                x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
+                y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
+                z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
             }
 
             export.WriteProperties(props);
@@ -1009,92 +609,10 @@ namespace ME2Randomizer.Classes
             //        if (offset != null)
             //        {
             //            //Debug.WriteLine("Randomizing morph face " + Path.GetFilePath(export.FileRef.FilePath) + " " + export.UIndex + " " + export.FullPath + " offset");
-            //            offset.Value = offset.Value * random.NextFloat(1 - (amount / 3), 1 + (amount / 3));
+            //            offset.Value = offset.Value * ThreadSafeRandom.NextFloat(1 - (amount / 3), 1 + (amount / 3));
             //        }
             //    }
             //}
-        }
-
-        private void RandomizeCharacter(ExportEntry export, Random random)
-        {
-            /*bool hasChanges = false;
-            int[] humanLightArmorManufacturers = { 373, 374, 375, 379, 383, 451 };
-            int[] bioampManufacturers = { 341, 342, 343, 345, 410, 496, 497, 498, 526 };
-            int[] omnitoolManufacturers = { 362, 363, 364, 366, 411, 499, 500, 501, 527 };
-            List<string> actorTypes = new List<string>();
-            actorTypes.Add("BIOG_HumanFemale_Hench_C.hench_humanFemale");
-            actorTypes.Add("BIOG_HumanMale_Hench_C.hench_humanmale");
-            actorTypes.Add("BIOG_Asari_Hench_C.hench_asari");
-            actorTypes.Add("BIOG_Krogan_Hench_C.hench_krogan");
-            actorTypes.Add("BIOG_Turian_Hench_C.hench_turian");
-            actorTypes.Add("BIOG_Quarian_Hench_C.hench_quarian");
-            //actorTypes.Add("BIOG_Jenkins_Hench_C.hench_jenkins");
-
-            Bio2DA character2da = new Bio2DA(export);
-            for (int row = 0; row < character2da.RowNames.Count(); row++)
-            {
-                //Console.WriteLine("[" + row + "][" + colsToRandomize[i] + "] value is " + BitConverter.ToSingle(cluster2da[row, colsToRandomize[i]].Data, 0));
-
-
-                if (mainWindow.RANDSETTING_CHARACTER_HENCH_ARCHETYPES)
-                {
-                    if (character2da[row, 0].GetDisplayableValue().StartsWith("hench") && !character2da[row, 0].GetDisplayableValue().Contains("jenkins"))
-                    {
-                        //Henchman
-                        int indexToChoose = random.Next(actorTypes.Count);
-                        var actorNameVal = actorTypes[indexToChoose];
-                        actorTypes.RemoveAt(indexToChoose);
-                        Console.WriteLine("Character Randomizer HENCH ARCHETYPE [" + row + "][2] value is now " + actorNameVal);
-                        character2da[row, 2].Data = BitConverter.GetBytes((ulong)export.FileRef.findName(actorNameVal));
-                        hasChanges = true;
-                    }
-                }
-
-                if (mainWindow.RANDSETTING_CHARACTER_INVENTORY)
-                {
-                    int randvalue = random.Next(humanLightArmorManufacturers.Length);
-                    int manf = humanLightArmorManufacturers[randvalue];
-                    Console.WriteLine("Character Randomizer ARMOR [" + row + "][21] value is now " + manf);
-                    character2da[row, 21].Data = BitConverter.GetBytes(manf);
-
-                    if (character2da[row, 24] != null)
-                    {
-                        randvalue = random.Next(bioampManufacturers.Length);
-                        manf = bioampManufacturers[randvalue];
-                        Console.WriteLine("Character Randomizer BIOAMP [" + row + "][24] value is now " + manf);
-                        character2da[row, 24].Data = BitConverter.GetBytes(manf);
-                        hasChanges = true;
-                    }
-
-                    if (character2da[row, 29] != null)
-                    {
-                        randvalue = random.Next(omnitoolManufacturers.Length);
-                        manf = omnitoolManufacturers[randvalue];
-                        Console.WriteLine("Character Randomizer OMNITOOL [" + row + "][29] value is now " + manf);
-                        character2da[row, 29].Data = BitConverter.GetBytes(manf);
-                        hasChanges = true;
-                    }
-                }
-            }
-
-            if (hasChanges)
-            {
-                Debug.WriteLine("Writing Character_Character to export");
-                character2da.Write2DAToExport();
-            }*/
-        }
-
-
-
-
-        private List<char> scottishVowelOrdering;
-        private List<char> upperScottishVowelOrdering;
-
-        static float NextFloat(Random random)
-        {
-            double mantissa = (random.NextDouble() * 2.0) - 1.0;
-            double exponent = Math.Pow(2.0, random.Next(-3, 20));
-            return (float)(mantissa * exponent);
         }
 
         public void AddHostileSquadToPackage(IMEPackage package)
@@ -1272,19 +790,104 @@ namespace ME2Randomizer.Classes
             package.Save();
         }
 
-        public static string TLKLookup(int stringId, IMEPackage package)
+        /// <summary>
+        /// Swap the vowels around
+        /// </summary>
+        /// <param name="Tlks"></param>
+        private void MakeTextPossiblyScottish(bool updateProgressbar)
         {
-            if (stringId <= 0) return null; // No data
-            if (LoadedTalkFiles != null)
+            /*Log.Information("Making text possibly scottish");
+            if (scottishVowelOrdering == null)
             {
-                foreach (TalkFile tf in LoadedTalkFiles)
+                scottishVowelOrdering = new List<char>(new char[] { 'a', 'e', 'i', 'o', 'u' });
+                scottishVowelOrdering.Shuffle(random);
+                upperScottishVowelOrdering = new List<char>();
+                foreach (var c in scottishVowelOrdering)
                 {
-                    var data = tf.findDataById(stringId);
-                    if (data != "No Data")
-                        return data;
+                    upperScottishVowelOrdering.Add(char.ToUpper(c, CultureInfo.InvariantCulture));
                 }
             }
-            return null;
+
+            int currentTlkIndex = 0;
+            foreach (TalkFile tf in Tlks)
+            {
+                currentTlkIndex++;
+                int max = tf.StringRefs.Count();
+                int current = 0;
+                if (updateProgressbar)
+                {
+                    mainWindow.CurrentOperationText = $"Applying Scottish accent [{currentTlkIndex}/{Tlks.Count()}]";
+                    mainWindow.ProgressBar_Bottom_Max = tf.StringRefs.Length;
+                    mainWindow.ProgressBarIndeterminate = false;
+                }
+
+                foreach (var sref in tf.StringRefs)
+                {
+                    current++;
+                    if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
+                    if (updateProgressbar)
+                    {
+                        mainWindow.CurrentProgressValue = current;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(sref.Data))
+                    {
+                        string originalString = sref.Data;
+                        if (originalString.Length == 1)
+                        {
+                            continue; //Don't modify I, A
+                        }
+
+                        string[] words = originalString.Split(' ');
+                        for (int j = 0; j < words.Length; j++)
+                        {
+                            string word = words[j];
+                            if (word.Length == 1)
+                            {
+                                continue; //Don't modify I, A
+                            }
+
+                            char[] newStringAsChars = word.ToArray();
+                            for (int i = 0; i < word.Length; i++)
+                            {
+                                //Undercase
+                                var vowelIndex = englishVowels.IndexOf(word[i]);
+                                if (vowelIndex >= 0)
+                                {
+                                    if (i + 1 < word.Length && englishVowels.Contains(word[i + 1]))
+                                    {
+                                        continue; //don't modify dual vowel first letters.
+                                    }
+                                    else
+                                    {
+                                        newStringAsChars[i] = scottishVowelOrdering[vowelIndex];
+                                    }
+                                }
+                                else
+                                {
+                                    var upperVowelIndex = upperCaseVowels.IndexOf(word[i]);
+                                    if (upperVowelIndex >= 0)
+                                    {
+                                        if (i + 1 < word.Length && upperCaseVowels.Contains(word[i + 1]))
+                                        {
+                                            continue; //don't modify dual vowel first letters.
+                                        }
+                                        else
+                                        {
+                                            newStringAsChars[i] = upperScottishVowelOrdering[upperVowelIndex];
+                                        }
+                                    }
+                                }
+                            }
+
+                            words[j] = new string(newStringAsChars);
+                        }
+
+                        string rebuiltStr = string.Join(" ", words);
+                        tf.replaceString(sref.StringID, rebuiltStr);
+                    }
+                }
+            }*/
         }
     }
 }

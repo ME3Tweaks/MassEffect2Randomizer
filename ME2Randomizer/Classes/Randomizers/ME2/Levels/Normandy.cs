@@ -9,10 +9,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     public class Normandy
     {
-        public static bool PerformRandomization(Random random, RandomizationOption option)
+        public static bool PerformRandomization(RandomizationOption option)
         {
-            RandomizeNormandyHolo(random);
-            RandomizeRomance(random);
+            RandomizeNormandyHolo();
+            RandomizeRomance();
             return true;
         }
 
@@ -21,7 +21,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         /// will think it is part of the normandy.
         /// </summary>
         /// <param name="random"></param>
-        private static void RandomizeRomance(Random random)
+        private static void RandomizeRomance()
         {
             var romChooserPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("BioD_EndGm1_110Romance.pcc"));
 
@@ -37,7 +37,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             }
             var indicies = names.Select(x => x.index).ToList();
             var nameValues = names.Select(x => x.name).ToList();
-            indicies.Shuffle(random);
+            indicies.Shuffle();
 
             foreach(var index in indicies)
             {
@@ -58,7 +58,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 stateNames.Add(exp.GetProperty<NameProperty>("NameValue"));
             }
 
-            stateNames.Shuffle(random);
+            stateNames.Shuffle();
             foreach (var uindex in uindexesOfStates)
             {
                 var exp = romChooserPackage.GetUExport(uindex);
@@ -70,7 +70,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             MERFileSystem.SavePackage(romChooserPackage);
         }
 
-        private static void RandomizeNormandyHolo(Random random)
+        private static void RandomizeNormandyHolo()
         {
             string[] packages = { "BioD_Nor_104Comm.pcc", "BioA_Nor_110.pcc" };
             foreach (var packagef in packages)
@@ -81,9 +81,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 var wireframeMaterial = package.Exports.First(x => x.ObjectName == "Wireframe_mat_Master");
                 var data = wireframeMaterial.Data;
 
-                var wireColorR = random.NextFloat(0.01, 2);
-                var wireColorG = random.NextFloat(0.01, 2);
-                var wireColorB = random.NextFloat(0.01, 2);
+                var wireColorR = ThreadSafeRandom.NextFloat(0.01, 2);
+                var wireColorG = ThreadSafeRandom.NextFloat(0.01, 2);
+                var wireColorB = ThreadSafeRandom.NextFloat(0.01, 2);
 
                 List<float> allColors = new List<float>();
                 allColors.Add(wireColorR);

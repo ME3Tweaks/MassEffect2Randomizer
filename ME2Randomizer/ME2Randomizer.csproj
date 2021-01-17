@@ -11,9 +11,17 @@
   <ItemGroup>
     <Resource Include="images\*.png" />
     <Resource Include="images\*.jpg" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\DatapadScreens\Reaper_Display\fishdog_foodshack.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs2\neonbolt.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs3_5\sonicburger.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts_2\vim.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts_3\visualstudio.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\Overlord\satimg1.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\creepyshep.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\hungryillusiveman.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\longfaceudina.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\monkaanderson.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\scarymiranda.bin" />
     <None Remove="staticfiles\starterkit\me2starterkit.zip" />
-    <Resource Include="Classes\Randomizers\ME2\TextureAssets\DatapadScreens\Reaper_Display\fishdog_foodshack.bin" />
     <Resource Include="fonts\aerolight.ttf" />
     <Content Include="masseffectmodder.ico" />
   </ItemGroup>
@@ -45,6 +53,11 @@
     <EmbeddedResource Include="staticfiles\**\*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Classes\Randomizers\ME2\TextureAssets\**\*.bin" />
+    <EmbeddedResource Include="Classes\Randomizers\ME2\TextureMovieAssets\**\*.bik" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
@@ -68,6 +81,8 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs\" />
+    <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts\" />
     <Folder Include="MainWindowUIComponents\" />
     <Folder Include="staticfiles\binary\" />
   </ItemGroup>

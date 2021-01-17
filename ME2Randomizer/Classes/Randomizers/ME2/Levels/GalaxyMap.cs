@@ -13,7 +13,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     class GalaxyMap
     {
-        public static bool RandomizeGalaxyMap(Random random, RandomizationOption option)
+        public static bool RandomizeGalaxyMap(RandomizationOption option)
         {
             var packageF = MERFileSystem.GetPackageFile(@"BioD_Nor_103aGalaxyMap.pcc");
             var package = MEPackageHandler.OpenMEPackage(packageF);
@@ -27,28 +27,28 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                             var starColor = props.GetProp<StructProperty>("StarColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
                             starColor = props.GetProp<StructProperty>("StarColor2");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
 
-                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
-                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
+                            props.GetProp<IntProperty>("PosX").Value = ThreadSafeRandom.Next(1000);
+                            props.GetProp<IntProperty>("PosY").Value = ThreadSafeRandom.Next(1000);
 
 
                             var intensity = props.GetProp<FloatProperty>("SphereIntensity");
-                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
+                            if (intensity != null) intensity.Value = ThreadSafeRandom.NextFloat(0, 6);
                             intensity = props.GetProp<FloatProperty>("NebularDensity");
-                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
+                            if (intensity != null) intensity.Value = ThreadSafeRandom.NextFloat(0, 6);
                             intensity = props.GetProp<FloatProperty>("SphereSize");
-                            if (intensity != null) intensity.Value = random.NextFloat(0, 6);
+                            if (intensity != null) intensity.Value = ThreadSafeRandom.NextFloat(0, 6);
 
                             export.WriteProperties(props);
                         }
-                        //RandomizeClustersXY(export, random);
+                        //RandomizeClustersXY(export);
 
                         break;
                     case "SFXSystem":
@@ -57,28 +57,28 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                             var starColor = props.GetProp<StructProperty>("StarColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
 
                             starColor = props.GetProp<StructProperty>("FlareTint");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
 
 
                             starColor = props.GetProp<StructProperty>("SunColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
 
-                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
-                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
+                            props.GetProp<IntProperty>("PosX").Value = ThreadSafeRandom.Next(1000);
+                            props.GetProp<IntProperty>("PosY").Value = ThreadSafeRandom.Next(1000);
 
 
                             var scale = props.GetProp<FloatProperty>("Scale");
-                            if (scale != null) scale.Value = random.NextFloat(.1, 2);
+                            if (scale != null) scale.Value = ThreadSafeRandom.NextFloat(.1, 2);
 
 
                             export.WriteProperties(props);
@@ -90,45 +90,45 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                             var starColor = props.GetProp<StructProperty>("SunColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
 
                             starColor = props.GetProp<StructProperty>("FlareTint");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
 
 
                             starColor = props.GetProp<StructProperty>("CloudColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(random, starColor, false);
+                                RStructs.RandomizeTint( starColor, false);
                             }
 
                             var resourceRichness = props.GetProp<FloatProperty>("ResourceRichness");
                             if (resourceRichness != null)
                             {
-                                resourceRichness.Value = random.NextFloat(0, 1.2);
+                                resourceRichness.Value = ThreadSafeRandom.NextFloat(0, 1.2);
                             }
                             else
                             {
-                                props.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, .6), "ResourceRichness"));
+                                props.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.NextFloat(0, .6), "ResourceRichness"));
                             }
 
-                            props.GetProp<IntProperty>("PosX").Value = random.Next(1000);
-                            props.GetProp<IntProperty>("PosY").Value = random.Next(1000);
+                            props.GetProp<IntProperty>("PosX").Value = ThreadSafeRandom.Next(1000);
+                            props.GetProp<IntProperty>("PosY").Value = ThreadSafeRandom.Next(1000);
 
 
                             var scale = props.GetProp<FloatProperty>("Scale");
-                            if (scale != null) scale.Value = random.NextFloat(.1, 6);
+                            if (scale != null) scale.Value = ThreadSafeRandom.NextFloat(.1, 6);
 
 
                             export.WriteProperties(props);
                         }
                         break;
                     case "MaterialInstanceConstant":
-                        RMaterialInstance.RandomizeExport(export, null, random);
+                        RMaterialInstance.RandomizeExport(export, null);
                         break;
                 }
             }

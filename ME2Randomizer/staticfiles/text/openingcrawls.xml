@@ -3,20 +3,13 @@ The intro text only supports 8 lines of text. If you go over this, it won’t ap
 -->
 <IntroCrawlTexts>
   <CrawlText>
-    In the year 2148, explorers on Mars discovered the remains of an ancient spacefaring civilization. In the decades that followed, these mysterious artifacts revealed startling new technologies, enabling travel to the furthest stars. The basis for this incredible technology was a force that controlled the very fabric of space and time.
+    One month after the devastating geth attack on the Citadel, the galactic community struggles to rebuild.
 
-    They called it the greatest discovery in human history.
+    The Asari, Turian, and Salarian races have been forced to recognize humanity's role in saving the Citadel. This ascension to power has angered many of the other races, leading to conflict in the outer region, and splinter groups within humanity itself who do not wish to cater to the other species in the galaxy.
 
-    The civilizations of the galaxy call it...
+    As tensions build, everyone waits for the spark that starts the fire...
   </CrawlText>
   <CrawlText>
-    This series is a science fiction action role-playing third-person shooter video game series developed by the Canadian company BioWare and released for the Xbox 360, PlayStation 3, and Microsoft Windows, with the third installment also released on the Wii U.
-
-    The series is highly regarded for its narrative, character development, voice acting, the universe, and emphasis on player choice affecting the experience.
-
-    The fourth game was released on Windows, PlayStation 4 and Xbox One in March 2017, but you’re currently playing...
-  </CrawlText>
-  <CrawlText requiresfacerandomizer="true">
     Only a select few in our galaxy have survived the cataclysm that mutated us. As one of these chosen few, you’ve been conditioned to put down these scourges of the galaxy, of which there are many.
 
     You are humanity’s chosen champion. You must rise to the challenge and show that you can rescue humanity, and once this is all over… you can find your own humanity again.
@@ -41,19 +34,16 @@ The intro text only supports 8 lines of text. If you go over this, it won’t ap
     C-Sec.
   </CrawlText>
   <CrawlText>
-    In 2027, explorers on the moon of the planet Earth discovered the remains of a vehicle left there 55 years before. 81 years later, unable to contain it’s needs for its populations, the people of Earth expanded into the Sol system. In 2144 nuclear war broke out over the last remaining resources of Earth, leaving humanity’s future in peril.
+    In 2027, explorers on the moon of the planet Earth discovered the remains of a vehicle left there 55 years before. 81 years later, unable to contain its needs for its populations, the people of Earth expanded into the Sol system. In 2144 nuclear war broke out over the last remaining resources of Earth, leaving humanity’s future in peril.
 
     Then everything changed... We found that we’re just a drop in the bucket of life across the galaxy...
   </CrawlText>
-  <CrawlText>SAGasglkhasg;lkhasdglh adsdfg hsgklhagdhkshdg kasg;hk as;klhgkasdghsdhkg sldkhf hslfdh sdfj hsjkdfhsdfjksdf f fasdfiyifssdf hjdsfhjsdaf dsfh asdlfj f sjkdfhasdf hsdjfk hasdkljfg asdjfgakdsfg ksdhf alsjdfh kasgdfsdfyouiasdfyerui oqh faskjdfgasdfasndm fbsdfhahalol shdfjahsfdk jalhsfcanyoure adthishsjdflha sdfhadsljf khladsjhflakjhdsfljkhasdfhasdf...</CrawlText>
   <CrawlText>
-    class Program
-    {
-    static void Main(string[] args)
-    {
-    Console.WriteLine("Hello World!");
-    }
-    }
+    Rudimentary creatures of blood and flesh. You may have defeated one, but we are many. Our purpose transcends your understanding.
+
+    The pattern cannot be stopped. Your civilization has reached its apex, and now we will restore order to the galaxy. 
+
+    You existed because we allowed it. And we ended you, because we demanded it.
   </CrawlText>
   <CrawlText>
     [Record Scratch]
@@ -64,15 +54,17 @@ The intro text only supports 8 lines of text. If you go over this, it won’t ap
     I was with a friend on this ship, and I asked to try on their N7 uniform. One unfortunate accident later, and now they think I’m Lieutenant Commander Shepard...
   </CrawlText>
   <CrawlText>
-    It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Citadel Council. During the battle, Rebel spies managed to steal secret plans to the Council’s ultimate weapon, the DEATH STAR, an armored space station with enough power to destroy an entire planet.
+    It is a dark time for the galaxy. Although the Rebel forces were repelled, the Battle of the Citadel caused a deep rift in the leadership of the Citadel Council.
+  
+    Evading the weakened forces, the Geth retreated into hiding, luring the savior of the Citadel into a deadly trap.
 
-    Pursued by the Council’s sinister Spectre agents, Commander Anderson races home aboard his starship, custodian of the stolen plans that can save humanity and restore freedom to the galaxy.....
+    The evil forces begin to stir, knowing that it is now the right time to strike...
   </CrawlText>
   <CrawlText>
-    Captain's Log, October 7, 2183.
+    Captain's Log, December 18, 2183.
 
-    We have just come into orbit of Eden Prime to monitor progress on the Vernio particle fountain, a radically new mining technology. The project has been fraught with problems and is well behind schedule.
+    We have just come into orbit of Alchera as we attempt to root out the last Geth holdouts. The council has done nothing but brush us off, and constantly has been saying now is now the time to assign blame. They are wholly uninterested in this dire threat to our existence.
 
-    Mister Adams has been assigned to evaluate the situation.
+    I'm beginning to think they've dismissed my claims...
   </CrawlText>
 </IntroCrawlTexts>

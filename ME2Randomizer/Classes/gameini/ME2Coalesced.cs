@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using ME3ExplorerCore.Helpers;
+using ME3ExplorerCore.Misc;
 
 namespace ME2Randomizer.Classes.gameini
 {
@@ -28,6 +29,14 @@ namespace ME2Randomizer.Classes.gameini
                 string contents = fs.ReadUnrealString();
                 Inis[filename] = DuplicatingIni.ParseIni(contents);
             }
+        }
+
+        /// <summary>
+        /// For making your own Coalesced file. Make sure you set Inis!
+        /// </summary>
+        public ME2Coalesced()
+        {
+
         }
 
         //public static ME2Coalesced OpenFromTarget(GameTarget target)

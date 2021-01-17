@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
+using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 
@@ -14,16 +16,39 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     /// </summary>
     public class CharacterCreator
     {
-        private static RandomizationOption SuperRandomOption = new RandomizationOption() {SliderValue = 10};
+        private static RandomizationOption SuperRandomOption = new RandomizationOption() { SliderValue = 10 };
 
-        public static bool RandomizeCharacterCreator(Random random, RandomizationOption option)
+        public static bool RandomizeCharacterCreator(RandomizationOption option)
         {
+            var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
+            var charCreatorS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
+
+            charCreatorS.SetSingleEntry("!MalePregeneratedHeadCodes", "CLEAR");
+            charCreatorS.SetSingleEntry("!FemalePregeneratedHeadCodes", "CLEAR");
+            int numToMake = 20;
+            int i = 0;
+
+            // Male: 34 chars
+            while (i < numToMake)
+            {
+                i++;
+                charCreatorS.Entries.Add(GenerateHeadCode(false));
+            }
+
+            // Female: 36 chars
+            i = 0;
+            while (i < numToMake)
+            {
+                i++;
+                charCreatorS.Entries.Add(GenerateHeadCode(true));
+            }
+
             var biop_charF = MERFileSystem.GetPackageFile(@"BioP_Char.pcc");
             var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
             var maleFrontEndData = biop_char.GetUExport(18753);
             var femaleFrontEndData = biop_char.GetUExport(18754);
-            randomizeFrontEnd(random, maleFrontEndData);
-            randomizeFrontEnd(random, femaleFrontEndData);
+            randomizeFrontEnd(maleFrontEndData);
+            randomizeFrontEnd(femaleFrontEndData);
 
             //Copy the final skeleton from female into male.
             var femBase = biop_char.GetUExport(3480);
@@ -34,18 +59,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             {
                 if (export.ClassName == "BioMorphFace")
                 {
-                    RBioMorphFace.RandomizeExport(export, SuperRandomOption, random); //.3 default
+                    //RBioMorphFace.RandomizeExport(export, SuperRandomOption); //.3 default
                 }
                 else if (export.ClassName == "MorphTarget")
                 {
-                    if (export.ObjectName.Name.StartsWith("jaw")
-                        || export.ObjectName.Name.StartsWith("mouth")
-                        || export.ObjectName.Name.StartsWith("eye")
-                        || export.ObjectName.Name.StartsWith("cheek")
-                        || export.ObjectName.Name.StartsWith("nose")
-                        || export.ObjectName.Name.StartsWith("teeth"))
+                    if (
+                         export.ObjectName.Name.StartsWith("jaw")
+                         || export.ObjectName.Name.StartsWith("mouth")
+                                                                  || export.ObjectName.Name.StartsWith("eye")
+                                                                  || export.ObjectName.Name.StartsWith("cheek")
+                                                                  || export.ObjectName.Name.StartsWith("nose")
+                                                                  || export.ObjectName.Name.StartsWith("teeth")
+                        )
                     {
-                        //randomizeMorphTarget(random, export);
+                        RMorphTarget.RandomizeExport(export, option);
                     }
                 }
                 else if (export.ClassName == "BioMorphFaceFESliderColour")
@@ -53,7 +80,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
                     foreach (var color in colors)
                     {
-                        RStructs.RandomizeColor(random, color, true);
+                        //RStructs.RandomizeColor( color, true);
                     }
                     export.WriteProperty(colors);
                 }
@@ -76,13 +103,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         else
                         {
                             var vari = minfloat / 2;
-                            maxfloat = random.NextFloat(-vari, vari) + minfloat; //+/- 50%
+                            maxfloat = ThreadSafeRandom.NextFloat(-vari, vari) + minfloat; //+/- 50%
                         }
 
                     }
                     foreach (var floatval in floats)
                     {
-                        floatval.Value = random.NextFloat(minfloat, maxfloat);
+                        floatval.Value = ThreadSafeRandom.NextFloat(minfloat, maxfloat);
                     }
                     export.WriteProperty(floats);
                 }
@@ -95,7 +122,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             return true;
         }
 
-        private static void randomizeFrontEnd(Random random, ExportEntry frontEnd)
+        private static DuplicatingIni.IniEntry GenerateHeadCode(bool female)
+        {
+            // Doubt this will actually work but whatevers.
+            return new DuplicatingIni.IniEntry(female ? "+FemalePregeneratedHeadCodes" : "+MalePregeneratedHeadCodes", RandomString(female ? 36 : 34));
+        }
+
+        private static string RandomString(int length)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[ThreadSafeRandom.Next(s.Length)]).ToArray());
+        }
+
+        private static void randomizeFrontEnd(ExportEntry frontEnd)
         {
             var props = frontEnd.GetProperties();
 
@@ -116,14 +156,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             var defaultSettings = props.GetProp<ArrayProperty<StructProperty>>("m_aDefaultSettings");
             foreach (var basehead in defaultSettings)
             {
-                randomizeBaseHead(random, basehead, frontEnd, sliders);
+                randomizeBaseHead(basehead, frontEnd, sliders);
             }
 
             //randomize base heads ?
             var baseHeads = props.GetProp<ArrayProperty<StructProperty>>("m_aBaseHeads");
             foreach (var basehead in baseHeads)
             {
-                randomizeBaseHead(random, basehead, frontEnd, sliders);
+                randomizeBaseHead(basehead, frontEnd, sliders);
             }
 
 
@@ -131,7 +171,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         }
 
-        private static void randomizeBaseHead(Random random, StructProperty basehead, ExportEntry frontEnd, Dictionary<string, StructProperty> sliders)
+        private static void randomizeBaseHead(StructProperty basehead, ExportEntry frontEnd, Dictionary<string, StructProperty> sliders)
         {
             var bhSettings = basehead.GetProp<ArrayProperty<StructProperty>>("m_fBaseHeadSettings");
             foreach (var baseSlider in bhSettings)
@@ -151,7 +191,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 {
                     //it's indexed
                     var maxIndex = slider.GetProp<IntProperty>("m_iSteps");
-                    val.Value = random.Next(maxIndex); //will have to see if isteps is inclusive or not.
+                    val.Value = ThreadSafeRandom.Next(maxIndex); //will have to see if isteps is inclusive or not.
                 }
                 else
                 {
@@ -161,7 +201,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     {
                         var slDataExport = frontEnd.FileRef.GetUExport(sliderDatas[0].Value);
                         var range = slDataExport.GetProperty<FloatProperty>("m_fRange");
-                        val.Value = random.NextFloat(0, range * 100);
+                        val.Value = ThreadSafeRandom.NextFloat(0, range * 100);
                     }
                     else
                     {

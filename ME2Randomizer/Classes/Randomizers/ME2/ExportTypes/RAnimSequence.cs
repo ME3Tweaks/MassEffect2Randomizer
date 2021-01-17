@@ -8,8 +8,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
     class RAnimSequence
     {
+        public static string UIConverter(double setting)
+        {
+            if (setting == BASIC_RANDOM) return "Basic bones only";
+            if (setting == MODERATE_RANDOM) return "Advanced bones";
+            return "Unknown setting!";
+        }
+
+
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"AnimSequence";
-        public static bool RandomizeExport(ExportEntry export, Random random, RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var game = export.FileRef.Game;
@@ -20,7 +28,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 var animsetData = export.GetProperty<ObjectProperty>("m_pBioAnimSetData");
                 if (animsetData.Value <= 0)
                 {
-                    Debug.WriteLine("trackdata is an import skipping");
+                    //Debug.WriteLine("trackdata is an import skipping");
                     return false;
                 } // don't randomize;
 
@@ -48,7 +56,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     i++;
                     var bonePosCount = TrackOffsets[i].Value;
                     var boneName = boneList[bone].Value;
-                    bool doSomething = shouldRandomizeBone(boneName);
+                    bool doSomething = shouldRandomizeBone(boneName, option);
                     //POSKEYS
                     for (int j = 0; j < bonePosCount; j++)
                     {
@@ -65,7 +73,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                         var posX = BitConverter.ToSingle(data, offset);
                         if (doSomething)
-                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posX - (posX * .3f), posX + (posX * .3f))));
+                            data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(posX - (posX * .3f), posX + (posX * .3f))));
 
                         //PosKeys.Items.Add(new BinInterpNode
                         //{
@@ -77,7 +85,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                         var posY = BitConverter.ToSingle(data, offset);
                         if (doSomething)
-                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posY - (posY * .3f), posY + (posY * .3f))));
+                            data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(posY - (posY * .3f), posY + (posY * .3f))));
                         //PosKeys.Items.Add(new BinInterpNode
                         //{
                         //    Header = $"0x{offset:X5} Y: {posY} ",
@@ -88,7 +96,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                         var posZ = BitConverter.ToSingle(data, offset);
                         if (doSomething)
-                            data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(posZ - (posZ * .3f), posZ + (posZ * .3f))));
+                            data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(posZ - (posZ * .3f), posZ + (posZ * .3f))));
 
                         //PosKeys.Items.Add(new BinInterpNode
                         //{
@@ -126,25 +134,25 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                                 rotX = BitConverter.ToSingle(data, offset);
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
                                 offset += 4;
                                 offsetRotY = offset;
                                 rotY = BitConverter.ToSingle(data, offset);
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
                                 offset += 4;
                                 offsetRotZ = offset;
                                 rotZ = BitConverter.ToSingle(data, offset);
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
                                 offset += 4;
                                 offsetRotW = offset;
                                 rotW = BitConverter.ToSingle(data, offset);
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotW - (rotW * .1f), rotW + (rotW * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotW - (rotW * .1f), rotW + (rotW * .1f))));
                                 offset += 4;
                                 break;
                             case AnimationCompressionFormat.ACF_Float96NoW:
@@ -153,21 +161,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                                 rotX = BitConverter.ToSingle(data, offset);
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
 
                                 offset += 4;
                                 offsetRotY = offset;
                                 rotY = BitConverter.ToSingle(data, offset);
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
 
                                 offset += 4;
                                 offsetRotZ = offset;
                                 rotZ = BitConverter.ToSingle(data, offset);
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
 
                                 offset += 4;
                                 break;
@@ -215,20 +223,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                                 rotX = (data[0] & 0x7FFF) / 32767.0f * scale - shift;
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotX - (rotX * .1f), rotX + (rotX * .1f))));
 
                                 offset += 4;
                                 offsetRotY = offset;
                                 rotY = (data[1] & 0x7FFF) / 32767.0f * scale - shift;
                                 if (lookat)
 
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotY - (rotY * .1f), rotY + (rotY * .1f))));
 
                                 offset += 4;
                                 offsetRotZ = offset;
                                 rotZ = (data[2] & 0x7FFF) / 32767.0f * scale - shift;
                                 if (lookat)
-                                    data.OverwriteRange(offset, BitConverter.GetBytes(random.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
+                                    data.OverwriteRange(offset, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(rotZ - (rotZ * .1f), rotZ + (rotZ * .1f))));
 
 
 
@@ -289,14 +297,28 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             return true;
         }
 
-        private static bool shouldRandomizeBone(string boneName)
+        private static double BASIC_RANDOM = 1;
+        private static double MODERATE_RANDOM = 2;
+
+        private static bool shouldRandomizeBone(string boneName, RandomizationOption option)
         {
+            if (boneName.Contains("base", StringComparison.InvariantCultureIgnoreCase)) 
+                return false;
+
             if (boneName.Contains("finger", StringComparison.InvariantCultureIgnoreCase)) return true;
             if (boneName.Contains("eye", StringComparison.InvariantCultureIgnoreCase)) return true;
             if (boneName.Contains("mouth", StringComparison.InvariantCultureIgnoreCase)) return true;
-            if (boneName.Contains("jaw", StringComparison.InvariantCultureIgnoreCase)) return true;
             if (boneName.Contains("sneer", StringComparison.InvariantCultureIgnoreCase)) return true;
             if (boneName.Contains("brow", StringComparison.InvariantCultureIgnoreCase)) return true;
+
+            if (option.SliderValue >= MODERATE_RANDOM)
+            {
+                if (ThreadSafeRandom.Next(4) != 0) return false;
+
+                if (boneName.Contains("spine", StringComparison.InvariantCultureIgnoreCase)) return true;
+                if (boneName.Contains("chest", StringComparison.InvariantCultureIgnoreCase)) return true;
+                if (boneName.Contains("butt", StringComparison.InvariantCultureIgnoreCase)) return true;
+            }
             return false;
         }
     }

@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Misc;
@@ -33,11 +34,12 @@ namespace ME2Randomizer.Classes
 
         public static void InitMERFS(bool usingDlcModFS)
         {
+            // Is there reason to do this here...?
             ReloadLoadedFiles();
             UsingDLCModFS = usingDlcModFS;
 
             var dlcmodPath = Path.Combine(MEDirectories.GetDefaultGamePath(Game), "BioGame", "DLC", $"DLC_MOD_{Game}Randomizer");
-            if (Directory.Exists(dlcmodPath)) Utilities.DeleteFilesAndFoldersRecursively(dlcmodPath);
+            if (Directory.Exists(dlcmodPath)) Utilities.DeleteFilesAndFoldersRecursively(dlcmodPath); //Nukes the DLC folder
 
             if (UsingDLCModFS)
             {
@@ -47,15 +49,16 @@ namespace ME2Randomizer.Classes
             }
             else
             {
-                // Todo: Delete any existing randomizer mod that is installed.
                 dlcModPath = null; // do not set this var
             }
             ReloadLoadedFiles();
+            CoalescedHandler.StartHandler(UsingDLCModFS);
+            TLKHandler.StartHandler(UsingDLCModFS);
         }
 
 
 
-        private static CaseInsensitiveDictionary<string> LoadedFiles { get; set; }
+        public static CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
         public static void ReloadLoadedFiles()
         {
             var loadedFiles = MELoadedFiles.GetAllGameFiles(MEDirectories.GetDefaultGamePath(Game), Game, true);
@@ -81,7 +84,7 @@ namespace ME2Randomizer.Classes
             }
 
             var retFile = LoadedFiles.TryGetValue(packagename, out var result);
-            return result;
+            return result; // can return null
         }
 
         /// <summary>
@@ -90,13 +93,13 @@ namespace ME2Randomizer.Classes
         /// <param name="package"></param>
         public static void SavePackage(IMEPackage package)
         {
-            if ((package as UnrealPackageFile).IsModified)
+            if (package.IsModified)
             {
                 if (UsingDLCModFS && !alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
                 {
                     var fname = Path.GetFileName(package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
-                    package.Save(packageNewPath, true);
+                    package.Save(packageNewPath, false);
                 }
                 else
                 {
@@ -132,19 +135,25 @@ namespace ME2Randomizer.Classes
         }
 
         /// <summary>
-        /// Gets the path to the TFC used by MER
+        /// Gets the path to the TFC used by MER. MER uses 2 TFCs - one is in the basegame 'Textures_MER_PreDLCLoad.tfc', the other being in the DLC mod (or basegame, if DLC mod is not used)
         /// </summary>
         /// <returns></returns>
-        public static string GetTFCPath()
+        public static string GetTFCPath(bool postLoadTFC)
         {
-            if (UsingDLCModFS)
+            if (postLoadTFC)
             {
-                return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{Game}Randomizer.tfc");
+                if (UsingDLCModFS)
+                {
+                    return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{Game}Randomizer.tfc");
+                }
+                else
+                {
+                    return Path.Combine(MEDirectories.GetCookedPath(Game), $"Textures_{Game}Randomizer.tfc");
+                }
             }
-            else
-            {
-                return Path.Combine(MEDirectories.GetCookedPath(Game), $"Textures_{Game}Randomizer.tfc");
-            }
+
+            // TFC that can be used safely before load
+            return Path.Combine(MEDirectories.GetCookedPath(Game), @"Textures_MER_PreDLCLoad.tfc");
         }
     }
 }

@@ -3,13 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME3ExplorerCore.SharpDX;
 using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
-    public class RStructs
+    public static class RStructs
     {
-        public static void RandomizeColor(Random random, StructProperty color, bool randomizeAlpha)
+        public static StructProperty ToVectorStructProperty(this Vector3 vector, string propName = null)
+        {
+            var pc = new PropertyCollection();
+            pc.Add(new FloatProperty(vector.X, "X"));
+            pc.Add(new FloatProperty(vector.Y, "Y"));
+            pc.Add(new FloatProperty(vector.Z, "Z"));
+            return new StructProperty("Vector", pc, propName, true);
+        }
+
+        public static void RandomizeColor(StructProperty color, bool randomizeAlpha)
         {
             var a = color.GetProp<ByteProperty>("A");
             var r = color.GetProp<ByteProperty>("R");
@@ -24,22 +34,22 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             randomOrderChooser.Add(r);
             randomOrderChooser.Add(g);
             randomOrderChooser.Add(b);
-            randomOrderChooser.Shuffle(random);
+            randomOrderChooser.Shuffle();
 
-            randomOrderChooser[0].Value = (byte)random.Next(0, Math.Min(totalcolorValue, 256));
+            randomOrderChooser[0].Value = (byte)ThreadSafeRandom.Next(0, Math.Min(totalcolorValue, 256));
             totalcolorValue -= randomOrderChooser[0].Value;
 
-            randomOrderChooser[1].Value = (byte)random.Next(0, Math.Min(totalcolorValue, 256));
+            randomOrderChooser[1].Value = (byte)ThreadSafeRandom.Next(0, Math.Min(totalcolorValue, 256));
             totalcolorValue -= randomOrderChooser[1].Value;
 
             randomOrderChooser[2].Value = (byte)totalcolorValue;
             if (randomizeAlpha)
             {
-                a.Value = (byte)random.Next(0, 256);
+                a.Value = (byte)ThreadSafeRandom.Next(0, 256);
             }
         }
 
-        public static void RandomizeTint(Random random, StructProperty tint, bool randomizeAlpha)
+        public static void RandomizeTint(StructProperty tint, bool randomizeAlpha)
         {
             var a = tint.GetProp<FloatProperty>("A");
             var r = tint.GetProp<FloatProperty>("R");
@@ -54,18 +64,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             randomOrderChooser.Add(r);
             randomOrderChooser.Add(g);
             randomOrderChooser.Add(b);
-            randomOrderChooser.Shuffle(random);
+            randomOrderChooser.Shuffle();
 
-            randomOrderChooser[0].Value = random.NextFloat(0, totalTintValue);
+            randomOrderChooser[0].Value = ThreadSafeRandom.NextFloat(0, totalTintValue);
             totalTintValue -= randomOrderChooser[0].Value;
 
-            randomOrderChooser[1].Value = random.NextFloat(0, totalTintValue);
+            randomOrderChooser[1].Value = ThreadSafeRandom.NextFloat(0, totalTintValue);
             totalTintValue -= randomOrderChooser[1].Value;
 
             randomOrderChooser[2].Value = totalTintValue;
             if (randomizeAlpha)
             {
-                a.Value = random.NextFloat(0, 1);
+                a.Value = ThreadSafeRandom.NextFloat(0, 1);
             }
         }
     }

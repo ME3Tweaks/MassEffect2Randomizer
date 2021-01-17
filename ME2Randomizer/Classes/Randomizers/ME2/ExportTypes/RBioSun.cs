@@ -15,7 +15,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
     {
         private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor");
 
-        public static bool PerformRandomization(ExportEntry export, Random random, RandomizationOption option)
+        public static bool PerformRandomization(ExportEntry export,RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             Log.Information($"{export.FileRef.FilePath}\t{export.FullPath}");
@@ -25,18 +25,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 var tint = props.GetProp<StructProperty>("FlareTint");
                 if (tint != null)
                 {
-                    RStructs.RandomizeTint(random, tint, false);
+                    RStructs.RandomizeTint( tint, false);
                 }
-                RProperty.RandFloat(random, props, "Intensity", 0.0001f, 100f, false);
-                RProperty.RandFloat(random, props, "BrightPercent", 0.0001f, 0.1f, false);
-                RProperty.RandFloat(random, props, "Scale", 0.05f, 3f, false);
+                RProperty.RandFloat( props, "Intensity", 0.0001f, 100f, false);
+                RProperty.RandFloat( props, "BrightPercent", 0.0001f, 0.1f, false);
+                RProperty.RandFloat( props, "Scale", 0.05f, 3f, false);
             }
             else if (export.ClassName == "BioSunActor")
             {
                 var tint = props.GetProp<StructProperty>("SunTint");
                 if (tint != null)
                 {
-                    RStructs.RandomizeTint(random, tint, false);
+                    RStructs.RandomizeTint( tint, false);
                 }
             }
 

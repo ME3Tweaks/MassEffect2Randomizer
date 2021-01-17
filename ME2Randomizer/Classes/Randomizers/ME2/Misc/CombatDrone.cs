@@ -10,7 +10,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     public class CombatDrone
     {
         private static bool CanRandomize(ExportEntry export) => export.IsDefaultObject && (export.Archetype?.ObjectName.Name == "Default__SFXPawn_EngineerCombatDrone" || export.ClassName == "SFXPawn_EngineerCombatDrone" || export.Archetype?.ObjectName.Name == "Default__SFXPower_CombatDrone");
-        public static bool RandomizeExport(ExportEntry export, Random random, RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var props = export.GetProperties();
@@ -28,14 +28,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             PropertyCollection randColors = new PropertyCollection();
-            randColors.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 60), "X"));
-            randColors.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 60), "Y"));
-            randColors.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 60), "Z"));
+            randColors.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.NextFloat(0, 60), "X"));
+            randColors.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.NextFloat(0, 60), "Y"));
+            randColors.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.NextFloat(0, 60), "Z"));
 
             PropertyCollection randColors2 = new PropertyCollection();
-            randColors2.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 128), "X"));
-            randColors2.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 128), "Y"));
-            randColors2.AddOrReplaceProp(new FloatProperty(random.NextFloat(0, 128), "Z"));
+            randColors2.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.NextFloat(0, 128), "X"));
+            randColors2.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.NextFloat(0, 128), "Y"));
+            randColors2.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.NextFloat(0, 128), "Z"));
 
             if (export.ObjectName.Name.Contains("SFXPower"))
             {

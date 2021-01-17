@@ -16,7 +16,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         private static List<string> acceptableTagsForPawnShuffling;
 
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "SeqAct_Interp";
-        public static bool ShuffleCutscenePawns(ExportEntry export, Random random, RandomizationOption option)
+        public static bool ShuffleCutscenePawns(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             if (acceptableTagsForPawnShuffling == null) LoadAsset();
@@ -149,7 +149,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
 
                     var newAssignedValues = pawnsToShuffle.Select(x => x.Value).ToList();
-                    newAssignedValues.Shuffle(random);
+                    newAssignedValues.Shuffle();
                     for (int i = 0; i < pawnsToShuffle.Count; i++)
                     {
                         pawnsToShuffle[i].Value = newAssignedValues[i];

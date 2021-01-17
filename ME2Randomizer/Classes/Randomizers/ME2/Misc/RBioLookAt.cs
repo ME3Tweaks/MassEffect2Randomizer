@@ -10,16 +10,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioLookAtTarget";
 
-        public static bool RandomizeExport(ExportEntry export, Random random, RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var location = Location.GetLocation(export);
             if (location != null)
             {
                 var locS = location.Value;
-                locS.X = random.NextFloat(-100000, 100000);
-                locS.Y = random.NextFloat(-100000, 100000);
-                locS.Z = random.NextFloat(-100000, 100000);
+                locS.X = ThreadSafeRandom.NextFloat(-100000, 100000);
+                locS.Y = ThreadSafeRandom.NextFloat(-100000, 100000);
+                locS.Z = ThreadSafeRandom.NextFloat(-100000, 100000);
                 Location.SetLocation(export, locS);
                 return true;
             }
@@ -31,7 +31,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioLookAtDefinition" || export.ClassName == @"Bio_Appr_Character";
 
-        public static bool RandomizeExport(ExportEntry export, Random random, RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var boneDefinitions = export.GetProperty<ArrayProperty<StructProperty>>(export.ClassName == @"BioLookAtDefinition" ? "BoneDefinitions" : "m_aLookBoneDefs");
@@ -42,14 +42,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     //if (item.GetProp<NameProperty>("m_nBoneName").Value.Name.StartsWith("Eye"))
                     //{
-                    //    item.GetProp<FloatProperty>("m_fLimit").Value = random.Next(1, 5);
-                    //    item.GetProp<FloatProperty>("m_fUpDownLimit").Value = random.Next(1, 5);
+                    //    item.GetProp<FloatProperty>("m_fLimit").Value = ThreadSafeRandom.Next(1, 5);
+                    //    item.GetProp<FloatProperty>("m_fUpDownLimit").Value = ThreadSafeRandom.Next(1, 5);
                     //}
                     //else
                     //{
-                    item.GetProp<FloatProperty>(@"m_fDelay").Value = random.NextFloat(0, 5);
-                    item.GetProp<FloatProperty>("m_fLimit").Value = random.NextFloat(1, 170);
-                    item.GetProp<FloatProperty>("m_fUpDownLimit").Value = random.NextFloat(70, 170);
+                    item.GetProp<FloatProperty>(@"m_fDelay").Value = ThreadSafeRandom.NextFloat(0, 5);
+                    item.GetProp<FloatProperty>("m_fLimit").Value = ThreadSafeRandom.NextFloat(1, 170);
+                    item.GetProp<FloatProperty>("m_fUpDownLimit").Value = ThreadSafeRandom.NextFloat(70, 170);
                     //}
 
                 }

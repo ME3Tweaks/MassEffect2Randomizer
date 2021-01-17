@@ -14,6 +14,10 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public string HumanName { get; set; }
         /// <summary>
+        /// Description of the option.
+        /// </summary>
+        public string Description { get; set; }
+        /// <summary>
         /// If the option is checked when the UI is set to recommended mode
         /// </summary>
         public bool IsRecommended { get; set; }
@@ -61,11 +65,11 @@ namespace ME2Randomizer.Classes
         /// <summary>
         /// The export-specific randomization method pointer. It takes an export entry, random, and returns a bool if the operation was run on the export.
         /// </summary>
-        public Func<ExportEntry, Random, RandomizationOption, bool> PerformRandomizationOnExportDelegate { get; set; }
+        public Func<ExportEntry, RandomizationOption, bool> PerformRandomizationOnExportDelegate { get; set; }
         /// <summary>
         /// The callback to perform is this is not an export randomizer
         /// </summary>
-        public Func<Random, RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
+        public Func<RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
 
 
         /// <summary>

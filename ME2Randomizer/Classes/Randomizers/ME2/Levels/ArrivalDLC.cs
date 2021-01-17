@@ -9,16 +9,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     public static class ArrivalDLC
     {
-        private static void RandomizeAsteroidRelayColor(Random random)
+        private static void RandomizeAsteroidRelayColor()
         {
             // Relay at the end of the DLC
             var shuttleFile = MERFileSystem.GetPackageFile(@"BioD_ArvLvl5_110_Asteroid.pcc");
             if (shuttleFile != null && File.Exists(shuttleFile))
             {
                 var shuttleP = MEPackageHandler.OpenMEPackage(shuttleFile);
-                var randColorR = random.Next(256);
-                var randColorG = random.Next(256);
-                var randColorB = random.Next(256);
+                var randColorR = ThreadSafeRandom.Next(256);
+                var randColorG = ThreadSafeRandom.Next(256);
+                var randColorB = ThreadSafeRandom.Next(256);
 
                 var stringsGlowMatInst = shuttleP.GetUExport(170);
                 var props = stringsGlowMatInst.GetProperties();
@@ -67,7 +67,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 lookupTable.Add(new FloatProperty(allColors[1])); //g
                 lookupTable.Add(new FloatProperty(allColors[2])); //b
 
-                int numToAdd = random.Next(3);
+                int numToAdd = ThreadSafeRandom.Next(3);
 
                 //flare brightens as it fades out
                 lookupTable.Add(new FloatProperty(allColors[0] + numToAdd == 0 ? .3f : 0f)); //r
@@ -83,9 +83,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             if (asteroidf != null && File.Exists(asteroidf))
             {
                 var skhuttleP = MEPackageHandler.OpenMEPackage(asteroidf);
-                var randColorR = random.Next(256);
-                var randColorG = random.Next(256);
-                var randColorB = random.Next(256);
+                var randColorR = ThreadSafeRandom.Next(256);
+                var randColorG = ThreadSafeRandom.Next(256);
+                var randColorB = ThreadSafeRandom.Next(256);
 
                 var stringsGlowMatInst = skhuttleP.GetUExport(4715); //strings glow
                 var props = stringsGlowMatInst.GetProperties();
@@ -134,7 +134,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 lookupTable.Add(new FloatProperty(allColors[1])); //g
                 lookupTable.Add(new FloatProperty(allColors[2])); //b
 
-                int numToAdd = random.Next(3);
+                int numToAdd = ThreadSafeRandom.Next(3);
 
                 //flare brightens as it fades out
                 lookupTable.Add(new FloatProperty(allColors[0] + numToAdd == 0 ? .3f : 0f)); //r
@@ -146,10 +146,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             }
         }
 
-        internal static bool PerformRandomization(Random random, RandomizationOption notUsed)
+        internal static bool PerformRandomization(RandomizationOption notUsed)
         {
-            RandomizeAsteroidRelayColor(random);
-
+            RandomizeAsteroidRelayColor();
             return true;
         }
     }

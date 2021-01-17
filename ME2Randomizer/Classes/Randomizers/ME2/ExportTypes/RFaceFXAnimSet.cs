@@ -14,7 +14,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
     public class RFaceFXAnimSet
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "FaceFXAnimSet";
-        public static bool RandomizeExport(ExportEntry exp, Random random, RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry exp,RandomizationOption option)
         {
             if (!CanRandomize(exp)) return false;
             //if (exp.UIndex != 1999) return false;
@@ -29,13 +29,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     //if (true)
 
                     bool randomizedBoneList = false;
-                    if (random.Next(10 - (int)option.SliderValue) == 0)
+                    if (ThreadSafeRandom.Next(10 - (int)option.SliderValue) == 0)
                     {
                         //Randomize the names used for animation
-                        faceFxline.AnimationNames.Shuffle(random);
+                        faceFxline.AnimationNames.Shuffle();
                         randomizedBoneList = true;
                     }
-                    if (!randomizedBoneList || random.Next(16 - (int)option.SliderValue) == 0)
+                    if (!randomizedBoneList || ThreadSafeRandom.Next(16 - (int)option.SliderValue) == 0) // if bonelist was shuffled, or if 1 in 16 chance while it was also shuffled.
                     {
                         //Randomize the points
                         for (int j = 0; j < faceFxline.Points.Count; j++)
@@ -45,19 +45,19 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                             switch (option.SliderValue)
                             {
                                 case 1: //A few broken bones
-                                    currentPoint.weight += random.NextFloat(-.25, .25);
+                                    currentPoint.weight += ThreadSafeRandom.NextFloat(-.25, .25);
                                     break;
                                 case 2: //A significant option.SliderValue of broken bones
-                                    currentPoint.weight += random.NextFloat(-.5, .5);
+                                    currentPoint.weight += ThreadSafeRandom.NextFloat(-.5, .5);
                                     break;
                                 case 3: //That's not how the face is supposed to work
-                                    if (random.Next(5) == 0)
+                                    if (ThreadSafeRandom.Next(5) == 0)
                                     {
-                                        currentPoint.weight = random.NextFloat(-3, 3);
+                                        currentPoint.weight = ThreadSafeRandom.NextFloat(-3, 3);
                                     }
-                                    else if (isLast && random.Next(3) == 0)
+                                    else if (isLast && ThreadSafeRandom.Next(3) == 0)
                                     {
-                                        currentPoint.weight = random.NextFloat(.7, .7);
+                                        currentPoint.weight = ThreadSafeRandom.NextFloat(.7, .7);
                                     }
                                     else
                                     {
@@ -66,13 +66,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                                     break;
                                 case 4: //:O
-                                    if (random.Next(12) == 0)
+                                    if (ThreadSafeRandom.Next(12) == 0)
                                     {
-                                        currentPoint.weight = random.NextFloat(-5, 5);
+                                        currentPoint.weight = ThreadSafeRandom.NextFloat(-5, 5);
                                     }
-                                    else if (isLast && random.Next(3) == 0)
+                                    else if (isLast && ThreadSafeRandom.Next(2) == 0)
                                     {
-                                        currentPoint.weight = random.NextFloat(.9, .9);
+                                        currentPoint.weight = ThreadSafeRandom.NextFloat(.9, .9);
                                     }
                                     else
                                     {
@@ -82,13 +82,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                                     break;
                                 case 5: //Utter madness
-                                    currentPoint.weight = random.NextFloat(-10, 10);
+                                    currentPoint.weight = ThreadSafeRandom.NextFloat(-10, 10);
                                     break;
                                 default:
                                     Debugger.Break();
                                     break;
                             }
-
+                            //if (currentPoint.weight == 0)
+                                //Debug.WriteLine($"Weight is 0, {faceFxline.NameAsString}, exp {exp.UIndex} {exp.FullPath}");
                             faceFxline.Points[j] = currentPoint; //Reassign the struct
                         }
                     }

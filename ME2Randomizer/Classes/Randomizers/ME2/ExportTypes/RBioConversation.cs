@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME3ExplorerCore.Dialogue;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
@@ -13,12 +10,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioConversation";
 
-        public static bool RandomizeExport(ExportEntry export, Random random, RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry export,RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
 
             var conv = new ConversationExtended(export);
-            conv.LoadConversation(Randomizer.TLKLookup);
+            conv.LoadConversation(TLKHandler.TLKLookup);
 
 
             // SHUFFLE THE NODES THE REPLIES CONNECT TO
@@ -28,7 +25,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 var cameraIntimacy = node.NodeProp.GetProp<IntProperty>("nCameraIntimacy");
                 if (cameraIntimacy != null)
                 {
-                    cameraIntimacy.Value = random.Next(5); //Not sure what the range of values can be
+                    cameraIntimacy.Value = ThreadSafeRandom.Next(5); //Not sure what the range of values can be
                 }
 
                 var replyNodeDetails = node.NodeProp.GetProp<ArrayProperty<StructProperty>>("ReplyListNew");
@@ -40,7 +37,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         replyNodeIndices.Add(bdrld.GetProp<IntProperty>("nIndex"));
                     }
 
-                    replyNodeIndices.Shuffle(random);
+                    replyNodeIndices.Shuffle();
 
                     foreach (var bdrld in replyNodeDetails)
                     {

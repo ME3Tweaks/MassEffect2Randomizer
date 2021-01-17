@@ -1,36 +1,62 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using ME2Randomizer.Classes.Randomizers;
 
 namespace ME2Randomizer.Classes
 {
-    public static class RandomExtensions
-    {
-        public static float NextFloat(
-            this Random random,
-            double minValue,
-            double maxValue)
-        {
-            return (float)(random.NextDouble() * (maxValue - minValue) + minValue);
-        }
-    }
-
     public static class ListExtensions
     {
-        private static Random rng = new Random();
-
-        public static void Shuffle<T>(this IList<T> list, Random random = null)
+        public static int RandomIndex<T>(this IList<T> list)
         {
-            if (random == null && rng == null) rng = new Random();
-            Random randomToUse = random ?? rng;
+            return ThreadSafeRandom.Next(list.Count);
+        }
+
+        public static T RandomElement<T>(this IList<T> list)
+        {
+            return list[RandomIndex(list)];
+        }
+
+        public static void Shuffle<T>(this IList<T> list)
+        {
             int n = list.Count;
             while (n > 1)
             {
                 n--;
-                int k = randomToUse.Next(n + 1);
+                int k = ThreadSafeRandom.Next(n + 1);
                 T value = list[k];
                 list[k] = list[n];
                 list[n] = value;
             }
+        }
+
+        /// <summary>
+        /// Removes the first item from the list and removes it. Ensure this method is not called if the list is being iterated on in foreach()!
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public static T PullFirstItem<T>(this IList<T> list)
+        {
+            if (list.Count == 0)
+                throw new Exception("Cannot pull item from list, as list is empty!");
+            var retVal = list[0];
+            list.RemoveAt(0);
+            return retVal;
+        }
+    }
+
+    public static class DictionaryExtensions
+    {
+        // Kind of inefficient...
+        public static KeyValuePair<TKey,TValue> RandomKeyPair<TKey, TValue>(this IDictionary<TKey, TValue> dict)
+        {
+            var keys = dict.Keys.ToList();
+            var values = dict.Values.ToList();
+
+            var index = keys.RandomIndex();
+            return new KeyValuePair<TKey, TValue>(keys[index], values[index]);
+
         }
     }
 }

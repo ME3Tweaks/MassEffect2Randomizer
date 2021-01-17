@@ -21,7 +21,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
              export.ClassName == @"DirectionalLightComponent" ||
              export.ClassName == @"SkyLightComponent");
 
-        public static bool RandomizeExport(ExportEntry export, Random random, RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry export,RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             Log.Information($@"Randomizing light {export.UIndex}");
@@ -38,7 +38,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 lc = new StructProperty("Color", pc, "LightColor", true);
             }
 
-            RStructs.RandomizeColor(random, lc, false);
+            RStructs.RandomizeColor( lc, false);
             export.WriteProperty(lc);
             return true;
         }

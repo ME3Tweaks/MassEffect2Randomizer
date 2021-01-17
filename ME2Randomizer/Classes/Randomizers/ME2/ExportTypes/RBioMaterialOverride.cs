@@ -6,10 +6,10 @@ using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
-    class RBioMaterialOverride : IExportRandomizer
+    class RBioMaterialOverride
     {
         public bool CanRandomize(ExportEntry export) => export.ClassName == @"BioMaterialOverride";
-        public bool RandomizeExport(ExportEntry export, RandomizationOption option, Random random)
+        public bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             PropertyCollection props = export.GetProperties();
@@ -19,7 +19,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 foreach (StructProperty colorParameter in colorOverrides)
                 {
                     //Debug.WriteLine("Randomizing Color Parameter");
-                    RStructs.RandomizeTint(random, colorParameter.GetProp<StructProperty>("cValue"), false);
+                    RStructs.RandomizeTint(colorParameter.GetProp<StructProperty>("cValue"), false);
                 }
             }
             var scalarOverrides = props.GetProp<ArrayProperty<StructProperty>>("m_aScalarOverrides");
@@ -40,11 +40,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                                 if (currentValue > 1)
                                 {
-                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = random.NextFloat(0, currentValue * 1.3);
+                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = ThreadSafeRandom.NextFloat(0, currentValue * 1.3);
                                 }
                                 else
                                 {
-                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = random.NextFloat(0, 1);
+                                    scalarParameter.GetProp<FloatProperty>("sValue").Value = ThreadSafeRandom.NextFloat(0, 1);
                                 }
                             }
                         }

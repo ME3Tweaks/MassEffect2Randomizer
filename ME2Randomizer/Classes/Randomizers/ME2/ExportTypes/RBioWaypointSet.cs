@@ -8,11 +8,11 @@ using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
-    public class RBioWaypointSet : IExportRandomizer
+    public class RBioWaypointSet
     {
         private bool CanRandomize(ExportEntry export) => export.ClassName == @"BioWaypointSet";
 
-        public bool RandomizeExport(ExportEntry export, RandomizationOption option, Random random)
+        public bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             Log.Information("Randomizing BioWaypointSet " + export.UIndex + " in " + Path.GetFileName(export.FileRef.FilePath));
@@ -22,7 +22,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 //Get list of valid targets
                 var pcc = export.FileRef;
                 var waypoints = pcc.Exports.Where(x => x.ClassName == "BioPathPoint" || x.ClassName == "PathNode").ToList();
-                waypoints.Shuffle(random);
+                waypoints.Shuffle();
 
                 foreach (var waypoint in waypointReferences)
                 {

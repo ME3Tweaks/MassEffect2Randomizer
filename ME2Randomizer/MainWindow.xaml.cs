@@ -45,11 +45,12 @@ namespace ME2Randomizer
             ERandomizationMode_Common = 1,
             ERandomizationMode_Screed = 2
         }
+        public bool UseMultiThreadRNG { get; set; } = true;
 
         public bool ShowProgressPanel { get; set; }
         public RandomizationMode SelectedRandomizeMode { get; set; }
 
-        public void OnSelectedRandomizationModeChanged()
+        public void OnSelectedRandomizeModeChanged()
         {
             UpdateCheckboxSettings();
         }
@@ -348,7 +349,8 @@ namespace ME2Randomizer
                 {
                     Seed = int.Parse(SeedTextBox.Text),
                     UseMERFS = UseMERFS,
-                    SelectedOptions = RandomizationGroups.SelectMany(x => x.Options.Where(x => x.OptionIsSelected)).ToList()
+                    SelectedOptions = RandomizationGroups.SelectMany(x => x.Options.Where(x => x.OptionIsSelected)).ToList(),
+                    UseMultiThread = UseMultiThreadRNG
                 };
                 randomizer.Randomize(op);
             }

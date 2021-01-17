@@ -12,14 +12,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     class CollectorBase
     {
-        public static bool PerformRandomization(Random random, RandomizationOption option)
+        public static bool PerformRandomization(RandomizationOption option)
         {
-            RandomizeTheLongWalk(random, option);
+            RandomizeTheLongWalk( option);
 
             return true;
         }
 
-        private static void RandomizeTheLongWalk(Random random, RandomizationOption option)
+        private static void RandomizeTheLongWalk(RandomizationOption option)
         {
             //randomize long walk lengths.
             var endwalkexportmap = new Dictionary<string, int>()
@@ -38,7 +38,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 {
                     var package = MEPackageHandler.OpenMEPackage(file);
                     var export = package.GetUExport(map.Value);
-                    export.WriteProperty(new FloatProperty(random.NextFloat(.5, 2.5), "PlayRate"));
+                    export.WriteProperty(new FloatProperty(ThreadSafeRandom.NextFloat(.5, 2.5), "PlayRate"));
                     MERFileSystem.SavePackage(package);
                 }
             }
@@ -60,7 +60,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                                 var playrate = animseq.GetProp<FloatProperty>("AnimPlayRate");
                                 var oldrate = playrate.Value;
                                 if (oldrate != 1) Debugger.Break();
-                                playrate.Value = random.NextFloat(.2, 6);
+                                playrate.Value = ThreadSafeRandom.NextFloat(.2, 6);
                                 var data = anim.Parent.Parent as ExportEntry;
                                 var len = data.GetProperty<FloatProperty>("InterpLength");
                                 len.Value = len.Value * playrate; //this might need to be changed if its not 1

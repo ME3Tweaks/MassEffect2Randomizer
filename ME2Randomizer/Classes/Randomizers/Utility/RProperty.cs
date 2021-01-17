@@ -9,7 +9,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 {
     class RProperty
     {
-        public static void RandVector(Random random, PropertyCollection props, string propname, float min, float max, bool createIfMissing)
+        public static void RandVector(PropertyCollection props, string propname, float min, float max, bool createIfMissing)
         {
             var prop = props.GetProp<StructProperty>(propname);
             if (prop == null && createIfMissing)
@@ -23,13 +23,13 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             }
             if (prop != null)
             {
-                prop.GetProp<FloatProperty>("X").Value = random.NextFloat(min, max);
-                prop.GetProp<FloatProperty>("Y").Value = random.NextFloat(min, max);
-                prop.GetProp<FloatProperty>("Z").Value = random.NextFloat(min, max);
+                prop.GetProp<FloatProperty>("X").Value = ThreadSafeRandom.NextFloat(min, max);
+                prop.GetProp<FloatProperty>("Y").Value = ThreadSafeRandom.NextFloat(min, max);
+                prop.GetProp<FloatProperty>("Z").Value = ThreadSafeRandom.NextFloat(min, max);
             }
         }
 
-        public static void RandFloat(Random random, PropertyCollection props, string propname, float min, float max, bool createIfMissing)
+        public static void RandFloat(PropertyCollection props, string propname, float min, float max, bool createIfMissing)
         {
             var prop = props.GetProp<FloatProperty>(propname);
             if (prop == null && createIfMissing)
@@ -37,10 +37,10 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 prop = new FloatProperty(0, propname);
                 props.Add(prop);
             }
-            if (prop != null) prop.Value = random.NextFloat(min, max);
+            if (prop != null) prop.Value = ThreadSafeRandom.NextFloat(min, max);
         }
 
-        public static void RandBool(Random random, PropertyCollection props, string propname, bool createIfMissing)
+        public static void RandBool(PropertyCollection props, string propname, bool createIfMissing)
         {
             var prop = props.GetProp<BoolProperty>(propname);
             if (prop == null && createIfMissing)
@@ -48,7 +48,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 prop = new BoolProperty(false, propname);
                 props.Add(prop);
             }
-            if (prop != null) prop.Value = random.Next(2) == 1;
+            if (prop != null) prop.Value = ThreadSafeRandom.Next(2) == 1;
         }
     }
 }

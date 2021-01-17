@@ -13,6 +13,10 @@ namespace ME2Randomizer.Classes.Randomizers
         /// </summary>
         public int Seed { get; set; }
         /// <summary>
+        /// If randomization should be multithreaded. Multithreaded randomizations cannot use a seed as the thread that picks up a file cannot be guaranteed (at least, not without a lot of extra work).
+        /// </summary>
+        public bool UseMultiThread { get; set; }
+        /// <summary>
         /// If we should use the MER FileSystem, aka a DLC mod when possible
         /// </summary>
         public bool UseMERFS { get; set; }

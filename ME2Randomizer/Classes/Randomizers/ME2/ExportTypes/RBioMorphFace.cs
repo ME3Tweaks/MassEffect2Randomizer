@@ -10,8 +10,27 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
     class RBioMorphFace
     {
+        private static RandomizationOption henchFaceOption = new RandomizationOption() { SliderValue = .3f };
+        public static bool RandomizeSquadmateFaces(RandomizationOption option)
+        {
+            var henchFiles = MERFileSystem.LoadedFiles.Where(x => x.Key.StartsWith("BioH_"));
+            foreach (var h in henchFiles)
+            {
+                var hPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(h.Key));
+
+                var morphFaces = hPackage.Exports.Where(x => x.ClassName == "BioMorphFace");
+                foreach (var mf in morphFaces)
+                {
+                    RandomizeExport(mf, henchFaceOption);
+                }
+
+                MERFileSystem.SavePackage(hPackage);
+            }
+            return true;
+        }
+
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioMorphFace";
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option, Random random)
+        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var props = export.GetProperties();
@@ -24,7 +43,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     if (offset != null)
                     {
                         //Debug.WriteLine("Randomizing morph face " + Path.GetFilePath(export.FileRef.FilePath) + " " + export.UIndex + " " + export.FullPath + " offset");
-                        offset.Value = offset.Value * random.NextFloat(1 - (option.SliderValue / 3), 1 + (option.SliderValue / 3));
+                        offset.Value = offset.Value * ThreadSafeRandom.NextFloat(1 - (option.SliderValue / 3), 1 + (option.SliderValue / 3));
                     }
                 }
             }
@@ -41,9 +60,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         FloatProperty x = vPos.GetProp<FloatProperty>("X");
                         FloatProperty y = vPos.GetProp<FloatProperty>("Y");
                         FloatProperty z = vPos.GetProp<FloatProperty>("Z");
-                        x.Value = x.Value * random.NextFloat(1 - option.SliderValue, 1 + option.SliderValue);
-                        y.Value = y.Value * random.NextFloat(1 - option.SliderValue, 1 + option.SliderValue);
-                        z.Value = z.Value * random.NextFloat(1 - (option.SliderValue / .85), 1 + (option.SliderValue / .85));
+                        x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - option.SliderValue, 1 + option.SliderValue);
+                        y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - option.SliderValue, 1 + option.SliderValue);
+                        z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - (option.SliderValue / .85), 1 + (option.SliderValue / .85));
                     }
                 }
             }
@@ -57,7 +76,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             //    if (materialoverride != null)
             //    {
             //        var overrides = export.FileRef.GetUExport(materialoverride.Value);
-            //        RandomizeMaterialOverride(overrides, random);
+            //        RandomizeMaterialOverride(overrides);
             //    }
             //}
             return true;
