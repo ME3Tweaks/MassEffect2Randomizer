@@ -51,8 +51,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 "SFXPawn_Wilson", //Not used afaik
 
                 // DLC
-                "SFXPawn_Zaeed",
-                "SFXPawn_Kasumi"
+                "SFXPawn_Zaeed", //VT
+                "SFXPawn_Kasumi", //MT
+                "SFXPawn_Liara", //EXP_Part01
             };
 
             foreach (var p in pawns)

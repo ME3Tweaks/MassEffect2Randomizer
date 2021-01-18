@@ -19,8 +19,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.TextureAssets
                     TextureInstancedFullPath = "BioApl_Dec_DataPad01.Materials.Datapad01_Screen",
                     AllowedTextureAssetNames = new List<string>
                     {
-                        "DatapadScreens.Datapad01_Screen.size.bin",
-                        //"DatapadScreens.Datapad01_Screen.TEST_IMAGE_DO_NOT_COMMIT.bin"
+                        "DatapadScreens.Datapad01_Screen.map.bin",
+                        "DatapadScreens.Datapad01_Screen.monsterplan.bin",
+                        "DatapadScreens.Datapad01_Screen.sizebounty.bin",
+                        "DatapadScreens.Datapad01_Screen.thisisfine.bin",
                     }
                 },
                 new RTexture2D

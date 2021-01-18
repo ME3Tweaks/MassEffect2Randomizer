@@ -1,12 +1,6 @@
-﻿using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Packages;
+﻿using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
@@ -18,6 +12,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
             return true;
         }
+
+        private static void InstallBorger()
+        {
+
+        }
+
+        private static void RandomizeTIMConvo()
+        {
+
+        }
+
+
 
         private static void RandomizeTheLongWalk(RandomizationOption option)
         {

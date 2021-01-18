@@ -142,7 +142,8 @@ namespace ME2Randomizer.Classes
                 {
                     var name = Path.GetFileNameWithoutExtension(file);
                     if (SpecializedFiles.Contains(name)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
-                    // Todo: Filter out BioD_Nor_103aGalaxyMap.pcc
+                    // Todo: Filter out BioD_Nor_103aGalaxyMap.pcc so we don't randomize galaxy map by accident
+                    // Todo: Filter out BioP_Char so we don't randomize it by accident
 
                     bool loggedFilePath = false;
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
@@ -150,9 +151,9 @@ namespace ME2Randomizer.Classes
 
                     if (//!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Cit", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Blb", StringComparison.InvariantCultureIgnoreCase)
-                    //    &&
-                    !file.Contains("TwrAsA", StringComparison.InvariantCultureIgnoreCase)
+                    !file.Contains("QuaT", StringComparison.InvariantCultureIgnoreCase)
+                        &&
+                    !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("startup", StringComparison.InvariantCultureIgnoreCase)
                     )
@@ -297,6 +298,7 @@ namespace ME2Randomizer.Classes
                 {
                     new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RHolograms.RandomizeExport},
                     new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport},
+                    //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport},
                     new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs}
                 }
@@ -340,6 +342,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization},
                     new RandomizationOption() {HumanName = "Overlord", Description = "Changes many things", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization},
                     new RandomizationOption() {HumanName = "Arrival", Description = "Changes the relay", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes some things", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization},
                     new RandomizationOption() {HumanName = "Collector Base", Description = "Changes The Long Walk", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
                 }
             });

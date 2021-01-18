@@ -59,6 +59,13 @@ namespace ME2Randomizer.Classes.Randomizers
             return (float)(LocalRandom.Value.NextDouble() * (maxValue - minValue) + minValue);
         }
 
+        public static float NextFloat(double maxValue)
+        {
+            if (SingleThreadMode)
+                return (float)(GlobalRandom.NextDouble() * maxValue);
+            return (float)(LocalRandom.Value.NextDouble() * maxValue);
+        }
+
         public static float NextFloat()
         {
             if (SingleThreadMode)

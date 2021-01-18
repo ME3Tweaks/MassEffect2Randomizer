@@ -81,6 +81,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Folder Include="Classes\Randomizers\ME2\TextureAssets\DatapadScreens\Datapad01_Screen\" />
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs\" />
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts\" />
     <Folder Include="MainWindowUIComponents\" />

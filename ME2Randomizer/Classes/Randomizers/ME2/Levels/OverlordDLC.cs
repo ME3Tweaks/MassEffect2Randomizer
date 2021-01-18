@@ -211,7 +211,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             }
         }
 
-        private static Vector3 MakeRandomColor(float totalColor)
+        public static Vector3 MakeRandomColor(float totalColor)
         {
             List<float> colorComponents = new List<float>();
 
