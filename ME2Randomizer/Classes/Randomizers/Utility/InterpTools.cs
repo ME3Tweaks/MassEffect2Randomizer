@@ -1,0 +1,169 @@
+﻿using ME3ExplorerCore.Packages;
+using ME3ExplorerCore.Unreal;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ME2Randomizer.Classes.Randomizers.Utility
+{
+    /// <summary>
+    /// Class version of Vector4. Easier to manipulate than a struct.
+    /// </summary>
+    class CVector4
+    {
+        public float W { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public static CVector4 FromVector4(Vector4 vector)
+        {
+            return new CVector4()
+            {
+                W = vector.W,
+                X = vector.X,
+                Y = vector.Y,
+                Z = vector.Z
+            };
+        }
+
+        public static CVector4 FromStructProperty(StructProperty sp, string wKey, string xKey, string yKey, string zKey)
+        {
+            return new CVector4()
+            {
+                W = sp.GetProp<FloatProperty>(wKey),
+                X = sp.GetProp<FloatProperty>(xKey),
+                Y = sp.GetProp<FloatProperty>(yKey),
+                Z = sp.GetProp<FloatProperty>(zKey)
+            };
+        }
+
+        public Vector4 ToVector4()
+        {
+            return new Vector4()
+            {
+                W = W,
+                X = X,
+                Y = Y,
+                Z = Z
+            };
+        }
+    }
+
+    /// <summary>
+    /// Class version of Vector3. Easier to manipulate than a struct.
+    /// </summary>
+    class CVector3
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public static CVector3 FromStructProperty(StructProperty sp, string xKey, string yKey, string zKey)
+        {
+            return new CVector3()
+            {
+                X = sp.GetProp<FloatProperty>(xKey),
+                Y = sp.GetProp<FloatProperty>(yKey),
+                Z = sp.GetProp<FloatProperty>(zKey)
+            };
+        }
+        public static CVector3 FromVector3(Vector3 vector)
+        {
+            return new CVector3()
+            {
+                X = vector.X,
+                Y = vector.Y,
+                Z = vector.Z
+            };
+        }
+        public Vector3 ToVector3()
+        {
+            return new Vector3()
+            {
+                X = X,
+                Y = Y,
+                Z = Z
+            };
+        }
+
+        internal Property ToStructProperty(string xName, string yName, string zName, string propName = null, bool isImmutable = true)
+        {
+            PropertyCollection props = new PropertyCollection();
+            props.Add(new FloatProperty(X, xName));
+            props.Add(new FloatProperty(Y, yName));
+            props.Add(new FloatProperty(Z, zName));
+
+            return new StructProperty("Vector", props, propName, isImmutable);
+        }
+    }
+
+    class VectorTrackPoint
+    {
+        public float InVal { get; set; }
+        public CVector3 OutVal { get; set; }
+        public CVector3 ArriveTangent { get; set; }
+        public CVector3 LeaveTangent { get; set; }
+        public EInterpCurveMode InterpMode { get; set; }
+
+        public static VectorTrackPoint FromStruct(StructProperty vtsp)
+        {
+            return new VectorTrackPoint()
+            {
+                InVal = vtsp.GetProp<FloatProperty>("InVal"),
+                OutVal = CVector3.FromStructProperty(vtsp.GetProp<StructProperty>("OutVal"), "X", "Y", "Z"),
+                ArriveTangent = CVector3.FromStructProperty(vtsp.GetProp<StructProperty>("ArriveTangent"), "X", "Y", "Z"),
+                LeaveTangent = CVector3.FromStructProperty(vtsp.GetProp<StructProperty>("LeaveTangent"), "X", "Y", "Z"),
+                InterpMode = Enum.Parse<EInterpCurveMode>(vtsp.GetProp<EnumProperty>("InterpMode").Value)
+            };
+        }
+
+        internal StructProperty ToStructProperty()
+        {
+            PropertyCollection props = new PropertyCollection();
+            props.Add(new FloatProperty(InVal, "InVal"));
+            props.Add(OutVal.ToStructProperty("X", "Y", "Z", "OutVal"));
+            props.Add(ArriveTangent.ToStructProperty("X", "Y", "Z", "ArriveTangent"));
+            props.Add(LeaveTangent.ToStructProperty("X", "Y", "Z", "LeaveTangent"));
+            props.Add(new EnumProperty(InterpMode.ToString(),"EInterpCurveMode", MERFileSystem.Game, "InterpMode"));
+            return new StructProperty("nterpCurvePointVector", props);
+        }
+    }
+
+    class InterpTools
+    {
+        public static List<VectorTrackPoint> GetVectorTrackPoints(ExportEntry export)
+        {
+            List<VectorTrackPoint> list = new List<VectorTrackPoint>();
+
+            var vt = export.GetProperty<StructProperty>("VectorTrack");
+            if (vt != null)
+            {
+                var points = vt.GetProp<ArrayProperty<StructProperty>>("Points");
+                foreach (var p in points)
+                {
+                    list.Add(VectorTrackPoint.FromStruct(p));
+                }
+                return list;
+            }
+            return null;
+        }
+
+        public static void WriteVectorTrackPoints(ExportEntry export, List<VectorTrackPoint> points)
+        {
+
+            var vt = export.GetProperty<StructProperty>("VectorTrack");
+            if (vt != null)
+            {
+                var pointsA = vt.GetProp<ArrayProperty<StructProperty>>("Points");
+                pointsA.Clear();
+                foreach(var p in points)
+                {
+                    pointsA.Add(p.ToStructProperty());
+                }
+                export.WriteProperty(vt);
+            }
+        }
+    }
+}
