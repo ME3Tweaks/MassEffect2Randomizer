@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.SharpDX;
 using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
+    class CIVector
+    {
+
+    }
+
     public static class RStructs
     {
         public static StructProperty ToVectorStructProperty(this Vector3 vector, string propName = null)
@@ -17,6 +23,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             pc.Add(new FloatProperty(vector.Y, "Y"));
             pc.Add(new FloatProperty(vector.Z, "Z"));
             return new StructProperty("Vector", pc, propName, true);
+        }
+
+        public static StructProperty ToRotatorStructProperty(this CIVector3 vector, string propName = null)
+        {
+            var pc = new PropertyCollection();
+            pc.Add(new IntProperty(vector.X, "X"));
+            pc.Add(new IntProperty(vector.Y, "Y"));
+            pc.Add(new IntProperty(vector.Z, "Z"));
+            return new StructProperty("Rotator", pc, propName, true);
         }
 
         public static void RandomizeColor(StructProperty color, bool randomizeAlpha)

@@ -53,25 +53,91 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
     }
 
     /// <summary>
-    /// Class version of Vector3. Easier to manipulate than a struct.
+    /// Class version of Integer Vector3. Easier to manipulate than a struct.
     /// </summary>
-    class CVector3
+    public class CIVector3
+    {
+        public CIVector3(int x, int y, int z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public CIVector3() { }
+
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int Z { get; set; }
+
+        public static CIVector3 FromRotator(StructProperty sp)
+        {
+            return FromStructProperty(sp, "Pitch", "Yaw", "Roll");
+        }
+        public static CIVector3 FromStructProperty(StructProperty sp, string xKey, string yKey, string zKey)
+        {
+            return new CIVector3()
+            {
+                X = sp.GetProp<IntProperty>(xKey),
+                Y = sp.GetProp<IntProperty>(yKey),
+                Z = sp.GetProp<IntProperty>(zKey)
+            };
+        }
+        //public static CIVector3 FromVector3(Vector3 vector)
+        //{
+        //    return new CIVector3()
+        //    {
+        //        X = vector.X,
+        //        Y = vector.Y,
+        //        Z = vector.Z
+        //    };
+        //}
+        //public Vector3 ToVector3()
+        //{
+        //    return new Vector3()
+        //    {
+        //        X = X,
+        //        Y = Y,
+        //        Z = Z
+        //    };
+        //}
+
+        internal StructProperty ToRotatorStructProperty(string propName = null)
+        {
+            return ToStructProperty("Pitch", "Yaw", "Roll", propName, true);
+        }
+
+        internal StructProperty ToStructProperty(string xName, string yName, string zName, string propName = null, bool isImmutable = true)
+        {
+            PropertyCollection props = new PropertyCollection();
+            props.Add(new IntProperty(X, xName));
+            props.Add(new IntProperty(Y, yName));
+            props.Add(new IntProperty(Z, zName));
+
+            return new StructProperty("Rotator", props, propName, isImmutable);
+        }
+    }
+
+    /// <summary>
+    /// Class version of a Float Vector3. Easier to manipulate than a struct.
+    /// </summary>
+    class CFVector3
     {
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
-        public static CVector3 FromStructProperty(StructProperty sp, string xKey, string yKey, string zKey)
+        public static CFVector3 FromStructProperty(StructProperty sp, string xKey, string yKey, string zKey)
         {
-            return new CVector3()
+            return new CFVector3()
             {
                 X = sp.GetProp<FloatProperty>(xKey),
                 Y = sp.GetProp<FloatProperty>(yKey),
                 Z = sp.GetProp<FloatProperty>(zKey)
             };
         }
-        public static CVector3 FromVector3(Vector3 vector)
+        public static CFVector3 FromVector3(Vector3 vector)
         {
-            return new CVector3()
+            return new CFVector3()
             {
                 X = vector.X,
                 Y = vector.Y,
@@ -102,9 +168,9 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
     class VectorTrackPoint
     {
         public float InVal { get; set; }
-        public CVector3 OutVal { get; set; }
-        public CVector3 ArriveTangent { get; set; }
-        public CVector3 LeaveTangent { get; set; }
+        public CFVector3 OutVal { get; set; }
+        public CFVector3 ArriveTangent { get; set; }
+        public CFVector3 LeaveTangent { get; set; }
         public EInterpCurveMode InterpMode { get; set; }
 
         public static VectorTrackPoint FromStruct(StructProperty vtsp)
@@ -112,9 +178,9 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             return new VectorTrackPoint()
             {
                 InVal = vtsp.GetProp<FloatProperty>("InVal"),
-                OutVal = CVector3.FromStructProperty(vtsp.GetProp<StructProperty>("OutVal"), "X", "Y", "Z"),
-                ArriveTangent = CVector3.FromStructProperty(vtsp.GetProp<StructProperty>("ArriveTangent"), "X", "Y", "Z"),
-                LeaveTangent = CVector3.FromStructProperty(vtsp.GetProp<StructProperty>("LeaveTangent"), "X", "Y", "Z"),
+                OutVal = CFVector3.FromStructProperty(vtsp.GetProp<StructProperty>("OutVal"), "X", "Y", "Z"),
+                ArriveTangent = CFVector3.FromStructProperty(vtsp.GetProp<StructProperty>("ArriveTangent"), "X", "Y", "Z"),
+                LeaveTangent = CFVector3.FromStructProperty(vtsp.GetProp<StructProperty>("LeaveTangent"), "X", "Y", "Z"),
                 InterpMode = Enum.Parse<EInterpCurveMode>(vtsp.GetProp<EnumProperty>("InterpMode").Value)
             };
         }
@@ -126,7 +192,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             props.Add(OutVal.ToStructProperty("X", "Y", "Z", "OutVal"));
             props.Add(ArriveTangent.ToStructProperty("X", "Y", "Z", "ArriveTangent"));
             props.Add(LeaveTangent.ToStructProperty("X", "Y", "Z", "LeaveTangent"));
-            props.Add(new EnumProperty(InterpMode.ToString(),"EInterpCurveMode", MERFileSystem.Game, "InterpMode"));
+            props.Add(new EnumProperty(InterpMode.ToString(), "EInterpCurveMode", MERFileSystem.Game, "InterpMode"));
             return new StructProperty("nterpCurvePointVector", props);
         }
     }
@@ -158,7 +224,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             {
                 var pointsA = vt.GetProp<ArrayProperty<StructProperty>>("Points");
                 pointsA.Clear();
-                foreach(var p in points)
+                foreach (var p in points)
                 {
                     pointsA.Add(p.ToStructProperty());
                 }

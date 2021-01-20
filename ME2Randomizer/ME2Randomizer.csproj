@@ -11,6 +11,9 @@
   <ItemGroup>
     <Resource Include="images\*.png" />
     <Resource Include="images\*.jpg" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\Burger\Diff.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\Burger\Norm.bin" />
+    <None Remove="Classes\Randomizers\ME2\TextureAssets\Burger\Spec.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs2\neonbolt.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs3_5\sonicburger.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts_2\vim.bin" />
@@ -21,6 +24,8 @@
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\longfaceudina.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\monkaanderson.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\scarymiranda.bin" />
+    <None Remove="staticfiles\binary\Delux2go_Edmonton_Burger.pcc" />
+    <None Remove="staticfiles\PremadeSeqObjs.pcc" />
     <None Remove="staticfiles\starterkit\me2starterkit.zip" />
     <Resource Include="fonts\aerolight.ttf" />
     <Content Include="masseffectmodder.ico" />
@@ -85,7 +90,6 @@
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs\" />
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts\" />
     <Folder Include="MainWindowUIComponents\" />
-    <Folder Include="staticfiles\binary\" />
   </ItemGroup>
   
   <ItemGroup>

@@ -1,8 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.ME2.Misc;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Helpers;
+using ME3ExplorerCore.Kismet;
 using ME3ExplorerCore.Packages;
+using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
+using ME3ExplorerCore.SharpDX;
 using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
@@ -12,62 +19,116 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         public static bool PerformRandomization(RandomizationOption option)
         {
             RandomizeNormandyHolo();
-            RandomizeRomance();
+            AddBurgersToCookingQuest();
+            RandomizeWrongWashroomSFX();
             return true;
         }
 
         /// <summary>
-        /// Technically this is not part of Nor (It's EndGm). But it takes place on normandy so users
-        /// will think it is part of the normandy.
+        /// Going into male room as female
         /// </summary>
-        /// <param name="random"></param>
-        private static void RandomizeRomance()
+        private static List<(string packageName, int uindex)> MaleWashroomAudioSources = new List<(string packageName, int uindex)>()
         {
-            var romChooserPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("BioD_EndGm1_110Romance.pcc"));
+            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 609 ), // SHEPARD, SUBMIT NOW
+            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 603 ), // shitshitshitshitshit
+            ( "BioD_Nor_250Henchmen_LOC_INT.pcc", 4227 ), // More food less ass
+        };
 
-            var names = new List<(int index, string name)>();
+        /// <summary>
+        /// Going into female room as male
+        /// </summary>
+        private static List<(string packageName, int uindex)> FemaleWashroomAudioSources = new List<(string packageName, int uindex)>()
+        {
+            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 609 ), // SHEPARD, SUBMIT NOW
+            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 597 ), // AUGH!
+        };
 
-            for(int i = 0; i < romChooserPackage.NameCount; i++)
+        private static void RandomizeWrongWashroomSFX()
+        {
+            // Yeah I went to canada
+            // they call them washrooms
+            var henchmenLOCInt250 = MERFileSystem.GetPackageFile("BioD_Nor_250Henchmen_LOC_INT.pcc");
+            if (henchmenLOCInt250 != null && File.Exists(henchmenLOCInt250))
             {
-                var nv = romChooserPackage.GetNameEntry(i);
-                if (nv.StartsWith("SS_") && nv.EndsWith("ROMANCE") && !nv.Contains("ACTIVE") && !nv.Contains("POST") && !nv.Contains("ME1"))
+                var washroomP = MEPackageHandler.OpenMEPackage(henchmenLOCInt250);
+                PackageCache pc = new PackageCache();
+                var randomMale = MaleWashroomAudioSources.RandomElement();
+                var randomFemale = FemaleWashroomAudioSources.RandomElement();
+
+                var mPackage = pc.GetPackage(randomMale.packageName);
+                var fPackage = pc.GetPackage(randomFemale.packageName);
+                WwiseTools.RepointWwiseStream(mPackage.GetUExport(randomMale.uindex), washroomP.GetUExport(4195)); //male into female
+                WwiseTools.RepointWwiseStream(fPackage.GetUExport(randomFemale.uindex), washroomP.GetUExport(4196)); //female into male
+
+                MERFileSystem.SavePackage(washroomP);
+            }
+        }
+
+        private static (Vector3 loc, CIVector3 rot)[] BurgerLocations = new[]
+        {
+            (new Vector3(79,3265,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
+            (new Vector3(-94,3225,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
+            (new Vector3(160,3823,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
+            (new Vector3(-517,2498,-459), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
+        };
+
+        private static void AddBurgersToCookingQuest()
+        {
+            var cookingAreaF = MERFileSystem.GetPackageFile("BioD_Nor_250Henchmen.pcc");
+            if (cookingAreaF != null && File.Exists(cookingAreaF))
+            {
+                var nor250Henchmen = MEPackageHandler.OpenMEPackage(cookingAreaF);
+
+                var packageBin = Utilities.GetEmbeddedStaticFilesBinaryFile("Delux2go_Edmonton_Burger.pcc");
+                var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
+
+                List<ExportEntry> addedBurgers = new List<ExportEntry>();
+
+                // 1. Add the burger package by porting in the first skeletal mesh.
+                var world = nor250Henchmen.FindExport("TheWorld.PersistentLevel");
+                var firstBurgerSKM = PackageTools.PortExportIntoPackage(nor250Henchmen, burgerPackage.FindExport("BurgerSKMA"), world.UIndex, false);
+
+                // Setup the object for cloning, add to list of new actors
+                firstBurgerSKM.WriteProperty(new BoolProperty(true, "bHidden")); // Make burger hidden by default. It's unhidden in kismet
+                addedBurgers.Add(firstBurgerSKM);
+
+                // 1.5 Shrink the burger
+                // Look, everyone likes a thicc burger but this thing is the size
+                // of a barbie 4 wheeler
+                // I think it could use a small taking down a notch
+                var ds = firstBurgerSKM.GetProperty<FloatProperty>("DrawScale");
+                ds.Value = 0.0005f;
+                firstBurgerSKM.WriteProperty(ds);
+
+                // 2. Link up the textures
+                TFCBuilder.RandomizeExport(nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
+                TFCBuilder.RandomizeExport(nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
+                TFCBuilder.RandomizeExport(nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
+
+                // 3. Clone 3 more burgers
+                addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
+                addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
+                addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
+
+                // 4. Setup the locations and rotations, setup the sequence object info
+                var toggleHiddenUnhide = nor250Henchmen.GetUExport(5734);
+                for (int i = 0; i < addedBurgers.Count; i++)
                 {
-                    names.Add((i, nv));
+                    var burger = addedBurgers[i];
+                    var lp = BurgerLocations[i];
+                    burger.WriteProperty(lp.loc.ToVectorStructProperty("Location"));
+                    burger.WriteProperty(lp.rot.ToRotatorStructProperty("Rotation"));
+
+                    var clonedSeqObj = SeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
+                    clonedSeqObj.WriteProperty(new ObjectProperty(burger.UIndex, "ObjValue"));
+                    KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObj);
                 }
+
+                // Add burgers to level
+                nor250Henchmen.AddToLevelActorsIfNotThere(addedBurgers.ToArray());
+
+                MERFileSystem.SavePackage(nor250Henchmen);
             }
-            var indicies = names.Select(x => x.index).ToList();
-            var nameValues = names.Select(x => x.name).ToList();
-            indicies.Shuffle();
-
-            foreach(var index in indicies)
-            {
-                var name = nameValues[0];
-                nameValues.RemoveAt(0);
-                romChooserPackage.replaceName(index, name);
-            }
-
-            // OLD CODE
-            /*
-            var uindexesOfStates = new[] {108, 109, 110, 111, 106, 107 };
-
-            List<NameProperty> stateNames = new List<NameProperty>();
-
-            foreach(var uindex in uindexesOfStates)
-            {
-                var exp = romChooserPackage.GetUExport(uindex);
-                stateNames.Add(exp.GetProperty<NameProperty>("NameValue"));
-            }
-
-            stateNames.Shuffle();
-            foreach (var uindex in uindexesOfStates)
-            {
-                var exp = romChooserPackage.GetUExport(uindex);
-                var nsn = stateNames[0];
-                exp.WriteProperty(nsn);
-                stateNames.RemoveAt(0);
-            }*/
-
-            MERFileSystem.SavePackage(romChooserPackage);
         }
 
         private static void RandomizeNormandyHolo()

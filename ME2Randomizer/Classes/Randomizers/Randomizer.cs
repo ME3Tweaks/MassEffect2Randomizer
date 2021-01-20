@@ -102,7 +102,9 @@ namespace ME2Randomizer.Classes
         {
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
-            MERFileSystem.InitMERFS(SelectedOptions.UseMERFS);
+            var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => !x.IsExportRandomizer).ToList();
+
+            MERFileSystem.InitMERFS(SelectedOptions.UseMERFS, SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
 
 
             // Prepare the TLK
@@ -113,7 +115,6 @@ namespace ME2Randomizer.Classes
 #endif
 
             // Pass 1: All randomizers that are file specific
-            var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => !x.IsExportRandomizer).ToList();
             foreach (var sr in specificRandomizers)
             {
                 mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
@@ -243,7 +244,7 @@ namespace ME2Randomizer.Classes
 #if __ME2__
             RandomizationGroups.Add(new RandomizationGroup()
             {
-                GroupName = "Faces & Characters",
+                GroupName = "Faces",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption()
@@ -260,9 +261,14 @@ namespace ME2Randomizer.Classes
                                 _ => "Error"
                             },
                         SliderValue = 4, // This must come after the converter
-                        PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport
+                        PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
-                    new RandomizationOption() {HumanName = "Squadmate faces", Description = "Only works on Wilson and Jacob, unfortunately. Other squadmates are fully modeled", PerformSpecificRandomizationDelegate = RBioMorphFace.RandomizeSquadmateFaces},
+                    new RandomizationOption() {HumanName = "Squadmate faces",
+                        Description = "Only works on Wilson and Jacob, unfortunately. Other squadmates are fully modeled",
+                        PerformSpecificRandomizationDelegate = RBioMorphFace.RandomizeSquadmateFaces,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },
                     new RandomizationOption()
                     {
                         HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
@@ -270,14 +276,27 @@ namespace ME2Randomizer.Classes
                         SliderValue = .3, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExport,
                         Description="Changes the face morph used by some pawns",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
-                    new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport},
-                    new RandomizationOption() {HumanName = "Eyes (excluding Illusive Man)",Description="Changes the colors of eyes", IsRecommended = true, PerformRandomizationOnExportDelegate = REyes.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Illusive Man eyes",Description="Changes the Illusive Man's eye color", IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Character creator premade faces", IsRecommended = true, PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator},
-                    new RandomizationOption() {HumanName = "Iconic FemShep face",Description="Changes the default FemShep face"},
-                    new RandomizationOption() {HumanName = "Look At Definitions", Description="Changes how pawns look at things",PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Look At Targets",Description="Changes where pawns look", PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Eyes (excluding Illusive Man)",
+                        Description="Changes the colors of eyes",
+                        IsRecommended = true,
+                        PerformRandomizationOnExportDelegate = REyes.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },
+                    new RandomizationOption() {HumanName = "Illusive Man eyes",
+                        Description="Changes the Illusive Man's eye color",
+                        IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },
+                    }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Characters",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
                     new RandomizationOption()
                     {
                         HumanName = "Animation Set Bones",
@@ -286,7 +305,46 @@ namespace ME2Randomizer.Classes
                         HasSliderOption = true,
                         SliderValue = 1,
                         Ticks = "1,2,3,4,5",
-                        Description = "Changes the order of animations mapped to bones. E.g. arm rotation will be swapped with eyes"
+                        Description = "Changes the order of animations mapped to bones. E.g. arm rotation will be swapped with eyes",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                    },
+                    new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",
+                        PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption() {
+                        HumanName = "Romance",
+                        Description="Randomizes which romance you will get",
+                        PerformSpecificRandomizationDelegate = Romance.PerformRandomization,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {
+                        HumanName = "Look At Definitions",
+                        Description="Changes how pawns look at things",
+                        PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {
+                        HumanName = "Look At Targets",
+                        Description="Changes where pawns look",
+                        PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Character Creator",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Premade faces", IsRecommended = true,
+                        Description = "Completely randomizes settings including skin tones and slider values. Adds extra premade faces",
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Iconic FemShep face",
+                        Description="Changes the default FemShep face. Iconic Maleshep is modeled",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                     },
                 }
             });
@@ -334,14 +392,30 @@ namespace ME2Randomizer.Classes
                 GroupName = "Level-specific",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Galaxy Map", Description = "Changes systems and planets in clusters"},
+                    new RandomizationOption() {
+                        HumanName = "Galaxy Map",
+                        Description = "Moves things around the map, speeds up normandy",
+                        PerformSpecificRandomizationDelegate = GalaxyMap.RandomizeGalaxyMap,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = GalaxyMap.SUBOPTIONKEY_INFINITEGAS,
+                                HumanName = "Infinite fuel",
+                                Description = "Prevents the Normandy from running out of fuel. Prevents possible softlock due to randomization",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                                IsOptionOnly = true
+                            }
+                        }
+                    },
                     new RandomizationOption() {HumanName = "Normandy", Description = "Changes some holos", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Prologue"},
-                    new RandomizationOption() {HumanName = "Citadel", Description = "Changes various things", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization},
+                    //new RandomizationOption() {HumanName = "Prologue"},
+                    new RandomizationOption() {HumanName = "Citadel", Description = "Changes various things", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true},
                     new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization},
                     new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Overlord", Description = "Changes many things", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Arrival", Description = "Changes the relay", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Overlord DLC", Description = "Changes many things", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization},
                     new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes some things", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization},
                     new RandomizationOption() {HumanName = "Collector Base", Description = "Changes The Long Walk", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
                 }
@@ -354,7 +428,12 @@ namespace ME2Randomizer.Classes
                 {
                     new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
                     new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Post Processing volumes", Description = "Can potentially break visibility", PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport},
+                    new RandomizationOption() {
+                        HumanName = "Post Processing volumes",
+                        Description = "Changes postprocessing. Likely will make some areas of game unplayable",
+                        PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP
+                    },
                     new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting", PerformRandomizationOnExportDelegate = RLighting.RandomizeExport},
                 }
             });
@@ -364,9 +443,9 @@ namespace ME2Randomizer.Classes
                 GroupName = "Text",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText},
-                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText},
-                    new RandomizationOption() {HumanName = "Vowels", Description="Swaps vowels in text", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels},
+                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText, RequiresTLK = true},
+                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText, RequiresTLK = true},
+                    new RandomizationOption() {HumanName = "Vowels", Description="Swaps vowels in text", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true},
                 }
             });
 
@@ -375,7 +454,12 @@ namespace ME2Randomizer.Classes
                 GroupName = "Wackadoodle",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Actors in cutscenes", Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious", PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns},
+                    new RandomizationOption() {
+                        HumanName = "Actors in cutscenes",
+                        Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
+                        PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                    },
                     new RandomizationOption() {
                             HumanName = "Animation data",
                             PerformRandomizationOnExportDelegate = RAnimSequence.RandomizeExport,
@@ -383,13 +467,20 @@ namespace ME2Randomizer.Classes
                             HasSliderOption = true,
                             SliderValue = 1,
                             Ticks = "1,2",
-                            Description="Shifts rigged bone positions"
+                            Description="Shifts rigged bone positions",
+                            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
                     },
-                    new RandomizationOption() {HumanName = "Random movement interpolations"},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Random interpolations",
+                        Description = "Randomly fuzzes interpolation data. Can break the game, but can also be entertaining",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe
+                    },
                     new RandomizationOption()
                     {
                         HumanName = "Conversation Wheel", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport,
-                        Description = "Changes replies in wheel. Can make conversations hard to exit"
+                        Description = "Changes replies in wheel. Can make conversations hard to exit",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe
                     },
                     new RandomizationOption()
                     {
@@ -400,6 +491,11 @@ namespace ME2Randomizer.Classes
                 }
             });
 
+            foreach (var g in RandomizationGroups)
+            {
+                g.Options.Sort(x => x.HumanName);
+            }
+            RandomizationGroups.Sort(x => x.GroupName);
 #endif
 
         }

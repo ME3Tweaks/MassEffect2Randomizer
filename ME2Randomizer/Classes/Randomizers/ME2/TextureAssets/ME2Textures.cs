@@ -135,7 +135,33 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.TextureAssets
                     {
                         "PictureFrames.LoveInterests.steak.bin",
                     }
-                }
+                },
+                #region Burger
+                new RTexture2D()
+                {
+                    TextureInstancedFullPath = "Edmonton_Burger_Delux2go.Textures.Burger_Norm",
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "Burger.Norm.bin",
+                    }
+                },
+                new RTexture2D()
+                {
+                    TextureInstancedFullPath = "Edmonton_Burger_Delux2go.Textures.Burger_Spec",
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "Burger.Spec.bin",
+                    }
+                },
+                new RTexture2D()
+                {
+                    TextureInstancedFullPath = "Edmonton_Burger_Delux2go.Textures.Burger_Diff",
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "Burger.Diff.bin",
+                    }
+                },
+                #endregion
             };
 
             // Start the new TFC

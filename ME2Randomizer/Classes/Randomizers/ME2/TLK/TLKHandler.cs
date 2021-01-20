@@ -39,8 +39,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         public static void EndHandler()
         {
             // Commit
-            CurrentHandler.Commit();
-            CurrentHandler = null;
+            if (CurrentHandler != null)
+            {
+                CurrentHandler.Commit();
+                CurrentHandler = null;
+            }
         }
 
         /// <summary>

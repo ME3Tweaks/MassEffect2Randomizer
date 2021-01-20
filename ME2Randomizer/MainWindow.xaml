@@ -12,17 +12,18 @@
                       mc:Ignorable="d" 
                       Loaded="MainWindow_Loaded" 
                       Title="Mass Effect 2 Randomizer" 
-                      MinWidth="1025"
-                      Height="825"
-                      MinHeight="925"
+                      MinWidth="1280"
+                      Height="900"
+                      MinHeight="900"
                       DataContext="{Binding RelativeSource={RelativeSource Self}}"
                       WindowStartupLocation="CenterScreen"
-                      Width="800">
+                      Width="1280">
     <Window.Resources>
         <converters:EnumMatchToBooleanConverter x:Key="enumConverter" />
         <converters:FaceFXRandomizationLevelIntToStringConverter x:Key="FaceFXRandomizationLevelIntToStringConverter" />
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:NullVisibilityConverter x:Key="NullVisibilityConverter"/>
+        <converters:DangerColorConverter x:Key="DangerColorConverter"/>
         <converters:ImplementedConverter x:Key="ImplementedConverter"/>
         <FontFamily x:Key="AeroLight">
             pack://application:,,,/fonts/#AeroLight
@@ -36,8 +37,46 @@
                 <SolidColorBrush x:Key="HighlightBrush" Color="Red" />
             </Style.Resources>
         </Style>
+        <DataTemplate x:Key="RandomizationOptionTemplate" DataType="classes:RandomizationOption">
+            <StackPanel Background="{Binding Converter={StaticResource ImplementedConverter}}">
+                <CheckBox Content="{Binding HumanName}" FontWeight="Bold" Margin="3" 
+                          IsChecked="{Binding OptionIsSelected}"/> 
+                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="200" 
+                           HorizontalAlignment="Left" FontSize="10" Margin="3,-3,0,0"
+                           Foreground="{Binding Dangerousness, Converter={StaticResource DangerColorConverter}}"
+                           Visibility="{Binding Description, Converter={StaticResource NullVisibilityConverter}}"/>
+                <StackPanel Visibility="{Binding HasSliderOption, Converter={StaticResource BoolToVisibilityConverter}}"
+                            Margin="20,0,0,0">
+                    <TextBlock Text="{Binding TickText}"/>
+                    <Slider Value="{Binding SliderValue}" 
+                            Style="{StaticResource MahApps.Styles.Slider}"
+                            ToolTip="Amount to randomize.&#xA;Larger values result in more ridiculous faces.&#xA;Default value is 0.3." 
+                            Margin="3" Ticks="{Binding Ticks}" 
+                            Minimum="{Binding TickMin}"
+                            Maximum="{Binding TickMax}"
+                            IsSnapToTickEnabled="True" 
+                            IsMoveToPointEnabled="True" 
+                            TickPlacement="BottomRight"
+                            IsEnabled="{Binding OptionIsSelected}"/>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding OptionIsSelected}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                </StackPanel>
+                <ItemsControl IsEnabled="{Binding OptionIsSelected}"
+                              Margin="20,0,0,0" 
+                              ItemsSource="{Binding SubOptions}" 
+                              ItemTemplate="{DynamicResource RandomizationOptionTemplate}"/>
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
-    <Controls:MetroWindow.Flyouts>
+    <!--<Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
             <Controls:Flyout x:Name="LogUploaderFlyout" SnapsToDevicePixels="True" IsOpenChanged="LogUploaderFlyout_IsOpenChanged" IsOpen="{Binding LogUploaderFlyoutOpen}" TitleVisibility="Collapsed" Theme="Accent" CloseButtonVisibility="Collapsed" Position="Bottom" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualWidth}" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDown="Flyout_Mousedown" MouseDoubleClick="Flyout_Doubleclick">
                 <Border>
@@ -57,8 +96,8 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
-            </Controls:Flyout>
-            <Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
+            </Controls:Flyout>-->
+            <!--<Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
                 <Border Padding="10">
                     <Border.Background>
                         <ImageBrush ImageSource="images/wards.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
@@ -97,7 +136,7 @@
                 </Border>
             </Controls:Flyout>
         </Controls:FlyoutsControl>
-    </Controls:MetroWindow.Flyouts>
+    </Controls:MetroWindow.Flyouts>-->
     <Border Padding="10">
         <Border.Background>
             <ImageBrush Opacity="0.3" ImageSource="images/me2.jpg" AlignmentY="Center" Stretch="UniformToFill" />
@@ -160,7 +199,7 @@
                     </StackPanel>
                 </Grid>
             </DockPanel>
-            <TabControl Background="Transparent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Width="998">
+            <TabControl Background="Transparent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Width="1200">
                 <TabControl.Resources>
                     <Style TargetType="{x:Type TabPanel}">
                         <Setter Property="HorizontalAlignment" Value="Center" />
@@ -173,57 +212,22 @@
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" />
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" />
                         </StackPanel>
-                            <ItemsControl ItemsSource="{Binding RandomizationGroups}" Width="900">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel Orientation="Vertical"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type classes:RandomizationGroup}">
-                                        <StackPanel Margin="10">
-                                            <fonts:OutlinedTextBlock Text="{Binding GroupName}" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
-                                            <ItemsControl ItemsSource="{Binding Options}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate DataType="{x:Type classes:RandomizationOption}">
-                                                        <StackPanel Background="{Binding Converter={StaticResource ImplementedConverter}}">
-                                                            <CheckBox Content="{Binding HumanName}" FontWeight="Bold" Margin="3" IsChecked="{Binding OptionIsSelected}"/>
-                                                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="200" HorizontalAlignment="Left" FontSize="10" Margin="3,-3,0,0" Visibility="{Binding Description, Converter={StaticResource NullVisibilityConverter}}"/>
-                                                            <StackPanel
-                                                                Visibility="{Binding HasSliderOption, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                                Margin="20,0,0,0">
-                                                                <TextBlock Text="{Binding TickText}"/>
-                                                                <Slider Value="{Binding SliderValue}" 
-                                                                        Style="{StaticResource MahApps.Styles.Slider}"
-                                                                    ToolTip="Amount to randomize.&#xA;Larger values result in more ridiculous faces.&#xA;Default value is 0.3." 
-                                                                    Margin="3" Ticks="{Binding Ticks}" 
-                                                                    Minimum="{Binding TickMin}"
-                                                                    Maximum="{Binding TickMax}"
-                                                                    IsSnapToTickEnabled="True" 
-                                                                    IsMoveToPointEnabled="True" 
-                                                                    TickPlacement="BottomRight"
-                                                                    IsEnabled="{Binding OptionIsSelected}"/>
-                                                                <StackPanel.Style>
-                                                                    <Style TargetType="StackPanel">
-                                                                        <Setter Property="Opacity" Value="0.5"></Setter>
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding OptionIsSelected}" Value="True">
-                                                                                <Setter Property="Opacity" Value="1"/>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </StackPanel.Style>
-                                                            </StackPanel>
+                        <ItemsControl ItemsSource="{Binding RandomizationGroups}" Width="1180" HorizontalContentAlignment="Center">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Vertical"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type classes:RandomizationGroup}">
+                                    <StackPanel Margin="10">
+                                        <fonts:OutlinedTextBlock Text="{Binding GroupName}" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
+                                        <ItemsControl ItemsSource="{Binding Options}" ItemTemplate="{DynamicResource RandomizationOptionTemplate}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        
                     </DockPanel>
                 </TabItem>
                 <TabItem Header="About">

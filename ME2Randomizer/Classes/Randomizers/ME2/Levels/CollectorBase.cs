@@ -1,6 +1,9 @@
 ﻿using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 using System.Collections.Generic;
+using System.IO;
+using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.Utility;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
@@ -8,22 +11,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     {
         public static bool PerformRandomization(RandomizationOption option)
         {
-            RandomizeTheLongWalk( option);
-
+            RandomizeTheLongWalk(option);
+            InstallBorger();
             return true;
         }
 
         private static void InstallBorger()
         {
+            var endGame3F = MERFileSystem.GetPackageFile("BioP_EndGm3.pcc");
+            if (endGame3F != null && File.Exists(endGame3F))
+            {
+                var biopEndGm3 = MEPackageHandler.OpenMEPackage(endGame3F);
 
+                var packageBin = Utilities.GetEmbeddedStaticFilesBinaryFile("Delux2go_Edmonton_Burger.pcc");
+                var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
+
+                // 1. Add the burger package
+                var burgerMDL = PackageTools.PortExportIntoPackage(biopEndGm3, burgerPackage.FindExport("Edmonton_Burger_Delux2go.Burger_MDL"));
+
+                // 2. Link up the textures
+                TFCBuilder.RandomizeExport(biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
+                TFCBuilder.RandomizeExport(biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
+                TFCBuilder.RandomizeExport(biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
+
+                // 3. Convert the collector base into lunch or possibly early dinner
+                // It's early dinner cause that thing will keep you full all night long
+                biopEndGm3.GetUExport(11276).WriteProperty(new ObjectProperty(burgerMDL.UIndex,"SkeletalMesh"));
+                biopEndGm3.GetUExport(11282).WriteProperty(new ObjectProperty(burgerMDL.UIndex,"SkeletalMesh"));
+                MERFileSystem.SavePackage(biopEndGm3);
+            }
         }
-
-        private static void RandomizeTIMConvo()
-        {
-
-        }
-
-
 
         private static void RandomizeTheLongWalk(RandomizationOption option)
         {

@@ -32,7 +32,7 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public static string DLCModCookedPath { get; private set; }
 
-        public static void InitMERFS(bool usingDlcModFS)
+        public static void InitMERFS(bool usingDlcModFS, bool loadTLK)
         {
             // Is there reason to do this here...?
             ReloadLoadedFiles();
@@ -51,9 +51,13 @@ namespace ME2Randomizer.Classes
             {
                 dlcModPath = null; // do not set this var
             }
+
             ReloadLoadedFiles();
             CoalescedHandler.StartHandler(UsingDLCModFS);
-            TLKHandler.StartHandler(UsingDLCModFS);
+            if (loadTLK)
+            {
+                TLKHandler.StartHandler(UsingDLCModFS);
+            }
         }
 
 

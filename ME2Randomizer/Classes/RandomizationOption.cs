@@ -3,12 +3,44 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 
 namespace ME2Randomizer.Classes
 {
     public class RandomizationOption : INotifyPropertyChanged
     {
+
+        public enum EOptionDangerousness
+        {
+            /// <summary>
+            /// Normal safety. Can be used fairly OK
+            /// </summary>
+            Danger_Normal,
+            /// <summary>
+            /// No danger
+            /// </summary>
+            Danger_Safe,
+            /// <summary>
+            /// Slight danger that can be avoided for the most part
+            /// </summary>
+            Danger_Warning,
+            /// <summary>
+            /// Somewhat dangerous, may break game
+            /// </summary>
+            Danger_Unsafe,
+            /// <summary>
+            /// The game is definitely not gonna work how you want
+            /// </summary>
+            Danger_RIP
+        }
+
+        public EOptionDangerousness Dangerousness { get; set; } = EOptionDangerousness.Danger_Normal;
+    
+        /// <summary>
+        /// An key that can be used to uniquely identify the option
+        /// </summary>
+        public string SubOptionKey { get; set; }
         /// <summary>
         /// The UI displayed text for this option
         /// </summary>
@@ -71,14 +103,35 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public Func<RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
 
+        /// <summary>
+        /// List of suboptions this option may have
+        /// </summary>
+        public ObservableCollectionExtended<RandomizationOption> SubOptions { get; init; }
 
         /// <summary>
         /// Specifies if this is an export randomizer, or if it's a specialized randomizer that operates in a specific context.
         /// </summary>
         public bool IsExportRandomizer => PerformRandomizationOnExportDelegate != null;
+        /// <summary>
+        /// If this randomization option requires loading TLKs. This can speed up randomization if a TLK option is not chosen.
+        /// </summary>
+        public bool RequiresTLK { get; set; }
+        /// <summary>
+        /// If this option is selectable/unselectable. Essentially changes the behavior of other randomizers only (parent) and does not have it's own algorithm
+        /// </summary>
+        public bool IsOptionOnly { get; set; }
 
 #pragma warning disable
         public event PropertyChangedEventHandler PropertyChanged;
 #pragma warning restore
+        /// <summary>
+        /// Check if this option has a suboption that is selected with the specified key
+        /// </summary>
+        /// <param name="optionName"></param>
+        /// <returns></returns>
+        public bool HasSubOptionSelected(string optionName)
+        {
+            return SubOptions != null && SubOptions.Any(x => x.SubOptionKey == optionName && x.OptionIsSelected);
+        }
     }
 }

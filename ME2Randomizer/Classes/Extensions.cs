@@ -1,10 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Media;
 using ME2Randomizer.Classes.Randomizers;
 
 namespace ME2Randomizer.Classes
 {
+    public static class StringExtensions
+    {
+        public static SolidColorBrush ToBrush(this string hexColorString)
+        {
+            return (SolidColorBrush)(new BrushConverter().ConvertFrom(hexColorString));
+        }
+    }
     public static class ListExtensions
     {
         public static int RandomIndex<T>(this IList<T> list)
@@ -49,7 +57,7 @@ namespace ME2Randomizer.Classes
     public static class DictionaryExtensions
     {
         // Kind of inefficient...
-        public static KeyValuePair<TKey,TValue> RandomKeyPair<TKey, TValue>(this IDictionary<TKey, TValue> dict)
+        public static KeyValuePair<TKey, TValue> RandomKeyPair<TKey, TValue>(this IDictionary<TKey, TValue> dict)
         {
             var keys = dict.Keys.ToList();
             var values = dict.Values.ToList();

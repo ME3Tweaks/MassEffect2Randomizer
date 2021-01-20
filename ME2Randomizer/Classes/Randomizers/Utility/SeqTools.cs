@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MassEffectRandomizer.Classes;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
+using ME3ExplorerCore.Kismet;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 
@@ -12,6 +15,37 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 {
     class SeqTools
     {
+        public static ExportEntry InstallRandomSwitchIntoSequence(ExportEntry sequence, int numLinks)
+        {
+            var packageBin = Utilities.GetEmbeddedStaticFilesBinaryFile("PremadeSeqObjs.pcc");
+            var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
+
+            // 1. Add the switch object and link it to the sequence
+            var nSwitch = PackageTools.PortExportIntoPackage(sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false);
+            KismetHelper.AddObjectToSequence(nSwitch, sequence);
+
+            // 2. Generate the output links array. We will refresh the properties
+            // with new structs so we don't have to make a copy constructor
+            var olinks = nSwitch.GetProperty<ArrayProperty<StructProperty>>("OutputLinks");
+            while (olinks.Count < numLinks)
+            {
+                olinks.Add(olinks[0]); // Just add a bunch of the first link
+            }
+            nSwitch.WriteProperty(olinks);
+
+            // Reload the olinks with unique structs now
+            olinks = nSwitch.GetProperty<ArrayProperty<StructProperty>>("OutputLinks");
+            for (int i = 1; i < numLinks; i++)
+            {
+                olinks[i].GetProp<StrProperty>("LinkDesc").Value = $"Link {i}";
+            }
+
+            nSwitch.WriteProperty(olinks);
+            nSwitch.WriteProperty(new IntProperty(numLinks, "LinkCount"));
+            return nSwitch;
+
+        }
+
         /// <summary>
         /// Changes a single output link to a new target and commits the properties.
         /// </summary>
@@ -254,6 +288,28 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             }
 
             export.WriteProperty(variableLinks);
+        }
+
+        /// <summary>
+        /// Clones basic data type objects. Do not use with complicated types.
+        /// </summary>
+        /// <param name="itemToClone"></param>
+        /// <returns></returns>
+        public static ExportEntry CloneBasicSequenceObject(ExportEntry itemToClone)
+        {
+            ExportEntry exp = itemToClone.Clone();
+            //needs to have the same index to work properly
+            if (exp.ClassName == "SeqVar_External")
+            {
+                // Probably shouldn't clone these...
+                exp.indexValue = itemToClone.indexValue;
+            }
+
+            itemToClone.FileRef.AddExport(exp);
+
+            var sequence = itemToClone.GetProperty<ObjectProperty>("ParentSequence").ResolveToEntry(itemToClone.FileRef) as ExportEntry;
+            KismetHelper.AddObjectToSequence(exp, sequence);
+            return exp;
         }
     }
 }
