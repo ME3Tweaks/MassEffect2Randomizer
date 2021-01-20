@@ -8,8 +8,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
     class RBioMaterialOverride
     {
-        public bool CanRandomize(ExportEntry export) => export.ClassName == @"BioMaterialOverride";
-        public bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioMaterialOverride";
+        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             PropertyCollection props = export.GetProperties();

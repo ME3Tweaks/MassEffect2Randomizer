@@ -136,6 +136,50 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.TextureAssets
                         "PictureFrames.LoveInterests.steak.bin",
                     }
                 },
+                #region LOTSB
+                new RTexture2D()
+                {
+                    // Liara Diploma
+                    TextureInstancedFullPath = "BioS_Exp1Apt.APT_LIARADIP",
+                    LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_VFX", 513),"TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "LOTSB.LiaraDiploma.diploma.bin",
+                    }
+                },
+                new RTexture2D()
+                {
+                    // ILOS painting
+                    TextureInstancedFullPath = "BioS_Exp1Apt.APT_ILOSPAINTING",
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "LOTSB.Painting.edge.bin",
+                        "LOTSB.Painting.me1stylesp.bin",
+                        "LOTSB.Painting.outsidethecity.bin",
+                        "LOTSB.Painting.thesource.bin",
+                    }
+                },
+                new RTexture2D()
+                {
+                    // What picture frame shep picks up turns into
+                    TextureInstancedFullPath = "BioS_Exp1Apt.APT_PROTHDIG",
+                    LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_Environment", 513),"TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "LOTSB.PictureFrame.digsite.bin",
+                    }
+                },
+                new RTexture2D()
+                {
+                    // Picture frame shep picks up
+                    TextureInstancedFullPath = "BioS_Exp1Apt.NRM_SR1",
+                    LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_Environment", 513),"TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "LOTSB.PictureFrame.garage.bin",
+                    }
+                },
+                #endregion
                 #region Burger
                 new RTexture2D()
                 {

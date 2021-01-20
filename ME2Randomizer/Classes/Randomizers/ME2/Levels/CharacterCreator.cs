@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
+using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
@@ -18,6 +20,29 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     {
         private static RandomizationOption SuperRandomOption = new RandomizationOption() { SliderValue = 10 };
 
+        public static bool RandomizeIconicFemShep(RandomizationOption option)
+        {
+            var femF = MERFileSystem.GetPackageFile("BIOG_Female_Player_C.pcc");
+            if (femF != null && File.Exists(femF))
+            {
+                var femP = MEPackageHandler.OpenMEPackage(femF);
+                var femMorphFace = femP.GetUExport(682);
+                RBioMorphFace.RandomizeExport(femMorphFace, option);
+                var matSetup = femP.GetUExport(681);
+                RBioMaterialOverride.RandomizeExport(matSetup, option);
+
+                // Copy this data into BioP_Char so you get accurate results
+                var biop_charF = MERFileSystem.GetPackageFile(@"BioP_Char.pcc");
+                var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
+                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, femMorphFace, biop_char, biop_char.GetUExport(3482), true, out IEntry _);
+                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, matSetup, biop_char, biop_char.GetUExport(3472), true, out IEntry _);
+                //biop_char.GetUExport(3482).WriteProperties(femMorphFace.GetProperties()); // Copy the morph face
+                //biop_char.GetUExport(3472).WriteProperties(matSetup.GetProperties()); // Copy the material setups
+                MERFileSystem.SavePackage(biop_char);
+                MERFileSystem.SavePackage(femP);
+            }
+            return true;
+        }
         public static bool RandomizeCharacterCreator(RandomizationOption option)
         {
             var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
@@ -57,15 +82,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
             foreach (var export in biop_char.Exports)
             {
-                if (export.ClassName == "BioMorphFace")
+                if (export.ClassName == "BioMorphFace" && !export.ObjectName.Name.Contains("Iconic"))
                 {
-                    //RBioMorphFace.RandomizeExport(export, SuperRandomOption); //.3 default
+                    RBioMorphFace.RandomizeExport(export, SuperRandomOption); //.3 default
                 }
                 else if (export.ClassName == "MorphTarget")
                 {
                     if (
-                         export.ObjectName.Name.StartsWith("jaw")
-                         || export.ObjectName.Name.StartsWith("mouth")
+                         export.ObjectName.Name.StartsWith("jaw") || export.ObjectName.Name.StartsWith("mouth")
                                                                   || export.ObjectName.Name.StartsWith("eye")
                                                                   || export.ObjectName.Name.StartsWith("cheek")
                                                                   || export.ObjectName.Name.StartsWith("nose")
@@ -80,7 +104,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
                     foreach (var color in colors)
                     {
-                        //RStructs.RandomizeColor( color, true);
+                        RStructs.RandomizeColor( color, true);
                     }
                     export.WriteProperty(colors);
                 }

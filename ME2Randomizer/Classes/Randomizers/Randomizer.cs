@@ -152,7 +152,7 @@ namespace ME2Randomizer.Classes
 
                     if (//!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Cit", StringComparison.InvariantCultureIgnoreCase)
-                    !file.Contains("QuaT", StringComparison.InvariantCultureIgnoreCase)
+                    !file.Contains("Exp1", StringComparison.InvariantCultureIgnoreCase)
                         &&
                     !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
@@ -271,8 +271,11 @@ namespace ME2Randomizer.Classes
                     },
                     new RandomizationOption()
                     {
-                        HumanName = "NPC faces", Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", HasSliderOption = true, IsRecommended = true, SliderToTextConverter =
-                            rSetting => $"Randomization amount: {rSetting}",
+                        HumanName = "NPC faces", 
+                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", 
+                        HasSliderOption = true, 
+                        IsRecommended = true, 
+                        SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExport,
                         Description="Changes the face morph used by some pawns",
@@ -345,6 +348,12 @@ namespace ME2Randomizer.Classes
                         HumanName = "Iconic FemShep face",
                         Description="Changes the default FemShep face. Iconic Maleshep is modeled",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7",
+                        HasSliderOption = true,
+                        IsRecommended = true,
+                        SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
+                        SliderValue = .3, // This must come after the converter
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeIconicFemShep
                     },
                 }
             });
@@ -354,11 +363,11 @@ namespace ME2Randomizer.Classes
                 GroupName = "Miscellaneous",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RHolograms.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RHolograms.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport},
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs}
+                    new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal}
                 }
             });
 
@@ -367,10 +376,10 @@ namespace ME2Randomizer.Classes
                 GroupName = "Movement & pawns",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "NPC movement speeds", Description = "Changes non-player movement stats", PerformRandomizationOnExportDelegate = PawnMovementSpeed.RandomizeMovementSpeed},
-                    new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed},
+                    new RandomizationOption() {HumanName = "NPC movement speeds", Description = "Changes non-player movement stats", PerformRandomizationOnExportDelegate = PawnMovementSpeed.RandomizeMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
-                    new RandomizationOption() {HumanName = "Hammerhead", Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization}
+                    new RandomizationOption() {HumanName = "Hammerhead", Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal}
                 }
             });
 

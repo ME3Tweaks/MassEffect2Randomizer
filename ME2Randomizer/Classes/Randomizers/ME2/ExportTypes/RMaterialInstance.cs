@@ -124,7 +124,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
         // Jacob is not listed as an iconic appearance.
         // If we run skin randomizer it will look weird
-        private static bool CanRandomizeNPCExport(ExportEntry export) => !export.IsDefaultObject && export.IsA("BioPawn") && export.ObjectName.Name.Contains("Jacob");
+        private static bool CanRandomizeNPCExport(ExportEntry export) => !export.IsDefaultObject && export.IsA("BioPawn") && !export.ObjectName.Name.Contains("Jacob");
 
         public static bool RandomizeNPCExport(ExportEntry export, RandomizationOption arg3)
         {

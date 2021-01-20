@@ -66,10 +66,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         private static (Vector3 loc, CIVector3 rot)[] BurgerLocations = new[]
         {
+            (new Vector3(-517,2498,-459), new CIVector3(0,ThreadSafeRandom.Next(65535),0)), // The one near the cook
+
+            // On the tables
             (new Vector3(79,3265,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
             (new Vector3(-94,3225,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
             (new Vector3(160,3823,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
-            (new Vector3(-517,2498,-459), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
         };
 
         private static void AddBurgersToCookingQuest()
@@ -110,6 +112,25 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
                 addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
 
+                // 4. Port in plates for the ones people are eating to sit on
+                var plateFile = MERFileSystem.GetPackageFile("BioA_OmgHub800_Marketplace.pcc");
+                var platePackage = MEPackageHandler.OpenMEPackage(plateFile);
+                List<ExportEntry> plateExports = new List<ExportEntry>();
+                var plateSMA1 = PackageTools.PortExportIntoPackage(nor250Henchmen, platePackage.GetUExport(3280), world.UIndex, false);
+                // We need to make dynamic lit
+                var skmc = plateSMA1.GetProperty<ObjectProperty>("StaticMeshComponent").ResolveToEntry(world.FileRef) as ExportEntry;
+                var lc = skmc.GetProperty<StructProperty>("LightingChannels");
+                lc.Properties.Clear();
+                lc.Properties.Add(new BoolProperty(true, "bInitialized"));
+                lc.Properties.Add(new BoolProperty(true, new NameReference("Unnamed", 5))); //??
+                lc.Properties.Add(new BoolProperty(true, new NameReference("Unnamed", 7))); //??
+                skmc.WriteProperty(lc);
+                skmc.WriteProperty(new BoolProperty(false, "bForceDirectLightMap"));
+
+                plateExports.Add(plateSMA1);
+                plateExports.Add(EntryCloner.CloneTree(plateSMA1));
+                plateExports.Add(EntryCloner.CloneTree(plateSMA1));
+
                 // 4. Setup the locations and rotations, setup the sequence object info
                 var toggleHiddenUnhide = nor250Henchmen.GetUExport(5734);
                 for (int i = 0; i < addedBurgers.Count; i++)
@@ -119,12 +140,28 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     burger.WriteProperty(lp.loc.ToVectorStructProperty("Location"));
                     burger.WriteProperty(lp.rot.ToRotatorStructProperty("Rotation"));
 
+                    // Add burger object to kismet unhide
                     var clonedSeqObj = SeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
                     clonedSeqObj.WriteProperty(new ObjectProperty(burger.UIndex, "ObjValue"));
                     KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObj);
+
+                    if (i >= 1)
+                    {
+                        var plate = plateExports[i - 1];
+                        // Put the burger on the plate
+                        var pLoc = lp.loc;
+                        pLoc.Z -= 15; // Plate under burger
+                        plate.WriteProperty(lp.loc.ToVectorStructProperty("Location"));
+
+                        // Add plate object to kismet unhide
+                        var clonedSeqObjPlate = SeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
+                        clonedSeqObjPlate.WriteProperty(new ObjectProperty(plate.UIndex, "ObjValue"));
+                        KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObjPlate);
+                    }
                 }
 
                 // Add burgers to level
+                addedBurgers.AddRange(plateExports);
                 nor250Henchmen.AddToLevelActorsIfNotThere(addedBurgers.ToArray());
 
                 MERFileSystem.SavePackage(nor250Henchmen);
