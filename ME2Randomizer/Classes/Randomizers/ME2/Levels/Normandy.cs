@@ -117,7 +117,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 var platePackage = MEPackageHandler.OpenMEPackage(plateFile);
                 List<ExportEntry> plateExports = new List<ExportEntry>();
                 var plateSMA1 = PackageTools.PortExportIntoPackage(nor250Henchmen, platePackage.GetUExport(3280), world.UIndex, false);
-                // We need to make dynamic lit
+                plateSMA1.WriteProperty(new BoolProperty(true, "bHidden")); //make hidden by default
+
+                // Update the textures to remove that god awful original design and use something less ugly
+                var pNorm = nor250Henchmen.FindExport("BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_Norm");
+                var pDiff = nor250Henchmen.FindExport("BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_Diff");
+                pNorm.ObjectName = "Plates_NotUgly_Norm";
+                pDiff.ObjectName = "Plates_NotUgly_Diff";
+                TFCBuilder.RandomizeExport(pDiff, null);
+                TFCBuilder.RandomizeExport(pNorm, null);
+
+
+                // We need to make dynamic lit - values are copied from another SMA in BioA_Nor_200. I don't know what the channels mean
                 var skmc = plateSMA1.GetProperty<ObjectProperty>("StaticMeshComponent").ResolveToEntry(world.FileRef) as ExportEntry;
                 var lc = skmc.GetProperty<StructProperty>("LightingChannels");
                 lc.Properties.Clear();

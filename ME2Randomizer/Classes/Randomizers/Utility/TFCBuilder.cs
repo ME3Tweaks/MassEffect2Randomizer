@@ -42,8 +42,8 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         {
             ActiveBuilder = new TFCBuilder();
             ActiveBuilder.TextureRandomizations = randomizations;
-
             var dlcTFCPath = MERFileSystem.GetTFCPath(true);
+
             // DLC TFC
             ActiveBuilder.DLCTFCNameProp = new NameProperty(Path.GetFileNameWithoutExtension(dlcTFCPath), "TextureFileCacheName"); //Written into texture properties
             ActiveBuilder.DLCTFCGuid = Guid.NewGuid();
@@ -76,7 +76,6 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export, out var instancedFullPath)) return false;
-
             // This texture can be randomized.
             // Process:
             // 1. Fetch a random asset that matches the export's fullpath from the TextureAssets path
@@ -94,18 +93,32 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
             // 1. Fetch asset
             var r2d = ActiveBuilder.TextureRandomizations.First(x => x.TextureInstancedFullPath == instancedFullPath);
-            var asset = r2d.FetchRandomTextureAsset();
+            InstallTexture(r2d, export);
+            return true;
+        }
+
+        /// <summary>
+        /// Installs the specified r2d to the specified export. Specify an asset name if you wish to use a specific asset in the RTexture2D object.
+        /// </summary>
+        /// <param name="r2d"></param>
+        /// <param name="export"></param>
+        /// <param name="asset"></param>
+        public static void InstallTexture(RTexture2D r2d, ExportEntry export, string asset = null)
+        {
+            // If no asset was specified pick a random asset
+            asset ??= r2d.FetchRandomTextureAsset();
 
             // 2. Is this asset already parsed?
             if (r2d.InstantiatedItems.TryGetValue(asset, out var instantiated))
             {
                 // It's already been instantiated. Just use this data instead
-                Log.Information($@"Writing out cached asset {asset} for {instancedFullPath}");
+                Log.Information($@"Writing out cached asset {asset} for {export.InstancedFullPath}");
                 export.WritePropertiesAndBinary(instantiated.props, instantiated.texData);
             }
             else
             {
-                Log.Information($@"Installing texture asset {asset} for {instancedFullPath}");
+
+                Log.Information($@"Installing texture asset {asset} for {export.InstancedFullPath}");
 
                 // 3. Asset has not been setup yet. Write out the precomputed data.
                 export.WriteBinary(GetTextureAssetBinary(asset));
@@ -145,9 +158,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
                 // 8. Cache the work that's been done so we don't need to it again.
                 r2d.InstantiatedItems[asset] = (props, ut2d);
-
             }
-            return true;
         }
 
         private static object syncLock = new object();

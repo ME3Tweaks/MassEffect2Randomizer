@@ -205,6 +205,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.TextureAssets
                         "Burger.Diff.bin",
                     }
                 },
+                new RTexture2D()
+                {
+                    TextureInstancedFullPath = "BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_NotUgly_Norm",
+                    LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_APL", 513),"TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "Burger.Plates_Norm.bin",
+                    }
+                },
+                new RTexture2D()
+                {
+                    TextureInstancedFullPath = "BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_NotUgly_Diff",
+                    LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_APL", 1025),"TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
+                    AllowedTextureAssetNames = new List<string>
+                    {
+                        "Burger.Plates_Diff.bin",
+                    }
+                },
                 #endregion
             };
 

@@ -418,7 +418,7 @@ namespace ME2Randomizer.Classes
                             }
                         }
                     },
-                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes some holos", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     //new RandomizationOption() {HumanName = "Prologue"},
                     new RandomizationOption() {HumanName = "Citadel", Description = "Changes various things", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true},
                     new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization},
