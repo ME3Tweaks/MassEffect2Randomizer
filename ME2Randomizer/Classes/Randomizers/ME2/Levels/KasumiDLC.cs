@@ -12,6 +12,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     public static class KasumiDLC
     {
+
+        // These have to be shepard's outfits.
+        // Cause they have to have right number of bones
+        // shep is the only char with this many bones
+        // so it must be shep outfits -_-
         private static List<(string packageFile, string entryFullPath, string matInstFullPath)> MaleTuxedoReplacements = new()
         {
             ("BioD_CitAsL", "BIOG_DRL_THN_LGT_R.LGTb.DRL_ARM_LGTb_MDL", "BIOG_DRL_THN_LGT_R.LGTb.DRL_ARM_LGTb_MAT_1a"),
@@ -21,6 +26,19 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         {
             ("BioH_Geth", "BIOG_GTH_LEG_NKD_R.GTH_LEG_NKDa_MDL", "BIOG_GTH_LEG_NKD_R.GTH_LEG_NKDa_MAT_1a"),
         };
+
+        private static int[] WideGallery = { 6953, 6955, 6959, 6960, 6961, 6962, 6963, 6964, };
+        private static int[] TallGallery = { 6952, 6954, 6956, 6957, 6958, };
+
+        private static void RandomizeArtGallery()
+        {
+            var artGalleryF = MERFileSystem.GetPackageFile(@"BioA_PtyMtl_100Party.pcc");
+            if (artGalleryF != null && File.Exists(artGalleryF))
+            {
+                var artGalleryP = MEPackageHandler.OpenMEPackage(artGalleryF);
+                MERFileSystem.SavePackage(artGalleryP);
+            }
+        }
 
         private static void RandomizeTuxedoMesh()
         {
