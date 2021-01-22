@@ -278,8 +278,15 @@ namespace ME2Randomizer.Classes
                         SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExport,
-                        Description="Changes the face morph used by some pawns",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                        Description="Changes the BioFaceMorph used by some pawns",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "NPC Faces - Extra jacked up",
+                        Description = "Changes the MorphTargets that map bones to the face morph system",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        PerformRandomizationOnExportDelegate = RMorphTarget.RandomizeGlobalExport
                     },
                     new RandomizationOption() {HumanName = "Eyes (excluding Illusive Man)",
                         Description="Changes the colors of eyes",

@@ -83,5 +83,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             exp.WriteBinary(morphTarget);
             return true;
         }
+
+        /// <summary>
+        /// Same as RandomizeExport but will not run on BioP_Char file or the player file
+        /// </summary>
+        /// <param name="export"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public static bool RandomizeGlobalExport(ExportEntry export, RandomizationOption option)
+        {
+            if (export.FileRef.FilePath.EndsWith("BioP_Char.pcc", StringComparison.InvariantCultureIgnoreCase)) return false;
+            if (export.FileRef.FilePath.Contains("Player", StringComparison.InvariantCultureIgnoreCase)) return false;
+            return RandomizeExport(export, option);
+        }
     }
 }
