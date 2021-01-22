@@ -163,22 +163,22 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         }
                     }
 
-                    InstallARArtTextures(kagf.WideTextureUIndexes, wideAssets, artGalleryP);
-                    InstallARArtTextures(kagf.TallTextureUIndexes, tallAssets, artGalleryP);
+                    InstallARArtTextures(kagf.WideTextureUIndexes, wideAssets, artGalleryP, "Wide");
+                    InstallARArtTextures(kagf.TallTextureUIndexes, tallAssets, artGalleryP, "Tall");
 
                     MERFileSystem.SavePackage(artGalleryP);
                 }
             }
         }
 
-        private static void InstallARArtTextures(List<int> uindexes, List<string> assets, IMEPackage artGalleryP)
+        private static void InstallARArtTextures(List<int> uindexes, List<string> assets, IMEPackage artGalleryP, string loggingName)
         {
             if (uindexes == null) return; // This set is not installed
             while (uindexes.Any())
             {
                 if (!assets.Any())
                 {
-                    Debug.WriteLine("Not enough assets!!!");
+                    Debug.WriteLine($"Not enough assets for {loggingName}! Need {uindexes.Count} more!");
                     return;
                 }
                 var uIndex = uindexes.PullFirstItem();

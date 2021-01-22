@@ -72,8 +72,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         private static FinalBattlePawn[] FinalBattlePawnTypes = new[]
         {
+
+            // Spawns one time
             new FinalBattlePawn() {PackageName = "BioP_ProCer.pcc", BioPawnChallengeScaledTypeUIndex = 3417, PawnClassFullName = "SFXGamePawns.SFXPawn_HeavyMech", MDLAssetFullName = "BIOG_CBT_MHV_NKD_R.NKDa.CBT_MHV_NKDa_MDL"}, // Confirmed working
+            
+            // Have never seen spawn
             new FinalBattlePawn() {PackageName = "BioD_SunTlA_205Colossus.pcc", BioPawnChallengeScaledTypeUIndex = 2420, PawnClassFullName = "SFXGamePawns.SFXPawn_Colossus", MDLAssetFullName = "BIOG_RBT_TNK_NKD_R.NKDa.RBT_TNK_NKDa_MDL"}, // Might require imports. Might need to run code on import check
+            
+            // Have never seen spawn
             new FinalBattlePawn() {PackageName = "BioP_RprGtA.pcc", BioPawnChallengeScaledTypeUIndex = 3073, PawnClassFullName = "SFXGamePawns.SFXPawn_Scion", MDLAssetFullName = "BIOG_SCI_ARM_NKD_R.NKDa.SCI_ARM_NKDa_MDL"}, // Might require imports. Might need to run code on import check
             
             // Can't be used for various reasons :l
