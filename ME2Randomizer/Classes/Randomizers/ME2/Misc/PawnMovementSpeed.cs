@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
@@ -23,6 +24,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             SlightlyRandomizeMovementData(malepackage.GetUExport(2672));
             MERFileSystem.SavePackage(femalepackage);
             MERFileSystem.SavePackage(malepackage);
+
+            var biogame = CoalescedHandler.GetIniFile("BIOGame.ini");
+            var sfxgame = biogame.GetOrAddSection("SFXGame.SFXGame");
+            sfxgame.SetSingleEntry("StormStamina", ThreadSafeRandom.NextFloat(1.5f, 8));
+            sfxgame.SetSingleEntry("StormRegen", ThreadSafeRandom.NextFloat(0.3f, 1.5f));
+            sfxgame.SetSingleEntry("StormStaminaNonCombat", ThreadSafeRandom.NextFloat(1.5f, 8));
+            sfxgame.SetSingleEntry("StormRegenNonCombat", ThreadSafeRandom.NextFloat(0.1f, 0.8f));
             return true;
         }
 

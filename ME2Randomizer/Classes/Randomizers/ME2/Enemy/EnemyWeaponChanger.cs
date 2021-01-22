@@ -166,7 +166,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
         // This can probably be changed later
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "SFXLoadoutData"
-                                                                                        && !export.ObjectName.Name.Contains("HeavyWeaponMech")
+                                                                                        && !export.ObjectName.Name.Contains("HeavyWeaponMech") // Not actually sure we can't randomize this one
+                                                                                        && !export.ObjectName.Name.Contains("BOS_Reaper") // Don't randomize the final boss cause it'd really make him stupid
                                                                                         && export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons") != null;
 
         internal static bool RandomizeExport(ExportEntry export, RandomizationOption option)

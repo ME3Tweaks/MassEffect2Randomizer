@@ -474,14 +474,16 @@ namespace MassEffectRandomizer.Classes
         {
             try
             {
-                Log.Information("Opening URL: " + link);
-                System.Diagnostics.Process.Start(link);
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = link,
+                    UseShellExecute = true
+                };
+                Process.Start(psi);
             }
-            catch (Exception other)
+            catch (Exception e)
             {
-                Log.Error("Exception opening browser - handled. The error was " + other.Message);
-                System.Windows.Clipboard.SetText(link);
-                //await this.ShowMessageAsync("Unable to open web browser", "Unable to open your default web browser. Open your browser and paste the link (already copied to clipboard) into your URL bar.");
+                Log.Error("Exception trying to open web page from system (typically means browser default is incorrectly configured by Windows): " + e.Message + ". Try opening the URL manually: " + link);
             }
         }
 

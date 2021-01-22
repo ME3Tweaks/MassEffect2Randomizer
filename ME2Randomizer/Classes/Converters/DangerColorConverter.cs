@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
+using System.Windows.Media;
 using Brushes = System.Drawing.Brushes;
 
 namespace ME2Randomizer.Classes.Converters
@@ -23,6 +24,8 @@ namespace ME2Randomizer.Classes.Converters
                         return "#ff871f".ToBrush();
                     case RandomizationOption.EOptionDangerousness.Danger_RIP:
                         return "#FF1f1f".ToBrush();
+                    case RandomizationOption.EOptionDangerousness.Danger_Normal:
+                        return "#FFFFFF".ToBrush();
                     default:
                         return Brushes.White;
                 }

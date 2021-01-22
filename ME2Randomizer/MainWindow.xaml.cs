@@ -50,6 +50,8 @@ namespace ME2Randomizer
         public bool ShowProgressPanel { get; set; }
         public RandomizationMode SelectedRandomizeMode { get; set; }
 
+        public ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new ObservableCollectionExtended<ImageCredit>();
+
         public void OnSelectedRandomizeModeChanged()
         {
             UpdateCheckboxSettings();
@@ -72,8 +74,7 @@ namespace ME2Randomizer
         {
             try
             {
-                var hl = (Hyperlink)sender;
-                // System.Diagnostics.Process.Start(sen);
+                Utilities.OpenWebPage(((Hyperlink)sender).NavigateUri.AbsoluteUri);
             }
             catch (Exception)
             {
@@ -91,122 +92,16 @@ namespace ME2Randomizer
                     if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common) option.OptionIsSelected = option.IsRecommended;
                 }
             }
-
-            return;
-
-            if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common)
-            {
-                RANDSETTING_PAWN_EYES = true;
-                RANDSETTING_CHARACTER_INVENTORY = true;
-                RANDSETTING_MOVEMENT_HAMMERHEAD = true;
-                RANDSETTING_CHARACTER_ICONICFACE = true;
-                RANDSETTING_CHARACTER_CHARCREATOR = true;
-                RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE = true;
-                RANDSETTING_CHARACTER_HENCHFACE = true;
-                RANDSETTING_BIOMORPHFACES = true;
-                RANDSETTING_PAWN_FACEFX = true;
-                RANDSETTING_PAWN_MATERIALCOLORS = true;
-
-                //RANDSETTING_WACK_OPENINGCUTSCENE = true;
-                //RANDSETTING_MAP_EDENPRIME = true;
-                //RANDSETTING_MAP_CITADEL = true;
-                //RANDSETTING_MAP_NOVERIA = true;
-                //RANDSETTING_MAP_FEROS = true;
-
-                RANDSETTING_GALAXYMAP = true;
-
-                // RANDSETTING_MISC_HAZARDS = true;
-
-                RANDSETTING_MISC_GAMEOVERTEXT = true;
-                RANDSETTING_MISC_HEIGHTFOG = true;
-                RANDSETTING_MISC_STARCOLORS = true;
-                RANDSETTING_MISC_WALLTEXT = true;
-                //RANDSETTING_MISC_ENDINGART = true;
-                //RANDSETTING_MISC_SPLASH = true;
-                RANDSETTING_SHUFFLE_CUTSCENE_ACTORS = true;
-
-            }
         }
 
-
-
-        public class OpeningCrawl
-        {
-            public bool RequiresFaceRandomizer;
-            public string CrawlText;
-        }
-
-        //RANDOMIZATION OPTION BINDINGS
-        //Galaxy Map
-        public bool RANDSETTING_GALAXYMAP { get; set; }
-
-
-
-        //Weapons
-        public bool RANDSETTING_WEAPONS_STARTINGEQUIPMENT { get; set; }
-        public bool RANDSETTING_WEAPONS { get; set; }
-
-
-        public bool RANDSETTING_PAWN_EYES { get; set; }
-        public bool RANDSETTING_HOLOGRAM_COLORS { get; set; }
-        public bool RANDSETTING_CHARACTER_INVENTORY { get; set; }
-        public bool RANDSETTING_CHARACTER_CHARCREATOR { get; set; }
-        public bool RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE { get; set; }
-        public bool RANDSETTING_ILLUSIVEEYES { get; set; }
-        public bool RANDSETTING_CHARACTER_HENCHFACE { get; set; }
-        public bool RANDSETTING_CHARACTER_ICONICFACE { get; set; }
-        public double RANDSETTING_CHARACTER_ICONICFACE_AMOUNT { get; set; }
-
-        //MOVEMENT
-        public bool RANDSETTING_MOVEMENT_SPEED { get; set; }
         public bool UseMERFS { get; set; } = true;
-
-        public bool RANDSETTING_MOVEMENT_HAMMERHEAD { get; set; }
-        public bool RANDSETTING_MOVEMENT_MAKO_WHEELS { get; set; }
-
-        //LEVELS
-        public bool RANDSETTING_LEVEL_LONGWALK { get; set; }
-        public bool RANDSETTING_LEVEL_ARRIVAL { get; set; }
-        public bool RANDSETTING_LEVEL_NORMANDY { get; set; }
-
-        //Misc
-        public bool RANDSETTING_BIOMORPHFACES { get; set; }
-        public bool RANDSETTING_PAWN_CLOWNMODE { get; set; }
-        public bool RANDSETTING_SHUFFLE_CUTSCENE_ACTORS { get; set; }
-        public double RANDSETTING_MISC_MAPFACES_AMOUNT { get; set; }
-        public bool RANDSETTING_MAP_CITADEL { get; set; }
-        public bool RANDSETTING_MISC_HEIGHTFOG { get; set; }
-        public bool RANDSETTING_DRONE_COLORS { get; set; }
-        public bool RANDSETTING_MISC_STARCOLORS { get; set; }
-        public int RANDSETTING_WACK_FACEFX_AMOUNT { get; set; }
-        public bool LogUploaderFlyoutOpen { get; set; }
-        public bool DiagnosticsFlyoutOpen { get; set; }
-        public bool RANDSETTING_MISC_GAMEOVERTEXT { get; set; }
-        public bool RANDSETTING_PAWN_MATERIALCOLORS { get; set; }
-        public bool RANDSETTING_MISC_WALLTEXT { get; set; }
-
-        //Wackadoodle
-        public bool RANDSETTING_MISC_MAPPAWNSIZES { get; set; }
-        public bool RANDSETTING_MISC_ENEMYAIDISTANCES { get; set; }
-        public bool RANDSETTING_MISC_INTERPS { get; set; }
-        public bool RANDSETTING_PAWN_FACEFX { get; set; }
-        public bool RANDSETTING_WACK_SCOTTISH { get; set; }
-        public bool RANDSETTING_PAWN_BIOLOOKATDEFINITION { get; set; }
-        public bool RANDSETTING_PAWN_ANIMSEQUENCE { get; set; }
-        public bool RANDSETTING_HARD_MODE { get; set; }
-
-        //MAKO 
-        //        BIOC_Base.u -> 4940 Default__BioAttributesPawnVehicle m_initialThrusterAmountMax
-        //END RANDOMIZE OPTION BINDINGS
 
         public MainWindow()
         {
             DataContext = this;
             Random random = new Random();
             var preseed = random.Next();
-            RANDSETTING_MISC_MAPFACES_AMOUNT = .3;
-            RANDSETTING_CHARACTER_ICONICFACE_AMOUNT = .3;
-            RANDSETTING_WACK_FACEFX_AMOUNT = 2;
+            ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
@@ -237,7 +132,7 @@ namespace ME2Randomizer
 
 
 
-        
+
 
 
 
@@ -553,12 +448,12 @@ namespace ME2Randomizer
 
         private void Logs_Click(object sender, RoutedEventArgs e)
         {
-            LogUploaderFlyoutOpen = true;
+            //LogUploaderFlyoutOpen = true;
         }
 
         private void Diagnostics_Click(object sender, RoutedEventArgs e)
         {
-            DiagnosticsFlyoutOpen = true;
+            //DiagnosticsFlyoutOpen = true;
         }
 
         private async void BackupRestore_Click(object sender, RoutedEventArgs e)
@@ -579,7 +474,7 @@ namespace ME2Randomizer
 
         private void DebugCloseDiagnostics_Click(object sender, RoutedEventArgs e)
         {
-            DiagnosticsFlyoutOpen = false;
+            //DiagnosticsFlyoutOpen = false;
         }
 
         private void Button_FirstTimeRunDismiss_Click(object sender, RoutedEventArgs e)

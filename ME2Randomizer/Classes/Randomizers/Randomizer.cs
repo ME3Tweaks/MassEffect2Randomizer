@@ -271,10 +271,10 @@ namespace ME2Randomizer.Classes
                     },
                     new RandomizationOption()
                     {
-                        HumanName = "NPC faces", 
-                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7", 
-                        HasSliderOption = true, 
-                        IsRecommended = true, 
+                        HumanName = "NPC faces",
+                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7",
+                        HasSliderOption = true,
+                        IsRecommended = true,
                         SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExport,
@@ -391,8 +391,8 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable"},
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use. Requires DLC option for Zaeed and Kasumi", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons},
                     new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
                 }
             });
 
@@ -418,15 +418,15 @@ namespace ME2Randomizer.Classes
                             }
                         }
                     },
-                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship, including one sidequest", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     //new RandomizationOption() {HumanName = "Prologue"},
                     new RandomizationOption() {HumanName = "Citadel", Description = "Changes various things", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true},
-                    new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Overlord DLC", Description = "Changes many things", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes some things", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Collector Base", Description = "Changes The Long Walk", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Overlord DLC", Description = "Changes many things across the DLC", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay colors", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes the art gallery", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
                 }
             });
 
@@ -452,9 +452,9 @@ namespace ME2Randomizer.Classes
                 GroupName = "Text",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText, RequiresTLK = true},
-                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText, RequiresTLK = true},
-                    new RandomizationOption() {HumanName = "Vowels", Description="Swaps vowels in text", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true},
+                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Vowels", Description="Swaps vowels in text", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
                 }
             });
 
@@ -497,6 +497,23 @@ namespace ME2Randomizer.Classes
                         PerformRandomizationOnExportDelegate = RSFXSeqAct_StartConversation.RandomizeExport,
                         Description = "Changes pawn roles in conversations"
                     },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Enable basic friendly fire",
+                        PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
+                        Description = "Enables weapons to damage friendlies",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                SubOptionKey = SFXGame.SUBOPTIONKEY_CARELESSFF,
+                                HumanName = "Careless mode",
+                                Description = "Attack enemies, regardless of friendly casualties"
+                            }
+                        }
+                    }
                 }
             });
 

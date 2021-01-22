@@ -183,6 +183,30 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             }
         }
 
+        /// <summary>
+        /// Gets a list of filenames at the specified texture asset path. Returns FILENAMES not full paths.
+        /// </summary>
+        /// <param name="assetPath"></param>
+        /// <returns></returns>
+        public static List<string> ListTextureAssets(string assetPath)
+        {
+            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
+            var prefix = $"ME2Randomizer.Classes.Randomizers.{MERFileSystem.Game}.TextureAssets.{assetPath}";
+            List<string> itemsL = new List<string>();
+            foreach (var item in items)
+            {
+                if (item.StartsWith(prefix))
+                {
+                    var iName = item.Substring(prefix.Length + 1);
+                    if (iName.Count(x=>x == '.') == 1) //Only has extension
+                    {
+                        itemsL.Add(iName);
+                    }
+                }
+            }
+            return itemsL;
+        }
+
         private static byte[] GetTextureAssetBinary(string asset)
         {
             var items = typeof(MainWindow).Assembly.GetManifestResourceNames();

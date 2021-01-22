@@ -1,15 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
-using ME2Randomizer.Classes.gameini;
-using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.TLK.ME1;
 using ME3ExplorerCore.TLK.ME2ME3;
-using DuplicatingIni = ME3ExplorerCore.Misc.DuplicatingIni;
 using HuffmanCompression = ME3ExplorerCore.TLK.ME2ME3.HuffmanCompression;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
@@ -23,7 +18,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
 
 
         /// <summary>
-        /// Starts up the Coalesced.ini subsystem. These methods should not be across multiple threads as they are not thread safe!
+        /// Starts up the TLK subsystem. These methods should not be across multiple threads as they are not thread safe!
         /// </summary>
         /// <param name="usingDLCSystem"></param>
         public static void StartHandler(bool usingDLCSystem)

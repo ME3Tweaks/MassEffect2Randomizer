@@ -14,6 +14,7 @@
                       Title="Mass Effect 2 Randomizer" 
                       MinWidth="1280"
                       Height="900"
+                      Icon="masseffectrandomizer.ico"
                       MinHeight="900"
                       DataContext="{Binding RelativeSource={RelativeSource Self}}"
                       WindowStartupLocation="CenterScreen"
@@ -40,7 +41,7 @@
         <DataTemplate x:Key="RandomizationOptionTemplate" DataType="classes:RandomizationOption">
             <StackPanel Background="{Binding Converter={StaticResource ImplementedConverter}}">
                 <CheckBox Content="{Binding HumanName}" FontWeight="Bold" Margin="3" 
-                          IsChecked="{Binding OptionIsSelected}"/> 
+                          IsChecked="{Binding OptionIsSelected}"/>
                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="200" 
                            HorizontalAlignment="Left" FontSize="10" Margin="3,-3,0,0"
                            Foreground="{Binding Dangerousness, Converter={StaticResource DangerColorConverter}}"
@@ -75,6 +76,34 @@
                               ItemTemplate="{DynamicResource RandomizationOptionTemplate}"/>
             </StackPanel>
         </DataTemplate>
+        <DataTemplate x:Key="CreditTemplate" DataType="classes:ImageCredit">
+            <StackPanel>
+                <TextBlock>           
+                    <Hyperlink NavigateUri="{Binding Link}" RequestNavigate="Hyperlink_RequestNavigate">
+                        <TextBlock FontSize="14" FontWeight="Bold" Text="{Binding Path=Title}"/>
+                        <Hyperlink.Resources>
+                            <Style x:Key="{x:Type Hyperlink}" TargetType="{x:Type Hyperlink}">
+                                <Setter Property="Foreground" Value="LimeGreen"/>
+                                <Setter Property="TextDecorations" Value="Underline"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="Red"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Hyperlink.Resources>
+                    </Hyperlink>
+                </TextBlock>
+                <TextBlock Text="{Binding Path=Author}"/>
+                <TextBlock Text="{Binding Path=License}"/>
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
     <!--<Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
@@ -97,7 +126,7 @@
                     </StackPanel>
                 </Border>
             </Controls:Flyout>-->
-            <!--<Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
+    <!--<Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
                 <Border Padding="10">
                     <Border.Background>
                         <ImageBrush ImageSource="images/wards.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
@@ -230,6 +259,29 @@
 
                     </DockPanel>
                 </TabItem>
+                <TabItem Header="Credits">
+                    <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="1100">
+                        <TextBlock DockPanel.Dock="Top" Text="Mass Effect 2 Randomizer uses the following images from third party sources. Images that required explicit permission for use may not be reused without their own license." TextWrapping="Wrap" TextAlignment="Center"/>
+                        <ListBox ItemsSource="{Binding ImageCredits}" Background="Transparent" ItemTemplate="{StaticResource CreditTemplate}">
+                            <ListBox.Resources>
+                                <Style TargetType="ListBox">
+                                    <Setter Property="ItemsPanel">
+                                        <Setter.Value>
+                                            <ItemsPanelTemplate>
+                                                <UniformGrid Columns="3"/>
+                                            </ItemsPanelTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.Resources>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style>
+                                    <Setter Property="Control.Background" Value="Transparent"/>
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+                        </ListBox>
+                    </DockPanel>
+                </TabItem>
                 <TabItem Header="About">
                     <StackPanel HorizontalAlignment="Stretch">
                         <Grid VerticalAlignment="Stretch" HorizontalAlignment="Center">
@@ -242,14 +294,14 @@
                                 <ColumnDefinition Width="130" />
                                 <ColumnDefinition Width="35*" />
                             </Grid.ColumnDefinitions>
-                            <Image Source="masseffectrandomizer.ico" Grid.Row="0" Grid.Column="0" Margin="4" ToolTip="Hello!" />
+                            <Image Source="masseffectrandomizer.ico" Grid.Row="0" Grid.Column="0" Margin="4" ToolTip="Hello!" RenderOptions.BitmapScalingMode="HighQuality"/>
                             <StackPanel Grid.Column="1" Grid.Row="0" Margin="0,3,0,0">
                                 <TextBlock HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" Text="Mass Effect 2 Randomizer" FontWeight="Light" />
                                 <TextBlock x:Name="TextBlock_AssemblyVersion" HorizontalAlignment="Left" Margin="10,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="15" FontWeight="Light" Text="Version" />
-                                <Image HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Source="images/me3tweaks.png" Margin="8,0,0,0" Cursor="Hand" MouseDown="Image_ME3Tweaks_Click" ToolTip="Software developed with love by ME3Tweaks" />
+                                <Image HorizontalAlignment="Left" Height="32" VerticalAlignment="Top" Source="images/me3tweaks.png" Margin="8,0,0,0" Cursor="Hand" MouseDown="Image_ME3Tweaks_Click" ToolTip="Software developed with love by ME3Tweaks" RenderOptions.BitmapScalingMode="HighQuality" />
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Left" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,3,0,0">
-                                <TextBlock Text="Copyright (C) 2019 ME3Tweaks&#xA;&#xA;This program is free software: you can redistribute it and/or modify it under the terms of the&#xA;GNU General Public License as published by the Free Software Foundation, either version 3 of the&#xA;License, or (at your option) any later version.&#xA;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without&#xA;even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the&#xA;GNU General Public License for more details.&#xA;&#xA;Mass Effect 2 is a registered trademark of EA INTERNATIONAL (STUDIO&#xA;AND PUBLISHING) LTD. This program has no affiliation with BioWare&#xA;or Electronic Arts." />
+                                <TextBlock Text="Copyright (C) 2019-2021 ME3Tweaks&#xA;&#xA;This program is free software: you can redistribute it and/or modify it under the terms of the&#xA;GNU General Public License as published by the Free Software Foundation, either version 3 of the&#xA;License, or (at your option) any later version.&#xA;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without&#xA;even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the&#xA;GNU General Public License for more details.&#xA;&#xA;Mass Effect 2 is a registered trademark of EA INTERNATIONAL (STUDIO&#xA;AND PUBLISHING) LTD. This program has no affiliation with BioWare&#xA;or Electronic Arts." />
                             </StackPanel>
                         </Grid>
                     </StackPanel>
