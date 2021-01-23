@@ -231,7 +231,7 @@ namespace ME2Randomizer.Classes
             TFCBuilder.EndTFCs();
             CoalescedHandler.EndHandler();
             TLKHandler.EndHandler();
-            NonSharedPackageCache.ReleasePackages();
+            NonSharedPackageCache.Cache.ReleasePackages();
         }
 
 

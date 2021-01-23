@@ -60,7 +60,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, PackageCache cache)
         {
-            var package = cache.GetPackage(packageName);
+            var package = cache.GetCachedPackage(packageName);
 
             var conversation = package.GetUExport(conversationUIndex);
             var replies = conversation.GetProperty<ArrayProperty<StructProperty>>("m_ReplyList");
@@ -73,12 +73,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             var femaleReplacement = EndorsementCandidatesFemale[replacementIndex];
 
             // Male
-            var sourcePackage = cache.GetPackage(maleReplacement.packageName);
+            var sourcePackage = cache.GetCachedPackage(maleReplacement.packageName);
             var sourceExport = sourcePackage.GetUExport(maleReplacement.uindex);
             WwiseTools.RepointWwiseStream(sourceExport, endorsementLineMale);
 
             // Female
-            sourcePackage = cache.GetPackage(femaleReplacement.packageName);
+            sourcePackage = cache.GetCachedPackage(femaleReplacement.packageName);
             sourceExport = sourcePackage.GetUExport(femaleReplacement.uindex);
             WwiseTools.RepointWwiseStream(sourceExport, endorsementLineFemale);
 

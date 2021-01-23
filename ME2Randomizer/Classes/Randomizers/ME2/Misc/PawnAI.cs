@@ -82,7 +82,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         if (newAi != aiImp.ObjectName.Name)
                         {
                             // AI is changing.
-                            var sfxgame = NonSharedPackageCache.GetCachedPackage("SFXGame.pcc");
+                            var sfxgame = NonSharedPackageCache.Cache.GetCachedPackage("SFXGame.pcc");
                             var newAIImp = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile(newAi, sfxgame, exp.FileRef);
                             currentAi.Value = newAIImp.UIndex;
                             exp.WriteProperty(currentAi);

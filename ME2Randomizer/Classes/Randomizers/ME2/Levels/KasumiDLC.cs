@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
-using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
-using ME3ExplorerCore.Unreal.Classes;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
@@ -26,21 +21,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
     public static class KasumiDLC
     {
-
-        // These have to be shepard's outfits.
-        // Cause they have to have right number of bones
-        // shep is the only char with this many bones
-        // so it must be shep outfits -_-
-        private static List<(string packageFile, string entryFullPath, string matInstFullPath)> MaleTuxedoReplacements = new()
-        {
-            ("BioD_CitAsL", "BIOG_DRL_THN_LGT_R.LGTb.DRL_ARM_LGTb_MDL", "BIOG_DRL_THN_LGT_R.LGTb.DRL_ARM_LGTb_MAT_1a"),
-        };
-
-        private static List<(string packageFile, string entryFullPath, string matInstFullPath)> FemaleTuxedoReplacements = new()
-        {
-            ("BioH_Geth", "BIOG_GTH_LEG_NKD_R.GTH_LEG_NKDa_MDL", "BIOG_GTH_LEG_NKD_R.GTH_LEG_NKDa_MAT_1a"),
-        };
-
         private static KasumiArtGalleryFile[] GetKasumiArtGallerySetup()
         {
             // Method so we can return new copies as they have lists.
@@ -80,6 +60,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             };
         }
 
+        // Not going to do
         private static void ChangeSecurityTV()
         {
             // 2 frames
@@ -220,6 +201,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         {
             ChangeNormandyPaintings();
             //RandomizeTuxedoMesh();
+            //ChangeSecurityTV();
             RandomizeArtGallery();
             return true;
         }

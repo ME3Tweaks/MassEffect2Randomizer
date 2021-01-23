@@ -97,7 +97,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         public static ExportEntry PortWeaponIntoPackage(IMEPackage targetPackage, string weaponName)
         {
             var portingInfo = PackageMapping[weaponName];
-            var sourcePackage = NonSharedPackageCache.GetCachedPackage(portingInfo.SourcePackage);
+            var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(portingInfo.SourcePackage);
             if (sourcePackage != null)
             {
                 var sourceExport = sourcePackage.GetUExport(portingInfo.SourceUIndex);

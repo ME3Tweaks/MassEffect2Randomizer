@@ -55,8 +55,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 var randomMale = MaleWashroomAudioSources.RandomElement();
                 var randomFemale = FemaleWashroomAudioSources.RandomElement();
 
-                var mPackage = pc.GetPackage(randomMale.packageName);
-                var fPackage = pc.GetPackage(randomFemale.packageName);
+                var mPackage = pc.GetCachedPackage(randomMale.packageName);
+                var fPackage = pc.GetCachedPackage(randomFemale.packageName);
                 WwiseTools.RepointWwiseStream(mPackage.GetUExport(randomMale.uindex), washroomP.GetUExport(4195)); //male into female
                 WwiseTools.RepointWwiseStream(fPackage.GetUExport(randomFemale.uindex), washroomP.GetUExport(4196)); //female into male
 

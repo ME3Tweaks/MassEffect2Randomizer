@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -75,6 +76,11 @@ namespace ME2Randomizer.Classes
 
         public static string GetPackageFile(string packagename)
         {
+            if (LoadedFiles == null)
+            {
+                Debug.WriteLine("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
+                ReloadLoadedFiles();
+            }
             bool packageFile = packagename.RepresentsPackageFilePath();
             if (packageFile && UsingDLCModFS)
             {

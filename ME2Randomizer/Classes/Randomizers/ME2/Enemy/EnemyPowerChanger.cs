@@ -18,9 +18,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         internal class PowerInfo
         {
             public string PackageName { get; set; } = "SFXGameContent_Powers";
-            public string SourcePackage { get; set; }
+            public string PackageFileName { get; set; }
             public int SourceUIndex { get; set; }
             public EPowerCapabilityType Type { get; set; }
+
+            public PowerInfo() { }
+            public PowerInfo(ExportEntry export) {
+                PackageFileName = Path.GetFileName(export.FileRef.FilePath);
+                PackageName = export.ParentName;
+                SourceUIndex = export.UIndex;
+
+                // Type?
+            }
         }
 
         internal enum EPowerCapabilityType
@@ -37,8 +46,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
         private static Dictionary<string, PowerInfo> PackageMapping = new Dictionary<string, PowerInfo>()
         {
-            { "SFXPower_AbominationExplosion", new PowerInfo(){ SourcePackage = "BioP_RprGtA.pcc", SourceUIndex = 712, Type = EPowerCapabilityType.Death} }, // DEATH POWER
-            { "SFXPower_HeavyMechExplosion", new PowerInfo(){ SourcePackage = "BioP_ProCer.pcc", SourceUIndex = 757, Type = EPowerCapabilityType.Death} }, // DEATH POWER
+            { "SFXPower_AbominationExplosion", new PowerInfo(){ PackageFileName = "BioP_RprGtA.pcc", SourceUIndex = 712, Type = EPowerCapabilityType.Death} }, // DEATH POWER
+            { "SFXPower_HeavyMechExplosion", new PowerInfo(){ PackageFileName = "BioP_ProCer.pcc", SourceUIndex = 757, Type = EPowerCapabilityType.Death} }, // DEATH POWER
             
             /*{ "SFXPower_VorchaRegen", new PowerInfo(){ SourcePackage = "BioP_OmgPrA.pcc", SourceUIndex = 666, Type = EPowerCapabilityType.Buff} }, // DEATH POWER
             { "SFXPower_GethSupercharge", new PowerInfo(){ SourcePackage = "BioP_BlbGtl.pcc", SourceUIndex = 577, Type = EPowerCapabilityType.Buff} },
@@ -62,7 +71,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         public static ExportEntry PortPowerIntoPackage(IMEPackage targetPackage, string weaponName)
         {
             var portingInfo = PackageMapping[weaponName];
-            var sourcePackage = NonSharedPackageCache.GetCachedPackage(portingInfo.SourcePackage);
+            var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(portingInfo.PackageFileName);
             if (sourcePackage != null)
             {
                 var sourceExport = sourcePackage.GetUExport(portingInfo.SourceUIndex);
