@@ -22,8 +22,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 Log.Information($@"Setting veetor footage in {v}");
                 var mpackage = MERFileSystem.GetPackageFile(v);
                 var package = MEPackageHandler.OpenMEPackage(mpackage);
-                var veetorExport = package.Exports.FirstOrDefault(x => x.ObjectName == "ProFre_501_VeetorFootage");
-
+                var veetorExport = package.FindExport("BioVFX_Env.Hologram.ProFre_501_VeetorFootage");
                 if (veetorExport != null)
                 {
                     RTextureMovie.RandomizeExportDirect(veetorExport, null, moviedata);

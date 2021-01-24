@@ -1,0 +1,243 @@
+[
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioA_N7Spdr2_100.pcc",
+    "sourceuindex": 117,
+    "weaponclassification": 3,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_HeavyShotgun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioA_N7Spdr2_100.pcc",
+    "sourceuindex": 97,
+    "weaponclassification": 3,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_Shotgun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioA_N7Spdr2_100.pcc",
+    "sourceuindex": 150,
+    "weaponclassification": 0,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_Needler"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioA_N7Spdr2_100.pcc",
+    "sourceuindex": 137,
+    "weaponclassification": 0,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_MachineGun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioA_N7Spdr2_100.pcc",
+    "sourceuindex": 55,
+    "weaponclassification": 0,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_AssaultRifle"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioP_BlbGtl.pcc",
+    "sourceuindex": 186,
+    "weaponclassification": 5,
+    "hasgunmesh": false,
+    "gunname": "SFXHeavyWeapon_RocketLauncher"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioP_BlbGtl.pcc",
+    "sourceuindex": 343,
+    "weaponclassification": 0,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_GethPulseRifle"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioP_BlbGtl.pcc",
+    "sourceuindex": 183,
+    "weaponclassification": 5,
+    "hasgunmesh": false,
+    "gunname": "SFXHeavyWeapon_RapidRocketLauncher"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioP_BlbGtl.pcc",
+    "sourceuindex": 175,
+    "weaponclassification": 5,
+    "hasgunmesh": true,
+    "gunname": "SFXHeavyWeapon_MissileLauncher"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_TwrMwA_301HangarBFight.pcc",
+    "sourceuindex": 317,
+    "weaponclassification": 0,
+    "hasgunmesh": false,
+    "gunname": "SFXWeapon_MiniGun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_TwrMwA_301HangarBFight.pcc",
+    "sourceuindex": 333,
+    "weaponclassification": 0,
+    "hasgunmesh": false,
+    "gunname": "SFXWeapon_GunShipMiniGun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "SFXWeapon_SniperRifles.pcc",
+    "sourceuindex": 55,
+    "weaponclassification": 4,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_MassCannon"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "SFXWeapon_SniperRifles.pcc",
+    "sourceuindex": 41,
+    "weaponclassification": 4,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_AntiMatRifle"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioP_HorCr1.pcc",
+    "sourceuindex": 152,
+    "weaponclassification": 5,
+    "hasgunmesh": true,
+    "gunname": "SFXHeavyWeapon_GrenadeLauncher"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioP_HorCr1.pcc",
+    "sourceuindex": 255,
+    "weaponclassification": 5,
+    "hasgunmesh": false,
+    "gunname": "SFXHeavyWeapon_ScionGun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_SunTlA_102Gatehouse.pcc",
+    "sourceuindex": 535,
+    "weaponclassification": 2,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_AutoPistol"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_SunTlA_102Gatehouse.pcc",
+    "sourceuindex": 575,
+    "weaponclassification": 2,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_SMG"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioP_OmgPrA.pcc",
+    "sourceuindex": 176,
+    "weaponclassification": 5,
+    "hasgunmesh": true,
+    "gunname": "SFXHeavyWeapon_FlameThrower"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_EndGm2_200Factory_LOC_INT.pcc",
+    "sourceuindex": 46,
+    "weaponclassification": 4,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_SniperRifle"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_EndGm2_180FactoryEntryB.pcc",
+    "sourceuindex": 135,
+    "weaponclassification": 5,
+    "hasgunmesh": true,
+    "gunname": "SFXHeavyWeapon_ParticleBeam"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "SFXHeavyWeapon_FreezeGun.pcc",
+    "sourceuindex": 35,
+    "weaponclassification": 5,
+    "hasgunmesh": true,
+    "gunname": "SFXHeavyWeapon_FreezeGun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_EndGm2_120TheHives.pcc",
+    "sourceuindex": 87,
+    "weaponclassification": 0,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_CollectorRifle"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_EndGm2_430ReaperCombat.pcc",
+    "sourceuindex": 197,
+    "weaponclassification": 5,
+    "hasgunmesh": false,
+    "gunname": "SFXHeavyWeapon_OculusParticleBeam"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_SunTlA_203HopperCanyon.pcc",
+    "sourceuindex": 300,
+    "weaponclassification": 2,
+    "hasgunmesh": false,
+    "gunname": "SFXWeapon_LightPistol"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_CitAsL.pcc",
+    "sourceuindex": 128,
+    "weaponclassification": 1,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_HeavyPistol"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_CitHub_220AsL_LOC_INT.pcc",
+    "sourceuindex": 66,
+    "weaponclassification": 1,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_HandCannon"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_EndGm2_300Walk03.pcc",
+    "sourceuindex": 109,
+    "weaponclassification": 0,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_CollectorNeedler"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "BioD_TwrMwA_103CrimeScene.pcc",
+    "sourceuindex": 66,
+    "weaponclassification": 3,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_FlakGun"
+  },
+  {
+    "packagename": "SFXGameContent_Inventory",
+    "packagefilename": "SFXHeavyWeapon_NukeLauncher.pcc",
+    "sourceuindex": 28,
+    "weaponclassification": 5,
+    "hasgunmesh": true,
+    "gunname": "SFXHeavyWeapon_NukeLauncher"
+  },
+  {
+    "packagename": "SFXGameContentDLC_CER_02",
+    "packagefilename": "Startup_CER_02_int.pcc",
+    "importonly": true,
+    "sourceuindex": 56,
+    "weaponclassification": 4,
+    "hasgunmesh": true,
+    "gunname": "SFXWeapon_IncisorSniperRifle_CER_02"
+  }
+]

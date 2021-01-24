@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
+using ME3ExplorerCore.Unreal.BinaryConverters;
+using Newtonsoft.Json;
 using Octokit;
 using Serilog;
 
@@ -15,21 +18,136 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 {
     class EnemyPowerChanger
     {
+
+        public static List<PowerInfo> Powers;
+
+        /// <summary>
+        /// Loadouts matching these names can have an invisible weapon assigned to them
+        /// </summary>
+        private static List<string> LoadoutsSupportingHiddenMeshes = new List<string>()
+        {
+            "BioChar_Loadouts.Mechs.SUB_HeavyWeaponMech",
+        };
+
+        public static void LoadPowers()
+        {
+            if (Powers == null)
+            {
+                string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("powerlistme2.json");
+                Powers = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
+            }
+        }
+
+        /// <summary>
+        /// Hack to force power lists to load with only a single check
+        /// </summary>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public static bool Init(RandomizationOption option)
+        {
+            LoadPowers();
+            return true;
+        }
+
         internal class PowerInfo
         {
+
+            /// <summary>
+            ///  Name of the power
+            /// </summary>
+            [JsonProperty("powername")]
+            public string PowerName { get; set; }
+            [JsonProperty("packagename")]
             public string PackageName { get; set; } = "SFXGameContent_Powers";
+            [JsonProperty("packagefilename")]
             public string PackageFileName { get; set; }
+            [JsonProperty("sourceuindex")]
             public int SourceUIndex { get; set; }
+            [JsonProperty("type")]
             public EPowerCapabilityType Type { get; set; }
 
+            private bool MapPowerType(ExportEntry classExport)
+            {
+                var uClass = ObjectBinary.From<UClass>(classExport);
+                var defaults = classExport.FileRef.GetUExport(uClass.Defaults);
+                var bct = defaults.GetProperty<EnumProperty>("CapabilityType");
+                if (bct == null)
+                    return false;
+                switch (bct.Value.Name)
+                {
+                    case "BioCaps_AllTypes":
+                        Debugger.Break();
+                        //Type = ;
+                        return true;
+                    case "BioCaps_SingleTargetAttack":
+                        Type = EPowerCapabilityType.Attack;
+                        return true;
+                    case "BioCaps_AreaAttack":
+                        Type = EPowerCapabilityType.Attack;
+                        return true;
+                    case "BioCaps_Disable":
+                        Type = EPowerCapabilityType.Debuff;
+                        return true;
+                    case "BioCaps_Debuff":
+                        Type = EPowerCapabilityType.Debuff;
+                        return true;
+                    case "BioCaps_Defense":
+                        Type = EPowerCapabilityType.Defense;
+                        return true;
+                    case "BioCaps_Heal":
+                        Type = EPowerCapabilityType.Heal;
+                        return true;
+                    case "BioCaps_Buff":
+                        Type = EPowerCapabilityType.Buff;
+                        return true;
+                    case "BioCaps_Suicide":
+                        Type = EPowerCapabilityType.Suicide;
+                        return true;
+                    case "BioCaps_Death":
+                        Type = EPowerCapabilityType.Death;
+                        return true;
+                    default:
+                        Debugger.Break();
+                        return true;
+                }
+
+            }
+
             public PowerInfo() { }
-            public PowerInfo(ExportEntry export) {
+            public PowerInfo(ExportEntry export)
+            {
+                if (!MapPowerType(export))
+                {
+                    // Powers that do not list a capability type are subclasses. We will not support using these
+                    IsUsable = false;
+                    return;
+                }
+
+                PowerName = export.ObjectName;
+                if (PowerName.Contains("Ammo")
+                    || PowerName.Contains("Base")
+                    || PowerName.Contains("FirstAid")
+                    || PowerName.Contains("Player")
+                    || PowerName.Contains("GunshipRocket")
+                    || PowerName.Contains("NPC")
+                    || PowerName.Contains("Player")
+                    || PowerName.Contains("HuskTesla")
+
+
+
+                    )
+                {
+                    IsUsable = false;
+                    return; // Do not use ammo or base powers as they're player only in the usable code
+                }
+
                 PackageFileName = Path.GetFileName(export.FileRef.FilePath);
                 PackageName = export.ParentName;
                 SourceUIndex = export.UIndex;
-
-                // Type?
             }
+
+            [JsonIgnore]
+            public bool IsUsable { get; set; } = true;
         }
 
         internal enum EPowerCapabilityType
@@ -44,37 +162,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             Death
         }
 
-        private static Dictionary<string, PowerInfo> PackageMapping = new Dictionary<string, PowerInfo>()
+        public static ExportEntry PortPowerIntoPackage(IMEPackage targetPackage, PowerInfo powerInfo)
         {
-            { "SFXPower_AbominationExplosion", new PowerInfo(){ PackageFileName = "BioP_RprGtA.pcc", SourceUIndex = 712, Type = EPowerCapabilityType.Death} }, // DEATH POWER
-            { "SFXPower_HeavyMechExplosion", new PowerInfo(){ PackageFileName = "BioP_ProCer.pcc", SourceUIndex = 757, Type = EPowerCapabilityType.Death} }, // DEATH POWER
-            
-            /*{ "SFXPower_VorchaRegen", new PowerInfo(){ SourcePackage = "BioP_OmgPrA.pcc", SourceUIndex = 666, Type = EPowerCapabilityType.Buff} }, // DEATH POWER
-            { "SFXPower_GethSupercharge", new PowerInfo(){ SourcePackage = "BioP_BlbGtl.pcc", SourceUIndex = 577, Type = EPowerCapabilityType.Buff} },
-            { "SFXPower_Shockwave", new PowerInfo(){ SourcePackage = "BioP_Char.pcc", SourceUIndex = 1147, Type = EPowerCapabilityType.Attack} },
-            { "SFXPower_Incinerate", new PowerInfo(){ SourcePackage = "BioP_Char.pcc", SourceUIndex = 1012, Type = EPowerCapabilityType.Attack} },
-            { "SFXPower_Singularity", new PowerInfo(){ SourcePackage = "BioH_Vixen_00.pcc", SourceUIndex = 430, Type = EPowerCapabilityType.Attack} },
-            { "SFXPower_Cloak", new PowerInfo(){ SourcePackage = "BioP_RprGtA.pcc", SourceUIndex = 731, Type = EPowerCapabilityType.Buff} },
-            { "SFXPower_ScionTesla", new PowerInfo(){ SourcePackage = "BioP_RprGtA.pcc", SourceUIndex = 84, Type = EPowerCapabilityType.Attack} }, // May need way to adjust the cooldown to higher values
-            { "SFXPower_Overload", new PowerInfo(){ SourcePackage = "BioP_RprGtA.pcc", SourceUIndex = 839, Type = EPowerCapabilityType.Attack} },
-            { "SFXPower_GethShieldBoost", new PowerInfo(){ SourcePackage = "BioP_RprGtA.pcc", SourceUIndex = 799, Type = EPowerCapabilityType.Buff} },
-            { "SFXPower_NeuralShock", new PowerInfo(){ SourcePackage = "SFXPower_NeuralShock_Player.pcc", SourceUIndex = 55, Type = EPowerCapabilityType.Debuff} }, // Can cause loops since drone has this power too
-            { "SFXPower_Reave", new PowerInfo(){ SourcePackage = "SFXPower_Reave_Player.pcc", SourceUIndex = 26, Type = EPowerCapabilityType.Attack} }, // Can cause loops since drone has this power too
-
-            { "SFXPower_HuskMeleeLeft", new PowerInfo(){ SourcePackage = "BioP_RprGtA.pcc", SourceUIndex = 267, Type = EPowerCapabilityType.Attack} }, // Melee
-            { "SFXPower_HuskMeleeRight", new PowerInfo(){ SourcePackage = "BioP_RprGtA.pcc", SourceUIndex = 269, Type = EPowerCapabilityType.Attack} }, // Melee
-
-            { "SFXPower_RiotShield", new PowerInfo(){ SourcePackage = "BioP_HorCr1.pcc", SourceUIndex = 685, Type = EPowerCapabilityType.Defense} }, // Melee*/
-
-        };
-
-        public static ExportEntry PortPowerIntoPackage(IMEPackage targetPackage, string weaponName)
-        {
-            var portingInfo = PackageMapping[weaponName];
-            var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(portingInfo.PackageFileName);
+            var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(powerInfo.PackageFileName);
             if (sourcePackage != null)
             {
-                var sourceExport = sourcePackage.GetUExport(portingInfo.SourceUIndex);
+                var sourceExport = sourcePackage.GetUExport(powerInfo.SourceUIndex);
                 if (!sourceExport.InheritsFrom("SFXPower") || sourceExport.IsDefaultObject)
                 {
                     throw new Exception("Wrong setup!");
@@ -102,11 +195,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 IEntry newParent = null;
                 foreach (var p in parents)
                 {
-                    var sourceFullPath = p.FullPath;
-                    var matchingParent = targetPackage.Exports.FirstOrDefault(x => x.FullPath == sourceFullPath) as IEntry;
+                    var sourceFullPath = p.InstancedFullPath;
+                    var matchingParent = targetPackage.FindExport(sourceFullPath) as IEntry;
                     if (matchingParent == null)
                     {
-                        matchingParent = targetPackage.Imports.FirstOrDefault(x => x.FullPath == sourceFullPath) as IEntry;
+                        matchingParent = targetPackage.FindImport(sourceFullPath);
                     }
 
                     if (matchingParent != null)
@@ -176,23 +269,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     }
                 }
 
-                var randomNewPower = PackageMapping.Keys.ToList().RandomElement();
-                if (existingPowerEntry == null || randomNewPower != existingPowerEntry.ObjectName)
+                var randomNewPower = Powers.RandomElement();
+                if (existingPowerEntry == null || randomNewPower.PowerName != existingPowerEntry.ObjectName)
                 {
-                    var PowerInfo = PackageMapping[randomNewPower];
-
-                    if (powers.Any(x => power.Value != int.MinValue && power.ResolveToEntry(export.FileRef).ObjectName == randomNewPower))
+                    if (powers.Any(x => power.Value != int.MinValue && power.ResolveToEntry(export.FileRef).ObjectName == randomNewPower.PowerName))
                         continue; // Duplicate powers crash the game
 
-                    Log.Information($@"Changing power {export.ObjectName} {(existingPowerEntry != null ? existingPowerEntry.ObjectName : "New Power")} => {randomNewPower }");
+                    Log.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "New Power"} => {randomNewPower.PowerName }");
                     // It's a different gun.
 
                     // See if we need to port this in
-                    var fullName = PowerInfo.PackageName + "." + randomNewPower;
-                    var repoint = export.FileRef.Imports.FirstOrDefault(x => x.FullPath == fullName) as IEntry;
+                    var fullName = randomNewPower.PackageName + "." + randomNewPower.PowerName; // SFXGameContent_Powers.SFXPower_Hoops
+                    var repoint = export.FileRef.FindImport(fullName) as IEntry;
                     if (repoint == null)
                     {
-                        repoint = export.FileRef.Exports.FirstOrDefault(x => x.FullPath == fullName) as IEntry;
+                        repoint = export.FileRef.FindExport(fullName);
                     }
 
                     if (repoint != null)
@@ -212,6 +303,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             powers.RemoveAll(x => x.Value == int.MinValue);
             export.WriteProperty(powers);
 
+            // Our precalculated map should have accounted for imports already, so we odn't need to worry about missing imports upstream
             // If this is not a master or localization file (which are often used for imports) 
             // Change the number around so it will work across packages.
             // May need disabled if game becomes unstable.

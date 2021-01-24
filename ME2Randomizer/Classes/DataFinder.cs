@@ -13,11 +13,13 @@ using MassEffectRandomizer;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME3ExplorerCore.GameFilesystem;
+using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
+using Newtonsoft.Json;
 
 namespace ME2Randomizer.Classes
 {
@@ -31,7 +33,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindDatapads;
+            dataworker.DoWork += BuildVisibleLoadoutsMap;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -46,9 +48,11 @@ namespace ME2Randomizer.Classes
             mainWindow.CurrentOperationText = "Data finder done";
         }
 
-        private void FindDatapads(object sender, DoWorkEventArgs e)
+        private void FindPortableGuns(object sender, DoWorkEventArgs e)
         {
-            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values.ToList();
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+                //.Where(x => x.Contains("SFXWeapon") || x.Contains("BioP"))
+                .ToList();
             mainWindow.CurrentOperationText = "Scanning for stuff";
             int numdone = 0;
             int numtodo = files.Count;
@@ -59,29 +63,287 @@ namespace ME2Randomizer.Classes
 
             var startupFileCache = GetGlobalCache();
 
-            
-            ConcurrentDictionary<string, EnemyPowerChanger.PowerInfo> mapping = new ConcurrentDictionary<string, EnemyPowerChanger.PowerInfo>();
-            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 1 }, (file) =>
+            // Maps instanced full path to list of instances
+            ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>> mapping = new ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>>();
+            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
+            {
+                mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
+                Interlocked.Increment(ref numdone);
+
+                var package = MEPackageHandler.OpenMEPackage(file);
+                if (package.FindExport("SeekFreeShaderCache") != null)
+                {
+                    mainWindow.CurrentProgressValue = numdone;
+                    return; // don't check these
+                }
+                var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
+                foreach (var skm in sfxweapons.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
+                {
+                    // See if power is fully defined in package?
+                    var classInfo = ObjectBinary.From<UClass>(skm);
+                    if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+                        continue; // This class cannot be used as a power, it is abstract
+
+                    var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
+                    var importDependencies = dependencies.OfType<ImportEntry>().ToList();
+                    var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
+                    if (usable)
+                    {
+                        var pi = new EnemyWeaponChanger.GunInfo(skm);
+
+                        if (pi.IsUsable)
+                        {
+                            Debug.WriteLine($"Usable sfxweapon: {skm.InstancedFullPath} in {package.FilePath}");
+                            if (!mapping.TryGetValue(skm.InstancedFullPath, out var instanceList))
+                            {
+                                instanceList = new List<EnemyWeaponChanger.GunInfo>();
+                                mapping[skm.InstancedFullPath] = instanceList;
+                            }
+
+                            instanceList.Add(pi);
+                        }
+                    }
+                    else
+                    {
+                        //Debug.WriteLine($"Not usable power: {skm.InstancedFullPath} in {package.FilePath}");
+                    }
+                }
+                mainWindow.CurrentProgressValue = numdone;
+            });
+
+            // PERFORM REDUCE OPERATION
+
+            // Count the number of times a file is referenced for a power
+            Dictionary<string, int> fileUsages = new Dictionary<string, int>();
+            foreach (var powerPair in mapping)
+            {
+                foreach (var powerInfo in powerPair.Value)
+                {
+                    if (!fileUsages.TryGetValue(powerInfo.PackageFileName, out var fileUsageInt))
+                    {
+                        fileUsages[powerInfo.PackageFileName] = 1;
+                    }
+                    else
+                    {
+                        fileUsages[powerInfo.PackageFileName] = fileUsageInt + 1;
+                    }
+                }
+            }
+
+            // Sort file usages by count, highest to lowest
+            var gunListSS = fileUsages.Select(x => (x.Key, x.Value)).ToList();
+            gunListSS = gunListSS.OrderByDescending(x => x.Value).ToList();
+            var gunList = gunListSS.Select(x => x.Key).ToList(); // Drop the tuple part, we don't care about it
+
+            // Build power info list
+            var reducedGunInfos = new List<EnemyWeaponChanger.GunInfo>();
+
+            foreach (var gunFile in gunList)
+            {
+                // Get powers that are in this file
+                var items = mapping.Where(x => x.Value.Any(x => x.PackageFileName == gunFile)).ToList();
+                foreach (var item in items)
+                {
+                    reducedGunInfos.Add(item.Value.FirstOrDefault(x => x.PackageFileName == gunFile));
+                    mapping.Remove(item.Key, out var removedItem);
+                }
+            }
+
+            var jsonList = JsonConvert.SerializeObject(reducedGunInfos, Formatting.Indented);
+            File.WriteAllText(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\weaponlistme2.json", jsonList);
+
+
+            // Coagulate stuff
+            //Dictionary<string, int> counts = new Dictionary<string, int>();
+            //foreach (var v in listM)
+            //{
+            //    foreach (var k in v.Value)
+            //    {
+            //        int existingC = 0;
+            //        counts.TryGetValue(k, out existingC);
+            //        existingC++;
+            //        counts[k] = existingC;
+            //    }
+            //}
+
+            //foreach (var count in counts.OrderBy(x => x.Key))
+            //{
+            //    Debug.WriteLine($"{count.Key}\t\t\t{count.Value}");
+            //}
+        }
+
+        private void BuildVisibleLoadoutsMap(object sender, DoWorkEventArgs e)
+        {
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+                //.Where(x => x.Contains("SFXWeapon") || x.Contains("BioP"))
+                .ToList();
+            mainWindow.CurrentOperationText = "Scanning for stuff";
+            int numdone = 0;
+            int numtodo = files.Count;
+
+            mainWindow.ProgressBarIndeterminate = false;
+            mainWindow.ProgressBar_Bottom_Max = files.Count();
+            mainWindow.ProgressBar_Bottom_Min = 0;
+
+            var startupFileCache = GetGlobalCache();
+
+            // Maps instanced full path to list of instances
+            // Loadout full path -> caller supports visible weapons
+            ConcurrentDictionary<string, bool> loadoutmap = new ConcurrentDictionary<string, bool>();
+            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
+            {
+                mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
+                Interlocked.Increment(ref numdone);
+
+                var package = MEPackageHandler.OpenMEPackage(file);
+                var pawnClasses = package.Exports.Where(x => x.InheritsFrom("SFXPawn") && x.IsClass && !x.IsDefaultObject);
+                foreach (var skm in pawnClasses.Where(x => !loadoutmap.ContainsKey(x.InstancedFullPath)))
+                {
+                    // See if power is fully defined in package?
+                    var classInfo = ObjectBinary.From<UClass>(skm);
+                    if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+                        continue; // This class cannot be used as a power, it is abstract
+
+                    var defaults = package.GetUExport(classInfo.Defaults);
+
+                    var supportsVisibleWeapons = defaults.GetProperty<BoolProperty>("bSupportsVisibleWeapons")?.Value ?? true;
+
+                    // Get loadout
+                    var actorTypeObj = defaults.GetProperty<ObjectProperty>("ActorType");
+                    if (actorTypeObj != null && actorTypeObj.Value > 0)
+                    {
+                        var actorType = package.GetUExport(actorTypeObj.Value);
+                        var loadoutObj = actorType.GetProperty<ObjectProperty>("Loadout");
+                        if (loadoutObj != null && loadoutObj.Value > 0)
+                        {
+                            var loadout = package.GetUExport(loadoutObj.Value);
+                            if (loadout.GetProperty<ArrayProperty<ObjectProperty>>("Weapons") != null)
+                            {
+                                loadoutmap[loadout.InstancedFullPath] = supportsVisibleWeapons;
+                            }
+                        }
+                    }
+
+                    // mark
+                }
+                mainWindow.CurrentProgressValue = numdone;
+            });
+
+            // PERFORM REDUCE OPERATION
+
+            // Count the number of times a file is referenced for a power
+            //Dictionary<string, int> fileUsages = new Dictionary<string, int>();
+            //foreach (var powerPair in mapping)
+            //{
+            //    foreach (var powerInfo in powerPair.Value)
+            //    {
+            //        if (!fileUsages.TryGetValue(powerInfo.PackageFileName, out var fileUsageInt))
+            //        {
+            //            fileUsages[powerInfo.PackageFileName] = 1;
+            //        }
+            //        else
+            //        {
+            //            fileUsages[powerInfo.PackageFileName] = fileUsageInt + 1;
+            //        }
+            //    }
+            //}
+
+            // Sort file usages by count, highest to lowest
+            //var gunListSS = fileUsages.Select(x => (x.Key, x.Value)).ToList();
+            //gunListSS = gunListSS.OrderByDescending(x => x.Value).ToList();
+            //var gunList = gunListSS.Select(x => x.Key).ToList(); // Drop the tuple part, we don't care about it
+
+            //// Build power info list
+            //var reducedGunInfos = new List<EnemyWeaponChanger.GunInfo>();
+
+            //foreach (var gunFile in gunList)
+            //{
+            //    // Get powers that are in this file
+            //    var items = mapping.Where(x => x.Value.Any(x => x.PackageFileName == gunFile)).ToList();
+            //    foreach (var item in items)
+            //    {
+            //        reducedGunInfos.Add(item.Value.FirstOrDefault(x => x.PackageFileName == gunFile));
+            //        mapping.Remove(item.Key, out var removedItem);
+            //    }
+            //}
+
+            var jsonList = JsonConvert.SerializeObject(loadoutmap, Formatting.Indented);
+            File.WriteAllText(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\weaponloadoutrules.json", jsonList);
+
+
+            // Coagulate stuff
+            //Dictionary<string, int> counts = new Dictionary<string, int>();
+            //foreach (var v in listM)
+            //{
+            //    foreach (var k in v.Value)
+            //    {
+            //        int existingC = 0;
+            //        counts.TryGetValue(k, out existingC);
+            //        existingC++;
+            //        counts[k] = existingC;
+            //    }
+            //}
+
+            //foreach (var count in counts.OrderBy(x => x.Key))
+            //{
+            //    Debug.WriteLine($"{count.Key}\t\t\t{count.Value}");
+            //}
+        }
+
+        private void FindPortablePowers(object sender, DoWorkEventArgs e)
+        {
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+                //.Where(x => x.Contains("SFXPower") || x.Contains("BioP"))
+                .ToList();
+            mainWindow.CurrentOperationText = "Scanning for stuff";
+            int numdone = 0;
+            int numtodo = files.Count;
+
+            mainWindow.ProgressBarIndeterminate = false;
+            mainWindow.ProgressBar_Bottom_Max = files.Count();
+            mainWindow.ProgressBar_Bottom_Min = 0;
+
+            var startupFileCache = GetGlobalCache();
+
+            // Maps instanced full path to list of instances
+            ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping = new ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>>();
+            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
               {
                   mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
                   Interlocked.Increment(ref numdone);
 
                   var package = MEPackageHandler.OpenMEPackage(file);
                   if (package.FindExport("SeekFreeShaderCache") != null)
+                  {
+                      mainWindow.CurrentProgressValue = numdone;
                       return; // don't check these
-                  var powers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && !x.IsDefaultObject);
+                  }
+                  var powers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
                   foreach (var skm in powers.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
                   {
                       // See if power is fully defined in package?
+                      var classInfo = ObjectBinary.From<UClass>(skm);
+                      if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+                          continue; // This class cannot be used as a power, it is abstract
+
                       var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
                       var importDependencies = dependencies.OfType<ImportEntry>().ToList();
                       var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
                       if (usable)
                       {
-                          Debug.WriteLine($"Usable power: {skm.InstancedFullPath} in {package.FilePath}");
+                          var pi = new EnemyPowerChanger.PowerInfo(skm);
 
-                          mapping[skm.InstancedFullPath] = new EnemyPowerChanger.PowerInfo(skm);
+                          if (pi.IsUsable)
+                          {
+                              Debug.WriteLine($"Usable power: {skm.InstancedFullPath} in {package.FilePath}");
+                              if (!mapping.TryGetValue(skm.InstancedFullPath, out var instanceList))
+                              {
+                                  instanceList = new List<EnemyPowerChanger.PowerInfo>();
+                                  mapping[skm.InstancedFullPath] = instanceList;
+                              }
 
+                              instanceList.Add(pi);
+                          }
                       }
                       else
                       {
@@ -91,10 +353,47 @@ namespace ME2Randomizer.Classes
                   mainWindow.CurrentProgressValue = numdone;
               });
 
-            foreach (var v in mapping)
+            // PERFORM REDUCE OPERATION
+
+            // Count the number of times a file is referenced for a power
+            Dictionary<string, int> fileUsages = new Dictionary<string, int>();
+            foreach (var powerPair in mapping)
             {
-                Debug.WriteLine($"{v.Key}\t{v.Value}");
+                foreach (var powerInfo in powerPair.Value)
+                {
+                    if (!fileUsages.TryGetValue(powerInfo.PackageFileName, out var fileUsageInt))
+                    {
+                        fileUsages[powerInfo.PackageFileName] = 1;
+                    }
+                    else
+                    {
+                        fileUsages[powerInfo.PackageFileName] = fileUsageInt + 1;
+                    }
+                }
             }
+
+            // Sort file usages by count, highest to lowest
+            var powerListSS = fileUsages.Select(x => (x.Key, x.Value)).ToList();
+            powerListSS = powerListSS.OrderByDescending(x => x.Value).ToList();
+            var powerList = powerListSS.Select(x => x.Key).ToList(); // Drop the tuple part, we don't care about it
+
+            // Build power info list
+            List<EnemyPowerChanger.PowerInfo> reducedPowerInfos = new List<EnemyPowerChanger.PowerInfo>();
+
+            foreach (var powerFile in powerList)
+            {
+                // Get powers that are in this file
+                var items = mapping.Where(x => x.Value.Any(x => x.PackageFileName == powerFile)).ToList();
+                foreach (var item in items)
+                {
+                    reducedPowerInfos.Add(item.Value.FirstOrDefault(x => x.PackageFileName == powerFile));
+                    mapping.Remove(item.Key, out var removedItem);
+                }
+            }
+
+            var jsonList = JsonConvert.SerializeObject(reducedPowerInfos);
+            File.WriteAllText(@"C:\users\public\powerlistme2.json", jsonList);
+
 
             // Coagulate stuff
             //Dictionary<string, int> counts = new Dictionary<string, int>();

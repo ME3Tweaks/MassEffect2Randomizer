@@ -53,11 +53,11 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 parents.Reverse();
                 foreach (var p in parents)
                 {
-                    var sourceFullPath = p.FullPath;
-                    var matchingParent = targetPackage.Exports.FirstOrDefault(x => x.FullPath == sourceFullPath) as IEntry;
+                    var sourceFullPath = p.InstancedFullPath;
+                    var matchingParent = targetPackage.FindExport(sourceFullPath) as IEntry;
                     if (matchingParent == null)
                     {
-                        matchingParent = targetPackage.Imports.FirstOrDefault(x => x.FullPath == sourceFullPath) as IEntry;
+                        matchingParent = targetPackage.FindImport(sourceFullPath);
                     }
 
                     if (matchingParent != null)
@@ -84,6 +84,30 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             }
 
             return newEntry as ExportEntry;
+        }
+
+        /// <summary>
+        /// Creates an ImportEntry that references the listed ExportEntry. Ensure the item will be in memory or this will crash the game!
+        /// </summary>
+        /// <param name="sourceExport"></param>
+        /// <param name="targetPackage"></param>
+        /// <returns></returns>
+        public static ImportEntry CreateImportForClass(ExportEntry sourceExport, IMEPackage targetPackage)
+        {
+            if (sourceExport.ClassName != "Class")
+            {
+                throw new Exception("Cannot reliably create import for non-class object!");
+            }
+            var parentObj = sourceExport.Parent;
+            ImportEntry imp = new ImportEntry(targetPackage)
+            {
+                ObjectName = sourceExport.ObjectName,
+                PackageFile = "Core", //Risky...
+                ClassName = sourceExport.ClassName,
+                idxLink = parentObj?.idxLink ?? 0,
+            };
+            targetPackage.AddImport(imp);
+            return imp;
         }
     }
 }

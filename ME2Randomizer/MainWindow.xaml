@@ -26,6 +26,11 @@
         <converters:NullVisibilityConverter x:Key="NullVisibilityConverter"/>
         <converters:DangerColorConverter x:Key="DangerColorConverter"/>
         <converters:ImplementedConverter x:Key="ImplementedConverter"/>
+        <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource MahApps.Styles.CheckBox}">
+            <Style.Resources>
+                <SolidColorBrush x:Key="HighlightBrush" Color="White" />
+            </Style.Resources>
+        </Style>
         <FontFamily x:Key="AeroLight">
             pack://application:,,,/fonts/#AeroLight
             <!-- Note: NameOfFont can be font by double clicking
@@ -33,15 +38,14 @@
              of the font reported.  Its not the same
              as the file name -->
         </FontFamily>
-        <Style TargetType="{x:Type CheckBox}" BasedOn="{StaticResource MahApps.Styles.CheckBox}">
-            <Style.Resources>
-                <SolidColorBrush x:Key="HighlightBrush" Color="Red" />
-            </Style.Resources>
-        </Style>
         <DataTemplate x:Key="RandomizationOptionTemplate" DataType="classes:RandomizationOption">
             <StackPanel Background="{Binding Converter={StaticResource ImplementedConverter}}">
                 <CheckBox Content="{Binding HumanName}" FontWeight="Bold" Margin="3" 
-                          IsChecked="{Binding OptionIsSelected}"/>
+                          IsChecked="{Binding OptionIsSelected}"
+                          Controls:CheckBoxHelper.CheckGlyphForegroundChecked="White"
+                          Controls:CheckBoxHelper.CheckGlyphForegroundCheckedMouseOver="White"
+                          Controls:CheckBoxHelper.CheckGlyphForegroundCheckedPressed="Gray"
+                          />
                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="200" 
                            HorizontalAlignment="Left" FontSize="10" Margin="3,-3,0,0"
                            Foreground="{Binding Dangerousness, Converter={StaticResource DangerColorConverter}}"
@@ -235,28 +239,28 @@
                     </Style>
                 </TabControl.Resources>
                 <TabItem Header="Options">
-
                     <DockPanel HorizontalAlignment="Center" IsEnabled="{Binding AllowOptionsChanging}">
                         <StackPanel Margin="5" DockPanel.Dock="Top" Width="Auto">
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" />
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" />
                         </StackPanel>
-                        <ItemsControl ItemsSource="{Binding RandomizationGroups}" MaxWidth="1180" HorizontalContentAlignment="Center">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Vertical"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type classes:RandomizationGroup}">
-                                    <StackPanel Margin="10">
-                                        <fonts:OutlinedTextBlock Text="{Binding GroupName}" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="16" StrokeThickness="2" />
-                                        <ItemsControl ItemsSource="{Binding Options}" ItemTemplate="{DynamicResource RandomizationOptionTemplate}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-
+                        <ScrollViewer>
+                            <ItemsControl ItemsSource="{Binding RandomizationGroups}" MaxWidth="1180" HorizontalContentAlignment="Center">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type classes:RandomizationGroup}">
+                                        <StackPanel Margin="10">
+                                            <fonts:OutlinedTextBlock Text="{Binding GroupName}" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="18" StrokeThickness="2" />
+                                            <ItemsControl ItemsSource="{Binding Options}" ItemTemplate="{DynamicResource RandomizationOptionTemplate}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </DockPanel>
                 </TabItem>
                 <TabItem Header="Credits">

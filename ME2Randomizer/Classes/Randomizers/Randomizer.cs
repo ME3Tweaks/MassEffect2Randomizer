@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
@@ -16,7 +12,6 @@ using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.TLK.ME2ME3;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Unreal;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -32,14 +27,14 @@ namespace ME2Randomizer.Classes
     {
         private MainWindow mainWindow;
         private BackgroundWorker randomizationWorker;
-        private List<char> scottishVowelOrdering;
-        private List<char> upperScottishVowelOrdering;
 
         // Files that should not be generally passed over
 #if __ME2__
         private static List<string> SpecializedFiles { get; } = new List<string>()
         {
-            "BioP_Char"
+            "BioP_Char",
+            // Validate this is correct
+            "BioD_Nor_103aGalaxyMap"
         };
 #elif __ME3__
 
@@ -48,8 +43,6 @@ namespace ME2Randomizer.Classes
         public Randomizer(MainWindow mainWindow)
         {
             this.mainWindow = mainWindow;
-            scottishVowelOrdering = null; //will be set when needed.
-            upperScottishVowelOrdering = null;
         }
 
         /// <summary>
@@ -102,7 +95,7 @@ namespace ME2Randomizer.Classes
         {
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
-            var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => !x.IsExportRandomizer).ToList();
+            var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
 
             MERFileSystem.InitMERFS(SelectedOptions.UseMERFS, SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
 
@@ -152,7 +145,7 @@ namespace ME2Randomizer.Classes
 
                     if (//!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Cit", StringComparison.InvariantCultureIgnoreCase)
-                    !file.Contains("Exp1", StringComparison.InvariantCultureIgnoreCase)
+                    !file.Contains("SunTlA", StringComparison.InvariantCultureIgnoreCase)
                         &&
                     !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
@@ -171,18 +164,7 @@ namespace ME2Randomizer.Classes
                         /*
 
                         // NO MORE DEFAULT OBJECTS AFTER THIS LINE
-                        //Randomize faces
-                        if (mainWindow.RANDSETTING_BIOMORPHFACES && exp.ClassName == "BioMorphFace")
-                        {
-                            //Face randomizer
-                            if (!loggedFilePath)
-                            {
-                                Log.Information("Randomizing file: " + file);
-                                loggedFilePath = true;
-                            }
 
-                            RandomizeBioMorphFace(exp,  morphFaceRandomizationAmount);
-                        }
 
                         else if (exp.ClassName == "BioPawn")
                         {
@@ -217,11 +199,6 @@ namespace ME2Randomizer.Classes
 
                     MERFileSystem.SavePackage(package);
                 });
-
-                //if (mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES)
-                //{
-                //    RandomizeAINames(package, random);
-                //}
             }
 
             mainWindow.ProgressBarIndeterminate = true;
@@ -396,10 +373,10 @@ namespace ME2Randomizer.Classes
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable"},
-                    new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use. Requires DLC option for Zaeed and Kasumi", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons},
+                    new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use. Requires DLC option for Zaeed, Kasumi and Liara", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons},
                     new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
-                    new RandomizationOption() {HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
                 }
             });
 
@@ -532,41 +509,6 @@ namespace ME2Randomizer.Classes
 #endif
 
         }
-
-
-
-        private void randomizeMorphTarget(ExportEntry morphTarget)
-        {
-            MemoryStream ms = new MemoryStream(morphTarget.Data);
-            ms.Position = morphTarget.propsEnd();
-            var numLods = ms.ReadInt32();
-
-            for (int i = 0; i < numLods; i++)
-            {
-                var numVertices = ms.ReadInt32();
-                var diff = ThreadSafeRandom.NextFloat(-0.2, 0.2);
-                for (int k = 0; k < numVertices; k++)
-                {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        var fVal = ms.ReadFloat();
-                        ms.Position -= 4;
-                        ms.WriteFloat(fVal + diff);
-                    }
-
-                    ms.WriteByte((byte)ThreadSafeRandom.Next(256));
-                    ms.ReadByte();
-                    ms.ReadByte();
-                    ms.ReadByte();
-                    ms.SkipInt16(); //idx
-                }
-
-                ms.SkipInt32(); //Vertices?/s
-            }
-
-            morphTarget.Data = ms.ToArray();
-        }
-
 
         private void RandomizePlanetMaterialInstanceConstant(ExportEntry planetMaterial, bool realistic = false)
         {
@@ -749,6 +691,8 @@ namespace ME2Randomizer.Classes
 
         public void AddHostileSquadToPackage(IMEPackage package)
         {
+            // This can be easily done with toolset lib now
+            return;
             if (package.Exports.Any(x => x.ClassName == "BioFaction_Hostile")) return; //already has it
             if (package.Imports.All(x => x.ObjectName != "SFXGame")) return; //need SFXGame import
             if (package.Imports.All(x => x.FullPath != "Core.Package")) return; //need SFXGame import
@@ -920,106 +864,6 @@ namespace ME2Randomizer.Classes
             }
 
             package.Save();
-        }
-
-        /// <summary>
-        /// Swap the vowels around
-        /// </summary>
-        /// <param name="Tlks"></param>
-        private void MakeTextPossiblyScottish(bool updateProgressbar)
-        {
-            /*Log.Information("Making text possibly scottish");
-            if (scottishVowelOrdering == null)
-            {
-                scottishVowelOrdering = new List<char>(new char[] { 'a', 'e', 'i', 'o', 'u' });
-                scottishVowelOrdering.Shuffle(random);
-                upperScottishVowelOrdering = new List<char>();
-                foreach (var c in scottishVowelOrdering)
-                {
-                    upperScottishVowelOrdering.Add(char.ToUpper(c, CultureInfo.InvariantCulture));
-                }
-            }
-
-            int currentTlkIndex = 0;
-            foreach (TalkFile tf in Tlks)
-            {
-                currentTlkIndex++;
-                int max = tf.StringRefs.Count();
-                int current = 0;
-                if (updateProgressbar)
-                {
-                    mainWindow.CurrentOperationText = $"Applying Scottish accent [{currentTlkIndex}/{Tlks.Count()}]";
-                    mainWindow.ProgressBar_Bottom_Max = tf.StringRefs.Length;
-                    mainWindow.ProgressBarIndeterminate = false;
-                }
-
-                foreach (var sref in tf.StringRefs)
-                {
-                    current++;
-                    if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
-                    if (updateProgressbar)
-                    {
-                        mainWindow.CurrentProgressValue = current;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(sref.Data))
-                    {
-                        string originalString = sref.Data;
-                        if (originalString.Length == 1)
-                        {
-                            continue; //Don't modify I, A
-                        }
-
-                        string[] words = originalString.Split(' ');
-                        for (int j = 0; j < words.Length; j++)
-                        {
-                            string word = words[j];
-                            if (word.Length == 1)
-                            {
-                                continue; //Don't modify I, A
-                            }
-
-                            char[] newStringAsChars = word.ToArray();
-                            for (int i = 0; i < word.Length; i++)
-                            {
-                                //Undercase
-                                var vowelIndex = englishVowels.IndexOf(word[i]);
-                                if (vowelIndex >= 0)
-                                {
-                                    if (i + 1 < word.Length && englishVowels.Contains(word[i + 1]))
-                                    {
-                                        continue; //don't modify dual vowel first letters.
-                                    }
-                                    else
-                                    {
-                                        newStringAsChars[i] = scottishVowelOrdering[vowelIndex];
-                                    }
-                                }
-                                else
-                                {
-                                    var upperVowelIndex = upperCaseVowels.IndexOf(word[i]);
-                                    if (upperVowelIndex >= 0)
-                                    {
-                                        if (i + 1 < word.Length && upperCaseVowels.Contains(word[i + 1]))
-                                        {
-                                            continue; //don't modify dual vowel first letters.
-                                        }
-                                        else
-                                        {
-                                            newStringAsChars[i] = upperScottishVowelOrdering[upperVowelIndex];
-                                        }
-                                    }
-                                }
-                            }
-
-                            words[j] = new string(newStringAsChars);
-                        }
-
-                        string rebuiltStr = string.Join(" ", words);
-                        tf.replaceString(sref.StringID, rebuiltStr);
-                    }
-                }
-            }*/
         }
     }
 }

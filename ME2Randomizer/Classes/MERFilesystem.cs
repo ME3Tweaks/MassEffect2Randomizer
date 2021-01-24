@@ -98,7 +98,7 @@ namespace ME2Randomizer.Classes
         }
 
         /// <summary>
-        /// Saves an open package.
+        /// Saves an open package, if it is modified. Saves it to the correct location.
         /// </summary>
         /// <param name="package"></param>
         public static void SavePackage(IMEPackage package)
@@ -109,7 +109,7 @@ namespace ME2Randomizer.Classes
                 {
                     var fname = Path.GetFileName(package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
-                    package.Save(packageNewPath, false);
+                    package.Save(packageNewPath, true);
                 }
                 else
                 {
