@@ -92,7 +92,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <param name="sourceExport"></param>
         /// <param name="targetPackage"></param>
         /// <returns></returns>
-        public static ImportEntry CreateImportForClass(ExportEntry sourceExport, IMEPackage targetPackage)
+        public static ImportEntry CreateImportForClass(ExportEntry sourceExport, IMEPackage targetPackage, IEntry parentObject = null)
         {
             if (sourceExport.ClassName != "Class")
             {
@@ -104,7 +104,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 ObjectName = sourceExport.ObjectName,
                 PackageFile = "Core", //Risky...
                 ClassName = sourceExport.ClassName,
-                idxLink = parentObj?.idxLink ?? 0,
+                idxLink = parentObject?.UIndex ?? 0,
             };
             targetPackage.AddImport(imp);
             return imp;

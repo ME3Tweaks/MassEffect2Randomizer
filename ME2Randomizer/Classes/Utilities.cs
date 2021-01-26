@@ -87,6 +87,23 @@ namespace MassEffectRandomizer.Classes
         }
 
         /// <summary>
+        /// Fetches a file from the staticfiles resource folder
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
+        public static byte[] GetEmbeddedStaticFile(string filename, bool fullName = false)
+        {
+            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
+            using (Stream stream = typeof(MainWindow).Assembly.GetManifestResourceStream(fullName ? filename : "ME2Randomizer.staticfiles." + filename))
+            {
+                byte[] ba = new byte[stream.Length];
+                stream.Read(ba, 0, ba.Length);
+                return ba;
+            }
+        }
+
+        /// <summary>
         /// Fetches a file from the staticfiles/binary resource folder
         /// </summary>
         /// <param name="filename"></param>
@@ -94,13 +111,7 @@ namespace MassEffectRandomizer.Classes
         /// <returns></returns>
         public static byte[] GetEmbeddedStaticFilesBinaryFile(string filename, bool fullName = false)
         {
-            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
-            using (Stream stream = typeof(MainWindow).Assembly.GetManifestResourceStream(fullName ? filename : "ME2Randomizer.staticfiles.binary." + filename))
-            {
-                byte[] ba = new byte[stream.Length];
-                stream.Read(ba, 0, ba.Length);
-                return ba;
-            }
+            return GetEmbeddedStaticFile("binary." + filename, fullName);
         }
 
         //internal static string ExtractInternalStaticExecutable(string executableFilename, bool overwrite)
@@ -298,6 +309,29 @@ namespace MassEffectRandomizer.Classes
             return (string)Registry.GetValue(softwareKey, name, null);
         }
 
+        /// <summary>
+        /// Gets a list of filenames at the specified staticfiles subdir path. Returns full asset names.
+        /// </summary>
+        /// <param name="assetPath"></param>
+        /// <returns></returns>
+        public static List<string> ListStaticAssets(string assetRootPath)
+        {
+            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
+            var prefix = $"ME2Randomizer.staticfiles.{assetRootPath}";
+            List<string> itemsL = new List<string>();
+            foreach (var item in items)
+            {
+                if (item.StartsWith(prefix))
+                {
+                    var iName = item.Substring(prefix.Length + 1);
+                    if (iName.Count(x => x == '.') == 1) //Only has extension
+                    {
+                        itemsL.Add(iName);
+                    }
+                }
+            }
+            return itemsL.Select(x => prefix + '.' + x).ToList();
+        }
         public static string GetRegistrySettingString(string name)
         {
             string softwareKey = @"HKEY_CURRENT_USER\" + App.REGISTRY_KEY;
@@ -1022,6 +1056,12 @@ namespace MassEffectRandomizer.Classes
         internal static object ExtractInteralFileToMemory(string v)
         {
             throw new NotImplementedException();
+        }
+
+        public static string GetFilenameFromAssetName(string assetName)
+        {
+            var parts = assetName.Split('.');
+            return string.Join('.', parts[^2], parts[^1]);
         }
     }
 }

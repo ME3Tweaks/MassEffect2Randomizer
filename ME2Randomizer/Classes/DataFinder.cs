@@ -7,12 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Documents;
-using MassEffectRandomizer;
-using ME2Randomizer.Classes.Randomizers;
+using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME3ExplorerCore.GameFilesystem;
+using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
@@ -33,7 +31,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += BuildVisibleLoadoutsMap;
+            dataworker.DoWork += FindPortableGuns;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -51,7 +49,10 @@ namespace ME2Randomizer.Classes
         private void FindPortableGuns(object sender, DoWorkEventArgs e)
         {
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
-                //.Where(x => x.Contains("SFXWeapon") || x.Contains("BioP"))
+                //.Where(x =>
+                //x.Contains("blackstorm", StringComparison.InvariantCultureIgnoreCase)
+                ////x.Contains("ReaperCombat")
+                // )
                 .ToList();
             mainWindow.CurrentOperationText = "Scanning for stuff";
             int numdone = 0;
@@ -71,105 +72,93 @@ namespace ME2Randomizer.Classes
                 Interlocked.Increment(ref numdone);
 
                 var package = MEPackageHandler.OpenMEPackage(file);
-                if (package.FindExport("SeekFreeShaderCache") != null)
-                {
-                    mainWindow.CurrentProgressValue = numdone;
-                    return; // don't check these
-                }
                 var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
-                foreach (var skm in sfxweapons.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
+                foreach (var skm in sfxweapons)
                 {
-                    // See if power is fully defined in package?
-                    var classInfo = ObjectBinary.From<UClass>(skm);
-                    if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
-                        continue; // This class cannot be used as a power, it is abstract
-
-                    var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
-                    var importDependencies = dependencies.OfType<ImportEntry>().ToList();
-                    var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
-                    if (usable)
-                    {
-                        var pi = new EnemyWeaponChanger.GunInfo(skm);
-
-                        if (pi.IsUsable)
-                        {
-                            Debug.WriteLine($"Usable sfxweapon: {skm.InstancedFullPath} in {package.FilePath}");
-                            if (!mapping.TryGetValue(skm.InstancedFullPath, out var instanceList))
-                            {
-                                instanceList = new List<EnemyWeaponChanger.GunInfo>();
-                                mapping[skm.InstancedFullPath] = instanceList;
-                            }
-
-                            instanceList.Add(pi);
-                        }
-                    }
-                    else
-                    {
-                        //Debug.WriteLine($"Not usable power: {skm.InstancedFullPath} in {package.FilePath}");
-                    }
+                    BuildGunInfo(skm, mapping, package, startupFileCache, false);
                 }
                 mainWindow.CurrentProgressValue = numdone;
             });
 
-            // PERFORM REDUCE OPERATION
-
-            // Count the number of times a file is referenced for a power
-            Dictionary<string, int> fileUsages = new Dictionary<string, int>();
-            foreach (var powerPair in mapping)
+            // Corrected, embedded guns that required file coalescing for portability
+            var correctedGuns = Utilities.ListStaticAssets("binary.correctedloadouts.weapons");
+            foreach (var cg in correctedGuns)
             {
-                foreach (var powerInfo in powerPair.Value)
+                var pData = Utilities.GetEmbeddedStaticFile(cg, true);
+                var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData), Utilities.GetFilenameFromAssetName(cg)); //just any path
+                var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
+                foreach (var skm in sfxweapons)
                 {
-                    if (!fileUsages.TryGetValue(powerInfo.PackageFileName, out var fileUsageInt))
-                    {
-                        fileUsages[powerInfo.PackageFileName] = 1;
-                    }
-                    else
-                    {
-                        fileUsages[powerInfo.PackageFileName] = fileUsageInt + 1;
-                    }
+                    BuildGunInfo(skm, mapping, package, startupFileCache, true);
                 }
             }
-
-            // Sort file usages by count, highest to lowest
-            var gunListSS = fileUsages.Select(x => (x.Key, x.Value)).ToList();
-            gunListSS = gunListSS.OrderByDescending(x => x.Value).ToList();
-            var gunList = gunListSS.Select(x => x.Key).ToList(); // Drop the tuple part, we don't care about it
+            // PERFORM REDUCE OPERATION
+            
+            // Order by not needing startup, then by filesize so we can have smallest files loaded
+            foreach (var gunL in mapping)
+            {
+                gunL.Value.ReplaceAll(gunL.Value.OrderBy(x => x.RequiresStartupPackage).ThenBy(x => x.PackageFileSize).ToList());
+            }
 
             // Build power info list
-            var reducedGunInfos = new List<EnemyWeaponChanger.GunInfo>();
-
-            foreach (var gunFile in gunList)
-            {
-                // Get powers that are in this file
-                var items = mapping.Where(x => x.Value.Any(x => x.PackageFileName == gunFile)).ToList();
-                foreach (var item in items)
-                {
-                    reducedGunInfos.Add(item.Value.FirstOrDefault(x => x.PackageFileName == gunFile));
-                    mapping.Remove(item.Key, out var removedItem);
-                }
-            }
+            var reducedGunInfos = mapping.Select(x => x.Value[0]);
 
             var jsonList = JsonConvert.SerializeObject(reducedGunInfos, Formatting.Indented);
             File.WriteAllText(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\weaponlistme2.json", jsonList);
 
+            UnusableGuns.RemoveAll(x => reducedGunInfos.Any(y => y.GunName == x.Key));
+            File.WriteAllLines(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\unusableguns.json", UnusableGuns.Keys.ToList());
 
-            // Coagulate stuff
-            //Dictionary<string, int> counts = new Dictionary<string, int>();
-            //foreach (var v in listM)
-            //{
-            //    foreach (var k in v.Value)
-            //    {
-            //        int existingC = 0;
-            //        counts.TryGetValue(k, out existingC);
-            //        existingC++;
-            //        counts[k] = existingC;
-            //    }
-            //}
+        }
 
-            //foreach (var count in counts.OrderBy(x => x.Key))
-            //{
-            //    Debug.WriteLine($"{count.Key}\t\t\t{count.Value}");
-            //}
+        private static ConcurrentDictionary<string, string> UnusableGuns = new ConcurrentDictionary<string, string>();
+
+        private void BuildGunInfo(ExportEntry skm, ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>> mapping, IMEPackage package, PackageCache startupFileCache, bool isCorrectedPackage)
+        {
+            // See if power is fully defined in package?
+            var classInfo = ObjectBinary.From<UClass>(skm);
+            if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+                return; // This class cannot be used as a power, it is abstract
+
+            var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
+            var importDependencies = dependencies.OfType<ImportEntry>().ToList();
+            var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
+            if (usable)
+            {
+                var pi = new EnemyWeaponChanger.GunInfo(skm, isCorrectedPackage);
+                if ((pi.RequiresStartupPackage && !pi.PackageFileName.StartsWith("SFX")) 
+                    || pi.GunName.Contains("Player")
+                    || pi.GunName.Contains("AsteroidRocketLauncher")
+                    || pi.GunName.Contains("VehicleRocketLauncher")
+                )
+                {
+                    // We do not allow startup files that have levels
+                    pi.IsUsable = false;
+                }
+                if (pi.IsUsable)
+                {
+                    Debug.WriteLine($"Usable sfxweapon: {skm.InstancedFullPath} in {Path.GetFileName(package.FilePath)}");
+                    if (!mapping.TryGetValue(skm.InstancedFullPath, out var instanceList))
+                    {
+                        instanceList = new List<EnemyWeaponChanger.GunInfo>();
+                        mapping[skm.InstancedFullPath] = instanceList;
+                    }
+
+                    instanceList.Add(pi);
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"Not usable weapon: {skm.InstancedFullPath} in {Path.GetFileName(package.FilePath)}, missing import {missingImport.FullPath}");
+                if (mapping.ContainsKey(skm.InstancedFullPath))
+                {
+                    UnusableGuns.Remove(skm.InstancedFullPath, out _);
+                }
+                else
+                {
+                    UnusableGuns[skm.InstancedFullPath] = missingImport.FullPath;
+                }
+            }
         }
 
         private void BuildVisibleLoadoutsMap(object sender, DoWorkEventArgs e)
@@ -446,7 +435,7 @@ namespace ME2Randomizer.Classes
             bool canBeUsed = true;
             foreach (var import in imports)
             {
-                if (import.InstancedFullPath == "BioVFX_Z_TEXTURES.Generic.Glass_Shards_Norm ")
+                if (import.InstancedFullPath == "BioVFX_Z_TEXTURES.Generic.Glass_Shards_Norm")
                     continue; // this is native for some reason
 
                 //Debug.Write($@"Resolving {import.FullPath}...");

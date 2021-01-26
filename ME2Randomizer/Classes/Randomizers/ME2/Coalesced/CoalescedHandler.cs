@@ -58,7 +58,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
                 IniFiles = new SortedDictionary<string, DuplicatingIni>();
 
                 // Load BioEngine.ini as it already exists.
-                IniFiles["BioEngine.ini"] = DuplicatingIni.LoadIni(Path.Combine(MERFileSystem.DLCModCookedPath, @"BioEngine.ini"));
+                IniFiles["BIOEngine.ini"] = DuplicatingIni.LoadIni(Path.Combine(MERFileSystem.DLCModCookedPath, @"BIOEngine.ini"));
             }
         }
 

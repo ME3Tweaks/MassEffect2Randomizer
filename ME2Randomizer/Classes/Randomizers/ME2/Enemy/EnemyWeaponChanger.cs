@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Packages;
@@ -18,15 +20,41 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 {
     class EnemyWeaponChanger
     {
-        public static List<GunInfo> AvailableWeapons;
+        public static ConcurrentDictionary<string, bool> LoadoutSupportsVisibleMapping;
+        public static List<GunInfo> AllAvailableWeapons;
+        public static List<GunInfo> VisibleAvailableWeapons;
         public static void LoadGuns()
         {
-            if (AvailableWeapons == null)
+            if (AllAvailableWeapons == null)
             {
-                string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("weaponlistme2.json");
-                AvailableWeapons = JsonConvert.DeserializeObject<List<GunInfo>>(fileContents).Where(x=>x.ImportOnly).ToList();
+                string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("weaponloadoutrules.json");
+                LoadoutSupportsVisibleMapping = JsonConvert.DeserializeObject<ConcurrentDictionary<string, bool>>(fileContents);
+
+                fileContents = Utilities.GetEmbeddedStaticFilesTextFile("weaponlistme2.json");
+                var allGuns = JsonConvert.DeserializeObject<List<GunInfo>>(fileContents).ToList();
+                AllAvailableWeapons = new List<GunInfo>();
+                VisibleAvailableWeapons = new List<GunInfo>();
+                foreach (var g in allGuns)
+                {
+                    var gf = MERFileSystem.GetPackageFile(g.PackageFileName);
+                    if (g.IsCorrectedPackage || (gf != null && File.Exists(gf)))
+                    {
+                        // debug force
+                        if (g.GunName.Contains("Prae"))
+                        {
+                            AllAvailableWeapons.Add(g);
+                            if (g.HasGunMesh)
+                            {
+                                VisibleAvailableWeapons.Add(g);
+                            }
+                        }
+                    }
+                }
+
             }
         }
+
+
 
         /// <summary>
         /// Hack to force power lists to load with only a single check
@@ -39,7 +67,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             return true;
         }
 
-
+        [DebuggerDisplay("GunInfo for {GunName} in {PackageFileName}")]
         internal class GunInfo
         {
             public enum EWeaponClassification
@@ -90,15 +118,31 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
             [JsonIgnore]
             public bool IsUsable { get; set; } = true;
+            [JsonIgnore]
+            public long PackageFileSize { get; set; }
+            /// <summary>
+            /// If this is a DLC weapon that must be loaded into memory in order to be used (due to immovable shader cache)
+            /// </summary>
+            [JsonProperty("requiresstartuppackage")]
+            public bool RequiresStartupPackage { get; set; }
+
             public GunInfo() { }
-            public GunInfo(ExportEntry export)
+            public GunInfo(ExportEntry export, bool isCorrected)
             {
                 ParseGun(export);
                 GunName = export.ObjectName;
                 PackageFileName = Path.GetFileName(export.FileRef.FilePath);
                 PackageName = export.ParentName;
                 SourceUIndex = export.UIndex;
+                PackageFileSize = isCorrected ? 0 : new FileInfo(export.FileRef.FilePath).Length;
+                IsCorrectedPackage = isCorrected;
             }
+
+            /// <summary>
+            /// If the file this is sourced from is stored in the randomizer executable and not the game
+            /// </summary>
+            [JsonProperty("iscorrectedpackage")]
+            public bool IsCorrectedPackage { get; set; }
 
             private void ParseGun(ExportEntry classExport)
             {
@@ -141,6 +185,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 {
                     Debugger.Break();
                 }
+
+                var hasShaderCache = classExport.FileRef.FindExport("SeekFreeShaderCache") != null;
+                RequiresStartupPackage = hasShaderCache && !classExport.FileRef.FilePath.Contains("Startup", StringComparison.InvariantCultureIgnoreCase);
+                ImportOnly = hasShaderCache;
             }
         }
 
@@ -151,12 +199,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             if (objName.Contains("SecurityMech"))
             {
                 // Others crash the game? AssaultRifle def does
-                guns.AddRange(AvailableWeapons.Where(x => x.WeaponClassification == GunInfo.EWeaponClassification.SMG));
+                guns.AddRange(VisibleAvailableWeapons.Where(x => x.WeaponClassification == GunInfo.EWeaponClassification.SMG));
+            }
+            else if (LoadoutSupportsVisibleMapping.TryGetValue(export.FullPath, out var supportsVisibleWeapons))
+            {
+                // We use FullPath instead of instanced as the loadout number may change across randomization
+                if (supportsVisibleWeapons)
+                {
+                    guns.AddRange(VisibleAvailableWeapons);
+                }
+                else
+                {
+                    guns.AddRange(AllAvailableWeapons);
+                }
             }
             else
             {
-                // All guns on the table
-                guns.AddRange(AvailableWeapons);
+                // Only allow visible guns
+                guns.AddRange(VisibleAvailableWeapons);
             }
 
             return guns;
@@ -164,7 +224,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
         public static IEntry PortWeaponIntoPackage(IMEPackage targetPackage, GunInfo gunInfo)
         {
-            var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(gunInfo.PackageFileName);
+            IMEPackage sourcePackage;
+            if (gunInfo.IsCorrectedPackage)
+            {
+                var sourceData = Utilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.weapons." + gunInfo.PackageFileName);
+                sourcePackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(sourceData));
+            }
+            else
+            {
+                sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(gunInfo.PackageFileName);
+            }
             if (sourcePackage != null)
             {
                 var sourceExport = sourcePackage.GetUExport(gunInfo.SourceUIndex);
@@ -222,10 +291,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 if (gunInfo.ImportOnly)
                 {
                     Debug.WriteLine($"ImportOnly in file {targetPackage.FilePath}");
-                    newEntry = PackageTools.CreateImportForClass(sourceExport, targetPackage);
+                    if (gunInfo.RequiresStartupPackage)
+                    {
+                        ThreadSafeDLCStartupPackage.AddStartupPackage(Path.GetFileNameWithoutExtension(gunInfo.PackageFileName));
+                    }
+
+                    newEntry = PackageTools.CreateImportForClass(sourceExport, targetPackage, newParent);
                 }
                 else
                 {
+
                     Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
                     var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
                         newParent, true, out newEntry, crossPCCObjectMap, errorOccuredCB);
@@ -242,7 +317,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             {
                 Debug.WriteLine($"Package for gun porting not found: {gunInfo.PackageFileName}");
             }
-        return null; // No package was found
+            return null; // No package was found
         }
 
         // This can probably be changed later
@@ -271,10 +346,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
                         // See if we need to port this in
                         var fullName = gunInfo.PackageName + "." + randomNewGun.GunName;
-                        var repoint = export.FileRef.Imports.FirstOrDefault(x => x.FullPath == fullName) as IEntry;
+                        var repoint = export.FileRef.FindImport(fullName) as IEntry;
                         if (repoint == null)
                         {
-                            repoint = export.FileRef.Exports.FirstOrDefault(x => x.FullPath == fullName) as IEntry;
+                            repoint = export.FileRef.FindExport(fullName);
                         }
 
                         if (repoint != null)

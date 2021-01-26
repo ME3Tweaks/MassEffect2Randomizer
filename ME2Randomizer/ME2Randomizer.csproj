@@ -39,6 +39,7 @@
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\longfaceudina.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\monkaanderson.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\scarymiranda.bin" />
+    <None Remove="staticfiles\binary\correctedloadouts\powers\SFXHeavyWeapon_ReaperMIRV.pcc" />
     <None Remove="staticfiles\binary\Delux2go_Edmonton_Burger.pcc" />
     <None Remove="staticfiles\PremadeSeqObjs.pcc" />
     <None Remove="staticfiles\starterkit\me2starterkit.zip" />
@@ -106,6 +107,7 @@
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs\" />
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts\" />
     <Folder Include="MainWindowUIComponents\" />
+    <Folder Include="staticfiles\binary\correctedloadouts\powers\" />
   </ItemGroup>
   
   <ItemGroup>

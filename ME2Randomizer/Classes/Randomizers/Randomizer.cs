@@ -129,7 +129,7 @@ namespace ME2Randomizer.Classes
                 mainWindow.ProgressBar_Bottom_Min = 0;
                 int currentFileNumber = 0;
 #if DEBUG
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 3 : 1 }, (file) =>
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
 #else
                 Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
 #endif
@@ -144,10 +144,9 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     if (//!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Cit", StringComparison.InvariantCultureIgnoreCase)
-                    !file.Contains("SunTlA", StringComparison.InvariantCultureIgnoreCase)
-                        &&
-                    !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    !file.Contains("EndGm2", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("startup", StringComparison.InvariantCultureIgnoreCase)
                     )
@@ -160,41 +159,6 @@ namespace ME2Randomizer.Classes
                         {
                             r.PerformRandomizationOnExportDelegate(exp, r);
                         }
-
-                        /*
-
-                        // NO MORE DEFAULT OBJECTS AFTER THIS LINE
-
-
-                        else if (exp.ClassName == "BioPawn")
-                        {
-                            if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && ThreadSafeRandom.Next(4) == 0)
-                            {
-                                if (!loggedFilePath)
-                                {
-                                    Log.Information("Randomizing file: " + file);
-                                    loggedFilePath = true;
-                                }
-
-                                //Pawn size randomizer
-                                RandomizeBioPawnSize(exp,  0.4);
-                            }
-
-
-                        }
-
-                        else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" && ThreadSafeRandom.Next(4) == 0)
-                        {
-                            if (!loggedFilePath)
-                            {
-                                Log.Information("Randomizing file: " + file);
-                                loggedFilePath = true;
-                            }
-
-                            //Interpolation randomizer
-                            RandomizeInterpTrackMove(exp,  morphFaceRandomizationAmount);
-                        }
-                        */
                     }
 
                     MERFileSystem.SavePackage(package);
@@ -351,7 +315,24 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport},
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal}
+                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption()
+                    {
+                    HumanName = "Enable basic friendly fire",
+                    PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
+                    Description = "Enables weapons to damage friendlies",
+                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                    SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                    {
+                        new RandomizationOption()
+                        {
+                            IsOptionOnly = true,
+                            SubOptionKey = SFXGame.SUBOPTIONKEY_CARELESSFF,
+                            HumanName = "Careless mode",
+                            Description = "Attack enemies, regardless of friendly casualties"
+                        }
+                    }
+                }
                 }
             });
 
@@ -363,7 +344,15 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "NPC movement speeds", Description = "Changes non-player movement stats", PerformRandomizationOnExportDelegate = PawnMovementSpeed.RandomizeMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
-                    new RandomizationOption() {HumanName = "Hammerhead", Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal}
+                    new RandomizationOption() {HumanName = "Hammerhead", Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Pawn sizes", Description = "Changes the size of characters. Will break various things, but may still be playable", PerformRandomizationOnExportDelegate = RBioPawn.RandomizePawnSize, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe,
+                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.75",
+                        HasSliderOption = true,
+                        SliderToTextConverter = x=> $"Maximum size change: {Math.Round(x * 100)}%",
+                        SliderValue = 0.1,
+                    },
                 }
             });
 
@@ -385,6 +374,34 @@ namespace ME2Randomizer.Classes
                 GroupName = "Level-specific",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
+                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship, including one sidequest", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    //new RandomizationOption() {HumanName = "Prologue"},
+                    //new RandomizationOption() {HumanName = "Tali Acquisition"}, //sfxgame tla damagetype
+                    new RandomizationOption() {HumanName = "Citadel", Description = "Changes many things across the level", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true},
+                    new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Overlord DLC", Description = "Changes many things across the DLC", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay colors", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes the art gallery", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Level-components",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    // Doesn't seem to work
+                    //                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {
+                        HumanName = "Post Processing volumes",
+                        Description = "Changes postprocessing. Likely will make some areas of game unplayable",
+                        PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP
+                    },
+                    new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting", PerformRandomizationOnExportDelegate = RLighting.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {
                         HumanName = "Galaxy Map",
                         Description = "Moves things around the map, speeds up normandy",
@@ -402,32 +419,6 @@ namespace ME2Randomizer.Classes
                             }
                         }
                     },
-                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship, including one sidequest", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    //new RandomizationOption() {HumanName = "Prologue"},
-                    new RandomizationOption() {HumanName = "Citadel", Description = "Changes various things", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true},
-                    new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    new RandomizationOption() {HumanName = "Overlord DLC", Description = "Changes many things across the DLC", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
-                    new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay colors", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes the art gallery", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
-                }
-            });
-
-            RandomizationGroups.Add(new RandomizationGroup()
-            {
-                GroupName = "Level components",
-                Options = new ObservableCollectionExtended<RandomizationOption>()
-                {
-                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport},
-                    new RandomizationOption() {
-                        HumanName = "Post Processing volumes",
-                        Description = "Changes postprocessing. Likely will make some areas of game unplayable",
-                        PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport,
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP
-                    },
-                    new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting", PerformRandomizationOnExportDelegate = RLighting.RandomizeExport},
                 }
             });
 
@@ -466,8 +457,13 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Random interpolations",
-                        Description = "Randomly fuzzes interpolation data. Can break the game, but can also be entertaining",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe
+                        Description = "Randomly fuzzes interpolation data. Can make game very dizzying on higher values!",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe,
+                        PerformRandomizationOnExportDelegate = RInterpTrackMove.RandomizeExport,
+                        Ticks = "0.025,0.05,0.075,0.1,0.15,0.2,0.3,0.4,0.5",
+                        HasSliderOption = true,
+                        SliderToTextConverter = x=> $"Maximum interp change: {Math.Round(x * 100)}%",
+                        SliderValue = 0.05,
                     },
                     new RandomizationOption()
                     {
@@ -481,23 +477,6 @@ namespace ME2Randomizer.Classes
                         PerformRandomizationOnExportDelegate = RSFXSeqAct_StartConversation.RandomizeExport,
                         Description = "Changes pawn roles in conversations"
                     },
-                    new RandomizationOption()
-                    {
-                        HumanName = "Enable basic friendly fire",
-                        PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
-                        Description = "Enables weapons to damage friendlies",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
-                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
-                        {
-                            new RandomizationOption()
-                            {
-                                IsOptionOnly = true,
-                                SubOptionKey = SFXGame.SUBOPTIONKEY_CARELESSFF,
-                                HumanName = "Careless mode",
-                                Description = "Attack enemies, regardless of friendly casualties"
-                            }
-                        }
-                    }
                 }
             });
 
@@ -508,362 +487,6 @@ namespace ME2Randomizer.Classes
             RandomizationGroups.Sort(x => x.GroupName);
 #endif
 
-        }
-
-        private void RandomizePlanetMaterialInstanceConstant(ExportEntry planetMaterial, bool realistic = false)
-        {
-            var props = planetMaterial.GetProperties();
-            {
-                var scalars = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues");
-                var vectors = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues");
-                scalars[0].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(0, 1.0); //Horizon Atmosphere Intensity
-                if (ThreadSafeRandom.Next(4) == 0)
-                {
-                    scalars[2].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(0, 0.7); //Atmosphere Min (how gas-gianty it looks)
-                }
-                else
-                {
-                    scalars[2].GetProp<FloatProperty>("ParameterValue").Value = 0; //Atmosphere Min (how gas-gianty it looks)
-                }
-
-                scalars[3].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(.5, 1.5); //Atmosphere Tiling U
-                scalars[4].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(.5, 1.5); //Atmosphere Tiling V
-                scalars[5].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(.5, 4); //Atmosphere Speed
-                scalars[6].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(0.5, 12); //Atmosphere Fall off...? seems like corona intensity
-
-                foreach (var vector in vectors)
-                {
-                    var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                    RStructs.RandomizeTint(paramValue, false);
-                }
-            }
-            planetMaterial.WriteProperties(props);
-        }
-
-
-        private void scaleHeadMesh(ExportEntry meshRef, float headScale)
-        {
-            Log.Information("Randomizing headmesh for " + meshRef.InstancedFullPath);
-            var drawScale = meshRef.GetProperty<FloatProperty>("Scale");
-            var drawScale3D = meshRef.GetProperty<StructProperty>("Scale3D");
-            if (drawScale != null)
-            {
-                drawScale.Value = headScale * drawScale.Value;
-                meshRef.WriteProperty(drawScale);
-            }
-            else if (drawScale3D != null)
-            {
-                PropertyCollection p = drawScale3D.Properties;
-                p.AddOrReplaceProp(new FloatProperty(headScale, "X"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Y"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Z"));
-                meshRef.WriteProperty(drawScale3D);
-            }
-            else
-            {
-                FloatProperty scale = new FloatProperty(headScale, "Scale");
-                /*
-                PropertyCollection p = new PropertyCollection();
-                p.AddOrReplaceProp(new FloatProperty(headScale, "X"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Y"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Z"));
-                meshRef.WriteProperty(new StructProperty("Vector", p, "Scale3D", true));*/
-                meshRef.WriteProperty(scale);
-            }
-        }
-
-        private void RandomizeInterpTrackMove(ExportEntry export, double amount)
-        {
-            Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing movement interpolations for " + export.UIndex + ": " + export.InstancedFullPath);
-            var props = export.GetProperties();
-            var posTrack = props.GetProp<StructProperty>("PosTrack");
-            if (posTrack != null)
-            {
-                var points = posTrack.GetProp<ArrayProperty<StructProperty>>("Points");
-                if (points != null)
-                {
-                    foreach (StructProperty s in points)
-                    {
-                        var outVal = s.GetProp<StructProperty>("OutVal");
-                        if (outVal != null)
-                        {
-                            FloatProperty x = outVal.GetProp<FloatProperty>("X");
-                            FloatProperty y = outVal.GetProp<FloatProperty>("Y");
-                            FloatProperty z = outVal.GetProp<FloatProperty>("Z");
-                            x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                            y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                            z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                        }
-                    }
-                }
-            }
-
-            var eulerTrack = props.GetProp<StructProperty>("EulerTrack");
-            if (eulerTrack != null)
-            {
-                var points = eulerTrack.GetProp<ArrayProperty<StructProperty>>("Points");
-                if (points != null)
-                {
-                    foreach (StructProperty s in points)
-                    {
-                        var outVal = s.GetProp<StructProperty>("OutVal");
-                        if (outVal != null)
-                        {
-                            FloatProperty x = outVal.GetProp<FloatProperty>("X");
-                            FloatProperty y = outVal.GetProp<FloatProperty>("Y");
-                            FloatProperty z = outVal.GetProp<FloatProperty>("Z");
-                            if (x.Value != 0)
-                            {
-                                x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
-                            }
-                            else
-                            {
-                                x.Value = ThreadSafeRandom.NextFloat(0, 360);
-                            }
-
-                            if (y.Value != 0)
-                            {
-                                y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
-                            }
-                            else
-                            {
-                                y.Value = ThreadSafeRandom.NextFloat(0, 360);
-                            }
-
-                            if (z.Value != 0)
-                            {
-                                z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
-                            }
-                            else
-                            {
-                                z.Value = ThreadSafeRandom.NextFloat(0, 360);
-                            }
-                        }
-                    }
-                }
-            }
-
-            export.WriteProperties(props);
-        }
-
-        private void RandomizeBioPawnSize(ExportEntry export, double amount)
-        {
-            Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing pawn size for " + export.UIndex + ": " + export.InstancedFullPath);
-            var props = export.GetProperties();
-            StructProperty sp = props.GetProp<StructProperty>("DrawScale3D");
-            if (sp == null)
-            {
-                var structprops = ME2UnrealObjectInfo.getDefaultStructValue("Vector", true);
-                sp = new StructProperty("Vector", structprops, "DrawScale3D", ME2UnrealObjectInfo.IsImmutableStruct("Vector"));
-                props.Add(sp);
-            }
-
-            if (sp != null)
-            {
-                //Debug.WriteLine("Randomizing morph face " + Path.GetFilePath(export.FileRef.FilePath) + " " + export.UIndex + " " + export.FullPath + " vPos");
-                FloatProperty x = sp.GetProp<FloatProperty>("X");
-                FloatProperty y = sp.GetProp<FloatProperty>("Y");
-                FloatProperty z = sp.GetProp<FloatProperty>("Z");
-                if (x.Value == 0) x.Value = 1;
-                if (y.Value == 0) y.Value = 1;
-                if (z.Value == 0) z.Value = 1;
-                x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-            }
-
-            export.WriteProperties(props);
-            //export.GetProperties(true);
-            //ArrayProperty<StructProperty> m_aMorphFeatures = props.GetProp<ArrayProperty<StructProperty>>("m_aMorphFeatures");
-            //if (m_aMorphFeatures != null)
-            //{
-            //    foreach (StructProperty morphFeature in m_aMorphFeatures)
-            //    {
-            //        FloatProperty offset = morphFeature.GetProp<FloatProperty>("Offset");
-            //        if (offset != null)
-            //        {
-            //            //Debug.WriteLine("Randomizing morph face " + Path.GetFilePath(export.FileRef.FilePath) + " " + export.UIndex + " " + export.FullPath + " offset");
-            //            offset.Value = offset.Value * ThreadSafeRandom.NextFloat(1 - (amount / 3), 1 + (amount / 3));
-            //        }
-            //    }
-            //}
-        }
-
-        public void AddHostileSquadToPackage(IMEPackage package)
-        {
-            // This can be easily done with toolset lib now
-            return;
-            if (package.Exports.Any(x => x.ClassName == "BioFaction_Hostile")) return; //already has it
-            if (package.Imports.All(x => x.ObjectName != "SFXGame")) return; //need SFXGame import
-            if (package.Imports.All(x => x.FullPath != "Core.Package")) return; //need SFXGame import
-
-            // Add required imports: SFXGame.BioFaction, SFXGame.Default__BioFaction
-
-            ImportEntry sfxgameimp = package.Imports.First(x => x.FullPath == "SFXGame");
-            ImportEntry coreobj = package.Imports.First(x => x.FullPath == "Core.Object");
-            ImportEntry packageimp = package.Imports.First(x => x.FullPath == "Core.Package");
-            ImportEntry biofaction = package.Imports.FirstOrDefault(x => x.FullPath == "SFXGame.BioFaction");
-            ImportEntry biofactionDefaults = package.Imports.FirstOrDefault(x => x.FullPath == "SFXGame.BioFaction");
-            ImportEntry sfxai_humanoid = package.Imports.FirstOrDefault(x => x.FullPath == "SFXGame.SFXAI_Humanoid");
-            ImportEntry biosquadcombatimp = package.Imports.FirstOrDefault(x => x.FullPath == "SFXGameContent.BioSquadCombat");
-
-            if (biofaction == null)
-            {
-                //add
-                biofaction = new ImportEntry(package)
-                {
-                    ClassName = "Class",
-                    ObjectName = "BioFaction",
-                    idxLink = sfxgameimp.UIndex,
-                    PackageFile = "Core"
-                };
-                package.AddImport(biofaction);
-            }
-
-            if (biofactionDefaults == null)
-            {
-                //add
-                biofactionDefaults = new ImportEntry(package)
-                {
-                    ClassName = "BioFaction",
-                    ObjectName = "Default__BioFaction",
-                    idxLink = sfxgameimp.UIndex,
-                    PackageFile = "SFXGame"
-                };
-                package.AddImport(biofactionDefaults);
-            }
-
-            if (sfxai_humanoid == null)
-            {
-                //add
-                sfxai_humanoid = new ImportEntry(package)
-                {
-                    ClassName = "Class",
-                    ObjectName = "SFXAI_Humanoid",
-                    idxLink = sfxgameimp.UIndex,
-                    PackageFile = "SFXGame"
-                };
-                package.AddImport(sfxai_humanoid);
-            }
-
-
-            //Add required package export
-            ExportEntry sfxGameContent = package.Exports.FirstOrDefault(x => x.FullPath == "SFXGameContent");
-            if (sfxGameContent == null)
-            {
-                sfxGameContent = new ExportEntry(package);
-                sfxGameContent.Class = packageimp;
-                sfxGameContent.ObjectName = "SFXGameContent";
-                //do we need to set a GUID? This is SP so no?
-                package.AddExport(sfxGameContent);
-            }
-
-            if (biosquadcombatimp == null)
-            {
-                //add
-                biosquadcombatimp = new ImportEntry(package)
-                {
-                    ClassName = "Class",
-                    ObjectName = "BioSquadCombat",
-                    idxLink = sfxGameContent.UIndex,
-                    PackageFile = "Core"
-                };
-                package.AddImport(biosquadcombatimp);
-            }
-
-
-            MemoryStream classBin = new MemoryStream();
-            ExportEntry hostileClassEntry = new ExportEntry(package)
-            {
-                ObjectName = "BioFaction_Hostile1",
-                SuperClass = biofaction,
-                idxLink = sfxGameContent.UIndex
-            };
-
-            classBin.WriteInt32(0); //unreal index?
-            classBin.WriteInt32(biofaction.UIndex); //Superclass <<<<
-            classBin.WriteInt32(0); //unknown 1
-            classBin.WriteInt32(0); //childlist (none)
-            classBin.WriteInt64(0); //ignoremask
-
-            //State block (empty)
-            classBin.WriteInt32(-1);
-            classBin.WriteInt32(-1);
-            classBin.WriteInt32(0);
-            classBin.WriteInt32(0);
-            classBin.WriteInt32(0);
-            classBin.WriteInt32(-1);
-            classBin.WriteInt32(-1);
-            classBin.WriteInt16(-1);
-
-            classBin.WriteInt32(2); //state flags
-            classBin.WriteInt32(0); //local functions count
-
-            //class flags
-            classBin.WriteInt32(0x1210); //class flags main chunk
-            classBin.WriteByte(0); //extra byte?
-
-            classBin.WriteInt32(coreobj.UIndex); //Outer Class <<<<<
-            classBin.WriteInt32(package.FindNameOrAdd("None")); //Implemented interfaces
-            classBin.WriteInt32(0); //0index
-            classBin.WriteInt32(0); //0count of interfaces
-            classBin.WriteInt32(0); //components
-            classBin.WriteInt32(0); //UNK1
-            classBin.WriteInt32(0); //UNK2
-            classBin.WriteInt32(0); //Class Defaults, will rewrite later
-
-            hostileClassEntry.Data = classBin.ToArray();
-            package.AddExport(hostileClassEntry);
-
-
-            ExportEntry hostileClassDefaults = new ExportEntry(package) { ObjectName = "Default__BioFaction_Hostile1", Class = hostileClassEntry, idxLink = sfxGameContent.UIndex, Archetype = biofactionDefaults };
-
-            PropertyCollection props = new PropertyCollection(hostileClassDefaults, "BioFaction_Hostile1");
-            props.Add(new EnumProperty("BIO_Faction_Hostile1", "EBioFactionTypes", MEGame.ME2, "SquadFaction"));
-            var values = new List<EnumProperty>(new[]
-            {
-                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
-                new EnumProperty("BIO_Relation_Friendly", "EBioFactionRelationship", MEGame.ME2),
-                new EnumProperty("BIO_Relation_Neutral", "EBioFactionRelationship", MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
-                new EnumProperty("BIO_Relation_Friendly", "EBioFactionRelationship", MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2),
-                new EnumProperty("BIO_Relation_Hostile", "EBioFactionRelationship", MEGame.ME2)
-            });
-            var relations = (new ArrayProperty<EnumProperty>(values, "SquadRelations"));
-            props.Add(relations);
-            hostileClassDefaults.WriteProperties(props);
-            package.AddExport(hostileClassDefaults);
-
-            var rewrittenData = hostileClassEntry.Data;
-            rewrittenData.OverwriteRange(rewrittenData.Length - 4, BitConverter.GetBytes(hostileClassDefaults.UIndex));
-            hostileClassEntry.Data = rewrittenData;
-
-            //write squad
-            ExportEntry squad = new ExportEntry(package)
-            {
-                ObjectName = "BioSquadCombat",
-                Class = biosquadcombatimp,
-                idxLink = package.Exports.First(x => x.ObjectName == "PersistentLevel").UIndex
-            };
-
-            //debug only
-            var loadouts = package.Exports.Where(x => x.ClassName == "SFXLoadoutData").ToList();
-            if (loadouts.Any())
-            {
-                var pawns = package.Exports.Where(x => x.ObjectName == "BioPawn");
-                foreach (var p in pawns)
-                {
-                    var pprops = p.GetProperties();
-                    pprops.AddOrReplaceProp(new ObjectProperty(hostileClassEntry.UIndex, "FactionClass")); //make hostile
-                    pprops.AddOrReplaceProp(new ObjectProperty(loadouts[0].UIndex, "Loadout"));
-                    pprops.AddOrReplaceProp(new ObjectProperty(sfxai_humanoid, "AIController"));
-                    p.WriteProperties(pprops);
-                }
-            }
-
-            package.Save();
         }
     }
 }
