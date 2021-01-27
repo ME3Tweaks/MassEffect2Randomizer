@@ -383,7 +383,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Overlord DLC", Description = "Changes many things across the DLC", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay colors", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes the art gallery", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization, RequiresTLK = true},
                 }
             });
 

@@ -21,7 +21,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
 
             // 1. Add the switch object and link it to the sequence
-            var nSwitch = PackageTools.PortExportIntoPackage(sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false);
+            var nSwitch = PackageTools.PortExportIntoPackage(sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false, true);
             KismetHelper.AddObjectToSequence(nSwitch, sequence);
 
             // 2. Generate the output links array. We will refresh the properties

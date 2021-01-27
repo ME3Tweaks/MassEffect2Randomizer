@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Kismet;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
@@ -18,9 +19,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         public static bool PerformRandomization(RandomizationOption option)
         {
             RandomizeFlyerSpawnPawns();
-//            RandomizeTheLongWalk(option);
-  //          AutomatePlatforming400(option);
-    //        InstallBorger();
+            MakeTubesSectionHarder();
+            //            RandomizeTheLongWalk(option);
+            //          AutomatePlatforming400(option);
+            //        InstallBorger();
             //RandomizeTheFinalBattle(option);
             return true;
         }
@@ -32,6 +34,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             /// </summary>
             public int PriorUIndex { get; set; }
             public EPortablePawnClassification HighestAllowedDifficulty { get; set; }
+        }
+
+        private static void MakeTubesSectionHarder()
+        {
+            var preReaperF = MERFileSystem.GetPackageFile("BioD_EndGm2_420CombatZone.pcc");
+            if (preReaperF != null && File.Exists(preReaperF))
+            {
+                var preReaperP = MEPackageHandler.OpenMEPackage(preReaperF);
+
+                // Randomly open the tubes (post platforms)----------------------
+                var seq = preReaperP.GetUExport(15190);
+                var attackSw = SeqTools.InstallRandomSwitchIntoSequence(seq, 2); //50% chance
+
+                // killed squad member -> squad still exists to 50/50 sw
+                KismetHelper.CreateOutputLink(preReaperP.GetUExport(15298), "SquadStillExists", attackSw);
+
+                // 50/50 to just try to do reaper attack
+                KismetHelper.CreateOutputLink(attackSw, "Link 1", preReaperP.GetUExport(14262));
+
+                // Automate the platforms one after another
+                KismetHelper.RemoveAllLinks(preReaperP.GetUExport(15010)); //B Plat01 Death
+                KismetHelper.RemoveAllLinks(preReaperP.GetUExport(15011)); //B Plat02 Death
+                // There is no end to Plat03 behavior until tubes are dead
+                KismetHelper.CreateOutputLink(preReaperP.GetUExport(14469), "Completed", preReaperP.GetUExport(14374)); // Interp completed to Complete in Plat01
+                KismetHelper.CreateOutputLink(preReaperP.GetUExport(14470), "Completed", preReaperP.GetUExport(14379)); // Interp completed to Complete in Plat02
+
+
+
+                MERFileSystem.SavePackage(preReaperP);
+            }
         }
 
         private static void RandomizeFlyerSpawnPawns()
@@ -46,6 +78,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 MERFileSystem.SavePackage(preReaperP);
             }
+
+            TLKHandler.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
         }
 
         private static void GenericRandomizeFlyerSpawns(IMEPackage package, int maxNumNewEnemies, EPortablePawnClassification minClassification = EPortablePawnClassification.Mook, EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)

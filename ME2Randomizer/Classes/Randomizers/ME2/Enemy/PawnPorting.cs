@@ -81,19 +81,49 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 IsCorrectedPackage = true
             },
 
-            // Garm Krogan
-            /*new PortablePawn()
+            // Garm Krogan (Indoctrinated)
+            new PortablePawn()
             {
                 PackageFilename = "SFXPawn_Garm.pcc",
-                ChallengeTypeFullPath = "BioChar_Animals.Combat.ELT_Spider",
-                AssetToPortIn = "BioChar_Animals.Combat.ELT_Spider",
+                ChallengeTypeFullPath = "BioChar_OmgGrA.Combat.SUB_BloodPack_Leader",
+                AssetToPortIn = "BioChar_OmgGrA.Combat.SUB_BloodPack_Leader",
                 AssetPaths = new[] {
-                    "biog_cbt_rac_nkd_r.NKDa.CBT_RAC_NKDa_MDL",
-                    "EffectsMaterials.Users.Creatures.CBT_SPD_NKD_MAT_1a_USER",
+                    "BIOG_KRO_HED_PROMorph.KRO_HED_PROBase_MDL", //Head
+                    "BIOG_KRO_ARM_HVY_R.HVYe.KRO_ARM_HVYe_MDL", //Body
                 },
-                PawnClassPath = "SFXGamePawns.SFXPawn_Spider",
+                PawnClassPath = "SFXGamePawns.SFXPawn_Garm",
                 IsCorrectedPackage = true
-            },*/
+            },
+
+            // Does not seem to work, unfortunately ;(
+            //new PortablePawn()
+            //{
+            //    PackageFilename = "SFXPawn_GethColossus.pcc",
+            //    ChallengeTypeFullPath = "BioChar_Geth.Armature.BOS_GethColossus",
+            //    AssetToPortIn = "BioChar_Geth.Armature.BOS_GethColossus",
+            //    AssetPaths = new string[] {
+            //        //"BIOG_KRO_HED_PROMorph.KRO_HED_PROBase_MDL", //Head
+            //        "BIOG_RBT_TNK_NKD_R.NKDa.RBT_TNK_NKDa_MDL", //Body
+            //    },
+            //    PawnClassPath = "SFXGamePawns.SFXPawn_Colossus",
+            //    IsCorrectedPackage = true
+            //},
+
+            // Praetorian - NEEDS NERFED
+            new PortablePawn()
+            {
+                PackageFilename = "SFXPawn_Praetorian.pcc",
+                ChallengeTypeFullPath = "BioChar_Collectors.BOS_Praetorian",
+                AssetToPortIn = "BioChar_Collectors.BOS_Praetorian",
+                AssetPaths = new string[] {
+                    "BIOG_CBT_PRA_NKD_R.NKDa.CBT_PRA_NKDa_MDL", //Body
+                },
+                PawnClassPath = "SFXGamePawns.SFXPawn_Praetorian",
+                IsCorrectedPackage = true
+            },
+
+            // Todo: Scion, Vorcha
+            // Varren are pointless for this purpose
         };
 
         public static bool IsPawnAssetInPackageAlready(PortablePawn pawn, IMEPackage targetPackage)
@@ -130,6 +160,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             if (pawnPackage != null)
             {
                 PackageTools.PortExportIntoPackage(targetPackage, pawnPackage.FindExport(pawn.AssetToPortIn));
+
+                // Ensure the assets are too as they may not be directly referenced except in the level instance
+                foreach (var asset in pawn.AssetPaths)
+                {
+                    if (targetPackage.FindExport(asset) == null)
+                    {
+                        PackageTools.PortExportIntoPackage(targetPackage, pawnPackage.FindExport(asset));
+                    }
+                }
+
                 return true;
             }
             return false;

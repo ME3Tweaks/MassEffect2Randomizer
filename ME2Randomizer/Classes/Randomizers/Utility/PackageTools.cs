@@ -32,8 +32,9 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <param name="sourceExport">The source export to port over, including all dependencies and references.</param>
         /// <param name="targetLink">The target link UIndex. Only used if createParentPackages is false.</param>
         /// <param name="createParentPackages">If the export should be ported in the same way as it was cooked into the package natively, e.g. create the parent package paths. The export must directly sit under a Package or an exception will be thrown.</param>
+        /// <param name="ensureMemoryUniqueness">If this object is an instance, such as a sequence object, and should be made memory-unique so it is properly used</param>
         /// <returns></returns>
-        public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true)
+        public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false)
         {
             // Create parent heirarchy
             IEntry newParent = null;
@@ -81,6 +82,12 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             if (relinkResults.Any())
             {
                 Debugger.Break();
+            }
+
+            // Helps ensure we don't have memory duplicates
+            if (ensureMemoryUniqueness)
+            {
+                newEntry.ObjectName = targetPackage.GetNextIndexedName(newEntry.ObjectName);
             }
 
             return newEntry as ExportEntry;
