@@ -35,9 +35,9 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
             // Reload the olinks with unique structs now
             olinks = nSwitch.GetProperty<ArrayProperty<StructProperty>>("OutputLinks");
-            for (int i = 1; i < numLinks; i++)
+            for (int i = 0; i < numLinks; i++)
             {
-                olinks[i].GetProp<StrProperty>("LinkDesc").Value = $"Link {i}";
+                olinks[i].GetProp<StrProperty>("LinkDesc").Value = $"Link {i + 1}";
             }
 
             nSwitch.WriteProperty(olinks);

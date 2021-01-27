@@ -8,6 +8,8 @@ using System.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Kismet;
+using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
+using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
@@ -15,11 +17,98 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     {
         public static bool PerformRandomization(RandomizationOption option)
         {
-            RandomizeTheLongWalk(option);
-            AutomatePlatforming400(option);
-            InstallBorger();
+            RandomizeFlyerSpawnPawns();
+//            RandomizeTheLongWalk(option);
+  //          AutomatePlatforming400(option);
+    //        InstallBorger();
             //RandomizeTheFinalBattle(option);
             return true;
+        }
+
+        class FlyerSpawnInfo
+        {
+            /// <summary>
+            /// UIndex of object that preceeds the AIFactory object, for example, a Gate object
+            /// </summary>
+            public int PriorUIndex { get; set; }
+            public EPortablePawnClassification HighestAllowedDifficulty { get; set; }
+        }
+
+        private static void RandomizeFlyerSpawnPawns()
+        {
+            var preReaperF = MERFileSystem.GetPackageFile("BioD_EndGm2_420CombatZone.pcc");
+            if (preReaperF != null && File.Exists(preReaperF))
+            {
+                var preReaperP = MEPackageHandler.OpenMEPackage(preReaperF);
+
+                GenericRandomizeFlyerSpawns(preReaperP, 3);
+
+
+                MERFileSystem.SavePackage(preReaperP);
+            }
+        }
+
+        private static void GenericRandomizeFlyerSpawns(IMEPackage package, int maxNumNewEnemies, EPortablePawnClassification minClassification = EPortablePawnClassification.Mook, EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)
+        {
+            var flyerPrepSequences = package.Exports.Where(x => x.ClassName == "Sequence" && x.GetProperty<StrProperty>("ObjName") is StrProperty objName && objName == "REF_SpawnPrep_Flyer").ToList();
+
+            foreach (var flySeq in flyerPrepSequences)
+            {
+                var objectsInSeq = KismetHelper.GetSequenceObjects(flySeq).OfType<ExportEntry>().ToList();
+                var preGate = objectsInSeq.FirstOrDefault(x => x.ClassName == "SeqAct_Gate"); // should not be null
+                var outbound = SeqTools.GetOutboundLinksOfNode(preGate);
+                var aifactoryObj = outbound[0][0].LinkedOp as ExportEntry; //First out on first link. Should point to AIFactory assuming these are all duplicated flyers
+
+                var availablePawns = PawnPorting.PortablePawns.Where(x => x.Classification >= minClassification && x.Classification <= maxClassification).ToList();
+                if (availablePawns.Any())
+                {
+                    // We can add new pawns to install
+                    List<PortablePawn> newPawnsInThisSeq = new List<PortablePawn>();
+                    int numEnemies = 1; // 1 is the original amount.
+                    List<ExportEntry> aiFactories = new List<ExportEntry>();
+                    aiFactories.Add(aifactoryObj); // the original one
+                    for (int i = 0; i < maxNumNewEnemies; i++)
+                    {
+                        var randPawn = availablePawns.RandomElement();
+                        if (!newPawnsInThisSeq.Contains(randPawn))
+                        {
+                            numEnemies++;
+                            PawnPorting.PortPawnIntoPackage(randPawn, package);
+                            newPawnsInThisSeq.Add(randPawn);
+                            // Clone the ai factory sequence object and add it to the sequence
+                            var newAiFactorySeqObj = EntryCloner.CloneTree(aifactoryObj);
+                            aiFactories.Add(newAiFactorySeqObj);
+                            KismetHelper.AddObjectToSequence(newAiFactorySeqObj, flySeq, false);
+
+                            // Update the backing factory object
+                            var backingFactory = newAiFactorySeqObj.GetProperty<ObjectProperty>("Factory").ResolveToEntry(package) as ExportEntry;
+                            backingFactory.WriteProperty(new ObjectProperty(package.FindExport(randPawn.ChallengeTypeFullPath), "ActorType"));
+                            var collection = backingFactory.GetProperty<ArrayProperty<ObjectProperty>>("ActorResourceCollection");
+                            collection.Clear();
+                            foreach (var asset in randPawn.AssetPaths)
+                            {
+                                collection.Add(new ObjectProperty(package.FindExport(asset)));
+                            }
+                            backingFactory.WriteProperty(collection);
+                        }
+                    }
+
+                    if (newPawnsInThisSeq.Any())
+                    {
+                        // install the switch
+                        var randSw = SeqTools.InstallRandomSwitchIntoSequence(flySeq, numEnemies);
+                        outbound[0][0].LinkedOp = randSw;
+                        SeqTools.WriteOutboundLinksToNode(preGate, outbound);
+
+                        // Hook up switch to ai factories
+                        for (int i = 0; i < numEnemies; i++)
+                        {
+                            var linkDesc = $"Link {i + 1}";
+                            KismetHelper.CreateOutputLink(randSw, linkDesc, aiFactories[i]); // switches are indexed at 1
+                        }
+                    }
+                }
+            }
         }
 
         private static void InstallBorger()
@@ -150,7 +239,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 KismetHelper.RemoveOutputLinks(platformController.GetUExport(14496)); //A Platform 02
                 KismetHelper.RemoveOutputLinks(platformController.GetUExport(14504)); //A Platform 03
                 KismetHelper.RemoveOutputLinks(platformController.GetUExport(14513)); //A Platform 0405 (together)
-                // there's final platform with the controls on it. we don't touch it
+                                                                                      // there's final platform with the controls on it. we don't touch it
 
                 // Install delays and hook them up to the complection states
                 InstallPlatformAutomation(platformController.GetUExport(15057), delayToClone, platformController.GetUExport(14353), 1); //01 to 02
@@ -165,13 +254,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         private static void InstallPlatformAutomation(ExportEntry seqActivated, ExportEntry delayToClone, ExportEntry finishSeq, int platIdx)
         {
             var seq = seqActivated.GetProperty<ObjectProperty>("ParentSequence").ResolveToEntry(seqActivated.FileRef) as ExportEntry;
-            
+
             // Clone a delay object, set timer on it
             var delay = delayToClone.Clone();
             seqActivated.FileRef.AddExport(delay);
             KismetHelper.AddObjectToSequence(delay, seq, true);
             delay.WriteProperty(new FloatProperty(ThreadSafeRandom.NextFloat(3f, 10f - platIdx), "Duration"));
-            
+
             // Point start to delay
             KismetHelper.CreateOutputLink(seqActivated, "Out", delay);
 
