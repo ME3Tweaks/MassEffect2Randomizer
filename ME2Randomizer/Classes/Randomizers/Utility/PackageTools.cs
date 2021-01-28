@@ -105,7 +105,13 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             {
                 throw new Exception("Cannot reliably create import for non-class object!");
             }
-            var parentObj = sourceExport.Parent;
+
+            var existingImport = targetPackage.FindImport(sourceExport.InstancedFullPath);
+            if (existingImport != null)
+            {
+                return existingImport;
+            }
+
             ImportEntry imp = new ImportEntry(targetPackage)
             {
                 ObjectName = sourceExport.ObjectName,

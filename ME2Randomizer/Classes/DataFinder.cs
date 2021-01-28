@@ -18,6 +18,7 @@ using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
 using Newtonsoft.Json;
+using EnemyPowerChanger = ME2Randomizer.Classes.Randomizers.ME2.Enemy.EnemyPowerChanger;
 
 namespace ME2Randomizer.Classes
 {
@@ -31,7 +32,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindPortableGuns;
+            dataworker.DoWork += FindPortablePowers;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -93,7 +94,7 @@ namespace ME2Randomizer.Classes
                 }
             }
             // PERFORM REDUCE OPERATION
-            
+
             // Order by not needing startup, then by filesize so we can have smallest files loaded
             foreach (var gunL in mapping)
             {
@@ -126,7 +127,7 @@ namespace ME2Randomizer.Classes
             if (usable)
             {
                 var pi = new EnemyWeaponChanger.GunInfo(skm, isCorrectedPackage);
-                if ((pi.RequiresStartupPackage && !pi.PackageFileName.StartsWith("SFX")) 
+                if ((pi.RequiresStartupPackage && !pi.PackageFileName.StartsWith("SFX"))
                     || pi.GunName.Contains("Player")
                     || pi.GunName.Contains("AsteroidRocketLauncher")
                     || pi.GunName.Contains("VehicleRocketLauncher")
@@ -279,10 +280,61 @@ namespace ME2Randomizer.Classes
             //}
         }
 
+        private void BuildPowerInfo(ExportEntry powerExport, ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping, IMEPackage package, PackageCache startupFileCache, bool isCorrectedPackage)
+        {
+            // See if power is fully defined in package?
+            var classInfo = ObjectBinary.From<UClass>(powerExport);
+            if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+                return; // This class cannot be used as a power, it is abstract
+
+            var dependencies = EntryImporter.GetAllReferencesOfExport(powerExport);
+            var importDependencies = dependencies.OfType<ImportEntry>().ToList();
+            var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
+            if (usable)
+            {
+                var pi = new EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
+                if ((pi.RequiresStartupPackage &&
+                     !pi.PackageFileName.StartsWith("SFX"))
+                //|| pi.GunName.Contains("Player")
+                //|| pi.GunName.Contains("AsteroidRocketLauncher")
+                //|| pi.GunName.Contains("VehicleRocketLauncher"
+
+                )
+                {
+                    // We do not allow startup files that have levels
+                    pi.IsUsable = false;
+                }
+                if (pi.IsUsable)
+                {
+                    Debug.WriteLine($"Usable sfxpower: {powerExport.InstancedFullPath} in {Path.GetFileName(package.FilePath)}");
+                    if (!mapping.TryGetValue(powerExport.InstancedFullPath, out var instanceList))
+                    {
+                        instanceList = new List<EnemyPowerChanger.PowerInfo>();
+                        mapping[powerExport.InstancedFullPath] = instanceList;
+                    }
+
+                    instanceList.Add(pi);
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"Not usable weapon: {powerExport.InstancedFullPath} in {Path.GetFileName(package.FilePath)}, missing import {missingImport.FullPath}");
+                if (mapping.ContainsKey(powerExport.InstancedFullPath))
+                {
+                    UnusableGuns.Remove(powerExport.InstancedFullPath, out _);
+                }
+                else
+                {
+                    UnusableGuns[powerExport.InstancedFullPath] = missingImport.FullPath;
+                }
+            }
+        }
+
         private void FindPortablePowers(object sender, DoWorkEventArgs e)
         {
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
                 //.Where(x => x.Contains("SFXPower") || x.Contains("BioP"))
+                .Where(x => x.Contains("SFXPower_StasisNew"))
                 .ToList();
             mainWindow.CurrentOperationText = "Scanning for stuff";
             int numdone = 0;
@@ -296,17 +348,26 @@ namespace ME2Randomizer.Classes
 
             // Maps instanced full path to list of instances
             ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping = new ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>>();
+
+            // Corrected, embedded powers that required file coalescing for portability or other corrections in order to work on enemies
+            var correctedPowers = Utilities.ListStaticAssets("binary.correctedloadouts.powers");
+            foreach (var cg in correctedPowers)
+            {
+                var pData = Utilities.GetEmbeddedStaticFile(cg, true);
+                var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData), Utilities.GetFilenameFromAssetName(cg)); //just any path
+                var sfxPowers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
+                foreach (var sfxPow in sfxPowers)
+                {
+                    BuildPowerInfo(sfxPow, mapping, package, startupFileCache, true);
+                }
+            }
+
             Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
               {
                   mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
                   Interlocked.Increment(ref numdone);
 
                   var package = MEPackageHandler.OpenMEPackage(file);
-                  if (package.FindExport("SeekFreeShaderCache") != null)
-                  {
-                      mainWindow.CurrentProgressValue = numdone;
-                      return; // don't check these
-                  }
                   var powers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
                   foreach (var skm in powers.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
                   {
@@ -320,7 +381,7 @@ namespace ME2Randomizer.Classes
                       var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
                       if (usable)
                       {
-                          var pi = new EnemyPowerChanger.PowerInfo(skm);
+                          var pi = new EnemyPowerChanger.PowerInfo(skm, false);
 
                           if (pi.IsUsable)
                           {
@@ -380,8 +441,8 @@ namespace ME2Randomizer.Classes
                 }
             }
 
-            var jsonList = JsonConvert.SerializeObject(reducedPowerInfos);
-            File.WriteAllText(@"C:\users\public\powerlistme2.json", jsonList);
+            var jsonList = JsonConvert.SerializeObject(reducedPowerInfos, Formatting.Indented);
+            File.WriteAllText(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\powerlistme2.json", jsonList);
 
 
             // Coagulate stuff
@@ -575,8 +636,9 @@ namespace ME2Randomizer.Classes
             ExportEntry containsImportedExport(string packagePath)
             {
                 //Debug.WriteLine($"Checking file {packagePath} for {entryFullPath}");
-                var package = localCache.GetCachedPackage(packagePath, false);
-                package ??= globalCache.GetCachedPackage(packagePath, false);
+
+                var package = globalCache.GetCachedPackage(packagePath, false);
+                package ??= localCache.GetCachedPackage(packagePath, true);
                 var packName = Path.GetFileNameWithoutExtension(packagePath);
                 var packageParts = entryFullPath.Split('.').ToList();
                 if (packageParts.Count > 1 && packName == packageParts[0])

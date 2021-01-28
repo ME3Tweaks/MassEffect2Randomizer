@@ -27,15 +27,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             return true;
         }
 
-        class FlyerSpawnInfo
-        {
-            /// <summary>
-            /// UIndex of object that preceeds the AIFactory object, for example, a Gate object
-            /// </summary>
-            public int PriorUIndex { get; set; }
-            public EPortablePawnClassification HighestAllowedDifficulty { get; set; }
-        }
-
         private static void MakeTubesSectionHarder()
         {
             var preReaperF = MERFileSystem.GetPackageFile("BioD_EndGm2_420CombatZone.pcc");
@@ -60,7 +51,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 KismetHelper.CreateOutputLink(preReaperP.GetUExport(14469), "Completed", preReaperP.GetUExport(14374)); // Interp completed to Complete in Plat01
                 KismetHelper.CreateOutputLink(preReaperP.GetUExport(14470), "Completed", preReaperP.GetUExport(14379)); // Interp completed to Complete in Plat02
 
-
+                // if possession fails continue the possession loop on plat3 to end of pre-reaper combat
+                KismetHelper.CreateOutputLink(preReaperP.GetUExport(16414), "Failed", preReaperP.GetUExport(14307));
 
                 MERFileSystem.SavePackage(preReaperP);
             }
@@ -80,6 +72,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             }
 
             TLKHandler.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
+            TLKHandler.ReplaceString(7892161, "Enthralled Batarian"); //Batarian Commando update
+            TLKHandler.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
         }
 
         private static void GenericRandomizeFlyerSpawns(IMEPackage package, int maxNumNewEnemies, EPortablePawnClassification minClassification = EPortablePawnClassification.Mook, EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)

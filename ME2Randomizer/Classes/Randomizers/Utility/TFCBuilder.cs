@@ -235,7 +235,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         }
     }
 
-    class RTexture2D
+    public class RTexture2D
     {
         /// <summary>
         /// The full path of the memory instance. Textures that have this match will have their texture reference updated to one of the random allowed asset names.
@@ -261,6 +261,14 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         public string FetchRandomTextureAsset()
         {
             return AllowedTextureAssetNames[ThreadSafeRandom.Next(AllowedTextureAssetNames.Count)];
+        }
+
+        /// <summary>
+        /// Resets this RTexture2D, dropping the instantiatetd list
+        /// </summary>
+        public void Reset()
+        {
+            InstantiatedItems.Clear();
         }
     }
 }

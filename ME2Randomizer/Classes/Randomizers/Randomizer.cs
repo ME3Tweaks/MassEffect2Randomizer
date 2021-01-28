@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -93,6 +94,19 @@ namespace ME2Randomizer.Classes
 
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
+            //var p = MEPackageHandler.OpenMEPackage(@"C:\Users\mgame\Desktop\pawnporting\batariancommando\BioPawn_Collector_Batarian_Stage2.pcc");
+            //var baf = p.GetUExport(1);
+            //var arc = baf.GetProperty<ArrayProperty<ObjectProperty>>("ActorResourceCollection");
+            //string str = "";
+            //foreach (var a in arc)
+            //{
+            //    var fullname = a.ResolveToEntry(p).InstancedFullPath;
+            //    str += $"\n\"{fullname}\",";
+            //}
+
+            //Debug.WriteLine(str);
+            ResetClasses();
+
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
@@ -173,6 +187,14 @@ namespace ME2Randomizer.Classes
             CoalescedHandler.EndHandler();
             TLKHandler.EndHandler();
             NonSharedPackageCache.Cache.ReleasePackages();
+        }
+
+        /// <summary>
+        /// Ensures things are set back to normal before first run
+        /// </summary>
+        private void ResetClasses()
+        {
+            PawnPorting.Reset();
         }
 
 

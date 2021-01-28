@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Packages;
@@ -18,23 +19,51 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 {
     class EnemyPowerChanger
     {
+        public string[] PowersToNotSwap = new[]
+        {
+            // Collector powers, used by it's AI
+            "SFXPower_CollectorWarp", //Used by Combat_Collector_Possessed
+            "Singularity_NPC", // Used by Combat_Collector_Possessed
+            "Collector_Pulse", // Used by Combat_Collector_Possessed
 
-        public static List<PowerInfo> Powers;
+            "HuskMelee_Right", //Used by SwipeAttack() in SFXAI_Husk
+            "HuskMelee_Left",
+
+            "BioticChargeLong_NPC", // Used by the asari in LOTSB
+            "Shockwave_NPC", //Used by the asari in LOTSB
+
+            "Geth_Supercharge", // Used by SFXAI_GethTrooper Combat_Geth_Berserk
+            // Krogan charge, used by it's AI
+        };
 
         /// <summary>
-        /// Loadouts matching these names can have an invisible weapon assigned to them
+        /// List of loadouts that have all their powers locked for randomization due to their AI. Add more powers so their AI behaves differently.
         /// </summary>
-        private static List<string> LoadoutsSupportingHiddenMeshes = new List<string>()
+        public static string[] LoadoutsToAddPowersTo = new[]
         {
-            "BioChar_Loadouts.Mechs.SUB_HeavyWeaponMech",
+            "SUB_COL_Possessed",
         };
+
+        public static List<PowerInfo> Powers;
 
         public static void LoadPowers()
         {
             if (Powers == null)
             {
                 string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("powerlistme2.json");
-                Powers = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
+                Powers = new List<PowerInfo>();
+                var powermanifest = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
+                foreach (var powerInfo in powermanifest)
+                {
+                    var powerFilePath = MERFileSystem.GetPackageFile(powerInfo.PackageFileName);
+                    if (powerInfo.IsCorrectedPackage || (powerFilePath != null && File.Exists(powerFilePath)))
+                    {
+                        if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(powerInfo.FileDependency) == null)
+                            continue; // Dependency not met
+
+                        Powers.Add(powerInfo);
+                    }
+                }
             }
         }
 
@@ -51,7 +80,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
         internal class PowerInfo
         {
-
             /// <summary>
             ///  Name of the power
             /// </summary>
@@ -65,6 +93,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             public int SourceUIndex { get; set; }
             [JsonProperty("type")]
             public EPowerCapabilityType Type { get; set; }
+
+            /// <summary>
+            /// If not null, test if this file exists when loading the power list (essentially a hack DLC check)
+            /// </summary>
+            [JsonProperty("filedependency")]
+            public string FileDependency { get; set; }
 
             private bool MapPowerType(ExportEntry classExport)
             {
@@ -113,10 +147,23 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
             }
 
-            public PowerInfo() { }
-            public PowerInfo(ExportEntry export)
+            private static bool IsWhitelistedPower(ExportEntry export)
             {
-                if (!MapPowerType(export))
+                return IsWhitelistedPower(export.ObjectName);
+            }
+
+            private static bool IsWhitelistedPower(string powername)
+            {
+                if (powername == "SFXPower_Flashbang_NPC") return true;
+                if (powername == "SFXPower_ZaeedUnique_Player") return true;
+                //if (powername == "SFXPower_StasisNew") return true; //Doesn't work on player and player squad. It's otherwise identical to other powers so no real point, plus it has lots of embedded pawns
+                return false;
+            }
+
+            public PowerInfo() { }
+            public PowerInfo(ExportEntry export, bool isCorrectedPackage)
+            {
+                if (!MapPowerType(export) && !IsWhitelistedPower(export))
                 {
                     // Powers that do not list a capability type are subclasses. We will not support using these
                     IsUsable = false;
@@ -124,17 +171,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
 
                 PowerName = export.ObjectName;
-                if (PowerName.Contains("Ammo")
-                    || PowerName.Contains("Base")
-                    || PowerName.Contains("FirstAid")
-                    || PowerName.Contains("Player")
-                    || PowerName.Contains("GunshipRocket")
-                    || PowerName.Contains("NPC")
-                    || PowerName.Contains("Player")
-                    || PowerName.Contains("HuskTesla")
+                if (!IsWhitelistedPower(PowerName) &&
+                    // Forced blacklist after whitelist
+                    (
+                        PowerName.Contains("Ammo")
+                        || PowerName.Contains("Base")
+                        || PowerName.Contains("FirstAid")
+                        || PowerName.Contains("Player")
+                        || PowerName.Contains("GunshipRocket")
+                        || PowerName.Contains("NPC")
+                        || PowerName.Contains("Player")
+                        || PowerName.Contains("Zaeed") // Only use player version. The normal one doesn't throw the grenade
+                        || PowerName.Contains("HuskTesla")
+                        || PowerName.Contains("Kasumi") // Depends on her AI
 
-
-
+                    )
                     )
                 {
                     IsUsable = false;
@@ -144,10 +195,58 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 PackageFileName = Path.GetFileName(export.FileRef.FilePath);
                 PackageName = export.ParentName;
                 SourceUIndex = export.UIndex;
+
+                var hasShaderCache = export.FileRef.FindExport("SeekFreeShaderCache") != null;
+                RequiresStartupPackage = hasShaderCache && !export.FileRef.FilePath.Contains("Startup", StringComparison.InvariantCultureIgnoreCase);
+                ImportOnly = hasShaderCache;
+                IsCorrectedPackage = isCorrectedPackage;
+
+                if (hasShaderCache && !IsWhitelistedPower(export))
+                {
+                    IsUsable = false; // only allow whitelisted DLC powers
+                }
+
+                SetupDependencies(export);
             }
+
+            private void SetupDependencies(ExportEntry export)
+            {
+                switch (export.ObjectName)
+                {
+                    case "SFXPower_Flashbang_NPC":
+                        FileDependency = "BioH_Thief_00.pcc"; // Test for Kasumi DLC
+                        break;
+                    case "SFXPower_ZaeedUnique_Player":
+                        FileDependency = "BioH_Veteran_00.pcc"; // Test for Kasumi DLC
+                        break;
+                }
+            }
+
+            /// <summary>
+            /// If this power file is stored in the executable
+            /// </summary>
+            [JsonProperty("iscorrectedpackage")]
+            public bool IsCorrectedPackage { get; set; }
 
             [JsonIgnore]
             public bool IsUsable { get; set; } = true;
+
+            /// <summary>
+            /// If this power can be used as an import (it's in a startup file)
+            /// </summary>
+            [JsonProperty("importonly")]
+            public bool ImportOnly { get; set; }
+            /// <summary>
+            /// If this power requires the package that contains it to be added to the startup list. Used for DLC powers
+            /// </summary>
+            [JsonProperty("requiresstartuppackage")]
+            public bool RequiresStartupPackage { get; set; }
+
+            /// <summary>
+            /// A list of additional related powers that are required for this power to work, for example Shadow Strike requires teleport and assasination abilities. Full asset paths to power class
+            /// </summary>
+            [JsonProperty("additionalrequiredpowers")]
+            public string[] AdditionalRequiredPowers { get; set; } = new string[] { };
         }
 
         internal enum EPowerCapabilityType
@@ -162,9 +261,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             Death
         }
 
-        public static ExportEntry PortPowerIntoPackage(IMEPackage targetPackage, PowerInfo powerInfo)
+        /// <summary>
+        /// Porsta  power into a package
+        /// </summary>
+        /// <param name="targetPackage"></param>
+        /// <param name="powerInfo"></param>
+        /// <param name="additionalPowers">A list of additioanl powers that are referenced when this powerinfo is an import only power (prevent re-opening package)</param>
+        /// <returns></returns>
+        public static IEntry PortPowerIntoPackage(IMEPackage targetPackage, PowerInfo powerInfo, out IMEPackage sourcePackage)
         {
-            var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(powerInfo.PackageFileName);
+            if (powerInfo.IsCorrectedPackage)
+            {
+                var sourceData = Utilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.powers." + powerInfo.PackageFileName);
+                sourcePackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(sourceData));
+            }
+            else
+            {
+                sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(powerInfo.PackageFileName);
+            }
             if (sourcePackage != null)
             {
                 var sourceExport = sourcePackage.GetUExport(powerInfo.SourceUIndex);
@@ -177,50 +291,48 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     throw new Exception("Cannot port power - parent object is not Package!");
                 }
 
-                // 1. Setup the link that will be used.
-                int link = 0;
-
-                List<IEntry> parents = new List<IEntry>();
-                var parent = sourceExport.Parent;
-                while (parent != null)
+                var newParent = EntryExporter.PortParents(sourceExport, targetPackage);
+                IEntry newEntry;
+                if (powerInfo.ImportOnly)
                 {
-                    if (parent.ClassName != "Package")
-                        throw new Exception("Parent is not package!");
-                    parents.Add(parent);
-                    parent = parent.Parent;
-                }
-
-                // Create the parents
-                parents.Reverse();
-                IEntry newParent = null;
-                foreach (var p in parents)
-                {
-                    var sourceFullPath = p.InstancedFullPath;
-                    var matchingParent = targetPackage.FindExport(sourceFullPath) as IEntry;
-                    if (matchingParent == null)
+                    Debug.WriteLine($"ImportOnly in file {targetPackage.FilePath}");
+                    if (powerInfo.RequiresStartupPackage)
                     {
-                        matchingParent = targetPackage.FindImport(sourceFullPath);
+                        ThreadSafeDLCStartupPackage.AddStartupPackage(Path.GetFileNameWithoutExtension(powerInfo.PackageFileName));
+                        if (powerInfo.IsCorrectedPackage)
+                        {
+                            // File must be added to MERFS DLC
+                            var outP = Path.Combine(MERFileSystem.DLCModCookedPath, powerInfo.PackageFileName);
+                            if (!File.Exists(outP))
+                            {
+                                sourcePackage.Save(outP, true);
+                            }
+                        }
+
                     }
 
-                    if (matchingParent != null)
+                    newEntry = PackageTools.CreateImportForClass(sourceExport, targetPackage, newParent);
+
+                    // Port in extra imports so the calling class can reference them as necessary.
+                    foreach (var addlPow in powerInfo.AdditionalRequiredPowers)
                     {
-                        newParent = matchingParent;
-                        continue;
+                        var addlSourceExp = sourcePackage.FindExport(addlPow);
+                        PackageTools.CreateImportForClass(addlSourceExp, targetPackage, EntryExporter.PortParents(addlSourceExp, targetPackage));
                     }
 
-                    newParent = ExportCreator.CreatePackageExport(targetPackage, p.ObjectName, newParent);
                 }
-
-                Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
-                var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
-                    newParent, true, out IEntry newEntry, crossPCCObjectMap);
-
-                if (relinkResults.Any())
+                else
                 {
-                    Debugger.Break();
-                }
+                    Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
+                    var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
+                        newParent, true, out newEntry, crossPCCObjectMap);
 
-                return newEntry as ExportEntry;
+                    if (relinkResults.Any())
+                    {
+                        Debugger.Break();
+                    }
+                }
+                return newEntry;
             }
             return null; // No package was found
         }
@@ -254,7 +366,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
             }
 
-            foreach (var power in powers)
+            foreach (var power in powers.ToList())
             {
                 if (power.Value == 0) return false; // Null entry in weapons list
                 IEntry existingPowerEntry = null;
@@ -280,27 +392,44 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
                     // See if we need to port this in
                     var fullName = randomNewPower.PackageName + "." + randomNewPower.PowerName; // SFXGameContent_Powers.SFXPower_Hoops
-                    var repoint = export.FileRef.FindImport(fullName) as IEntry;
-                    if (repoint == null)
+                    var existingVersionOfPower = export.FileRef.FindEntry(fullName);
+                    if (existingVersionOfPower == null)
                     {
-                        repoint = export.FileRef.FindExport(fullName);
+                        existingVersionOfPower = export.FileRef.FindExport(fullName);
                     }
 
-                    if (repoint != null)
+                    IMEPackage sourcePackage = null;
+                    if (existingVersionOfPower != null)
                     {
-                        // Gun does not need ported in
-                        power.Value = repoint.UIndex;
+                        // Power does not need ported in
+                        power.Value = existingVersionOfPower.UIndex;
                     }
                     else
                     {
-                        // Gun needs ported in
-                        power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower).UIndex;
+                        // Power needs ported in
+                        power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower, out sourcePackage).UIndex;
+                    }
+
+                    foreach (var addlPow in randomNewPower.AdditionalRequiredPowers)
+                    {
+                        var existingPow = export.FileRef.FindEntry(addlPow);
+                        //if (existingPow == null && randomNewPower.ImportOnly && sourcePackage != null)
+                        //{
+                        //    existingPow = PackageTools.CreateImportForClass(sourcePackage.FindExport(randomNewPower.PackageName + "." + randomNewPower.PowerName), export.FileRef);
+                        //}
+
+                        if (existingPow == null)
+                        {
+                            Debugger.Break();
+                        }
+                        powers.Add(new ObjectProperty(existingPow));
                     }
                 }
             }
 
-            // Strip any blank powers we might have added
+            // Strip any blank powers we might have added, remove any duplicates
             powers.RemoveAll(x => x.Value == int.MinValue);
+            powers.ReplaceAll(powers.ToList().Distinct()); //tolist prevents concurrent modification in nested linq
             export.WriteProperty(powers);
 
             // Our precalculated map should have accounted for imports already, so we odn't need to worry about missing imports upstream

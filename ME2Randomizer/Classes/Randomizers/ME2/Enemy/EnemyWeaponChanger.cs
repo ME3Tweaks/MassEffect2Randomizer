@@ -39,14 +39,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     var gf = MERFileSystem.GetPackageFile(g.PackageFileName);
                     if (g.IsCorrectedPackage || (gf != null && File.Exists(gf)))
                     {
-                        // debug force
-                        if (g.GunName.Contains("Prae"))
+                        AllAvailableWeapons.Add(g);
+                        if (g.HasGunMesh)
                         {
-                            AllAvailableWeapons.Add(g);
-                            if (g.HasGunMesh)
-                            {
-                                VisibleAvailableWeapons.Add(g);
-                            }
+                            VisibleAvailableWeapons.Add(g);
                         }
                     }
                 }
@@ -249,38 +245,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
 
                 // 1. Setup the link that will be used.
-                int link = 0;
-
-                List<IEntry> parents = new List<IEntry>();
-                var parent = sourceExport.Parent;
-                while (parent != null)
-                {
-                    if (parent.ClassName != "Package")
-                        throw new Exception("Parent is not package!");
-                    parents.Add(parent);
-                    parent = parent.Parent;
-                }
-
-                // Create the parents
-                parents.Reverse();
-                IEntry newParent = null;
-                foreach (var p in parents)
-                {
-                    var sourceFullPath = p.InstancedFullPath;
-                    var matchingParent = targetPackage.FindExport(sourceFullPath) as IEntry;
-                    if (matchingParent == null)
-                    {
-                        matchingParent = targetPackage.FindImport(sourceFullPath);
-                    }
-
-                    if (matchingParent != null)
-                    {
-                        newParent = matchingParent;
-                        continue;
-                    }
-
-                    newParent = ExportCreator.CreatePackageExport(targetPackage, p.ObjectName, newParent);
-                }
+                var newParent = EntryExporter.PortParents(sourceExport, targetPackage);
 
                 void errorOccuredCB(string s)
                 {
