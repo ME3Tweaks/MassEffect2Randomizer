@@ -154,7 +154,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             };
         }
 
-        internal Property ToStructProperty(string xName, string yName, string zName, string propName = null, bool isImmutable = true)
+        internal StructProperty ToStructProperty(string xName, string yName, string zName, string propName = null, bool isImmutable = true)
         {
             PropertyCollection props = new PropertyCollection();
             props.Add(new FloatProperty(X, xName));
@@ -162,6 +162,11 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             props.Add(new FloatProperty(Z, zName));
 
             return new StructProperty("Vector", props, propName, isImmutable);
+        }
+
+        public StructProperty ToLocationStructProperty(string propName = null)
+        {
+            return ToStructProperty("X", "Y", "Z", propName, true);
         }
     }
 

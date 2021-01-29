@@ -20,8 +20,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         {
             RandomizeFlyerSpawnPawns();
             MakeTubesSectionHarder();
-            //            RandomizeTheLongWalk(option);
-            //          AutomatePlatforming400(option);
+            RandomizeTheLongWalk(option);
+            AutomatePlatforming400(option);
             //        InstallBorger();
             //RandomizeTheFinalBattle(option);
             return true;
@@ -34,8 +34,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             {
                 var preReaperP = MEPackageHandler.OpenMEPackage(preReaperF);
 
-                // Randomly open the tubes (post platforms)----------------------
+                // Open tubes on kills to start the attack (post platforms)----------------------
                 var seq = preReaperP.GetUExport(15190);
+
                 var attackSw = SeqTools.InstallRandomSwitchIntoSequence(seq, 2); //50% chance
 
                 // killed squad member -> squad still exists to 50/50 sw
@@ -47,6 +48,31 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 // Automate the platforms one after another
                 KismetHelper.RemoveAllLinks(preReaperP.GetUExport(15010)); //B Plat01 Death
                 KismetHelper.RemoveAllLinks(preReaperP.GetUExport(15011)); //B Plat02 Death
+
+                // Sub automate - Remove attack completion gate inputs ----
+                KismetHelper.RemoveAllLinks(preReaperP.GetUExport(15025)); //Plat03 Attack complete
+                KismetHelper.RemoveAllLinks(preReaperP.GetUExport(15029)); //Plat02 Attack complete
+
+                //// Sub automate - Remove activate input into gate
+                var cmb2activated = preReaperP.GetUExport(15082);
+                var cmb3activated = preReaperP.GetUExport(15087);
+
+                KismetHelper.RemoveAllLinks(cmb2activated);
+                KismetHelper.CreateOutputLink(cmb2activated, "Out", preReaperP.GetUExport(2657));
+
+                // Delay the start of platform 3 by 4 seconds to give player a bit more time to handle first two platforms
+                // Player will likely have decent weapons by now so they will be better than my testing for sure
+                KismetHelper.RemoveAllLinks(cmb3activated);
+                var newDelay = EntryCloner.CloneEntry(preReaperP.GetUExport(14307));
+                newDelay.WriteProperty(new FloatProperty(4, "Duration"));
+                KismetHelper.AddObjectToSequence(newDelay, preReaperP.GetUExport(15183), true);
+
+                KismetHelper.CreateOutputLink(cmb3activated, "Out", newDelay);
+                KismetHelper.CreateOutputLink(newDelay, "Finished", preReaperP.GetUExport(2659));
+                //                preReaperP.GetUExport(14451).RemoveProperty("bOpen"); // Plat03 gate - forces gate open so when reaper attack fires it passes through
+                //              preReaperP.GetUExport(14450).RemoveProperty("bOpen"); // Plat02 gate - forces gate open so when reaper attack fires it passes through
+
+
                 // There is no end to Plat03 behavior until tubes are dead
                 KismetHelper.CreateOutputLink(preReaperP.GetUExport(14469), "Completed", preReaperP.GetUExport(14374)); // Interp completed to Complete in Plat01
                 KismetHelper.CreateOutputLink(preReaperP.GetUExport(14470), "Completed", preReaperP.GetUExport(14379)); // Interp completed to Complete in Plat02
@@ -54,26 +80,76 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 // if possession fails continue the possession loop on plat3 to end of pre-reaper combat
                 KismetHelper.CreateOutputLink(preReaperP.GetUExport(16414), "Failed", preReaperP.GetUExport(14307));
 
+
+
+
                 MERFileSystem.SavePackage(preReaperP);
+            }
+        }
+
+        private static void GateTubesAttack()
+        {
+            // This doesn't actually work like expected, it seems gate doesn't store input value
+
+            // Adds a gate to the tubes attack to ensure it doesn't fire while the previous attack is running still.
+            var tubesF = MERFileSystem.GetPackageFile("BioD_EndGm2_425ReaperTubes.pcc");
+            if (tubesF != null && File.Exists(tubesF))
+            {
+                var tubesP = MEPackageHandler.OpenMEPackage(tubesF);
+
+                // Clone a gate
+                var gateToClone = tubesP.GetUExport(1316);
+                var seq = tubesP.GetUExport(1496);
+                var newGate = EntryCloner.CloneEntry(gateToClone);
+                newGate.RemoveProperty("bOpen"); // Make it open by default.
+                KismetHelper.AddObjectToSequence(newGate, seq, true);
+
+                // Hook up the 'START REAPER ATTACK' to the gate, remove it's existing output.
+                var sraEvent = tubesP.GetUExport(1455);
+                KismetHelper.RemoveOutputLinks(sraEvent);
+                KismetHelper.CreateOutputLink(sraEvent, "Out", newGate, 0); // 0 = in, which means fire or queue for fire
+
+                // Hook up the ending of the attack to the gate for 'open' so the gate can be passed through.
+                var delay = tubesP.GetUExport(1273);
+                KismetHelper.CreateOutputLink(tubesP.GetUExport(103), "Out", delay); // Attack finished (CameraShake_Intimidate) to 2s delay
+                KismetHelper.RemoveAllLinks(delay);
+                KismetHelper.CreateOutputLink(delay, "Finished", newGate, 1); //2s Delay to open gate
+
+                // Make the gate automatically close itself on pass through, and configure output of gate to next item.
+                KismetHelper.CreateOutputLink(newGate, "Out", newGate, 2); // Hook from Out to Close
+                KismetHelper.CreateOutputLink(newGate, "Out", tubesP.GetUExport(1340), 0); // Hook from Out to Log (bypass the delay, we are repurposing it)
+
+                MERFileSystem.SavePackage(tubesP);
             }
         }
 
         private static void RandomizeFlyerSpawnPawns()
         {
-            var preReaperF = MERFileSystem.GetPackageFile("BioD_EndGm2_420CombatZone.pcc");
-            if (preReaperF != null && File.Exists(preReaperF))
+            string[] files =
             {
-                var preReaperP = MEPackageHandler.OpenMEPackage(preReaperF);
+                "BioD_EndGm2_420CombatZone.pcc",
+                "BioD_EndGm2_430ReaperCombat.pcc"
+            };
+            ChangeFlyersInFiles(files);
 
-                GenericRandomizeFlyerSpawns(preReaperP, 3);
-
-
-                MERFileSystem.SavePackage(preReaperP);
-            }
-
+            // Install names
             TLKHandler.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
             TLKHandler.ReplaceString(7892161, "Enthralled Batarian"); //Batarian Commando update
             TLKHandler.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
+        }
+
+        private static void ChangeFlyersInFiles(string[] files)
+        {
+            foreach (var f in files)
+            {
+                var fPath = MERFileSystem.GetPackageFile(f);
+                if (fPath != null && File.Exists(fPath))
+                {
+                    var package = MEPackageHandler.OpenMEPackage(fPath);
+                    GenericRandomizeFlyerSpawns(package, 3);
+                    MERFileSystem.SavePackage(package);
+                }
+            }
         }
 
         private static void GenericRandomizeFlyerSpawns(IMEPackage package, int maxNumNewEnemies, EPortablePawnClassification minClassification = EPortablePawnClassification.Mook, EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)

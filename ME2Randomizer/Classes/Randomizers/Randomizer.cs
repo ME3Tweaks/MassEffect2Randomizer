@@ -21,6 +21,7 @@ using ME3ExplorerCore.Misc;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
 using ME2Randomizer.Classes.Randomizers.Utility;
+using ME3ExplorerCore.SharpDX;
 
 namespace ME2Randomizer.Classes
 {
@@ -59,6 +60,8 @@ namespace ME2Randomizer.Classes
 
         public void Randomize(OptionsPackage op)
         {
+            //PawnPorting.PortHelper(); // debug only
+
             SelectedOptions = op;
             ThreadSafeRandom.Reset();
             if (!SelectedOptions.UseMultiThread)
@@ -94,17 +97,6 @@ namespace ME2Randomizer.Classes
 
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
-            //var p = MEPackageHandler.OpenMEPackage(@"C:\Users\mgame\Desktop\pawnporting\batariancommando\BioPawn_Collector_Batarian_Stage2.pcc");
-            //var baf = p.GetUExport(1);
-            //var arc = baf.GetProperty<ArrayProperty<ObjectProperty>>("ActorResourceCollection");
-            //string str = "";
-            //foreach (var a in arc)
-            //{
-            //    var fullname = a.ResolveToEntry(p).InstancedFullPath;
-            //    str += $"\n\"{fullname}\",";
-            //}
-
-            //Debug.WriteLine(str);
             ResetClasses();
 
             mainWindow.CurrentOperationText = "Initializing randomizer";
@@ -157,9 +149,11 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    if (//!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    !file.Contains("EndGm2", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
+                    if (!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("TwrHub", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("startup", StringComparison.InvariantCultureIgnoreCase)
@@ -187,6 +181,34 @@ namespace ME2Randomizer.Classes
             CoalescedHandler.EndHandler();
             TLKHandler.EndHandler();
             NonSharedPackageCache.Cache.ReleasePackages();
+        }
+
+        private void CollectorEyeTool()
+        {
+            // Way too much work.
+            //int[] eyeExports = new int[] { 2214, 2215, 2216, 2217 };
+
+
+            //// Eye placer
+            //var pOrig = MEPackageHandler.OpenMEPackage(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary\correctedpawns\BioPawn_Collector_Batarian - Copy.pcc");
+            //var p = MEPackageHandler.OpenMEPackage(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary\correctedpawns\BioPawn_Collector_Batarian.pcc");
+            //foreach (var eyeExport in eyeExports)
+            //{
+            //    // Get original data
+            //    var orig = pOrig.GetUExport(eyeExport);
+
+            //    var origRelLoc = CFVector3.FromStructProperty(orig.GetProperty<StructProperty>("RelativeLocation"), "X", "Y", "Z");
+            //    var origRelRot = CIVector3.FromStructProperty(orig.GetProperty<StructProperty>("RelativeRotation"), "X", "Y", "Z");
+
+            //    var lfs = p.GetUExport(eyeExport);
+            //    //origRelRot.Z = (int) (2 * origRelRot.Z); //Z = extent?
+
+            //    lfs.WriteProperty(origRelLoc.ToLocationStructProperty( "RelativeLocation"));
+            //    lfs.WriteProperty(origRelRot.ToRotatorStructProperty( "RelativeRotation"));
+            //}
+
+            //p.Save();
+            //Debug.WriteLine("EyeTool done");
         }
 
         /// <summary>
@@ -405,6 +427,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Overlord DLC", Description = "Changes many things across the DLC", PerformSpecificRandomizationDelegate = OverlordDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay colors", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes the art gallery", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Illium Hub", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = IlliumHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization, RequiresTLK = true},
                 }
             });
