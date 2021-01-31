@@ -84,7 +84,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 owningSequence = export;
             while (owningSequence.ClassName != "Sequence")
             {
-                owningSequence = export.Parent as ExportEntry;
+                owningSequence = owningSequence.Parent as ExportEntry;
                 var parSeq = SeqTools.GetParentSequence(owningSequence);
                 if (parSeq != null)
                 {
@@ -93,7 +93,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             }
 
             // We have parent sequence data
-            var kismetBioDynamicAnimSets = owningSequence.GetProperty<ArrayProperty<ObjectProperty>>("m_aBioDynamicAnimSets")
+            var kismetBioDynamicAnimSets = owningSequence.GetProperty<ArrayProperty<ObjectProperty>>("m_aBioDynAnimSets")
                                      ?? new ArrayProperty<ObjectProperty>("m_aBioDynamicAnimSets");
 
             // Check to see if there is any item that uses our bioanimset
@@ -121,10 +121,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     props.Add(new ArrayProperty<ObjectProperty>("Sequences"));
                     props.Add(new ObjectProperty(bioAnimSet, "m_pBioAnimSetData"));
                     kismetBDAS = ExportCreator.CreateExport(export.FileRef, $"KIS_DYN_{gesture.GestureSet}", "BioDynamicAnimSet", owningSequence);
+                    kismetBDAS.indexValue = 0;
 
                     // Write a blank count of 0 - we will update this in subsequent call
                     // This must be here to ensure parser can read it
                     kismetBDAS.WritePropertiesAndBinary(props, new byte[4]);
+                    kismetBioDynamicAnimSets.Add(new ObjectProperty(kismetBDAS)); // Add new export to sequence's list of biodynamicanimsets
+                    owningSequence.WriteProperty(kismetBioDynamicAnimSets);
                 }
 
                 var currentObjs = kismetBDAS.GetProperty<ArrayProperty<ObjectProperty>>("Sequences");
