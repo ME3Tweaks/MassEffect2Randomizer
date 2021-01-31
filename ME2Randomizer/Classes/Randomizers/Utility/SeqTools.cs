@@ -84,7 +84,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             var replacementItems = outboundList.Select(x => OutboundLink.FromStruct(x, seqElement.FileRef)).ToList(); // List of items we should replace them with.
 
 
-            var inboundNodes = FindConnectionsToNode(seqElement, GetAllSequenceElements(seqElement).OfType<ExportEntry>().ToList());
+            var inboundNodes = FindOutboundConnectionsToNode(seqElement, GetAllSequenceElements(seqElement).OfType<ExportEntry>().ToList());
 
             foreach (var preNode in inboundNodes)
             {
@@ -187,7 +187,13 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             }
         }
 
-        public static List<ExportEntry> FindConnectionsToNode(ExportEntry node, List<ExportEntry> sequenceElements)
+        /// <summary>
+        /// Finds outbound connections that come to this node.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="sequenceElements"></param>
+        /// <returns></returns>
+        public static List<ExportEntry> FindOutboundConnectionsToNode(ExportEntry node, List<ExportEntry> sequenceElements)
         {
             List<ExportEntry> referencingNodes = new List<ExportEntry>();
 
@@ -196,6 +202,30 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 if (seqObj == node) continue; // Skip node pointing to itself
                 var linkSet = GetOutboundLinksOfNode(seqObj);
                 if (linkSet.Any(x => x.Any(y => y.LinkedOp != null && y.LinkedOp.UIndex == node.UIndex)))
+                {
+                    referencingNodes.Add(seqObj);
+                }
+            }
+
+            return referencingNodes.Distinct().ToList();
+        }
+
+
+        /// <summary>
+        /// Finds variable connections that come to this node.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="sequenceElements"></param>
+        /// <returns></returns>
+        public static List<ExportEntry> FindVariableConnectionsToNode(ExportEntry node, List<ExportEntry> sequenceElements)
+        {
+            List<ExportEntry> referencingNodes = new List<ExportEntry>();
+
+            foreach (var seqObj in sequenceElements)
+            {
+                if (seqObj == node) continue; // Skip node pointing to itself
+                var linkSet = GetVariableLinksOfNode(seqObj);
+                if (linkSet.Any(x => x.LinkedNodes.Any(y => y == node)))
                 {
                     referencingNodes.Add(seqObj);
                 }
@@ -235,6 +265,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <summary>
         /// Basic description of a VarLink (bottom of kismet action - this includes all links)
         /// </summary>
+        [DebuggerDisplay("VarLink {LinkDesc}, ExpectedType: {ExpectedTypeName}")]
         internal class VarLinkInfo
         {
             public string LinkDesc { get; set; }
@@ -310,6 +341,16 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             var sequence = itemToClone.GetProperty<ObjectProperty>("ParentSequence").ResolveToEntry(itemToClone.FileRef) as ExportEntry;
             KismetHelper.AddObjectToSequence(exp, sequence);
             return exp;
+        }
+
+        /// <summary>
+        /// Gets the containing sequence of the specified export. Performed by looking for ParentSequence object property
+        /// </summary>
+        /// <param name="export"></param>
+        /// <returns></returns>
+        public static ExportEntry GetParentSequence(ExportEntry export)
+        {
+            return export?.GetProperty<ObjectProperty>("ParentSequence")?.ResolveToEntry(export.FileRef) as ExportEntry;
         }
     }
 }

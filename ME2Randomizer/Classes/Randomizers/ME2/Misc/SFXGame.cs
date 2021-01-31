@@ -1,4 +1,5 @@
-﻿using ME3ExplorerCore.Packages;
+﻿using System;
+using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
 
@@ -6,6 +7,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class SFXGame
     {
+        public static bool MakeShepardRagdollable(RandomizationOption option)
+        {
+            var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("SFXGame.pcc"));
+            var sfxplayercontrollerDefaults  = sfxgame.GetUExport(30777);
+            var cac = sfxplayercontrollerDefaults.GetProperty<ArrayProperty<ObjectProperty>>("CustomActionClasses");
+            cac[5].Value = 25988; //SFXCustomActionRagdoll
+            sfxplayercontrollerDefaults.WriteProperty(cac);
+            return true;
+        }
+
         public static bool TurnOnFriendlyFire(RandomizationOption option)
         {
             var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("SFXGame.pcc"));

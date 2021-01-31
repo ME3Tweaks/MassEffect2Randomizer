@@ -6,6 +6,7 @@ using System.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.gameini;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
+using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Misc;
 using Serilog;
 
@@ -80,7 +81,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             string key = isPlayer ? "+PlayerLoadoutInfo" : "+HenchLoadoutInfo";
 
             string value = $"(ClassName = {pawnName}, WeaponClasses = (";
-            
+
             // Pick guns
             var totalGuns = ThreadSafeRandom.Next(3) + 2;
             List<string> guns = new List<string>();
@@ -95,7 +96,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             // Build the list
             bool isFirst = true;
-            foreach(var gun in guns)
+            foreach (var gun in guns)
             {
                 if (isFirst)
                 {
@@ -119,57 +120,68 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         }
 
 
-        public void RandomizeWeapons()
+        public static bool RandomizeWeapons(RandomizationOption option)
         {
-            string cookedPC = Path.Combine(Utilities.GetGamePath(), "BioGame");
+            var me2rbioweapon = CoalescedHandler.GetIniFile("BIOWeapon.ini");
+
+            // We must manually fetch game files cause MERFS will return the ini from the dlc mod instead.
             ME2Coalesced me2basegamecoalesced = new ME2Coalesced(MERFileSystem.GetSpecificFile(@"BioGame\Config\PC\Cooked\Coalesced.ini"));
 
-            DuplicatingIni dlcModIni = new DuplicatingIni();
             Log.Information("Randomizing basegame weapon ini");
             var bioweapon = me2basegamecoalesced.Inis.FirstOrDefault(x => Path.GetFileName(x.Key) == "BIOWeapon.ini").Value;
-            var bioweaponUnmodified = bioweapon.ToString();
-            RandomizeWeaponIni(bioweapon, dlcModIni);
-            if (MERFileSystem.UsingDLCModFS)
-            {
-                bioweapon = DuplicatingIni.ParseIni(bioweaponUnmodified); //reset the coalesced file to vanilla as it'll be stored in DLC instead
-            }
-            var weaponInis = Directory.GetFiles(Path.Combine(cookedPC, "DLC"), "BIOWeapon.ini", SearchOption.AllDirectories).ToList();
+            RandomizeWeaponIni(bioweapon, me2rbioweapon);
+
+            var weaponInis = Directory.GetFiles(MEDirectories.GetDLCPath(MERFileSystem.Game), "BIOWeapon.ini", SearchOption.AllDirectories).ToList();
             foreach (var wi in weaponInis)
             {
+                if (wi.Contains($"DLC_MOD_{MERFileSystem.Game}Randomizer"))
+                    continue; // Skip randomizer folders
+
                 //Log.Information("Randomizing weapons in ini: " + wi);
                 var dlcWeapIni = DuplicatingIni.LoadIni(wi);
-                RandomizeWeaponIni(dlcWeapIni, dlcModIni);
-                if (!MERFileSystem.UsingDLCModFS)
-                {
-                    Log.Information("Writing DLC BioWeapon: " + wi);
-                    File.WriteAllText(wi, dlcWeapIni.ToString());
-                }
+                RandomizeWeaponIni(dlcWeapIni, me2rbioweapon);
+                //if (!MERFileSystem.UsingDLCModFS)
+                //{
+                //    Log.Information("Writing DLC BioWeapon: " + wi);
+                //    File.WriteAllText(wi, dlcWeapIni.ToString());
+                //}
             }
 
-            if (MERFileSystem.UsingDLCModFS)
-            {
-                //Write out BioWeapon.ini file
-                var bioweaponPath = Path.Combine(MERFileSystem.DLCModCookedPath, "BioWeapon.ini");
-                Log.Information("Writing MERFS DLC BioWeapon: " + bioweaponPath);
-                File.WriteAllText(bioweaponPath, dlcModIni.ToString());
-            }
+            return true;
         }
 
-        private void RandomizeWeaponIni(DuplicatingIni bioweapon, DuplicatingIni merfsOut)
+
+        private static string[] KeysToNotRandomize = new[]
         {
-            foreach (var section in bioweapon.Sections)
+            "GUIClassName",
+            "GUIImage",
+            "IconRef",
+            "GeneralDescription",
+            "GUIClassName",
+            "GUIClassDescription",
+            "PrettyName",
+            "bInfiniteAmmo"
+        };
+
+        private static void RandomizeWeaponIni(DuplicatingIni vanillaFile, DuplicatingIni randomizerIni)
+        {
+            foreach (var section in vanillaFile.Sections)
             {
                 var sectionsplit = section.Header.Split('.').ToList();
                 if (sectionsplit.Count > 1)
                 {
                     var objectname = sectionsplit[1];
-                    if (objectname.StartsWith("SFXWeapon") || objectname.StartsWith("SFXHeavyWeapon"))
+                    if (objectname.StartsWith("SFXWeapon_") || objectname.StartsWith("SFXHeavyWeapon_"))
                     {
                         //We can randomize this section of the ini.
                         Debug.WriteLine($"Randomizing weapon {objectname}");
-
+                        var outSection = randomizerIni.GetOrAddSection(section.Header);
                         foreach (var entry in section.Entries)
                         {
+                            if (KeysToNotRandomize.Contains(entry.Key, StringComparer.InvariantCultureIgnoreCase))
+                            {
+                                continue; // Do not touch this key
+                            }
                             if (entry.HasValue)
                             {
                                 // if (entry.Key == "Damage") Debugger.Break();
@@ -307,7 +319,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                             {
                                                 continue; //skip
                                             }
-                                            entry.Value = $"(X={x},Y={y})";
+    
+                                            // Write out the new value
+                                            outSection.SetSingleEntry(entry.Key, $"(X={x},Y={y})");
                                         }
                                         catch (Exception e)
                                         {
@@ -318,6 +332,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                 else
                                 {
                                     //Debug.WriteLine(entry.Key);
+                                    var initialValue = entry.Value.ToString();
                                     var isInt = int.TryParse(entry.Value, out var burstVal);
                                     var isFloat = float.TryParse(entry.Value, out var floatVal);
                                     switch (entry.Key)
@@ -336,17 +351,22 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                             break;
                                             //case 
                                     }
+
+                                    if (entry.Value != initialValue)
+                                    {
+                                        outSection.SetSingleEntry(entry.Key, entry.Value);
+                                    }
                                 }
                             }
                         }
 
-                        if (section.Entries.All(x => x.Key != "Damage"))
-                        {
-                            float X = ThreadSafeRandom.NextFloat(2, 7);
-                            float Y = ThreadSafeRandom.NextFloat(2, 7);
-                            section.Entries.Add(new DuplicatingIni.IniEntry($"Damage=(X={X},Y={Y})"));
-                        }
-                        merfsOut.Sections.Add(section); //add this section for out-writing
+                        // whats this do?
+                        //if (section.Entries.All(x => x.Key != "Damage"))
+                        //{
+                        //    float X = ThreadSafeRandom.NextFloat(2, 7);
+                        //    float Y = ThreadSafeRandom.NextFloat(2, 7);
+                        //    section.Entries.Add(new DuplicatingIni.IniEntry($"Damage=(X={X},Y={Y})"));
+                        //}
                     }
                 }
             }

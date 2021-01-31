@@ -98,7 +98,6 @@ namespace ME2Randomizer.Classes
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
             ResetClasses();
-
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
@@ -116,6 +115,7 @@ namespace ME2Randomizer.Classes
             // Pass 1: All randomizers that are file specific
             foreach (var sr in specificRandomizers)
             {
+                Log.Information($"Running specific randomizer {sr.HumanName}");
                 mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
                 sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
             }
@@ -150,10 +150,10 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     if (!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("TwrHub", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Cit", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("TwrHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("startup", StringComparison.InvariantCultureIgnoreCase)
@@ -362,21 +362,28 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption()
                     {
-                    HumanName = "Enable basic friendly fire",
-                    PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
-                    Description = "Enables weapons to damage friendlies",
-                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
-                    SubOptions = new ObservableCollectionExtended<RandomizationOption>()
-                    {
-                        new RandomizationOption()
+                        HumanName = "Enable basic friendly fire",
+                        PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
+                        Description = "Enables weapons to damage friendlies",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
                         {
-                            IsOptionOnly = true,
-                            SubOptionKey = SFXGame.SUBOPTIONKEY_CARELESSFF,
-                            HumanName = "Careless mode",
-                            Description = "Attack enemies, regardless of friendly casualties"
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                SubOptionKey = SFXGame.SUBOPTIONKEY_CARELESSFF,
+                                HumanName = "Careless mode",
+                                Description = "Attack enemies, regardless of friendly casualties"
+                            }
                         }
-                    }
-                }
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Shepard ragdollable",
+                        Description = "Makes Shepard able to be ragdolled from various powers/attacks",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        PerformSpecificRandomizationDelegate = SFXGame.MakeShepardRagdollable,
+                    },
                 }
             });
 
@@ -405,7 +412,7 @@ namespace ME2Randomizer.Classes
                 GroupName = "Weapons & Enemies",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable"},
+                    new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons},
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use. Requires DLC option for Zaeed, Kasumi and Liara", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons},
                     new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport},
                     new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
@@ -428,6 +435,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Arrival DLC", Description = "Changes the relay colors", PerformSpecificRandomizationDelegate = ArrivalDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Kasumi DLC", Description = "Changes the art gallery", PerformSpecificRandomizationDelegate = KasumiDLC.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Illium Hub", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = IlliumHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Omega Hub", Description = "Changes various things across Omega's Hub area", PerformSpecificRandomizationDelegate = OmegaHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization, RequiresTLK = true},
                 }
             });
@@ -486,7 +494,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {
                         HumanName = "Actors in cutscenes",
                         Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
-                        PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns,
+                        PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns2,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
                     },
                     new RandomizationOption() {

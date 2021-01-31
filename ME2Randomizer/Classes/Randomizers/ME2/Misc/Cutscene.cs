@@ -5,20 +5,270 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.Utility;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class Cutscene
     {
+
         private static List<string> acceptableTagsForPawnShuffling;
 
-        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "SeqAct_Interp";
+        private static bool CanRandomize(ExportEntry export, out string cutsceneName)
+        {
+            cutsceneName = null;
+            if (!export.IsDefaultObject && export.ClassName == "SeqAct_Interp" && export.GetProperty<StrProperty>("ObjName") is { } strp && strp.Value.StartsWith("ANIMCUTSCENE_"))
+            {
+                cutsceneName = strp;
+                return true;
+            }
+            return false;
+        }
+
+        private static string[] HenchObjComments = new[]
+        {
+            "assassin",
+            "leading",
+            "convict",
+            "mystic",
+            "geth",
+            "grunt",
+            "garrus",
+            "professor",
+            "tali",
+            "vixen"
+        };
+
+
+        public static bool ShuffleCutscenePawns2(ExportEntry export, RandomizationOption option)
+        {
+            if (!CanRandomize(export, out var cutsceneName)) return false;
+            if (acceptableTagsForPawnShuffling == null) LoadAsset();
+            var variableLinks = SeqTools.GetVariableLinksOfNode(export);
+
+            // Entries that can be shuffled.
+            // This list must not to have items removed!
+            List<ExportEntry> pawnsToShuffleDirectAttached = new List<ExportEntry>();
+            List<ExportEntry> pawnsToShuffleDynamicSet = new List<ExportEntry>();
+
+            var sequenceElements = SeqTools.GetAllSequenceElements(export).OfType<ExportEntry>().ToList(); ;
+
+            foreach (var vl in variableLinks)
+            {
+                if (!BlackListedLinkDesc(vl) && (vl.ExpectedTypeName == "SeqVar_Object" || vl.ExpectedTypeName == "SeqVar_Player" || vl.ExpectedTypeName == "BioSeqVar_ObjectFindByTag"))
+                {
+                    // It's a canidate for randomization
+
+                    // Some ObjectFindByTag have an attached ObjValue for some reason.
+                    // It's findobjectbytag but in same file
+                    // some leftover development thing
+                    foreach (var vlNode in vl.LinkedNodes.OfType<ExportEntry>())
+                    {
+                        bool addedToShuffler = false;
+                        if (vlNode.GetProperty<ObjectProperty>("ObjValue")?.ResolveToEntry(export.FileRef) is ExportEntry linkedObjectEntry)
+                        {
+                            // It's a SeqVar_Object with a linked param
+                            if (linkedObjectEntry.IsA("BioPawn"))
+                            {
+                                // This might be leftover from ME1
+                                var flyingpawn = linkedObjectEntry.GetProperty<BoolProperty>("bCanFly")?.Value;
+                                if (flyingpawn == null || flyingpawn == false)
+                                {
+                                    pawnsToShuffleDirectAttached.Add(vlNode); //can be shuffled. This is a var link so it must be added
+                                    addedToShuffler = true;
+                                }
+                            }
+                        }
+                        // It's not a directly set object
+                        // WORK ON CODE BELOW
+                        else if (vl.ExpectedTypeName == "SeqVar_Object" && !addedToShuffler)
+                        {
+                            //We might be assigned to. We need to look at the parent sequence
+                            //and find what assigns me
+                            var inboundConnections = SeqTools.FindVariableConnectionsToNode(vlNode, sequenceElements);
+                            foreach (var sequenceObject in inboundConnections)
+                            {
+                                if (sequenceObject == export)
+                                    continue; // Obviously we reference this node
+
+                                // Is this a 'SetObject' that is assigning the value?
+                                if (sequenceObject.InheritsFrom("SequenceAction") && sequenceObject.ClassName == "SeqAct_SetObject" && sequenceObject != export)
+                                {
+                                    //check if target is my node
+                                    var referencingVarLinks = SeqTools.GetVariableLinksOfNode(sequenceObject);
+                                    var targetLink = referencingVarLinks.FirstOrDefault(x => x.LinkDesc == "Target"); // What is the target node?
+                                    if (targetLink != null)
+                                    {
+                                        //see if target is node we are investigating for setting.
+                                        foreach (var potentialTarget in targetLink.LinkedNodes.OfType<ExportEntry>())
+                                        {
+                                            if (potentialTarget == vlNode)
+                                            {
+                                                // There's a 'SetObject' with Target of the attached variable to our interp cutscene
+                                                // That means something is 'setting' the value of this
+                                                // We need to inspect what it is to see if we can shuffle it
+
+                                                //Debug.WriteLine("Found a setobject to variable linked item on a sequence");
+
+                                                //See what value this is set to. If it inherits from BioPawn we can use it in the shuffling.
+                                                var pointedAtValueLink = referencingVarLinks.FirstOrDefault(x => x.LinkDesc == "Value");
+                                                if (pointedAtValueLink != null && pointedAtValueLink.LinkedNodes.Count == 1) // Only 1 item being set. More is too complicated
+                                                {
+                                                    var linkedNode = pointedAtValueLink.LinkedNodes[0] as ExportEntry;
+                                                    var linkedNodeType = linkedNode.GetProperty<ObjectProperty>("ObjValue");
+                                                    if (linkedNodeType != null)
+                                                    {
+                                                        var linkedNodeData = export.FileRef.GetUExport(linkedNodeType.Value);
+                                                        if (linkedNodeData.IsA("BioPawn"))
+                                                        {
+                                                            //We can shuffle this item.
+                                                            //Debug.WriteLine("Adding shuffle item: " + objRef.Value);
+                                                            pawnsToShuffleDynamicSet.Add(linkedNode); //pointer to this node
+                                                            addedToShuffler = true;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+
+
+                        if (!addedToShuffler)
+                        {
+                            // Check if is SeqVar_Player. We can always shuffle this one
+                            string className = vlNode.ClassName;
+                            if (className == "SeqVar_Player")
+                            {
+                                vlNode.WriteProperty(new BoolProperty(true, "bReturnsPawns")); // This is in ME1R, not sure it's needed, but let's just make sure it's true
+                                pawnsToShuffleDirectAttached.Add(vlNode); //pointer to this node
+                            }
+                            else if (className == "BioSeqVar_ObjectFindByTag")
+                            {
+                                var tagToFind = vlNode.GetProperty<StrProperty>("m_sObjectTagToFind")?.Value;
+                                //if (tagToFind == "hench_pilot")
+                                //    Debugger.Break();
+                                if (tagToFind != null && acceptableTagsForPawnShuffling.Contains(tagToFind))
+                                {
+                                    pawnsToShuffleDynamicSet.Add(vlNode); //pointer to this node
+                                }
+                                else
+                                {
+                                    //Debug.WriteLine($"Cannot shuffle tag: {tagToFind}");
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            var pawnsToShuffle = pawnsToShuffleDirectAttached;
+            // If it's a dynamic object we only want to add it if it's not already attached somewhere else
+            // This can occur if the value to set is also the value used directly
+            foreach (var dp in pawnsToShuffleDynamicSet)
+            {
+                //if (!pawnsToShuffle.Contains(dp))
+                //{
+                pawnsToShuffle.Add(dp);
+                //}
+            }
+
+            if (pawnsToShuffle.Count > 1)
+            {
+                // Now we have a list of all exports that can be shuffled
+                var shufflerList = pawnsToShuffle.ToList();
+                shufflerList.Shuffle();
+
+                // Now we go through the list of var links and look if the linked node is in the list of pawnsToShuffle.
+                // If it is we pull one off the shufflerList and replace the value with that one instead
+
+                foreach (var vl in variableLinks)
+                {
+                    for (int i = 0; i < vl.LinkedNodes.Count; i++)
+                    {
+                        var existingItem = vl.LinkedNodes[i];
+                        if (pawnsToShuffle.Contains(existingItem))
+                        {
+                            var newItem = shufflerList.PullFirstItem();
+
+                            if (newItem == existingItem)
+                            {
+                                var prepickCount = shufflerList.Count;
+                                newItem = AttemptRepick(shufflerList, newItem, 4, pawnsToShuffle);
+                                var postpickCount = shufflerList.Count;
+                                if (prepickCount != postpickCount)
+                                {
+                                    // Should not be any count change as we already drew an item
+                                    Debugger.Break();
+                                }
+                            }
+
+                            vl.LinkedNodes[i] = newItem;
+                        }
+                    }
+                }
+
+                // The linked nodes are now randomized
+                // Write out the values
+
+                if (shufflerList.Count != 0)
+                {
+                    // This can occur in sequences that have weird duplicates
+                    //Debugger.Break();
+                }
+
+                SeqTools.WriteVariableLinksToNode(export, variableLinks);
+                Debug.WriteLine($"Randomized {pawnsToShuffle.Count} links in animcutscene in {cutsceneName}, file {Path.GetFileName(export.FileRef.FilePath)}");
+                return true;
+            }
+
+            return false;
+        }
+
+        private static ExportEntry AttemptRepick(List<ExportEntry> shufflerList, ExportEntry triedItem, int numAttempts, List<ExportEntry> failoverList)
+        {
+            if (shufflerList.Count == 0)
+                return triedItem; // We cannot re-attempt as we will just draw the same item over and over again
+
+            shufflerList.Add(triedItem); // Put back the tried item
+            while (numAttempts > 0)
+            {
+                var newItem = shufflerList.PullFirstItem();
+                if (newItem != triedItem)
+                    return newItem;
+                // Pulled item was the same as the original item!
+                // Put item back into the list of options
+                numAttempts--;
+                shufflerList.Add(newItem); //Put the item we pulled back into the list
+            }
+
+            return shufflerList.PullFirstItem(); // Could not find something else. Just take the first item
+        }
+
+        private static bool BlackListedLinkDesc(SeqTools.VarLinkInfo vl)
+        {
+            if (vl == null) return true;
+            if (vl.LinkDesc.StartsWith("line1")) return true; // Used in EndGm2 410 Hold The Line Huddle3 Intro to assign voice lines
+            return false;
+        }
+
+        /// <summary>
+        /// Shuffler from ME1 Randomizer
+        /// </summary>
+        /// <param name="export"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public static bool ShuffleCutscenePawns(ExportEntry export, RandomizationOption option)
         {
-            if (!CanRandomize(export)) return false;
+            if (!CanRandomize(export, out var cutsceneName)) return false;
             if (acceptableTagsForPawnShuffling == null) LoadAsset();
             var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
 
@@ -168,7 +418,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         private static void LoadAsset()
         {
-            acceptableTagsForPawnShuffling = Utilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split('\n').ToList();
+            acceptableTagsForPawnShuffling = Utilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split(new[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         }
     }
 }

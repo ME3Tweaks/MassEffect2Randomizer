@@ -22,21 +22,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             return true;
         }
 
+
         private static DancerSource[] DancerOptions = new[]
         {
             // Human reaper
-            //new DancerSource()
-            //{
-            //    BodyAsset = new AssetSource()
-            //    {
-            //        PackageFile = "BioD_EndGm2_425ReaperReveal.pcc",
-            //        AssetPath = "BIOG_CBT_RPR_NKD_R.NKDa.CBT_RPR_NKDa_MDL"
-            //    },
-            //    Location= new CFVector3() { X =-3750, Y=2280, Z=1310},
-            //    Rotation = new CIVector3(){ X=0, Y=0, Z=16384},
-            //    DrawScale = 0.011f
-            //},
-
+            new DancerSource()
+            {
+                BodyAsset = new AssetSource()
+                {
+                    PackageFile = "BioD_EndGm2_425ReaperReveal.pcc",
+                    AssetPath = "BIOG_CBT_RPR_NKD_R.NKDa.CBT_RPR_NKDa_MDL"
+                },
+                Location= new CFVector3() { X =-3750, Y=2280, Z=1310},
+                Rotation = new CIVector3(){ X=0, Y=0, Z=16384},
+                DrawScale = 0.011f
+            },
             // N7 armor - no mesh change. So THICC
             new DancerSource()
             {
@@ -46,20 +46,157 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     PackageFile = "BioD_TwrHub_605Lounge1.pcc",
                     AssetPath = "BIOG_HMM_ARM_HVY_R.HVYb.HMM_ARM_HVYb_MDL"
                 },
-                //HeadAsset = new AssetSource()
-                //{
-                //    PackageFile = "BioD_TwrHub_605Lounge1.pcc",
-                //    AssetPath = "BIOG_HMM_HED_ProMorph.Average.HMM_HED_PROAverage_MDL"
-                //},
-                //MorphFace = new AssetSource()
-                //{
-                //    PackageFile = "BioD_TwrHub_605Lounge1.pcc",
-                //    AssetPath = "BIOFace_TwrHub.General.BioFace_imposter_conrad"
-                //}
             },
+
+            // Wrex armor - no head mesh change. So THICC
+            new DancerSource()
+            {
+                KeepHead = true,
+                BodyAsset = new AssetSource()
+                {
+                    PackageFile = "BioD_KroHub_100MainHub.pcc",
+                    AssetPath = "BIOG_KRO_ARM_HVY_R.HVYc.KRO_ARM_HVYc_MDL"
+                },
+            },
+
+            // Salarian Councilor
+            new DancerSource()
+            {
+                KeepHead = true,
+                BodyAsset = new AssetSource()
+                {
+                    PackageFile = "BioD_CitHub_Embassy.pcc",
+                    AssetPath = "BIOG_SAL_ARM_CTH_R.CTHd.SAL_ARM_CTHd_MDL"
+                },
+            },
+            // Collector
+            new DancerSource()
+            {
+                KeepHead = false,
+                BodyAsset = new AssetSource()
+                {
+                    PackageFile = "BioA_ShpCr2_210TurnIntoHusk.pcc",
+                    AssetPath = "BIOG_COL_ARM_NKD_R.NKDa.COL_ARM_NKDa_MDL"
+                },
+            },
+                // Husk
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioP_RprGtA.pcc",
+                        AssetPath = "BIOG_ZMB_ARM_NKD_R.NKDd.ZMB_ARM_NKDd_MDL"
+                    },
+                },
+                // Husk
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_CitHub_Embassy.pcc",
+                        AssetPath = "BIOG_NCA_VOL_NKD_R.NKDd.NCA_FAC_VOL_NKDa_MDL"
+                    },
+                },
+                // Volus. Because why not
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_CitHub_Embassy.pcc",
+                        AssetPath = "BIOG_NCA_VOL_NKD_R.NKDa.NCA_FAC_VOL_NKDa_MDL"
+                    },
+                },
+                // Elcor. Because why not - lmao
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_CitHub_Embassy.pcc",
+                        AssetPath = "BIOG_NCA_ELC_NKD_R.NKDa.NCA_ELC_NKDa_MDL"
+                    },
+                },
+                // Hanar. Because why not
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_CitHub_Embassy.pcc",
+                        AssetPath = "BIOG_NCA_HAN_NKD_R.NKDa.NCA_HAN_NKDa_MDL"
+                    },
+                },
+                // Keeper
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_CitAsL_200StartPoint.pcc",
+                        AssetPath = "BIOG_AMB_KEE_NKD_R.NKDa.AMB_KEE_NKDa_MDL"
+                    },
+                },
+                // Shadow Broker - does not use material so doesn't require shader - eyes are screwed up hardcore
+                new DancerSource()
+                {
+                    KeepHead = true,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_Exp1Lvl4_Stage3.pcc",
+                        AssetPath = "BIOG_YAH_SBR_NKD_R.NKDa.YAH_SBR_NKDa_MDL"
+                    },
+                },
+                // Thresher Maw
+                new DancerSource()
+                {
+                    DrawScale = 0.1f,
+                    KeepHead = true,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_KroKgL_104ThresherMaw.pcc",
+                        AssetPath = "biog_cbt_maw_nkd_r.NKDa.CBT_MAW_NKDa_MDL"
+                    },
+                },
+                // Collector General
+                new DancerSource()
+                {
+                    DrawScale = 0.5f,
+                    Location= new CFVector3() { X =-3750, Y=2280, Z=1310},
+                    Rotation = new CIVector3(0,-22384,16384),
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_ShpCr2_210ColGen.pcc",
+                        AssetPath = "BIOG_CBT_COL_NKD_R.NKDa.CBT_COL_NKDa_MDL"
+                    },
+                },
+                // Space Cow
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    Location= new CFVector3() { X =-3750, Y=2280, Z=1370},
+                    Rotation = new CIVector3(-32768,6000,0),
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioD_Unc1Explore.pcc",
+                        AssetPath = "BIOG_AMB_COW_NKD_R.NKDa.AMB_COW_NKDa_MDL"
+                    },
+                },
+                // Pyjak
+                new DancerSource()
+                {
+                    KeepHead = false,
+                    BodyAsset = new AssetSource()
+                    {
+                        PackageFile = "BioP_KroHub.pcc",
+                        AssetPath = "BIOG_AMB_MON_NKD_R.NKDa.AMB_MON_NKDa_MDL"
+                    },
+                },
         };
 
-        class AssetSource
+        public class AssetSource
         {
             public string PackageFile { get; set; }
             public string AssetPath { get; set; }
@@ -71,7 +208,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             }
         }
 
-        class DancerSource
+        public class DancerSource
         {
             public AssetSource HeadAsset { get; set; }
             public AssetSource BodyAsset { get; set; }
@@ -80,6 +217,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             public float DrawScale { get; set; } = 1;
             public AssetSource MorphFace { get; set; }
             public bool KeepHead { get; set; }
+            public bool RemoveMaterials { get; set; }
         }
 
         private static void RandomizeDancer()

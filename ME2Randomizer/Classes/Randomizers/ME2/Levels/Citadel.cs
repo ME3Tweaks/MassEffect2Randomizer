@@ -157,7 +157,81 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         internal static bool PerformRandomization(RandomizationOption notUsed)
         {
             RandomizeEndorsements();
+            RandomizeThaneInterrogation();
             return true;
         }
+
+        private static void RandomizeThaneInterrogation()
+        {
+            // The main dickhead guy
+            var lockedUpAsset = BodyModels.RandomElement();
+            var citHubTF = MERFileSystem.GetPackageFile("BioD_CitHub_200Dialogue.pcc");
+            if (citHubTF != null)
+            {
+                var citHubTP = MEPackageHandler.OpenMEPackage(citHubTF);
+
+                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lockedUpAsset.BodyAsset.GetAsset());
+                citHubTP.GetUExport(670).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
+                if (!lockedUpAsset.KeepHead)
+                {
+                    citHubTP.GetUExport(671).RemoveProperty("SkeletalMesh");
+                }
+                if (lockedUpAsset.RemoveMaterials)
+                {
+                    citHubTP.GetUExport(670).RemoveProperty("Materials");
+                }
+                MERFileSystem.SavePackage(citHubTP);
+            }
+
+
+            // Laywer
+            var citHubASLTF = MERFileSystem.GetPackageFile("BioD_CitHub_220AsL.pcc");
+            var lawyerAsset = BodyModels.RandomElement();
+            if (lawyerAsset == lockedUpAsset)
+            {
+                lawyerAsset = BodyModels.RandomElement(); // Give a slight better chance to make them have different outfits
+            }
+            if (citHubASLTF != null)
+            {
+                var citHubTP = MEPackageHandler.OpenMEPackage(citHubASLTF);
+
+                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lawyerAsset.BodyAsset.GetAsset());
+                citHubTP.GetUExport(822).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
+                if (!lawyerAsset.KeepHead)
+                {
+                    citHubTP.GetUExport(823).RemoveProperty("SkeletalMesh");
+                }
+                if (lawyerAsset.RemoveMaterials)
+                {
+                    citHubTP.GetUExport(822).RemoveProperty("Materials");
+                }
+                MERFileSystem.SavePackage(citHubTP);
+            }
+        }
+
+        private static IlliumHub.DancerSource[] BodyModels = new[]
+        {
+            // WREX
+            new IlliumHub.DancerSource()
+            {
+                KeepHead = true,
+                BodyAsset = new IlliumHub.AssetSource()
+                {
+                    PackageFile = "BioD_KroHub_100MainHub.pcc",
+                    AssetPath = "BIOG_KRO_ARM_HVY_R.HVYc.KRO_ARM_HVYc_MDL"
+                },
+            },
+            // Scion
+            new IlliumHub.DancerSource()
+            {
+                KeepHead = false,
+                RemoveMaterials = true,
+                BodyAsset = new IlliumHub.AssetSource()
+                {
+                    PackageFile = "BioP_RprGtA.pcc",
+                    AssetPath = "BIOG_SCI_ARM_NKD_R.NKDa.SCI_ARM_NKDa_MDL"
+                },
+            },
+        };
     }
 }

@@ -127,6 +127,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             {
                 ParseGun(export);
                 GunName = export.ObjectName;
+                if (GunName == "SFXHeavyWeapon_BlackStorm")
+                {
+                    // We do not allow player blackstorm. It must be embedded patched version
+                    IsUsable = false;
+                    return;
+                }
                 PackageFileName = Path.GetFileName(export.FileRef.FilePath);
                 PackageName = export.ParentName;
                 SourceUIndex = export.UIndex;
@@ -225,6 +231,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             {
                 var sourceData = Utilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.weapons." + gunInfo.PackageFileName);
                 sourcePackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(sourceData));
+
+                if (gunInfo.ImportOnly)
+                {
+                    // We need to install this file
+                    var outfname = Path.Combine(MERFileSystem.DLCModCookedPath, gunInfo.PackageFileName);
+                    if (!File.Exists(outfname))
+                    {
+                        sourcePackage.Save(outfname, true);
+                        ThreadSafeDLCStartupPackage.AddStartupPackage(Path.GetFileNameWithoutExtension(gunInfo.PackageFileName));
+                    }
+                }
             }
             else
             {

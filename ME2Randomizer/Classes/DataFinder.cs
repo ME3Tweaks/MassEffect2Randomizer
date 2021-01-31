@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
+using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Helpers;
@@ -32,12 +34,354 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindPortablePowers;
+            dataworker.DoWork += BuildGestureFiles;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync();
         }
+
+        #region Gestures
+        private void BuildGestureFiles(object? sender, DoWorkEventArgs e)
+        {
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+                //.Where(x =>
+                //                    !x.Contains("_LOC_")
+                //&& x.Contains(@"CitHub", StringComparison.InvariantCultureIgnoreCase)
+                //)
+                .OrderBy(x => x.Contains("_LOC_"))
+                .ToList();
+
+            // PackageName -> GesturePackage
+            Dictionary<string, GesturePackage> sourceMapping = new Dictionary<string, GesturePackage>();
+            int i = 0;
+            mainWindow.CurrentOperationText = "Finding gesture animations";
+            mainWindow.ProgressBarIndeterminate = false;
+            mainWindow.ProgressBar_Bottom_Max = files.Count;
+            foreach (var f in files)
+            {
+                mainWindow.CurrentProgressValue = i;
+                i++;
+                var p = MEPackageHandler.OpenMEPackage(f);
+                var gesturePackages = p.Exports.Where(x => x.idxLink == 0 && x.ClassName == "Package" && RBioEvtSysTrackGesture.IsGesturePackage(x.ObjectName)).ToList();
+                foreach (var gesturePackage in gesturePackages)
+                {
+                    // Get package
+                    if (!sourceMapping.TryGetValue(gesturePackage.ObjectName, out var gp))
+                    {
+                        gp = new GesturePackage()
+                        {
+                            PackageName = gesturePackage.ObjectName
+                        };
+                        sourceMapping[gesturePackage.ObjectName] = gp;
+                    }
+
+                    gp.UpdatePackage(gesturePackage);
+                }
+            }
+
+            var gestureSaveP = @"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary\gestures";
+            i = mainWindow.CurrentProgressValue = 0;
+            mainWindow.ProgressBar_Bottom_Max = sourceMapping.Count;
+            mainWindow.CurrentOperationText = "Building Gesture Packages";
+
+            foreach (var gestP in sourceMapping)
+            {
+                mainWindow.CurrentProgressValue = i++;
+                var pPath = Path.Combine(gestureSaveP, gestP.Key + ".pcc");
+                MEPackageHandler.CreateAndSavePackage(pPath, MERFileSystem.Game);
+                var gestPackage = MEPackageHandler.OpenMEPackage(pPath);
+                gestP.Value.PortIntoPackage(gestPackage);
+                gestPackage.Save(compress: true);
+            }
+
+            //File.WriteAllLines(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\animseq.txt", alltags);
+        }
+
+        private class GesturePackage
+        {
+            public string PackageName { get; set; }
+            public Dictionary<string, GestureGroup> Groups = new Dictionary<string, GestureGroup>();
+            public void UpdatePackage(ExportEntry gesturePackage)
+            {
+                var subAnimSeqs = gesturePackage.FileRef.Exports.Where(x => x.idxLink == gesturePackage.UIndex && x.ClassName == "AnimSequence" && x.ObjectName != "AnimSequence").ToList();
+                foreach (var animSeq in subAnimSeqs)
+                {
+                    var seqName = animSeq.GetProperty<NameProperty>("SequenceName").Value;
+                    var groupName = animSeq.ObjectName.Name.Substring(animSeq.ObjectName.Instanced.Length - seqName.Instanced.Length - 1); // +1 for _
+                    if (!Groups.TryGetValue(groupName, out var group))
+                    {
+                        group = new GestureGroup()
+                        {
+                            GestureGroupName = groupName
+                        };
+                        Groups[groupName] = group;
+                    }
+
+                    group.UpdateGroup(animSeq, seqName);
+
+                }
+            }
+
+            public void PortIntoPackage(IMEPackage destPackage)
+            {
+                PackageCache c = new PackageCache();
+
+                foreach (var v in Groups)
+                {
+                    v.Value.PortIntoPackage(destPackage, PackageName, c);
+                }
+                c.ReleasePackages();
+            }
+        }
+
+        private class GestureGroup
+        {
+            public string GestureGroupName { get; set; }
+            public List<GestureInstance> AnimSequences = new List<GestureInstance>();
+
+            public void UpdateGroup(ExportEntry animSeq, NameReference seqName)
+            {
+                if (AnimSequences.All(x => x.SequenceName != seqName))
+                {
+                    AnimSequences.Add(new GestureInstance()
+                    {
+                        ObjectName = animSeq.ObjectName,
+                        SequenceName = seqName,
+                        ContainingPackageFile = Path.GetFileName(animSeq.FileRef.FilePath)
+                    });
+                }
+            }
+
+            public void PortIntoPackage(IMEPackage destPackage, string gesturePackageName, PackageCache c)
+            {
+                foreach (var v in AnimSequences)
+                {
+                    v.PortIntoPackage(destPackage, gesturePackageName, c);
+                }
+            }
+        }
+
+        public class GestureInstance
+        {
+            public NameReference ObjectName { get; set; }
+            public NameReference SequenceName { get; set; }
+            /// <summary>
+            /// File that contains this gesture instance
+            /// </summary>
+            public string ContainingPackageFile { get; set; }
+
+            public void PortIntoPackage(IMEPackage destPackage, string gesturePackageName, PackageCache c)
+            {
+                var sourceP = c.GetCachedPackage(ContainingPackageFile, true);
+                var export = sourceP.FindExport($"{gesturePackageName}.{ObjectName.Instanced}");
+                if (export == null)
+                    Debugger.Break();
+                EntryExporter.ExportExportToPackage(export, destPackage);
+            }
+        }
+
+        #endregion
+
+        #region AnimCutscenes
+        class AnimCutsceneInfo
+        {
+            public string PackageFile { get; set; }
+            public string SequenceFullName { get; set; }
+            public int UIndex { get; private set; }
+            public List<ACIVarLink> AttachedActorInfos { get; set; } = new List<ACIVarLink>();
+            public AnimCutsceneInfo(ExportEntry interpNode)
+            {
+                PackageFile = Path.GetFileName(interpNode.FileRef.FilePath);
+                SequenceFullName = interpNode.GetProperty<ObjectProperty>("ParentSequence").ResolveToEntry(interpNode.FileRef).InstancedFullPath;
+                UIndex = interpNode.UIndex;
+
+                var vars = SeqTools.GetVariableLinksOfNode(interpNode);
+                foreach (var v in vars)
+                {
+                    if (v.LinkDesc == "Data")
+                        continue; // It's nothing we care about
+                    foreach (var vNode in v.LinkedNodes.OfType<ExportEntry>())
+                    {
+                        AttachedActorInfos.Add(new ACIVarLink(v.LinkDesc, vNode));
+                    }
+                }
+            }
+        }
+
+        class ACIVarLink
+        {
+            public enum EObjectType
+            {
+                Invalid,
+                FindByTag,
+                DirectReference,
+                DynamicObject,
+                Player
+            }
+            public string FullPath { get; set; }
+            public EObjectType ObjectType { get; set; }
+            public string LinkDesc { get; set; }
+            /// <summary>
+            /// Only used if FindByTag ObjectType
+            /// </summary>
+            public string TagToFind { get; set; }
+            public ACIVarLink(string linkDesc, ExportEntry node)
+            {
+                LinkDesc = linkDesc;
+                FullPath = node.InstancedFullPath;
+                TagToFind = node.GetProperty<StrProperty>("m_sObjectTagToFind")?.Value; // If class is wrong, we will not find this
+                if (TagToFind != null)
+                {
+                    ObjectType = EObjectType.FindByTag;
+                }
+                else
+                {
+                    switch (node.ClassName)
+                    {
+                        case "SeqVar_Object":
+                            var objValue = node.GetProperty<ObjectProperty>("ObjValue");
+                            ObjectType = objValue != null ? EObjectType.DirectReference : EObjectType.DynamicObject;
+                            break;
+                        case "SeqVar_Player":
+                            ObjectType = EObjectType.Player;
+                            break;
+                    }
+                }
+
+            }
+
+            public bool IsAllowedTag()
+            {
+                if (TagToFind == null) return false;
+
+                // TAG IS
+                if (TagToFind == "Normandy2_") return false;
+                if (TagToFind == "BIOTIC_ESCORT") return false; // Required for long walk to work properly
+                if (TagToFind == "flare_geth") return false;
+                if (TagToFind == "Geth_Sparks") return false;
+                if (TagToFind == "Illusive_Chair") return false;
+                if (TagToFind == "FireEXT") return false;
+                if (TagToFind == "Skel_GarrusHelmet") return false;
+                if (TagToFind == "ChairComfy012_") return false;
+                if (TagToFind == "TableLab051_") return false;
+                if (TagToFind == "DataPad1_") return false;
+                if (TagToFind == "Cinegun") return false;
+                if (TagToFind == "CineShieldGen") return false;
+                if (TagToFind == "cutscene_Normandy") return false;
+                if (TagToFind == "FlyingCar1") return false;
+                if (TagToFind == "force_Bubble") return false;
+                if (TagToFind == "Hatch_door_01") return false;
+                if (TagToFind == "ElevatorDoorInterp") return false;
+                if (TagToFind == "GunShip_flare") return false;
+                if (TagToFind == "Minigun_Muzzle") return false;
+                if (TagToFind == "SM_CutsceneGunship") return false;
+                if (TagToFind == "DropShip2_") return false;
+
+                if (TagToFind == "citgrl_LandingCar") return false;
+                if (TagToFind == "Normandy21_") return false;
+                if (TagToFind == "Normandy21_") return false;
+                if (TagToFind == "Normandy21_") return false;
+                if (TagToFind == "Normandy21_") return false;
+
+
+                // Starts With
+                if (TagToFind.StartsWith("Cam", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("CinePlatform", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("Prop_", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("holoscreen", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("Door_", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("CineDatapad", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("CineDropship", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("GunShip_", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("LeftTop", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("RightTop", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("RightBeam", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("LeftBeam", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("LeftInter", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("RightBack", StringComparison.InvariantCultureIgnoreCase)) return false;
+                if (TagToFind.StartsWith("RightInter", StringComparison.InvariantCultureIgnoreCase)) return false;
+
+                // Contains
+                //                if (TagToFind.Contains("Normandy", StringComparison.InvariantCultureIgnoreCase)) return false;
+                return true;
+            }
+        }
+
+        private List<AnimCutsceneInfo> CutsceneInfos = new List<AnimCutsceneInfo>();
+
+        private void AnalyzeAnimCutscenes(object? sender, DoWorkEventArgs e)
+        {
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+                .Where(x =>
+                        //x.Contains(@"\DLC\", StringComparison.InvariantCultureIgnoreCase)
+                        //&&
+                        !x.Contains("_LOC_", StringComparison.InvariantCultureIgnoreCase)
+                //x.Contains("ReaperCombat")
+                )
+                .ToList();
+
+            int i = 0;
+            mainWindow.ProgressBarIndeterminate = false;
+            mainWindow.ProgressBar_Bottom_Max = files.Count;
+            foreach (var f in files)
+            {
+                mainWindow.CurrentProgressValue = i;
+                i++;
+                var p = MEPackageHandler.OpenMEPackage(f);
+                var animCutsceneInterps = p.Exports.Where(x => x.ClassName == "SeqAct_Interp" && x.GetProperty<StrProperty>("ObjName") is StrProperty strp && strp.Value.StartsWith("ANIMCUTSCENE_")).ToList();
+                foreach (var animCutscene in animCutsceneInterps)
+                {
+                    CutsceneInfos.Add(new AnimCutsceneInfo(animCutscene));
+                }
+            }
+
+            var alltags = CutsceneInfos.SelectMany(x => x.AttachedActorInfos
+                .Where(y => y.ObjectType == ACIVarLink.EObjectType.FindByTag && y.IsAllowedTag())
+                .Select(y => y.TagToFind)).Distinct().ToList();
+
+            File.WriteAllLines(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\allowedcutscenerandomizationtags.txt", alltags);
+        }
+
+        #endregion
+
+        #region Min1Health
+        private void FindMin1Health(object? sender, DoWorkEventArgs e)
+        {
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+                .Where(x =>
+                x.Contains("procer", StringComparison.InvariantCultureIgnoreCase)
+                //x.Contains("ReaperCombat")
+                 )
+                .ToList();
+
+            foreach (var f in files)
+            {
+                var p = MEPackageHandler.OpenMEPackage(f);
+                var modifyPPs = p.Exports.Where(x => x.ClassName == "BioSeqAct_ModifyPropertyPawn").ToList();
+                foreach (var modifyPP in modifyPPs)
+                {
+                    var vlinks = SeqTools.GetVariableLinksOfNode(modifyPP);
+                    var min1health = vlinks.FirstOrDefault(x => x.LinkDesc.Equals("Min1Health"));
+                    if (min1health != null)
+                    {
+                        // is it set to true?
+                        foreach (var node in min1health.LinkedNodes.OfType<ExportEntry>())
+                        {
+                            var isMin1 = node.GetProperty<IntProperty>("bValue")?.Value == 1;
+                            if (isMin1)
+                            {
+                                var target = vlinks.FirstOrDefault(x => x.LinkDesc == "Target");
+                                var seq = node.GetProperty<ObjectProperty>("ParentSequence").ResolveToEntry(p) as ExportEntry;
+                                Debug.WriteLine($"Min1Health in {Path.GetFileName(f)}, export {node.UIndex}, sequence {seq.InstancedFullPath}, target {target.LinkedNodes[0].ClassName}");
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        #endregion
 
         private void ResetUI(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -47,6 +391,7 @@ namespace ME2Randomizer.Classes
             mainWindow.CurrentOperationText = "Data finder done";
         }
 
+        #region Guns
         private void FindPortableGuns(object sender, DoWorkEventArgs e)
         {
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
@@ -67,19 +412,19 @@ namespace ME2Randomizer.Classes
 
             // Maps instanced full path to list of instances
             ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>> mapping = new ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>>();
-            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
-            {
-                mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
-                Interlocked.Increment(ref numdone);
+            //Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
+            //{
+            //    mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
+            //    Interlocked.Increment(ref numdone);
 
-                var package = MEPackageHandler.OpenMEPackage(file);
-                var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
-                foreach (var skm in sfxweapons)
-                {
-                    BuildGunInfo(skm, mapping, package, startupFileCache, false);
-                }
-                mainWindow.CurrentProgressValue = numdone;
-            });
+            //    var package = MEPackageHandler.OpenMEPackage(file);
+            //    var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
+            //    foreach (var skm in sfxweapons)
+            //    {
+            //        BuildGunInfo(skm, mapping, package, startupFileCache, false);
+            //    }
+            //    mainWindow.CurrentProgressValue = numdone;
+            //});
 
             // Corrected, embedded guns that required file coalescing for portability
             var correctedGuns = Utilities.ListStaticAssets("binary.correctedloadouts.weapons");
@@ -87,7 +432,7 @@ namespace ME2Randomizer.Classes
             {
                 var pData = Utilities.GetEmbeddedStaticFile(cg, true);
                 var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData), Utilities.GetFilenameFromAssetName(cg)); //just any path
-                var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
+                var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject).ToList();
                 foreach (var skm in sfxweapons)
                 {
                     BuildGunInfo(skm, mapping, package, startupFileCache, true);
@@ -279,7 +624,9 @@ namespace ME2Randomizer.Classes
             //    Debug.WriteLine($"{count.Key}\t\t\t{count.Value}");
             //}
         }
+        #endregion
 
+        #region Powers
         private void BuildPowerInfo(ExportEntry powerExport, ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping, IMEPackage package, PackageCache startupFileCache, bool isCorrectedPackage)
         {
             // See if power is fully defined in package?
@@ -463,7 +810,9 @@ namespace ME2Randomizer.Classes
             //    Debug.WriteLine($"{count.Key}\t\t\t{count.Value}");
             //}
         }
+        #endregion
 
+        #region Utilities
         private static PackageCache GetGlobalCache()
         {
             var cache = new PackageCache();
@@ -655,5 +1004,6 @@ namespace ME2Randomizer.Classes
                 return package?.FindExport(entryFullPath);
             }
         }
+        #endregion
     }
 }

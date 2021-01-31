@@ -1,12 +1,24 @@
 [
   {
-    "powername": "SFXPower_StasisNew",
-    "packagename": "SFXGameContentLiara",
-    "packagefilename": "SFXPower_StasisNew.pcc",
-    "sourceuindex": 455,
-    "type": 2,
-    "filedependency": null,
-    "iscorrectedpackage": false,
+    "powername": "SFXPower_ZaeedUnique_Player",
+    "packagename": "SFXGameContentDLC_HEN_VT",
+    "packagefilename": "SFXPower_ZaeedUnique_Player.pcc",
+    "sourceuindex": 105,
+    "type": 0,
+    "filedependency": "BioH_Veteran_00.pcc",
+    "iscorrectedpackage": true,
+    "importonly": true,
+    "requiresstartuppackage": true,
+    "additionalrequiredpowers": []
+  },
+  {
+    "powername": "SFXPower_Flashbang_NPC",
+    "packagename": "SFXGameContentKasumi",
+    "packagefilename": "SFXPower_Flashbang_NPC.pcc",
+    "sourceuindex": 922,
+    "type": 0,
+    "filedependency": "BioH_Thief_00.pcc",
+    "iscorrectedpackage": true,
     "importonly": true,
     "requiresstartuppackage": true,
     "additionalrequiredpowers": []
