@@ -13,20 +13,36 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 {
     class PackageTools
     {
-        private static Regex isLevelPersistentPackage = new Regex("Bio[ADPS]_[^_]+.pcc", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex isLevelPersistentPackage = new Regex("Bio([ADPS]|Snd)_[A-Za-z0-9]+.pcc", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static Regex isSublevelPackage = new Regex("Bio([ADPS]|Snd)_[A-Za-z0-9]+_[A-Za-z0-9]+.pcc", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+        /// <summary>
+        /// Is this a localization file?
+        /// </summary>
+        /// <param name="pName"></param>
+        /// <returns></returns>
         public static bool IsLocalizationPackage(string pName)
         {
             return pName.Contains("_LOC_");
         }
 
+        /// <summary>
+        /// Is this a top level master file (BioP/S/D/A ?)
+        /// </summary>
+        /// <param name="pName"></param>
+        /// <returns></returns>
         public static bool IsPersistentPackage(string pName)
         {
             return isLevelPersistentPackage.IsMatch(pName);
         }
 
+        public static bool IsLevelSubfile(string pName)
+        {
+            return isSublevelPackage.IsMatch(pName);
+        }
+
         /// <summary>
-        /// Ports an export into a package.
+        /// Ports an export into a package. Checks if the export already exists, and if it does, returns that instead.
         /// </summary>
         /// <param name="targetPackage">The target package to port into.</param>
         /// <param name="sourceExport">The source export to port over, including all dependencies and references.</param>
@@ -36,6 +52,10 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <returns></returns>
         public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false)
         {
+            var existing = targetPackage.FindExport(sourceExport.InstancedFullPath);
+            if (existing != null)
+                return existing;
+
             // Create parent heirarchy
             IEntry newParent = null;
             if (createParentPackages)

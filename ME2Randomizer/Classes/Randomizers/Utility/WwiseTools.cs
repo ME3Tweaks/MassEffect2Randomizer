@@ -25,5 +25,26 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             props.AddOrReplaceProp(targetId);
             targetAudioStream.WritePropertiesAndBinary(props, bin);
         }
+
+        /// <summary>
+        /// Extract a TLK ID from a WwiseStream. Returns -1 if a value could not be extracted
+        /// </summary>
+        /// <param name="export"></param>
+        /// <returns></returns>
+        public static int ExtractTLKIdFromExportName(ExportEntry export)
+        {
+            //parse out tlk id?
+            var splits = export.ObjectName.Name.Split('_', ',');
+            for (int i = splits.Length - 1; i > 0; i--)
+            {
+                //backwards is faster
+                if (int.TryParse(splits[i], out var parsed))
+                {
+                    return parsed;
+                }
+            }
+
+            return -1;
+        }
     }
 }

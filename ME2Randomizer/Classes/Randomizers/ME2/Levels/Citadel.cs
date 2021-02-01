@@ -4,6 +4,8 @@ using System.Linq;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME2Randomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
+using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
+using ME3ExplorerCore.Dialogue;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
@@ -50,7 +52,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             // You start on Floor 2
 
             // Floor 2
-            var cache = new PackageCache();
+            var cache = new MERPackageCache();
             RandomizeEndorsementLine(@"BioD_CitHub_240Vendors_LOC_INT.pcc", 808, 793, 26, 7, cache); //sirta, i think?
             RandomizeEndorsementLine(@"BioD_CitHub_300UpperWing_LOC_INT.pcc", 3539, 3514, 105, 18, cache); // gun turian
             RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 1979, 1963, 43, 8, cache); //biotic
@@ -58,7 +60,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         }
 
-        private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, PackageCache cache)
+        private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, MERPackageCache cache)
         {
             var package = cache.GetCachedPackage(packageName);
 
@@ -84,7 +86,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
             // Update the TLK reference. Not sure how this works with FaceFX honestly (or if it does at all...)
 
-            var newTlkId = extractTLKIdFromExportName(sourceExport);
+            var newTlkId = WwiseTools.ExtractTLKIdFromExportName(sourceExport);
             if (newTlkId > 0)
             {
                 // Conversations srTExt seems to be used to tell what line to play. Not sure how.
@@ -138,28 +140,91 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         //}
 
 
-        private static int extractTLKIdFromExportName(ExportEntry export)
-        {
-            //parse out tlk id?
-            var splits = export.ObjectName.Name.Split('_', ',');
-            for (int i = splits.Length - 1; i > 0; i--)
-            {
-                //backwards is faster
-                if (int.TryParse(splits[i], out var parsed))
-                {
-                    return parsed;
-                }
-            }
-
-            return -1;
-        }
-
         internal static bool PerformRandomization(RandomizationOption notUsed)
         {
             RandomizeEndorsements();
             RandomizeThaneInterrogation();
+            RandomizeCouncilConvo();
             return true;
         }
+
+        private static void RandomizeCouncilConvo()
+        {
+            var lockedUpAsset = BodyModels.RandomElement();
+            var embassyF = MERFileSystem.GetPackageFile("BioD_CitHub_Embassy_LOC_INT.pcc");
+            if (embassyF != null)
+            {
+                var embassyInt = MEPackageHandler.OpenMEPackage(embassyF);
+                MERPackageCache cache = new MERPackageCache();
+
+                var convoE = embassyInt.GetUExport(94);
+                RandomizeCouncilConvoSingle(convoE, cache);
+                
+                MERFileSystem.SavePackage(embassyInt);
+            }
+        }
+
+        private static string[] councilKeywords = new[] {"Dancing", "Angry", "Cursing", "Fearful", "ROM", "Drunk" };
+        private static string[] councilAnimPackages = new[] { "BIOG_HMF_AM_A" }; //Towny
+
+        private static void RandomizeCouncilConvoSingle(ExportEntry convoE, MERPackageCache cache)
+        {
+
+
+            var convoInfo = new ConversationExtended(convoE);
+            convoInfo.LoadConversation(detailedLoad: true);
+
+            //var turianIdx = convoInfo.Speakers.First(x => x.SpeakerName == "citprs_turian_council").SpeakerID;
+            //var salarianIdx = convoInfo.Speakers.First(x => x.SpeakerName == "citprs_salarian_council").SpeakerID;
+            //var asariIdx = convoInfo.Speakers.First(x => x.SpeakerName == "citprs_asari_council").SpeakerID;
+
+            //var turianEnabled = ThreadSafeRandom.Next(2) == 0;
+            //var salarianEnabled = ThreadSafeRandom.Next(2) == 0;
+            //var asariEnabled = (!turianEnabled || !salarianEnabled) || ThreadSafeRandom.Next(2) == 0; // if one or none of the other councilors is modified, force asari on
+
+            foreach (var entryNode in convoInfo.EntryList)
+            {
+                var interpData = entryNode.Interpdata;
+                if (interpData != null)
+                {
+                    var conversationData = new InterpTools.InterpData(interpData);
+                    var gestureTracks = conversationData.InterpGroups.FirstOrDefault(x => x.GroupName == "Conversation")?.Tracks.Where(x => x.Export.ClassName == "BioEvtSysTrackGesture").ToList();
+                    if (gestureTracks != null)
+                    {
+                        foreach (var gestTrack in gestureTracks)
+                        {
+                            var actorToFind = gestTrack.Export.GetProperty<NameProperty>("m_nmFindActor");
+
+                            if (actorToFind.Value.Name.EndsWith("_council"))
+                            {
+                                var gestures = RBioEvtSysTrackGesture.GetGestures(gestTrack.Export);
+                                if (gestures != null)
+                                {
+                                    for (int i = 0; i < gestures.Count; i++)
+                                    {
+                                        var newGesture = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, councilAnimPackages, true, cache);
+                                        gestures[i] = newGesture;
+                                    }
+
+                                    RBioEvtSysTrackGesture.WriteGestures(gestTrack.Export, gestures);
+                                }
+
+                                var defaultPose = RBioEvtSysTrackGesture.GetDefaultPose(gestTrack.Export);
+                                if (defaultPose != null)
+                                {
+                                    var newPose = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, councilAnimPackages, true, cache);
+                                    if (newPose != null)
+                                    {
+                                        RBioEvtSysTrackGesture.WriteDefaultPose(gestTrack.Export, newPose);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
         private static void RandomizeThaneInterrogation()
         {

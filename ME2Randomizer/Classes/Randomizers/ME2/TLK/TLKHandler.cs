@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -188,6 +189,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
                 {
                     // Check if this string should be replaced in this language
                     if (langCode != null && !Path.GetFileNameWithoutExtension(tf.path).EndsWith($@"_{langCode}")) continue;
+                    //Debug.WriteLine($"TLK installing {stringid}: {newText}");
                     tf.ReplaceString(stringid, newText, true);
                 }
             }

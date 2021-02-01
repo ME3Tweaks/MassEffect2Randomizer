@@ -2,10 +2,12 @@
 using ME3ExplorerCore.Unreal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
@@ -234,6 +236,58 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                     pointsA.Add(p.ToStructProperty());
                 }
                 export.WriteProperty(vt);
+            }
+        }
+
+        [DebuggerDisplay("InterpData {Export.InstancedFullPath} {Export.UIndex} in {Path.GetFileName(Export.FileRef.FilePath)}")]
+        public class InterpData
+        {
+            public float InterpLength { get; set; }
+            public List<InterpGroup> InterpGroups { get; } = new List<InterpGroup>();
+            public ExportEntry Export { get; set; }
+
+            public InterpData(ExportEntry export)
+            {
+                Export = export;
+                var props = export.GetProperties();
+                InterpLength = props.GetProp<FloatProperty>("InterpLength");
+                var groups = props.GetProp<ArrayProperty<ObjectProperty>>("InterpGroups");
+                if (groups != null)
+                {
+                    InterpGroups.AddRange(groups.Select(x => new InterpGroup(x.ResolveToEntry(export.FileRef) as ExportEntry)));
+                }
+            }
+        }
+
+        [DebuggerDisplay("InterpTrack {TrackTitle} {Export.InstancedFullPath} {Export.UIndex} in {Path.GetFileName(Export.FileRef.FilePath)}")]
+        internal class InterpTrack
+        {
+            public string TrackTitle { get; set; }
+            public ExportEntry Export { get; set; }
+            public InterpTrack(ExportEntry export)
+            {
+                Export = export;
+                var props = export.GetProperties();
+                TrackTitle = props.GetProp<StrProperty>("TrackTitle")?.Value;
+            }
+        }
+
+        [DebuggerDisplay("InterpGroup {GroupName} {Export.InstancedFullPath} {Export.UIndex} in {Path.GetFileName(Export.FileRef.FilePath)}")]
+        internal class InterpGroup
+        {
+            public ExportEntry Export { get; set; }
+            public string GroupName { get; set; } // technically is namereference
+            public List<InterpTrack> Tracks { get; } = new List<InterpTrack>();
+            public InterpGroup(ExportEntry export)
+            {
+                Export = export;
+                var props = export.GetProperties();
+                GroupName = props.GetProp<NameProperty>("GroupName")?.Value;
+                var tracks = props.GetProp<ArrayProperty<ObjectProperty>>("InterpTracks");
+                if (tracks != null)
+                {
+                    Tracks.AddRange(tracks.Select(x => new InterpTrack(x.ResolveToEntry(export.FileRef) as ExportEntry)));
+                }
             }
         }
     }

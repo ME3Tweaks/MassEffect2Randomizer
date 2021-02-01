@@ -111,7 +111,7 @@ namespace MassEffectRandomizer.Classes
         /// <returns></returns>
         public static byte[] GetEmbeddedStaticFilesBinaryFile(string filename, bool fullName = false)
         {
-            return GetEmbeddedStaticFile("binary." + filename, fullName);
+            return GetEmbeddedStaticFile(fullName ? filename : ("binary." + filename), fullName);
         }
 
         //internal static string ExtractInternalStaticExecutable(string executableFilename, bool overwrite)
@@ -314,7 +314,7 @@ namespace MassEffectRandomizer.Classes
         /// </summary>
         /// <param name="assetPath"></param>
         /// <returns></returns>
-        public static List<string> ListStaticAssets(string assetRootPath)
+        public static List<string> ListStaticAssets(string assetRootPath, bool includeSubitems = false)
         {
             var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
             var prefix = $"ME2Randomizer.staticfiles.{assetRootPath}";
@@ -324,7 +324,7 @@ namespace MassEffectRandomizer.Classes
                 if (item.StartsWith(prefix))
                 {
                     var iName = item.Substring(prefix.Length + 1);
-                    if (iName.Count(x => x == '.') == 1) //Only has extension
+                    if (includeSubitems || iName.Count(x => x == '.') == 1) //Only has extension
                     {
                         itemsL.Add(iName);
                     }

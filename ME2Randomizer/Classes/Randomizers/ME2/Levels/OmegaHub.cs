@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Dialogue;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
@@ -19,8 +20,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 var vipLounge = MEPackageHandler.OpenMEPackage(vipLoungeLF);
 
                 var playerDanceInterpData = vipLounge.GetUExport(547);
-                var randomNewGesture1 = RBioEvtSysTrackGesture.InstallRandomGestureAsset(vipLounge);
-                var randomNewGesture2 = RBioEvtSysTrackGesture.InstallRandomGestureAsset(vipLounge);
+                var c = new MERPackageCache();
+                var randomNewGesture1 = RBioEvtSysTrackGesture.InstallRandomGestureAsset(vipLounge, 5, c);
+                var randomNewGesture2 = RBioEvtSysTrackGesture.InstallRandomGestureAsset(vipLounge, 5, c);
+                c.ReleasePackages();
                 var danceGestureData = RBioEvtSysTrackGesture.GetGestures(playerDanceInterpData);
                 danceGestureData[0] = randomNewGesture1;
                 danceGestureData[1] = randomNewGesture2;
