@@ -4,10 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
-using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
@@ -20,9 +19,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 {
     class EnemyWeaponChanger
     {
-        public static ConcurrentDictionary<string, bool> LoadoutSupportsVisibleMapping;
-        public static List<GunInfo> AllAvailableWeapons;
-        public static List<GunInfo> VisibleAvailableWeapons;
+        // Animation info
+        private static ArrayProperty<StructProperty> WeaponAnimationsArrayProp;
+        private static IMEPackage WeaponAnimsPackage;
+
+        // Weapon Info
+        private static ConcurrentDictionary<string, bool> LoadoutSupportsVisibleMapping;
+        private static List<GunInfo> AllAvailableWeapons;
+        private static List<GunInfo> VisibleAvailableWeapons;
+
         public static void LoadGuns()
         {
             if (AllAvailableWeapons == null)
@@ -46,7 +51,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         }
                     }
                 }
-
+                Debug.WriteLine($"Number of available weapons for randomization: {AllAvailableWeapons.Count}");
+                Debug.WriteLine($"Number of visible weapons for randomization: {VisibleAvailableWeapons.Count}");
             }
         }
 
@@ -59,8 +65,54 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         /// <returns></returns>
         public static bool Init(RandomizationOption option)
         {
+            WeaponAnimsPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("WeaponAnims.pcc")));
+            WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
             LoadGuns();
+            InstallGlobalWeaponAnims(option);
             return true;
+        }
+
+
+
+        /// <summary>
+        /// Converts an AnimSet export to an import
+        /// </summary>
+        /// <param name="origEntry"></param>
+        /// <param name="targetPackage"></param>
+        /// <returns></returns>
+        private static IEntry ConvertAnimSetExportToImport(IEntry origEntry, IMEPackage targetPackage)
+        {
+            // Check if this item is available already
+            var found = targetPackage.FindEntry(origEntry.InstancedFullPath);
+            if (found != null)
+                return found;
+
+            // Setup the link for our import
+            var parentPackage = targetPackage.FindEntry(origEntry.Parent.InstancedFullPath);
+            if (parentPackage == null)
+            {
+                // We must add a package import
+                parentPackage = new ImportEntry(targetPackage)
+                {
+                    idxLink = 0,
+                    ClassName = "Package",
+                    ObjectName = origEntry.Parent.ObjectName,
+                    PackageFile = "Core"
+                };
+                targetPackage.AddImport((ImportEntry)parentPackage);
+            }
+
+            // Install the import
+            ImportEntry imp = new ImportEntry(targetPackage)
+            {
+                ClassName = origEntry.ClassName,
+                idxLink = parentPackage.UIndex,
+                ObjectName = origEntry.ObjectName,
+                PackageFile = "Engine"
+            };
+            targetPackage.AddImport(imp);
+
+            return imp;
         }
 
         [DebuggerDisplay("GunInfo for {GunName} in {PackageFileName}")]
@@ -302,15 +354,141 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             return null; // No package was found
         }
 
-        // This can probably be changed later
-        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "SFXLoadoutData"
-                                                                                        && !export.ObjectName.Name.Contains("HeavyWeaponMech") // Not actually sure we can't randomize this one
-                                                                                        && !export.ObjectName.Name.Contains("BOS_Reaper") // Don't randomize the final boss cause it'd really make him stupid
-                                                                                        && export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons") != null;
+        private enum EWRType
+        {
+            Invalid,
+            Loadout,
+            ApprBody
+        }
+
+        /// <summary>
+        /// When gun randomizer is active, we must also update weapon animations
+        /// unfortunately due to the complexity there's no way this could be done on the fly
+        /// so we're just gonna update all of them
+        /// </summary>
+        /// <param name="export"></param>
+        /// <param name="wrtype"></param>
+        /// <returns></returns>
+        private static bool CanRandomize(ExportEntry export, out EWRType wrtype)
+        {
+            wrtype = EWRType.Invalid;
+            if (export.IsDefaultObject) return false;
+            if (export.ClassName == "Bio_Appr_Character_Body")
+            {
+                var fname = Path.GetFileName(export.FileRef.FilePath);
+                if ((!fname.StartsWith("BioD") && !fname.StartsWith("BioP")) || fname == "BioP_Global.pcc")
+                    return false; // Only modify design files
+                wrtype = EWRType.ApprBody;
+                return true;
+            }
+
+            if (export.ClassName == "SFXLoadoutData"
+                && !export.ObjectName.Name.Contains("HeavyWeaponMech") // Not actually sure we can't randomize this one
+                && !export.ObjectName.Name.Contains("BOS_Reaper") // Don't randomize the final boss cause it'd really make him stupid
+                && export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons") != null)
+            {
+                wrtype = EWRType.Loadout;
+                return true;
+            }
+
+            return false;
+
+        }
 
         internal static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
-            if (!CanRandomize(export)) return false;
+            if (!CanRandomize(export, out var wrtype)) return false;
+            if (wrtype == EWRType.Loadout)
+                return RandomizeWeaponLoadout(export, option);
+            else if (wrtype == EWRType.ApprBody)
+                return InstallWeaponAnims(export, option);
+            return false;
+        }
+
+        /// <summary>
+        /// Sets up weapon animations for appearances that don't support it. In case the type receives a heavy weapon for example
+        /// </summary>
+        /// <param name="export"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        private static bool InstallWeaponAnims(ExportEntry export, RandomizationOption option)
+        {
+            var weaponAnimSpecs = export.GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
+            if (weaponAnimSpecs != null && weaponAnimSpecs.Count == 12)
+            {
+                for (int i = 0; i < 12; i++)
+                {
+                    var localAnimSpecs = weaponAnimSpecs[i];
+                    var masterAnimSpecs = WeaponAnimationsArrayProp[i];
+                    var drawAnimSet = localAnimSpecs.GetProp<ObjectProperty>("m_drawAnimSet");
+                    if (drawAnimSet.Value == 0)
+                    {
+                        // This set is not populated
+                        var masterDrawAnimSpecExp = masterAnimSpecs.GetProp<ObjectProperty>("m_drawAnimSet").ResolveToEntry(WeaponAnimsPackage) as ExportEntry;
+                        drawAnimSet.Value = ConvertAnimSetExportToImport(masterDrawAnimSpecExp, export.FileRef).UIndex;
+                    }
+
+                    var animSets = localAnimSpecs.GetProp<ArrayProperty<ObjectProperty>>("m_animSets");
+                    var masterAnimSets = masterAnimSpecs.GetProp<ArrayProperty<ObjectProperty>>("m_animSets");
+                    foreach (var mas in masterAnimSets.Where(x => x.Value != 0))
+                    {
+                        var masterEntry = mas.ResolveToEntry(WeaponAnimsPackage);
+                        var newObj = ConvertAnimSetExportToImport(masterEntry, export.FileRef);
+                        // Prevents duplicates. It seems some pawns don't have a draw but have animsets for the gun
+                        if (animSets.All(x => x.Value != newObj.UIndex))
+                        {
+                            animSets.Add(new ObjectProperty(newObj));
+                        }
+                    }
+
+                    //if (animSets.Count != masterAnimSets.Count)
+                    //    Debugger.Break();
+
+                }
+                export.WriteProperty(weaponAnimSpecs);
+                return true;
+            }
+            return false;
+        }
+
+        private static bool InstallGlobalWeaponAnims(RandomizationOption option)
+        {
+            var objsToPort = WeaponAnimsPackage.Exports.Where(x => x.ClassName == "AnimSet").ToList();
+            //var persistentPackages = MERFileSystem.LoadedFiles.Keys.Where(x => x.StartsWith("BioP_")
+            //                                                                   && x != "BioP_Global.pcc"
+            //                                                                   && x != "BioP_Char.pcc"
+            //                                                                   && x != "BioP_EndGm_StuntHench.pcc"
+            //                                                                   && !x.Contains("_LOC_")).ToList();
+            var persistentPackages = new List<string>(new[] { "BioP_Global.pcc" }); // I think this package is always loaded in SP in ME2 so we can probably get away with just using it... i hope
+            Parallel.ForEach(persistentPackages, pp =>
+            {
+                Log.Information($"Installing persistent weapon animations into {pp}");
+                var package = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(pp));
+                var originalExportCount = package.ExportCount;
+                // Install all weapon animations
+                var newMemoryReferences = new List<ExportEntry>();
+                foreach (var v in objsToPort)
+                {
+                    newMemoryReferences.Add(PackageTools.PortExportIntoPackage(package, v));
+                }
+
+                // Add world reference to force it to persist in memory
+                var world = package.FindExport("TheWorld");
+                var worldBin = ObjectBinary.From<World>(world);
+                var extraRefs = worldBin.ExtraReferencedObjects.ToList();
+                extraRefs.AddRange(newMemoryReferences.Select(x => new UIndex(x.UIndex)));
+                worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
+                world.WriteBinary(worldBin);
+
+                MERFileSystem.SavePackage(package);
+            });
+
+            return true;
+        }
+
+
+        private static bool RandomizeWeaponLoadout(ExportEntry export, RandomizationOption option)
+        {
             var guns = export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons");
             if (guns.Count == 1) //Randomizing multiple guns could be difficult and I'm not sure enemies ever change their weapons.
             {
@@ -361,6 +539,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         }
                     }
                 }
+                return true;
             }
 
             return false;

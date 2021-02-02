@@ -152,7 +152,7 @@ namespace ME2Randomizer.Classes
 
                     if (
                     //!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    !file.Contains("PrsCvA", StringComparison.InvariantCultureIgnoreCase)
+                    !file.Contains("EndGm2", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("TwrHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
@@ -437,7 +437,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Jack Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = JackAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, RequiresTLK = true},
                     new RandomizationOption() {HumanName = "Illium Hub", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = IlliumHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {HumanName = "Omega Hub", Description = "Changes various things across Omega's Hub area", PerformSpecificRandomizationDelegate = OmegaHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    new RandomizationOption() {HumanName = "Suicide Mission", Description = "Changes a few things in-level and post-level (renegade)", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization, RequiresTLK = true},
+                    new RandomizationOption() {HumanName = "Suicide Mission", Description = "Significantly changes level. Greatly increases difficulty", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization, RequiresTLK = true},
                 }
             });
 

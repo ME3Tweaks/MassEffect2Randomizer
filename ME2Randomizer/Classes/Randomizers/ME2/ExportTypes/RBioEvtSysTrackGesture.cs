@@ -90,7 +90,68 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
             export.WriteProperty(gestures);
         }
+        /*
+        private static void VerifyGesturesWork(ExportEntry trackExport)
+        {
+            var gestures = RBioEvtSysTrackGesture.GetGestures(trackExport);
+            var defaultPose = RBioEvtSysTrackGesture.GetDefaultPose(trackExport);
 
+            var gesturesToCheck = gestures.Append(defaultPose).ToList();
+
+            // Get the containing sequence
+            var owningSequence = SeqTools.GetParentSequence(trackExport);
+            while (owningSequence.ClassName != "Sequence")
+            {
+                owningSequence = owningSequence.Parent as ExportEntry;
+                var parSeq = SeqTools.GetParentSequence(owningSequence);
+                if (parSeq != null)
+                {
+                    owningSequence = parSeq;
+                }
+            }
+
+            var kismetBioDynamicAnimSets = owningSequence.GetProperty<ArrayProperty<ObjectProperty>>("m_aBioDynAnimSets");
+            if (kismetBioDynamicAnimSets == null)
+            {
+                // We don't have any animsets!
+                throw new Exception("Track's sequence is missing animsets property!");
+            }
+
+            // Get a list of all supported animations
+            List<Gesture> supportedGestures = new List<Gesture>();
+            foreach (var kbdas in kismetBioDynamicAnimSets)
+            {
+                var sequenceBioDynamicAnimSet = kbdas.ResolveToEntry(trackExport.FileRef) as ExportEntry; // I don't think these can be imports as they're part of the seq
+                var associatedset = sequenceBioDynamicAnimSet.GetProperty<ObjectProperty>("m_pBioAnimSetData").ResolveToEntry(trackExport.FileRef);
+
+            }
+
+            // Check all gestures
+            foreach (var gesture in gesturesToCheck)
+            {
+                var bioAnimSet = gesture.GetBioAnimSet(trackExport.FileRef);
+
+            }
+
+
+
+        }
+
+        internal class TestingBioDynamicAnimSet
+        {
+            public NameReference OrigSetName { get; }
+            public List<string> SupportedGesturesFullPaths { get; }
+            public IEntry BioAnimSetData { get; }
+
+            internal TestingBioDynamicAnimSet(ExportEntry export)
+            {
+                var props = export.GetProperties();
+                OrigSetName = props.GetProp<NameProperty>("m_nmOrigSetName").Value;
+                BioAnimSetData = props.GetProp<ObjectProperty>("m_pBioAnimSetData").ResolveToEntry(export.FileRef);
+                SupportedGesturesFullPaths = props.GetProp<ArrayProperty<ObjectProperty>>("Sequences").Select(x => x.ResolveToEntry(export.FileRef).InstancedFullPath).ToList();
+            }
+        }
+        */
         private static void InstallDynamicAnimSetRefForSeq(ref ExportEntry owningSequence, ExportEntry export, Gesture gesture)
         {
             // Find owning sequence
@@ -509,6 +570,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             props.AddOrReplaceProp(new NameProperty(newPose.GestureSet, "nmStartingPoseSet"));
             props.AddOrReplaceProp(new NameProperty(newPose.GestureAnim, "nmStartingPoseAnim"));
             export.WriteProperties(props);
+            ExportEntry owningSeq = null;
+            InstallDynamicAnimSetRefForSeq(ref owningSeq, export, newPose);
         }
 
         public static Gesture GetDefaultPose(ExportEntry export)
@@ -521,7 +584,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             };
         }
 
-        public static Gesture InstallRandomFilteredGestureAsset(IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
+        public static Gesture InstallRandomFilteredGestureAsset(IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
         {
             var gestureFiles = Utilities.ListStaticAssets("binary.gestures", includeSpecial);
 
@@ -554,9 +617,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             cache ??= new MERPackageCache();
             var gPackage = cache.GetCachedPackageEmbedded(randGestureFile, isFullPath: true);
             List<ExportEntry> options;
-            if (filterKeywords != null)
+            if (filterKeywords != null && blacklistedKeywords != null)
             {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence" && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)).ToList();
+                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)
+                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
+            }
+            else if (filterKeywords != null)
+            {
+                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)).ToList();
+            }
+            else if (blacklistedKeywords != null)
+            {
+                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
             }
             else
             {
@@ -572,7 +647,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 var seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
 
                 int numRetries = 7;
-                while (seqLength < minLength)
+                while (seqLength < minLength && numRetries >= 0)
                 {
                     randomGestureExport = options.RandomElement();
                     seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");

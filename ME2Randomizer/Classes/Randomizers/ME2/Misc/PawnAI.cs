@@ -78,6 +78,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     var aiImp = currentAi.ResolveToEntry(exp.FileRef) as ImportEntry;
                     if (AllowedAIClasses.Contains(aiImp.ObjectName.Name))
                     {
+                        // It uses a basic AI, we can change it
+                        // We should not change customized AI cause other parts depend on it (e.g. collector)
                         var newAi = AllowedAIClasses.RandomElement();
                         if (newAi != aiImp.ObjectName.Name)
                         {

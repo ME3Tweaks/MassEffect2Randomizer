@@ -1,0 +1,3 @@
+﻿ME3ExplorerCore
+Provides modding backend for opening, modifying, and saving packages
+https://github.com/ME3Tweaks/ME3Explorer

@@ -48,6 +48,7 @@
     <None Remove="staticfiles\PremadeSeqObjs.pcc" />
     <None Remove="staticfiles\starterkit\me2starterkit.zip" />
     <None Remove="staticfiles\text\imagecredits.txt" />
+    <None Remove="staticfiles\text\librarycredits.txt" />
     <None Remove="staticfiles\text\powerlistme2.json" />
     <Resource Include="fonts\aerolight.ttf" />
   </ItemGroup>

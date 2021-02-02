@@ -344,13 +344,19 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         }
 
         /// <summary>
-        /// Gets the containing sequence of the specified export. Performed by looking for ParentSequence object property
+        /// Gets the containing sequence of the specified export. Performed by looking for ParentSequence object property. Pass true to continue up the chain.
         /// </summary>
         /// <param name="export"></param>
         /// <returns></returns>
-        public static ExportEntry GetParentSequence(ExportEntry export)
+        public static ExportEntry GetParentSequence(ExportEntry export, bool lookup = false)
         {
-            return export?.GetProperty<ObjectProperty>("ParentSequence")?.ResolveToEntry(export.FileRef) as ExportEntry;
+            var result =  export?.GetProperty<ObjectProperty>("ParentSequence")?.ResolveToEntry(export.FileRef) as ExportEntry;
+            while (lookup && result != null && result.ClassName != "Sequence")
+            {
+                result = result.GetProperty<ObjectProperty>("ParentSequence")?.ResolveToEntry(export.FileRef) as ExportEntry;
+            }
+
+            return result;
         }
     }
 }

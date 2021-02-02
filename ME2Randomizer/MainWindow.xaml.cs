@@ -51,6 +51,8 @@ namespace ME2Randomizer
         public RandomizationMode SelectedRandomizeMode { get; set; }
 
         public ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new ObservableCollectionExtended<ImageCredit>();
+        public ObservableCollectionExtended<string> ContributorCredits { get; } = new ObservableCollectionExtended<string>();
+        public ObservableCollectionExtended<LibraryCredit> LibraryCredits { get; } = new ObservableCollectionExtended<LibraryCredit>();
 
         public void OnSelectedRandomizeModeChanged()
         {
@@ -102,6 +104,8 @@ namespace ME2Randomizer
             Random random = new Random();
             var preseed = random.Next();
             ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
+            ContributorCredits.ReplaceAll(GetContributorCredits());
+            LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
@@ -120,6 +124,15 @@ namespace ME2Randomizer
             SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
             PerformUpdateCheck();
         }
+
+        private List<string> GetContributorCredits()
+        {
+            var contributors = new List<string>();
+            contributors.Add("Mellin - 3D modeling");
+            contributors.Add("Audemus - Textures");
+            return contributors;
+        }
+
         #region Commands
         public GenericCommand StartRandomizationCommand { get; set; }
 

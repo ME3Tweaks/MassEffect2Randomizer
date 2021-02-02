@@ -264,27 +264,53 @@
                     </DockPanel>
                 </TabItem>
                 <TabItem Header="Credits">
-                    <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="1100">
-                        <TextBlock DockPanel.Dock="Top" Text="Mass Effect 2 Randomizer uses the following images from third party sources. Images that required explicit permission for use may not be reused without their own license." TextWrapping="Wrap" TextAlignment="Center"/>
-                        <ListBox ItemsSource="{Binding ImageCredits}" Background="Transparent" ItemTemplate="{StaticResource CreditTemplate}">
-                            <ListBox.Resources>
-                                <Style TargetType="ListBox">
-                                    <Setter Property="ItemsPanel">
-                                        <Setter.Value>
-                                            <ItemsPanelTemplate>
-                                                <UniformGrid Columns="3"/>
-                                            </ItemsPanelTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </ListBox.Resources>
-                            <ItemsControl.ItemContainerStyle>
-                                <Style>
-                                    <Setter Property="Control.Background" Value="Transparent"/>
-                                </Style>
-                            </ItemsControl.ItemContainerStyle>
-                        </ListBox>
-                    </DockPanel>
+                    <TabControl Background="Transparent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+                        <TabControl.Resources>
+                            <Style TargetType="{x:Type TabPanel}">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                            </Style>
+                        </TabControl.Resources>
+                        <TabItem Header="Contributors">
+                            <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="1100">
+                                <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="The following people helped contribute resources to this project:" TextWrapping="Wrap" TextAlignment="Center"/>
+                                <ItemsControl ItemsSource="{Binding ContributorCredits}" DockPanel.Dock="Top"/>
+                                <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="The following libraries are used in this project:" TextWrapping="Wrap" TextAlignment="Center"/>
+                                <ItemsControl ItemsSource="{Binding LibraryCredits}" DockPanel.Dock="Top">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="classes:LibraryCredit">
+                                            <TextBlock Text="{Binding LibraryName}">
+
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+
+                                </ItemsControl>
+                            </DockPanel>
+                        </TabItem>
+                        <TabItem Header="Images">
+                            <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="1100">
+                                <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="Mass Effect 2 Randomizer uses the following images from third party sources. Images that required explicit permission for use may not be reused without their own license." TextWrapping="Wrap" TextAlignment="Center"/>
+                                <ListBox ItemsSource="{Binding ImageCredits}" Background="Transparent" ItemTemplate="{StaticResource CreditTemplate}">
+                                    <ListBox.Resources>
+                                        <Style TargetType="ListBox">
+                                            <Setter Property="ItemsPanel">
+                                                <Setter.Value>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Columns="3"/>
+                                                    </ItemsPanelTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.Resources>
+                                    <ItemsControl.ItemContainerStyle>
+                                        <Style>
+                                            <Setter Property="Control.Background" Value="Transparent"/>
+                                        </Style>
+                                    </ItemsControl.ItemContainerStyle>
+                                </ListBox>
+                            </DockPanel>
+                        </TabItem>
+                    </TabControl>
                 </TabItem>
                 <TabItem Header="About">
                     <StackPanel HorizontalAlignment="Stretch">

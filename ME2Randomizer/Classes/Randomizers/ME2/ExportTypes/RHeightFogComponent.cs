@@ -2,6 +2,7 @@
 using ME3ExplorerCore.Unreal;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     density.Value = density + thicknessRandomizer;
                 }
 
+                //Debug.WriteLine($"Updating fog {export.InstancedFullPath} in {export.FileRef.FilePath}");
                 export.WriteProperties(properties);
                 return true;
             }

@@ -14,6 +14,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var cac = sfxplayercontrollerDefaults.GetProperty<ArrayProperty<ObjectProperty>>("CustomActionClasses");
             cac[5].Value = 25988; //SFXCustomActionRagdoll
             sfxplayercontrollerDefaults.WriteProperty(cac);
+            MERFileSystem.SavePackage(sfxgame);
             return true;
         }
 

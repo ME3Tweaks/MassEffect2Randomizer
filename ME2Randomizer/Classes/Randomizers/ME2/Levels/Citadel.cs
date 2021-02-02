@@ -6,7 +6,9 @@ using ME2Randomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME3ExplorerCore.Dialogue;
+using ME3ExplorerCore.Kismet;
 using ME3ExplorerCore.Packages;
+using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
 
@@ -14,8 +16,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     public static class Citadel
     {
-        private static int CommanderShepEndorsementTLKId = 253684;
 
+        #region ENDORSEMENTS
         // Endorsement line is 2.1ish seconds long.
         // BOTH LISTS MUST BE THE SAME LENGTH AND HAVE IDENTICAL TLK STRS!
         private static List<(string packageName, int uindex)> EndorsementCandidatesFemale = new List<(string packageName, int uindex)>()
@@ -29,6 +31,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             ("BioD_CitHub_240Vendors_LOC_INT.pcc", 798), // HEY EVERYONE THIS STORE DISCRIMINATES AGAINST THE POOR
 
             ("BioD_Procer_350BriefRoom_LOC_INT.pcc", 2693), // Are you naturally this bitchy or is it just me
+
+            ("BioD_Nor_101Cockpit_LOC_INT.pcc", 3675 ), // What is this high school
+
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 6895), // Free drinks on me
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 7034), // Sectors of space
+
+            ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", 240), // Go to hell
+
         };
 
         private static List<(string packageName, int uindex)> EndorsementCandidatesMale = new List<(string packageName, int uindex)>()
@@ -43,24 +53,31 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
             ("BioD_Procer_350BriefRoom_LOC_INT.pcc", 2710), // Are you naturally this bitchy or is it just me
 
+            ("BioD_Nor_101Cockpit_LOC_INT.pcc", 3712 ), // What is this high school
+
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 6902), // Free drinks on me
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 7113), // Sectors of space
+
+            ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", 244), // Go to hell
+
+
         };
 
 
 
         private static void RandomizeEndorsements()
         {
-            // You start on Floor 2
-
-            // Floor 2
             var cache = new MERPackageCache();
-            RandomizeEndorsementLine(@"BioD_CitHub_240Vendors_LOC_INT.pcc", 808, 793, 26, 7, cache); //sirta, i think?
-            RandomizeEndorsementLine(@"BioD_CitHub_300UpperWing_LOC_INT.pcc", 3539, 3514, 105, 18, cache); // gun turian
-            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 1979, 1963, 43, 8, cache); //biotic
-            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 2038, 2022, 44, 11, cache); //omni
+            List<int> pickedIndices = new List<int>();
+
+            RandomizeEndorsementLine(@"BioD_CitHub_240Vendors_LOC_INT.pcc", 808, 793, 26, 7, cache, pickedIndices); //sirta, i think?
+            RandomizeEndorsementLine(@"BioD_CitHub_300UpperWing_LOC_INT.pcc", 3539, 3514, 105, 18, cache, pickedIndices); // gun turian
+            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 1979, 1963, 43, 8, cache, pickedIndices); //biotic
+            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 2038, 2022, 44, 11, cache, pickedIndices); //omni
 
         }
 
-        private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, MERPackageCache cache)
+        private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, MERPackageCache cache, List<int> pickedIndices)
         {
             var package = cache.GetCachedPackage(packageName);
 
@@ -71,6 +88,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             var endorsementLineFemale = package.GetUExport(femaleUIndex);
 
             var replacementIndex = EndorsementCandidatesMale.RandomIndex();
+            while (pickedIndices.Contains(replacementIndex))
+            {
+                replacementIndex = EndorsementCandidatesMale.RandomIndex(); // repick
+            }
+
+            pickedIndices.Add(replacementIndex); // do not use this line again
             var maleReplacement = EndorsementCandidatesMale[replacementIndex];
             var femaleReplacement = EndorsementCandidatesFemale[replacementIndex];
 
@@ -139,18 +162,86 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         //    }
         //}
 
+        #endregion
 
         internal static bool PerformRandomization(RandomizationOption notUsed)
         {
             RandomizeEndorsements();
             RandomizeThaneInterrogation();
             RandomizeCouncilConvo();
+            RandomizeShepDance();
             return true;
+        }
+
+        private static void RandomizeShepDance()
+        {
+            var loungeF = MERFileSystem.GetPackageFile("BioD_CitHub_310Lounge.pcc");
+            if (loungeF != null)
+            {
+                var loungeP = MEPackageHandler.OpenMEPackage(loungeF);
+                var sequence = loungeP.GetUExport(2583);
+
+                MERPackageCache cache = new MERPackageCache();
+                List<InterpTools.InterpData> interpDatas = new List<InterpTools.InterpData>();
+                var interp1 = loungeP.GetUExport(2532);
+
+                // Make 2 additional dance options by cloning the interp and the data tree
+                var interp2 = SeqTools.CloneBasicSequenceObject(interp1);
+                var interp3 = SeqTools.CloneBasicSequenceObject(interp1);
+
+
+                // Clone the interp data for attaching to 2 and 3
+                var interpData1 = loungeP.GetUExport(698);
+                var interpData2 = EntryCloner.CloneTree(interpData1);
+                var interpData3 = EntryCloner.CloneTree(interpData2);
+                KismetHelper.AddObjectToSequence(interpData2, sequence);
+                KismetHelper.AddObjectToSequence(interpData3, sequence);
+
+                // Load ID for randomization
+                interpDatas.Add(new InterpTools.InterpData(interpData1));
+                interpDatas.Add(new InterpTools.InterpData(interpData2));
+                interpDatas.Add(new InterpTools.InterpData(interpData3));
+
+
+                // Chance the data for interp2/3
+                var id2 = SeqTools.GetVariableLinksOfNode(interp2);
+                id2[0].LinkedNodes[0] = interpData2;
+                SeqTools.WriteVariableLinksToNode(interp2, id2);
+
+                var id3 = SeqTools.GetVariableLinksOfNode(interp3);
+                id3[0].LinkedNodes[0] = interpData3;
+                SeqTools.WriteVariableLinksToNode(interp3, id3);
+
+                // Add additional finished states for fadetoblack when done
+                KismetHelper.CreateOutputLink(loungeP.GetUExport(449), "Finished", interp2, 2);
+                KismetHelper.CreateOutputLink(loungeP.GetUExport(449), "Finished", interp3, 2);
+
+
+                // Link up the random choice it makes
+                var randSw = SeqTools.InstallRandomSwitchIntoSequence(sequence, 3);
+                KismetHelper.CreateOutputLink(randSw, "Link 1", interp1);
+                KismetHelper.CreateOutputLink(randSw, "Link 2", interp2);
+                KismetHelper.CreateOutputLink(randSw, "Link 3", interp3);
+
+                // Break the original output to start the interp, repoint it's output to the switch instead
+                var sgm = loungeP.GetUExport(475); //set gesture mode
+                KismetHelper.RemoveOutputLinks(sgm);
+                KismetHelper.CreateOutputLink(sgm, "Done", loungeP.GetUExport(451));
+                KismetHelper.CreateOutputLink(sgm, "Done", randSw);
+
+                // Now install the dances
+                foreach (var id in interpDatas)
+                {
+                    var danceTrack = id.InterpGroups[0].Tracks[0];
+                    OmegaHub.InstallShepardDanceGesture(danceTrack.Export, cache);
+                }
+
+                MERFileSystem.SavePackage(loungeP);
+            }
         }
 
         private static void RandomizeCouncilConvo()
         {
-            var lockedUpAsset = BodyModels.RandomElement();
             var embassyF = MERFileSystem.GetPackageFile("BioD_CitHub_Embassy_LOC_INT.pcc");
             if (embassyF != null)
             {
@@ -159,18 +250,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 var convoE = embassyInt.GetUExport(94);
                 RandomizeCouncilConvoSingle(convoE, cache);
-                
+
                 MERFileSystem.SavePackage(embassyInt);
             }
         }
 
-        private static string[] councilKeywords = new[] {"Dancing", "Angry", "Cursing", "Fearful", "ROM", "Drunk" };
+        private static string[] councilKeywords = new[] { "Dancing", "Angry", "Cursing", "Fearful", "ROM", "Drunk" };
         private static string[] councilAnimPackages = new[] { "BIOG_HMF_AM_A" }; //Towny
 
         private static void RandomizeCouncilConvoSingle(ExportEntry convoE, MERPackageCache cache)
         {
-
-
             var convoInfo = new ConversationExtended(convoE);
             convoInfo.LoadConversation(detailedLoad: true);
 
@@ -202,7 +291,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                                 {
                                     for (int i = 0; i < gestures.Count; i++)
                                     {
-                                        var newGesture = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, councilAnimPackages, true, cache);
+                                        var newGesture = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, OmegaHub.notDanceKeywords, councilAnimPackages, true, cache);
                                         gestures[i] = newGesture;
                                     }
 
@@ -212,7 +301,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                                 var defaultPose = RBioEvtSysTrackGesture.GetDefaultPose(gestTrack.Export);
                                 if (defaultPose != null)
                                 {
-                                    var newPose = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, councilAnimPackages, true, cache);
+                                    var newPose = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, OmegaHub.notDanceKeywords, councilAnimPackages, true, cache);
                                     if (newPose != null)
                                     {
                                         RBioEvtSysTrackGesture.WriteDefaultPose(gestTrack.Export, newPose);

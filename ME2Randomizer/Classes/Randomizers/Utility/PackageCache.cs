@@ -12,7 +12,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
     /// <summary>
     /// A superset cache package that can cache embedded assets
     /// </summary>
-    class MERPackageCache : PackageCache
+    public class MERPackageCache : PackageCache
     {
         /// <summary>
         /// Returns a cached package. Ensure this cache is synchronized if across threads or you may end up saving two different instances of files to the same location

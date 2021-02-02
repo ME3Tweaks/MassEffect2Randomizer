@@ -44,7 +44,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     while (numAnimationsSupported > 0)
                     {
                         // should we make sure they're unique?
-                        var randGest = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(export.FileRef, 2, smaKeywords, null, true);
+                        var randGest = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(export.FileRef, 2, smaKeywords, null, null, true);
                         InstallDynamicAnimSetRefForSkeletalMesh(smc, randGest);
                         installedGestures.Add(randGest);
                         numAnimationsSupported--;
