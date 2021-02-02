@@ -96,7 +96,6 @@ namespace ME2Randomizer
             }
         }
 
-        public bool UseMERFS { get; set; } = true;
 
         public MainWindow()
         {
@@ -256,7 +255,6 @@ namespace ME2Randomizer
                 var op = new OptionsPackage()
                 {
                     Seed = int.Parse(SeedTextBox.Text),
-                    UseMERFS = UseMERFS,
                     SelectedOptions = RandomizationGroups.SelectMany(x => x.Options.Where(x => x.OptionIsSelected)).ToList(),
                     UseMultiThread = UseMultiThreadRNG
                 };

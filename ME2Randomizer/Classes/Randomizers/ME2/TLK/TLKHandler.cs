@@ -22,13 +22,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         /// Starts up the TLK subsystem. These methods should not be across multiple threads as they are not thread safe!
         /// </summary>
         /// <param name="usingDLCSystem"></param>
-        public static void StartHandler(bool usingDLCSystem)
+        public static void StartHandler()
         {
-            CurrentHandler = new TLKHandler()
-            {
-                UsingDLCSystem = usingDLCSystem
-            };
-
+            CurrentHandler = new TLKHandler();
             CurrentHandler.Start();
         }
 
@@ -108,36 +104,26 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         #endregion
 
         #region Private members
-        /// <summary>
-        /// If the subsystem uses the DLC system or the base Coalesced.ini file
-        /// </summary>
-        private bool UsingDLCSystem { get; set; }
 
         private SortedSet<string> loadedLanguages = new SortedSet<string>();
 
         private void Start()
         {
             LoadedOfficialTalkFiles = new List<TalkFile>();
-            if (UsingDLCSystem)
-            {
-                DLCTLKFiles = new List<TalkFile>();
-            }
+            DLCTLKFiles = new List<TalkFile>();
             // Load the basegame TLKs
             var bgPath = MEDirectories.GetBioGamePath(MERFileSystem.Game);
             // ME2 specific - ignore ME2Randomizer TLKs, we do not want to modify those
             var tlkFiles = Directory.GetFiles(bgPath, "*.tlk", SearchOption.AllDirectories);
             foreach (var tlkFile in tlkFiles)
             {
-                if (tlkFile.Contains("DLC_440"))
+                if (tlkFile.Contains("DLC_440")) // Change if our module number changes
                 {
-                    if (UsingDLCSystem)
-                    {
-                        TalkFile tf = new TalkFile();
-                        tf.LoadTlkData(tlkFile);
-                        DLCTLKFiles.Add(tf);
-                        var fname = Path.GetFileNameWithoutExtension(tlkFile);
-                        loadedLanguages.Add(fname.Substring(fname.LastIndexOf("_") + 1));
-                    }
+                    TalkFile tf = new TalkFile();
+                    tf.LoadTlkData(tlkFile);
+                    DLCTLKFiles.Add(tf);
+                    var fname = Path.GetFileNameWithoutExtension(tlkFile);
+                    loadedLanguages.Add(fname.Substring(fname.LastIndexOf("_") + 1));
                 }
                 else
                 {
@@ -152,19 +138,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
 
         private void Commit()
         {
-            List<TalkFile> tlkFiles;
-            if (UsingDLCSystem)
-            {
-                tlkFiles = DLCTLKFiles;
-            }
-            else
-            {
-                tlkFiles = LoadedOfficialTalkFiles;
-            }
-
-
             // Write out the TLKs
-            Parallel.ForEach(tlkFiles, tf =>
+            Parallel.ForEach(DLCTLKFiles, tf =>
             {
                 if (tf.IsModified)
                 {
@@ -183,24 +158,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
 
         private void InternalReplaceString(int stringid, string newText, string langCode = null)
         {
-            if (UsingDLCSystem)
+            foreach (var tf in DLCTLKFiles)
             {
-                foreach (var tf in DLCTLKFiles)
-                {
-                    // Check if this string should be replaced in this language
-                    if (langCode != null && !Path.GetFileNameWithoutExtension(tf.path).EndsWith($@"_{langCode}")) continue;
-                    //Debug.WriteLine($"TLK installing {stringid}: {newText}");
-                    tf.ReplaceString(stringid, newText, true);
-                }
-            }
-            else
-            {
-                foreach (var tf in LoadedOfficialTalkFiles)
-                {
-                    // Check if this string should be replaced in this language
-                    if (langCode != null && !Path.GetFileNameWithoutExtension(tf.path).EndsWith($@"_{langCode}")) continue;
-                    tf.ReplaceString(stringid, newText);
-                }
+                // Check if this string should be replaced in this language
+                if (langCode != null && !Path.GetFileNameWithoutExtension(tf.path).EndsWith($@"_{langCode}")) continue;
+                //Debug.WriteLine($"TLK installing {stringid}: {newText}");
+                tf.ReplaceString(stringid, newText, true);
             }
         }
 

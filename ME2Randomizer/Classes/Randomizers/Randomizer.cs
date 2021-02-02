@@ -103,7 +103,7 @@ namespace ME2Randomizer.Classes
             mainWindow.ProgressBarIndeterminate = true;
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
 
-            MERFileSystem.InitMERFS(SelectedOptions.UseMERFS, SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
+            MERFileSystem.InitMERFS(SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
 
 
             // Prepare the TLK

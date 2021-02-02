@@ -22,10 +22,6 @@ namespace ME2Randomizer.Classes
         public static MEGame Game => MEGame.ME3;
 #endif
 
-        /// <summary>
-        /// If the MERFS system is using the DLC Mod filesystem
-        /// </summary>
-        public static bool UsingDLCModFS { get; private set; }
 
         private static string dlcModPath { get; set; }
         /// <summary>
@@ -33,31 +29,25 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public static string DLCModCookedPath { get; private set; }
 
-        public static void InitMERFS(bool usingDlcModFS, bool loadTLK)
+        public static void InitMERFS(bool loadTLK)
         {
             // Is there reason to do this here...?
             ReloadLoadedFiles();
-            UsingDLCModFS = usingDlcModFS;
 
             var dlcmodPath = Path.Combine(MEDirectories.GetDefaultGamePath(Game), "BioGame", "DLC", $"DLC_MOD_{Game}Randomizer");
             if (Directory.Exists(dlcmodPath)) Utilities.DeleteFilesAndFoldersRecursively(dlcmodPath); //Nukes the DLC folder
 
-            if (UsingDLCModFS)
-            {
-                dlcModPath = dlcmodPath;
-                CreateRandomizerDLCMod(dlcmodPath);
-                DLCModCookedPath = Path.Combine(dlcModPath, Game == MEGame.ME2 ? "CookedPC" : "CookedPCConsole"); // Must be changed for ME3
-            }
-            else
-            {
-                dlcModPath = null; // do not set this var
-            }
+
+            dlcModPath = dlcmodPath;
+            CreateRandomizerDLCMod(dlcmodPath);
+            DLCModCookedPath = Path.Combine(dlcModPath, Game == MEGame.ME2 ? "CookedPC" : "CookedPCConsole"); // Must be changed for ME3
+
 
             ReloadLoadedFiles();
-            CoalescedHandler.StartHandler(UsingDLCModFS);
+            CoalescedHandler.StartHandler();
             if (loadTLK)
             {
-                TLKHandler.StartHandler(UsingDLCModFS);
+                TLKHandler.StartHandler();
             }
         }
 
@@ -82,7 +72,7 @@ namespace ME2Randomizer.Classes
                 ReloadLoadedFiles();
             }
             bool packageFile = packagename.RepresentsPackageFilePath();
-            if (packageFile && UsingDLCModFS)
+            if (packageFile)
             {
                 // Check if the package is already in the mod folder
                 var packageName = Path.GetFileName(packagename);
@@ -105,7 +95,7 @@ namespace ME2Randomizer.Classes
         {
             if (package.IsModified)
             {
-                if (UsingDLCModFS && !alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
+                if (!alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
                 {
                     var fname = Path.GetFileName(package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
@@ -152,14 +142,7 @@ namespace ME2Randomizer.Classes
         {
             if (postLoadTFC)
             {
-                if (UsingDLCModFS)
-                {
-                    return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{Game}Randomizer.tfc");
-                }
-                else
-                {
-                    return Path.Combine(MEDirectories.GetCookedPath(Game), $"Textures_{Game}Randomizer.tfc");
-                }
+                return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{Game}Randomizer.tfc");
             }
 
             // TFC that can be used safely before load

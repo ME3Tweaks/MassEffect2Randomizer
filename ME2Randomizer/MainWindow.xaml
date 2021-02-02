@@ -206,7 +206,6 @@
                         <Button DockPanel.Dock="Right" Click="DataFinder_Click" Padding="20,0,20,0" Visibility="Visible">
                             <fonts:OutlinedTextBlock Text="Run Data Finder" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
-                        <CheckBox DockPanel.Dock="Right" Content="Use DLC mod for easy re-randomization" IsChecked="{Binding UseMERFS}" HorizontalAlignment="Right" Margin="0,0,10,0" ToolTip="Using a DLC mod will allow you to remove or re-randomize game without having to restore the entire game.&#10;This option can use significant disk space."/>
                     </DockPanel>
                 </StackPanel>
                 <Grid>

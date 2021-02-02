@@ -17,10 +17,6 @@ namespace ME2Randomizer.Classes.Randomizers
         /// </summary>
         public bool UseMultiThread { get; set; }
         /// <summary>
-        /// If we should use the MER FileSystem, aka a DLC mod when possible
-        /// </summary>
-        public bool UseMERFS { get; set; }
-        /// <summary>
         /// The list of randomization options that were selected
         /// </summary>
         public List<RandomizationOption> SelectedOptions { get; set; }
