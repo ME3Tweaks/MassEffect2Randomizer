@@ -18,20 +18,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         /// <returns></returns>
         public static bool AddStartupPackage(string packagename)
         {
-            if (MERFileSystem.UsingDLCModFS)
+            lock (syncObj)
             {
-                lock (syncObj)
-                {
-                    var engine = CoalescedHandler.GetIniFile("BIOEngine.ini");
-                    var sp = engine.GetOrAddSection("Engine.StartupPackages");
-                    if (sp.Entries.Any(x => x.Key == "+DLCStartupPackage" && x.Value == packagename))
-                        return true; //It's already been added.
-                    sp.Entries.Add(new DuplicatingIni.IniEntry("+DLCStartupPackage", packagename));
-                    return true;
-                }
+                var engine = CoalescedHandler.GetIniFile("BIOEngine.ini");
+                var sp = engine.GetOrAddSection("Engine.StartupPackages");
+                if (sp.Entries.Any(x => x.Key == "+DLCStartupPackage" && x.Value == packagename))
+                    return true; //It's already been added.
+                sp.Entries.Add(new DuplicatingIni.IniEntry("+DLCStartupPackage", packagename));
+                return true;
             }
-
-            return false;
         }
     }
 }

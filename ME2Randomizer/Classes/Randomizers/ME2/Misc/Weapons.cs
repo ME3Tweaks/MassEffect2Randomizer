@@ -19,17 +19,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var bg = CoalescedHandler.GetIniFile("BIOGame.ini");
             var loadoutSection = bg.GetOrAddSection("SFXGame.SFXPlayerSquadLoadoutData");
 
-            if (MERFileSystem.UsingDLCModFS)
-            {
-                // We need to minus them out
-                loadoutSection.Entries.Add(new DuplicatingIni.IniEntry("!PlayerLoadoutInfo", "CLEAR"));
-                loadoutSection.Entries.Add(new DuplicatingIni.IniEntry("!HenchLoadoutInfo", "CLEAR"));
-            }
-            else
-            {
-                loadoutSection.RemoveAllNamedEntries("PlayerLoadoutInfo");
-                loadoutSection.RemoveAllNamedEntries("HenchLoadoutInfo");
-            }
+            // We need to minus them out
+            loadoutSection.Entries.Add(new DuplicatingIni.IniEntry("!PlayerLoadoutInfo", "CLEAR"));
+            loadoutSection.Entries.Add(new DuplicatingIni.IniEntry("!HenchLoadoutInfo", "CLEAR"));
+
 
             var pawns = new[]
             {
@@ -319,7 +312,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                             {
                                                 continue; //skip
                                             }
-    
+
                                             // Write out the new value
                                             outSection.SetSingleEntry(entry.Key, $"(X={x},Y={y})");
                                         }
