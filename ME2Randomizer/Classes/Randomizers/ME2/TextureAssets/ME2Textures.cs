@@ -42,6 +42,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.TextureAssets
                     AllowedTextureAssetNames = new List<string>
                     {
                         "HoloScreens.H_Graphs.pizzaonion.bin",
+                        "HoloScreens.H_Graphs.brandamazon.bin",
                     },
                     PreMountTexture = true
                 },
