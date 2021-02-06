@@ -144,11 +144,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             },
             new HeadAssetSource()
             {
-                PackageFile = "BioH_Assassin_00.pcc",
-                AssetPath = "BIOG_DRL_HED_PROThane_R.Thane.DRL_HED_PROTHANE_MDL",
+                PackageFile = "ThaneNoChest.pcc",
+                AssetPath = "BIOG_DRL_HED_PROThane_R.Thane.DRL_HED_PROTHANE_NOCOLLAR_MDL",
                 GenderSwapDrawScale = 0.961f, //Male -> Female. Might need more for miranda. This is tuned for samara
                 NameSuffix="ne",
-                IsSquadmateHead = true
+                IsSquadmateHead = true,
+                IsCorrectedAsset = true
             },
             new HeadAssetSource()
             {
@@ -286,15 +287,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool RandomizeExport2(ExportEntry headMeshExp, RandomizationOption option)
         {
             if (!CanRandomize2(headMeshExp)) return false;
-            Debug.WriteLine($"Can randomize SQM HED {headMeshExp.InstancedFullPath} in {Path.GetFileName(headMeshExp.FileRef.FilePath)}");
-
+            var fname = Path.GetFileName(headMeshExp.FileRef.FilePath);
+            Debug.WriteLine($"Can randomize SQM HED {headMeshExp.InstancedFullPath} in {fname}");
             var skelMesh = headMeshExp.GetProperty<ObjectProperty>("SkeletalMesh");
             if (skelMesh != null)
             {
                 // Select a new asset.
                 var existingAsset = skelMesh.ResolveToEntry(headMeshExp.FileRef);
                 var newAsset = HeadAssetSources.RandomElement();
-                var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => existingAsset.ObjectName.Name.Contains(x.GetCharName()));
+                var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => existingAsset.ObjectName.Name.Contains(x.GetCharName(), StringComparison.InvariantCultureIgnoreCase));
                 if (squadmateInfo == null)
                     Debugger.Break();
 
@@ -311,6 +312,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Write the properties.
                 skelMesh.Value = newMdl.UIndex;
                 headMeshExp.WriteProperty(skelMesh);
+
+                // update the bone positions... dunno if this is a good idea or not
+                UpdateBonePositionsForHead(existingAsset, newMdl);
+                newMdl.ObjectName = newMdl.ObjectName.Name + $"_{squadmateInfo.ClassName}ified";
 
                 // Get parent object
                 var owningPawn = headMeshExp.Parent as ExportEntry;
@@ -343,7 +348,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Have to do full search cause naming system doesn't seem consistent
                 // Only look for children of TheWorld so we can do integer check
                 var persistentLevel = owningPawn.ClassName == "BioPawn" ? null : owningPawn.FileRef.FindExport("TheWorld.PersistentLevel");
-                var instance = owningPawn.ClassName == "BioPawn" ? headMeshExp : owningPawn.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex /* && x.ClassName == myClass*/);
+                var instance = owningPawn.ClassName == "BioPawn" ? headMeshExp : owningPawn.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex && x.IsA(owningPawn.ClassName));
                 if (instance != null)
                 {
                     if (instance.ClassName == "SkeletalMeshComponent")
@@ -416,6 +421,29 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             return false;
+        }
+
+        private static void UpdateBonePositionsForHead(IEntry existingAsset, ExportEntry newMdl)
+        {
+            ExportEntry oldMdl = existingAsset as ExportEntry;
+            oldMdl ??= EntryImporter.ResolveImport(existingAsset as ImportEntry);
+
+            var oldBin = ObjectBinary.From<SkeletalMesh>(oldMdl);
+            var newBin = ObjectBinary.From<SkeletalMesh>(newMdl);
+
+            Dictionary<MeshBone, MeshBone> boneMap = new Dictionary<MeshBone, MeshBone>();
+            foreach (var bone in oldBin.RefSkeleton)
+            {
+                var matchingNewBone = newBin.RefSkeleton.FirstOrDefault(x => x.Name.Name == bone.Name.Name);
+                if (matchingNewBone != null)
+                {
+                    // Update it's data
+                    matchingNewBone.Orientation = bone.Orientation;
+                    matchingNewBone.Position = bone.Position;
+                }
+            }
+
+            newMdl.WriteBinary(newBin);
         }
 
         private static bool ForcedRun(ExportEntry export, bool doWorldCheck = true)
@@ -672,6 +700,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 CopyPawnInstanceProps(oldMirandaProps, newMirandaPawn);
                 CopyPawnInstanceProps(oldJacobProps, newJacobPawn);
 
+                // Need to make them targetable 
+                SetPawnTargetable(newJacobPawn, true);
+                SetPawnTargetable(newMirandaPawn, true);
 
                 // Need to repoint existing things that pointed to the original pawns back to the new ones
 
@@ -684,9 +715,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 SeqTools.WriteObjValue(package.GetUExport(3255), newMirandaPawn);
 
                 // Jacob
-                SeqTools.WriteOriginator(package.GetUExport(457), newMirandaPawn);
-                SeqTools.WriteObjValue(package.GetUExport(3242), newMirandaPawn);
-                SeqTools.WriteObjValue(package.GetUExport(3254), newMirandaPawn);
+                SeqTools.WriteOriginator(package.GetUExport(457), newJacobPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3242), newJacobPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3254), newJacobPawn);
 
                 // Update level
                 var worldBin = ObjectBinary.From<Level>(world);
@@ -721,6 +752,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // There is file for miranda on BioA_ZyaVtl_100... why...??
 
             return false;
+        }
+
+        private static void SetPawnTargetable(ExportEntry pawn, bool targetable)
+        {
+            var pawnBehavior = pawn.GetProperty<ObjectProperty>("m_oBehavior").ResolveToEntry(pawn.FileRef) as ExportEntry;
+            var jbp = pawnBehavior.GetProperties();
+            jbp.AddOrReplaceProp(new BoolProperty(targetable, "m_bTargetable"));
+            jbp.AddOrReplaceProp(new BoolProperty(true, "m_bTargetableOverride"));
+            pawnBehavior.WriteProperties(jbp);
         }
 
         private static void CopyPawnInstanceProps(PropertyCollection oldPawnProps, ExportEntry newPawnInstance)
