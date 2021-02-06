@@ -38,6 +38,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
             }
         }
 
+        public static int GetNewTLKID()
+        {
+            return CurrentHandler.GetNextID();
+        }
+
         /// <summary>
         /// Replaces a string with another. Specify an uppercase language code if you want to replace a string only for a specific language.
         /// </summary>
@@ -106,7 +111,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         #region Private members
 
         private SortedSet<string> loadedLanguages = new SortedSet<string>();
-
+        private int NextDynamicID = 7893000;
         private void Start()
         {
             LoadedOfficialTalkFiles = new List<TalkFile>();
@@ -155,6 +160,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
             LoadedOfficialTalkFiles = null;
         }
 
+        private int GetNextID()
+        {
+            return NextDynamicID++;
+        }
 
         private void InternalReplaceString(int stringid, string newText, string langCode = null)
         {
@@ -185,7 +194,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
             }
         }
         #endregion
-
 
     }
 }

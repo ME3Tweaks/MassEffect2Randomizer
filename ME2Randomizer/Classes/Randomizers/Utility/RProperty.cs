@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
+using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.SharpDX;
 using NameProperty = ME3ExplorerCore.Unreal.NameProperty;
@@ -17,6 +18,13 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         {
             var vectors = export.GetProperty<ArrayProperty<StructProperty>>("VectorParameterValues");
             return vectors?.Select(FromStruct).ToList();
+        }
+
+        public static void WriteVectorParameters(ExportEntry export, List<VectorParameter> parameters)
+        {
+            var arr = new ArrayProperty<StructProperty>("VectorParameterValues");
+            arr.AddRange(parameters.Select(x => x.ToStruct()));
+            export.WriteProperty(arr);
         }
 
         public static VectorParameter FromStruct(StructProperty sp)
@@ -35,7 +43,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         public StructProperty ToStruct()
         {
             PropertyCollection props = new PropertyCollection();
-            props.Add(new NameProperty(ParameterName, null));
+            props.Add(new NameProperty(ParameterName, "ParameterName"));
             props.Add(RStructs.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
                 "R", "G", "B", "A", "ParameterValue"));
             props.Add(RStructs.ToFourPartIntStruct("LinearColor", true, 0,0,0,0,

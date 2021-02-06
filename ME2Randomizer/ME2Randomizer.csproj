@@ -113,6 +113,7 @@
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts\" />
     <Folder Include="MainWindowUIComponents\" />
     <Folder Include="staticfiles\binary\correctedloadouts\powers\" />
+    <Folder Include="staticfiles\binary\squadmatefaces\" />
   </ItemGroup>
   
   <ItemGroup>

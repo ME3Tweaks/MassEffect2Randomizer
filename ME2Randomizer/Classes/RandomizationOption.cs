@@ -36,7 +36,7 @@ namespace ME2Randomizer.Classes
         }
 
         public EOptionDangerousness Dangerousness { get; set; } = EOptionDangerousness.Danger_Normal;
-    
+
         /// <summary>
         /// An key that can be used to uniquely identify the option
         /// </summary>
@@ -102,6 +102,10 @@ namespace ME2Randomizer.Classes
         /// The callback to perform is this is not an export randomizer
         /// </summary>
         public Func<RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
+        /// <summary>
+        /// Randomization method that is invoked before a file's export delegate randomization occurs
+        /// </summary>
+        public Func<IMEPackage, RandomizationOption, bool> PerformFileSpecificRandomization { get; set; }
 
         /// <summary>
         /// List of suboptions this option may have

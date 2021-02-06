@@ -102,9 +102,9 @@ namespace ME2Randomizer.Classes
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
+            var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
 
             MERFileSystem.InitMERFS(SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
-
 
             // Prepare the TLK
 #if __ME2__
@@ -124,7 +124,7 @@ namespace ME2Randomizer.Classes
 
             // Pass 2: All exports
             var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
-            if (perExportRandomizers.Any())
+            if (perExportRandomizers.Any() || perFileRandomizers.Any())
             {
                 mainWindow.CurrentOperationText = "Getting list of files...";
                 mainWindow.ProgressBarIndeterminate = true;
@@ -136,7 +136,7 @@ namespace ME2Randomizer.Classes
                 mainWindow.ProgressBar_Bottom_Min = 0;
                 int currentFileNumber = 0;
 #if DEBUG
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 3 : 1 }, (file) =>
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
 #else
                 Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
 #endif
@@ -151,11 +151,11 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     if (
-                    //!file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    !file.Contains("EndGm2", StringComparison.InvariantCultureIgnoreCase)
+                    !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
+                    //!file.Contains("EndGm2", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("TwrHub", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BIOG_", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("startup", StringComparison.InvariantCultureIgnoreCase)
@@ -163,8 +163,17 @@ namespace ME2Randomizer.Classes
                         return;
 
                     var package = MEPackageHandler.OpenMEPackage(file);
-                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
+
+                    foreach (var rp in perFileRandomizers)
                     {
+                        // Specific randomization pass before the exports are processed
+                        rp.PerformFileSpecificRandomization(package, rp);
+                    }
+
+                    for (int i = 0; i < package.ExportCount; i++)
+                    //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
+                    {
+                        var exp = package.Exports[i];
                         foreach (var r in perExportRandomizers)
                         {
                             r.PerformRandomizationOnExportDelegate(exp, r);
@@ -183,6 +192,7 @@ namespace ME2Randomizer.Classes
             CoalescedHandler.EndHandler();
             TLKHandler.EndHandler();
             NonSharedPackageCache.Cache.ReleasePackages();
+            ResetClasses();
         }
 
         private void CollectorEyeTool()
@@ -218,7 +228,9 @@ namespace ME2Randomizer.Classes
         /// </summary>
         private void ResetClasses()
         {
-            PawnPorting.Reset();
+            SquadmateHead.ResetClass();
+            PawnPorting.ResetClass();
+            NPCHair.ResetClass();
         }
 
 
@@ -251,11 +263,19 @@ namespace ME2Randomizer.Classes
                         PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
+                    new RandomizationOption() {HumanName = "Squadmate heads",
+                        Description = "Changes the heads of your squadmates",
+                        PerformRandomizationOnExportDelegate = SquadmateHead.RandomizeExport2,
+                        PerformFileSpecificRandomization = SquadmateHead.FilePrerun,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        RequiresTLK = true
+                    },
                     new RandomizationOption() {HumanName = "Squadmate faces",
                         Description = "Only works on Wilson and Jacob, unfortunately. Other squadmates are fully modeled",
                         PerformSpecificRandomizationDelegate = RBioMorphFace.RandomizeSquadmateFaces,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
+
                     new RandomizationOption()
                     {
                         HumanName = "NPC faces",
@@ -307,6 +327,10 @@ namespace ME2Randomizer.Classes
                     },
                     new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",
                         PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption() {HumanName = "NPC hair", Description="Randomizes the hair on NPCs that have use a hair mesh",
+                        PerformRandomizationOnExportDelegate = NPCHair.RandomizeExport,
+                        PerformSpecificRandomizationDelegate = NPCHair.Init,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption() {
                         HumanName = "Romance",

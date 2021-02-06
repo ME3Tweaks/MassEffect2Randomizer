@@ -236,7 +236,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             // Varren are pointless for this purpose
     };
 
-        public static void Reset()
+        public static void ResetClass()
         {
             foreach (var pp in PortablePawns)
             {

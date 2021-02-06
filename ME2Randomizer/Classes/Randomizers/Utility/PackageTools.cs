@@ -50,7 +50,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <param name="createParentPackages">If the export should be ported in the same way as it was cooked into the package natively, e.g. create the parent package paths. The export must directly sit under a Package or an exception will be thrown.</param>
         /// <param name="ensureMemoryUniqueness">If this object is an instance, such as a sequence object, and should be made memory-unique so it is properly used</param>
         /// <returns></returns>
-        public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false)
+        public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false, bool useMemorySafeImport = false, PackageCache cache = null)
         {
             var existing = targetPackage.FindExport(sourceExport.InstancedFullPath);
             if (existing != null)
@@ -95,13 +95,26 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 newParent = targetPackage.GetEntry(targetLink);
             }
 
-            Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
-            var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
-                newParent, true, out IEntry newEntry, crossPCCObjectMap);
 
-            if (relinkResults.Any())
+            IEntry newEntry;
+            if (!useMemorySafeImport)
             {
-                Debugger.Break();
+                Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. Should probably just be part of the method
+                var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
+                    newParent, true, out newEntry, crossPCCObjectMap);
+                if (relinkResults.Any())
+                {
+                    Debugger.Break();
+                }
+            }
+            else
+            {
+                // Memory safe, fixes upstream
+                var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
+                if (relinkedResults.Any())
+                {
+                    Debugger.Break();
+                }
             }
 
             // Helps ensure we don't have memory duplicates

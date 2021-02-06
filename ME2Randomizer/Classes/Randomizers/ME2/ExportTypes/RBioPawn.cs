@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,9 +20,26 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         /// </summary>
         /// <param name="export"></param>
         /// <returns></returns>
-        private static bool CanRandomize(ExportEntry export) => ((!export.IsDefaultObject && !export.IsClass && export.IsA("BioPawn"))
-                                                                 || (export.IsDefaultObject && export.IsClass && export.InheritsFrom("BioPawn")))
-                                                                && !export.InheritsFrom("SFXPawn_Player");
+        private static bool CanRandomize(ExportEntry export)
+        {
+            if (!export.IsDefaultObject && !export.IsClass && export.IsA("BioPawn"))
+            {
+                // BioPawn instance
+                var props = export.GetProperties();
+                var aic = props.GetProp<ObjectProperty>("AIController");
+                if (aic == null || (aic.ResolveToEntry(export.FileRef) is IEntry e && (e.ObjectName == "SFXAI_Ambient" || e.ObjectName == "SFXAI_None")))
+                {
+                    return true;
+                }
+
+                var ambient = export.GetProperty<BoolProperty>("bAmbientCreature");
+                if (ambient != null && ambient)
+                {
+                    return true; // Combat pawns cannot be modified
+                }
+            }
+            return false;
+        }
 
         public static bool RandomizeHeadSize(ExportEntry export, RandomizationOption option)
         {
