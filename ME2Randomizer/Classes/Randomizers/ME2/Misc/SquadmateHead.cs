@@ -576,16 +576,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 var newMirandaPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
                 newMirandaPawn.ObjectName = new NameReference("SFXPawn_Miranda", 2);
 
-                var props = newMirandaPawn.GetProperties();
-                foreach(var oldProp in oldMirandaProps)
-                {
-                    var matchingProp = props.FirstOrDefault(x => x.Name == oldProp.Name);
-                    if (matchingProp == null || oldProp.Name == "Location" || oldProp.Name == "Rotation" || oldProp.Name == "Tag")
-                    {
-                        props.AddOrReplaceProp(oldProp);
-                    }
-                }
-                newMirandaPawn.WriteProperties(props);
+                CopyPawnInstanceProps(oldMirandaProps, newMirandaPawn);
 
                 // Need to repoint existing things that pointed to the original pawns back to the new ones
 
@@ -637,6 +628,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 entriesToTrash.Add(package.GetUExport(3314)); // Miranda instance
                 entriesToTrash.Add(package.GetUExport(3313)); // Jacob instance
 
+                var oldMirandaProps = package.GetUExport(3314).GetProperties();
+                var oldJacobProps = package.GetUExport(3313).GetProperties();
+
                 EntryPruner.TrashEntriesAndDescendants(entriesToTrash);
 
                 // Port in SFXPawn_Miranda, SFXPawn_Jacob instances. Maybe use their alternate outfits?
@@ -673,6 +667,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 exportToPortIn = jacobSourcePackage.FindExport(classPath);
                 var newJacobPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
                 newJacobPawn.ObjectName = new NameReference("SFXPawn_Jacob", 1);
+
+                // Update the properties to match the old ones
+                CopyPawnInstanceProps(oldMirandaProps, newMirandaPawn);
+                CopyPawnInstanceProps(oldJacobProps, newJacobPawn);
+
 
                 // Need to repoint existing things that pointed to the original pawns back to the new ones
 
@@ -722,6 +721,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // There is file for miranda on BioA_ZyaVtl_100... why...??
 
             return false;
+        }
+
+        private static void CopyPawnInstanceProps(PropertyCollection oldPawnProps, ExportEntry newPawnInstance)
+        {
+            var props = newPawnInstance.GetProperties();
+            foreach (var oldProp in oldPawnProps)
+            {
+                var matchingProp = props.FirstOrDefault(x => x.Name == oldProp.Name);
+                if (matchingProp == null || oldProp.Name == "Location" || oldProp.Name == "Rotation" || oldProp.Name == "Tag")
+                {
+                    props.AddOrReplaceProp(oldProp);
+                }
+            }
+            newPawnInstance.WriteProperties(props);
         }
     }
 }
