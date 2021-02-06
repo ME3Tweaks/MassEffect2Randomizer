@@ -10,10 +10,12 @@ using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
+using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.SharpDX;
 using ME3ExplorerCore.Unreal;
+using ME3ExplorerCore.Unreal.BinaryConverters;
 using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
@@ -292,8 +294,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Select a new asset.
                 var existingAsset = skelMesh.ResolveToEntry(headMeshExp.FileRef);
                 var newAsset = HeadAssetSources.RandomElement();
-                var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => newAsset.AssetPath.Contains(x.GetCharName()));
-                if(squadmateInfo == null)
+                var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => existingAsset.ObjectName.Name.Contains(x.GetCharName()));
+                if (squadmateInfo == null)
                     Debugger.Break();
 
                 while (newAsset.AssetPath == existingAsset.InstancedFullPath || !newAsset.CanApplyTo(squadmateInfo))
@@ -310,13 +312,27 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 skelMesh.Value = newMdl.UIndex;
                 headMeshExp.WriteProperty(skelMesh);
 
+                // Get parent object
+                var owningPawn = headMeshExp.Parent as ExportEntry;
+                if (owningPawn == null)
+                    Debugger.Break();
+
                 var newName = squadmateInfo.NamePrefix + newAsset.NameSuffix;
                 var newTlkId = TLKHandler.GetNewTLKID();
                 TLKHandler.ReplaceString(newTlkId, newName);
-                headMeshExp.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
-                if (headMeshExp.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(headMeshExp.FileRef) is ExportEntry actorTypeExp)
+                if (owningPawn.IsDefaultObject)
                 {
-                    actorTypeExp.indexValue = ThreadSafeRandom.Next(265789564); // make it memory unique. Not sure this matters if pawn is not
+                    owningPawn.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
+                }
+
+
+                if (owningPawn.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(owningPawn.FileRef) is ExportEntry actorTypeExp)
+                {
+                    if (!PackageTools.IsPersistentPackage(Path.GetFileName(owningPawn.FileRef.FilePath)))
+                    {
+                        actorTypeExp.indexValue = ThreadSafeRandom.Next(265789564); // make it memory unique.
+                    }
+
                     var strRef = actorTypeExp.GetProperty<StringRefProperty>("ActorGameNameStrRef");
                     strRef.Value = newTlkId;
                     actorTypeExp.WriteProperty(strRef);
@@ -326,11 +342,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Clean up the materials in the instance of the pawn.
                 // Have to do full search cause naming system doesn't seem consistent
                 // Only look for children of TheWorld so we can do integer check
-                var persistentLevel = headMeshExp.ClassName == "BioPawn" ? null : headMeshExp.FileRef.FindExport("TheWorld.PersistentLevel");
-                var instance = headMeshExp.ClassName == "BioPawn" ? headMeshExp : headMeshExp.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex && x.ClassName == myClass);
+                var persistentLevel = owningPawn.ClassName == "BioPawn" ? null : owningPawn.FileRef.FindExport("TheWorld.PersistentLevel");
+                var instance = owningPawn.ClassName == "BioPawn" ? headMeshExp : owningPawn.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex /* && x.ClassName == myClass*/);
                 if (instance != null)
                 {
-                    if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(headMeshExp.FileRef) is ExportEntry instHeadMesh)
+                    if (instance.ClassName == "SkeletalMeshComponent")
+                    {
+                        instance.RemoveProperty("Materials");
+                        if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
+                        {
+                            // We need to size it
+                            instance.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));
+                        }
+                    }
+                    else if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(owningPawn.FileRef) is ExportEntry instHeadMesh)
                     {
                         instHeadMesh.RemoveProperty("Materials");
                         if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
@@ -342,7 +367,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
 
                 // Remove morph head from the biopawn, if any, as this will corrupt the head
-                headMeshExp.RemoveProperty("MorphHead");
+                owningPawn.RemoveProperty("MorphHead");
 
                 // Add hair asset if necessary
                 if (newAsset.HairAssetPath != null)
@@ -357,7 +382,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     hairMeshExp.WriteProperty(new ObjectProperty(hairMDL.UIndex, "SkeletalMesh"));
 
                     // Write hair mesh prop
-                    headMeshExp.WriteProperty(new ObjectProperty(hairMeshExp.UIndex, "m_oHairMesh"));
+                    owningPawn.WriteProperty(new ObjectProperty(hairMeshExp.UIndex, owningPawn.IsDefaultObject ? "HairMesh" : "m_oHairMesh"));
                 }
 
                 if (squadmateInfo.ClassName == "SFXPawn_Thane")
@@ -505,19 +530,192 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool FilePrerun(IMEPackage package, RandomizationOption arg2)
         {
             var packagename = Path.GetFileName(package.FilePath);
-            if (packagename.Equals("BioP_ProCer.pcc", StringComparison.InvariantCultureIgnoreCase) //Miranda, Jacob
-                //|| packagename.Equals("BioP_RprGtA.pcc", StringComparison.InvariantCultureIgnoreCase) //Legion // Used as an import for level
-                //|| packagename.Equals("BioP_TwrAsA.pcc", StringComparison.InvariantCultureIgnoreCase) // Thane // Used as an import at end of level
-                // Tali is in BioP_ProFre, but we can't edit her head so it doesn't matter
-            )
+            if (packagename.Equals("BioP_ProCer.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda and Jacob pawns at end of stage
             {
-                Log.Information($"Removing squadmate class from persistent package references list {packagename}");
-                // We need to update the squadmate pawns
-                var worldInfo = package.FindExport("TheWorld.PersistentLevel.BioWorldInfo_0"); //procer
-                var persistObjs = worldInfo.GetProperty<ArrayProperty<ObjectProperty>>("m_AutoPersistentObjects");
-                persistObjs.RemoveAll(x => x.ResolveToEntry(package).ClassName.Contains("SFXPawn_")); // Do not store Miranda or Jacob pawns in memory
+                Log.Information("Fixing BioP_ProCer Miranda/Jacob");
+                //package.GetUExport(1562).ObjectName = "SFXPawn_Miranda_UNUSED";
+                //package.GetUExport(1555).ObjectName = "SFXPawn_Ja_UNUSED";
+                //package.GetUExport(1556).ObjectName = "SFXPawn_Jacob_UNUSED";
 
-                worldInfo.WriteProperty(persistObjs);
+                List<IEntry> entriesToTrash = new List<IEntry>();
+                entriesToTrash.Add(package.GetUExport(3421)); //jacob
+                entriesToTrash.Add(package.GetUExport(3420)); // miranda
+                entriesToTrash.Add(package.GetUExport(1555)); //def jacob
+                entriesToTrash.Add(package.GetUExport(1556)); // def miranda
+                entriesToTrash.Add(package.GetUExport(1562)); // def miranda
+                entriesToTrash.Add(package.GetUExport(1563)); // def miranda
+                EntryPruner.TrashEntriesAndDescendants(entriesToTrash);
+            }
+
+            else if (packagename.Equals("BioD_ProCer_300ShuttleBay.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda shoots wilson
+            {
+                Log.Information("Fixing end of ProCer Miranda");
+
+                var oldMirandaProps = package.GetUExport(3555).GetProperties();
+                // Bust the imports so we can port things in.
+                List<IEntry> entriesToTrash = new List<IEntry>();
+                entriesToTrash.Add(package.GetImport(-435)); //sfxgamepawns import
+                entriesToTrash.Add(package.GetUExport(3555)); // Miranda instance
+                EntryPruner.TrashEntriesAndDescendants(entriesToTrash);
+
+                // Port in SFXPawn_Miranda. Maybe use their alternate outfits?
+                var world = package.FindExport("TheWorld.PersistentLevel");
+
+                // Miranda
+                var mirandaIdx = ThreadSafeRandom.Next(2);
+                mirandaIdx = 1; //debug
+                var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+                var classPath = $"TheWorld.PersistentLevel.SFXPawn_Miranda_";
+                if (mirandaIdx != 0)
+                {
+                    classPath += $"0{mirandaIdx}_";
+                }
+
+                classPath += "0";
+                var exportToPortIn = mirandaSourcePackage.FindExport(classPath);
+                var newMirandaPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
+                newMirandaPawn.ObjectName = new NameReference("SFXPawn_Miranda", 2);
+
+                var props = newMirandaPawn.GetProperties();
+                foreach(var oldProp in oldMirandaProps)
+                {
+                    var matchingProp = props.FirstOrDefault(x => x.Name == oldProp.Name);
+                    if (matchingProp == null || oldProp.Name == "Location" || oldProp.Name == "Rotation" || oldProp.Name == "Tag")
+                    {
+                        props.AddOrReplaceProp(oldProp);
+                    }
+                }
+                newMirandaPawn.WriteProperties(props);
+
+                // Need to repoint existing things that pointed to the original pawns back to the new ones
+
+                // Miranda
+                SeqTools.WriteObjValue(package.GetUExport(3450), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3451), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3454), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3490), newMirandaPawn);
+
+                // Update level
+                var worldBin = ObjectBinary.From<Level>(world);
+                worldBin.Actors[609] = newMirandaPawn;
+                world.WriteBinary(worldBin);
+
+                //mirandaI.ObjectName = "SFXPawn_Miranda_NOTUSED";
+
+                //jacobI.ObjectName = "SFXPawn_Jacob_NOTUSED";
+
+                //// Port in SFXPawn_Miranda, SFXPawn_Jacob. Maybe use their alternate outfits?
+                //var mirandaIdx = ThreadSafeRandom.Next(2);
+                //var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+                //var classPath = "SFXGamePawns.SFXPawn_Miranda";
+                //if (mirandaIdx != 0)
+                //{
+                //    classPath += "_" + mirandaIdx;
+                //}
+                //var exportToPortIn = mirandaSourcePackage.FindExport(classPath);
+                //var newClass = PackageTools.PortExportIntoPackage(package, exportToPortIn);
+                //var mirandaPawn = package.GetUExport(3314);
+                //mirandaPawn.Class = newClass;
+                //var mirandaBin = mirandaPawn.GetPrePropBinary();
+                //mirandaBin.OverwriteRange(0x0, BitConverter.GetBytes(newClass.UIndex));
+                //mirandaBin.OverwriteRange(0x4, BitConverter.GetBytes(newClass.UIndex));
+                //mirandaPawn.WritePrePropsAndProperties(mirandaBin, mirandaPawn.GetProperties());
+                MERFileSystem.SavePackage(package);
+                return true;
+            }
+            else if (packagename.Equals("BioD_ProCer_350BriefRoom.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda and Jacob pawns at end of stage
+            {
+                Log.Information("Fixing end of ProCer Jacob/Miranda");
+
+                // Bust the imports so we can port things in.
+                List<IEntry> entriesToTrash = new List<IEntry>();
+                entriesToTrash.Add(package.GetImport(-421)); //jacob
+                entriesToTrash.Add(package.GetImport(-422)); // miranda
+                entriesToTrash.Add(package.GetImport(-675)); //def jacob
+                entriesToTrash.Add(package.GetImport(-676)); // def miranda
+
+                entriesToTrash.Add(package.GetUExport(3314)); // Miranda instance
+                entriesToTrash.Add(package.GetUExport(3313)); // Jacob instance
+
+                EntryPruner.TrashEntriesAndDescendants(entriesToTrash);
+
+                // Port in SFXPawn_Miranda, SFXPawn_Jacob instances. Maybe use their alternate outfits?
+                var world = package.FindExport("TheWorld.PersistentLevel");
+
+                // Miranda
+                var mirandaIdx = ThreadSafeRandom.Next(2);
+                mirandaIdx = 1;
+                var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+                var classPath = $"TheWorld.PersistentLevel.SFXPawn_Miranda_";
+                if (mirandaIdx != 0)
+                {
+                    classPath += $"0{mirandaIdx}_";
+                }
+
+                classPath += "0";
+                var exportToPortIn = mirandaSourcePackage.FindExport(classPath);
+                var newMirandaPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
+                newMirandaPawn.ObjectName = new NameReference("SFXPawn_Miranda", 2);
+
+                // Jacob
+                var jacobIdx = ThreadSafeRandom.Next(2);
+                var jacobSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Leading_0{jacobIdx}.pcc"));
+                classPath = "TheWorld.PersistentLevel.SFXPawn_Jacob_";
+                if (jacobIdx != 0)
+                {
+                    classPath += $"0{jacobIdx}_0";
+                }
+                else
+                {
+                    classPath += "1"; // he is not zero indexed for some reason
+                }
+
+                exportToPortIn = jacobSourcePackage.FindExport(classPath);
+                var newJacobPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
+                newJacobPawn.ObjectName = new NameReference("SFXPawn_Jacob", 1);
+
+                // Need to repoint existing things that pointed to the original pawns back to the new ones
+
+                // Miranda
+                SeqTools.WriteOriginator(package.GetUExport(458), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3243), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3247), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3249), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3252), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3255), newMirandaPawn);
+
+                // Jacob
+                SeqTools.WriteOriginator(package.GetUExport(457), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3242), newMirandaPawn);
+                SeqTools.WriteObjValue(package.GetUExport(3254), newMirandaPawn);
+
+                // Update level
+                var worldBin = ObjectBinary.From<Level>(world);
+                worldBin.Actors[43] = newMirandaPawn;
+                worldBin.Actors[44] = newJacobPawn;
+                world.WriteBinary(worldBin);
+
+                //mirandaI.ObjectName = "SFXPawn_Miranda_NOTUSED";
+
+                //jacobI.ObjectName = "SFXPawn_Jacob_NOTUSED";
+
+                //// Port in SFXPawn_Miranda, SFXPawn_Jacob. Maybe use their alternate outfits?
+                //var mirandaIdx = ThreadSafeRandom.Next(2);
+                //var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+                //var classPath = "SFXGamePawns.SFXPawn_Miranda";
+                //if (mirandaIdx != 0)
+                //{
+                //    classPath += "_" + mirandaIdx;
+                //}
+                //var exportToPortIn = mirandaSourcePackage.FindExport(classPath);
+                //var newClass = PackageTools.PortExportIntoPackage(package, exportToPortIn);
+                //var mirandaPawn = package.GetUExport(3314);
+                //mirandaPawn.Class = newClass;
+                //var mirandaBin = mirandaPawn.GetPrePropBinary();
+                //mirandaBin.OverwriteRange(0x0, BitConverter.GetBytes(newClass.UIndex));
+                //mirandaBin.OverwriteRange(0x4, BitConverter.GetBytes(newClass.UIndex));
+                //mirandaPawn.WritePrePropsAndProperties(mirandaBin, mirandaPawn.GetProperties());
+                MERFileSystem.SavePackage(package);
                 return true;
             }
 

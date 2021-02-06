@@ -358,5 +358,15 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
             return result;
         }
+
+        public static void WriteOriginator(ExportEntry export, IEntry originator)
+        {
+            export.WriteProperty(new ObjectProperty(originator.UIndex, "Originator"));
+        }
+
+        public static void WriteObjValue(ExportEntry export, IEntry objValue)
+        {
+            export.WriteProperty(new ObjectProperty(objValue.UIndex, "ObjValue"));
+        }
     }
 }

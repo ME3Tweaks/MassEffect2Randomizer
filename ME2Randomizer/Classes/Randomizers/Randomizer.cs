@@ -151,9 +151,9 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     if (
-                    !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
+                    !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                     //!file.Contains("EndGm2", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("BioH_Vix", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
