@@ -3,14 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
-using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.SharpDX;
@@ -80,6 +76,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// </summary>
             public string[] AllowedPawns { get; set; }
             /// <summary>
+            /// List of pawns this asset explictly cannot be installed into. If null, there are no blacklisted pawns
+            /// </summary>
+            public string[] DisallowedPawns { get; set; }
+            /// <summary>
             /// If this package should be imported using memory safe. Means it's in a master BIOG file and must be adjusted to work properly
             /// </summary>
             public bool UseMemorySafe { get; set; }
@@ -95,6 +95,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// Is this asset an existing squadmate's head?
             /// </summary>
             public bool IsSquadmateHead { get; set; }
+            /// <summary>
+            /// Can this asset actually be used?
+            /// </summary>
+            public bool IsUsable { get; set; } = true;
 
             public override ExportEntry GetAsset()
             {
@@ -126,22 +130,25 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             public bool CanApplyTo(SquadMate squadmateInfo)
             {
-                if (AllowedPawns == null) return true;
+                if (AllowedPawns == null && DisallowedPawns == null) return true;
+                if (DisallowedPawns != null && DisallowedPawns.Contains(squadmateInfo.ClassName))
+                    return false;
+                if (AllowedPawns == null)
+                    return true;
                 return AllowedPawns.Contains(squadmateInfo.ClassName);
             }
-
         }
 
         private static HeadAssetSource[] HeadAssetSources = new[]
         {
-            new HeadAssetSource()
-            {
-                PackageFile = "BioH_Vixen_00.pcc",
-                AssetPath = "BIOG_HMF_HED_PROMorph_R.PROMiranda.HMF_HED_PRO_Miranda_MDL",
-                IsFemaleAsset = true,
-                NameSuffix = "anda",
-                IsSquadmateHead = true
-            },
+            //new HeadAssetSource()
+            //{
+            //    PackageFile = "BioH_Vixen_00.pcc",
+            //    AssetPath = "BIOG_HMF_HED_PROMorph_R.PROMiranda.HMF_HED_PRO_Miranda_MDL",
+            //    IsFemaleAsset = true,
+            //    NameSuffix = "anda",
+            //    IsSquadmateHead = true
+            //},
             new HeadAssetSource()
             {
                 PackageFile = "ThaneNoChest.pcc",
@@ -151,42 +158,87 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 IsSquadmateHead = true,
                 IsCorrectedAsset = true
             },
-            new HeadAssetSource()
-            {
-                PackageFile = "BioH_Convict_00.pcc",
-                AssetPath = "BIOG_HMF_HED_PROMorph_R.PROJack.HMF_HED_PROJack_MDL",
-                IsFemaleAsset = true,
-                NameSuffix = "ck",
-                    IsSquadmateHead = true
-            },
             //new HeadAssetSource()
             //{
-            //      // HAS TOO MANY BONES
-            //    PackageFile = "BioH_Geth_00.pcc",
-            //    AssetPath = "BIOG_GTH_HED_PROMorph.GTH_HED_PROLegion_MDL",
-            //    NameSuffix = "ion"
+            //    PackageFile = "BioH_Convict_00.pcc",
+            //    AssetPath = "BIOG_HMF_HED_PROMorph_R.PROJack.HMF_HED_PROJack_MDL",
+            //    IsFemaleAsset = true,
+            //    NameSuffix = "ck",
+            //    IsSquadmateHead = true
             //},
             new HeadAssetSource()
             {
-                PackageFile = "BioH_Garrus_00.pcc",
-                AssetPath = "BIOG_TUR_HED_PROMorph_R.PROGarrus.TUR_HED_PROGarrus_Damage_MDL",
-                NameSuffix = "rus",
+                PackageFile = "BioH_Professor_00.pcc",
+                AssetPath = "BIOG_SAL_HED_PROMorph_R.Mordin.SAL_HED_PROMordin_MDL",
+                NameSuffix = "din",
                 IsSquadmateHead = true
             },
             new HeadAssetSource()
             {
-                PackageFile = "BioH_Leading_00.pcc",
-                AssetPath = "BIOG_HMM_HED_PROMorph.Jacob.HMM_HED_PROJacob_MDL",
-                GenderSwapDrawScale = 0.961f, //Male -> Female
-                NameSuffix = "cob",
-                    IsSquadmateHead = true
+                  // HAS TOO MANY BONES
+                PackageFile = "BioH_Geth_00.pcc",
+                AssetPath = "BIOG_GTH_HED_PROMorph.GTH_HED_PROLegion_MDL",
+                NameSuffix = "ion",
+                IsUsable = false
+            },
+            //new HeadAssetSource()
+            //{
+            //    PackageFile = "BioH_Garrus_00.pcc",
+            //    AssetPath = "BIOG_TUR_HED_PROMorph_R.PROGarrus.TUR_HED_PROGarrus_Damage_MDL",
+            //    NameSuffix = "rus",
+            //    IsSquadmateHead = true,
+            //    DisallowedPawns = new []
+            //    {
+            //        "SFXPawn_Miranda"
+            //    }
+            //},
+            //new HeadAssetSource()
+            //{
+            //    PackageFile = "BioH_Leading_00.pcc",
+            //    AssetPath = "BIOG_HMM_HED_PROMorph.Jacob.HMM_HED_PROJacob_MDL",
+            //    GenderSwapDrawScale = 0.961f, //Male -> Female
+            //    NameSuffix = "cob",
+            //        IsSquadmateHead = true,
+            //        DisallowedPawns = new []
+            //        {
+            //            "SFXPawn_Miranda"
+            //        }
+            //},
+            //new HeadAssetSource()
+            //{
+            //    PackageFile = "BioH_Mystic_00.pcc",
+            //    AssetPath = "BIOG_ASA_HED_PROMorph_R.Samara.ASA_HED_PROSamara_MDL",
+            //    NameSuffix = "ara",
+            //    IsSquadmateHead = true,
+            //    DisallowedPawns = new []
+            //    {
+            //        "SFXPawn_Miranda"
+            //    }
+            //},
+
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Veteran_00.pcc",
+                AssetPath = "BIOG_HMM_HED_PROZaeed.Zaeed.HMM_HED_PROZaeed_MDL",
+                NameSuffix = "eed",
+                IsSquadmateHead = true,
+                IsUsable = false
             },
             new HeadAssetSource()
             {
-                PackageFile = "BioH_Mystic_00.pcc",
-                AssetPath = "BIOG_ASA_HED_PROMorph_R.Samara.ASA_HED_PROSamara_MDL",
-                NameSuffix = "ara",
-                IsSquadmateHead = true
+                PackageFile = "BioH_Thief_00.pcc",
+                AssetPath = "BIOG_HMF_HED_PROKasumi_R.Head.HMF_HED_PROKasumi_MDL",
+                NameSuffix = "umi",
+                IsSquadmateHead = true,
+                IsUsable = false
+            },
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Grunt_00.pcc",
+                AssetPath = "BIOG_KRO_HED_PROMorph.Grunt.KRO_HED_Grunt_MDL",
+                NameSuffix = "unt",
+                IsSquadmateHead = true,
+                IsUsable = false
             },
 
 
@@ -209,7 +261,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 AssetPath = "BIOG_HMM_HED_PROMorph.IllusiveMan_MER.HMM_HED_PROIllusiveMan_MDL",
                 GenderSwapDrawScale = 0.961f, //Male -> Female
                 IsCorrectedAsset = true,
-                NameSuffix = "per"
+                NameSuffix = "per",
+                DisallowedPawns = new []
+                {
+                    "SFXPawn_Miranda"
+                }
             },
             new HeadAssetSource()
             {
@@ -218,7 +274,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 UseMemorySafe = true,
                 GenderSwapDrawScale = 0.95f, //Male -> Female. Might need more for miranda. This is tuned for samara
                 PostPortingFixupDelegate = MakeKaidanNoLongerHulk,
-                NameSuffix = "dan"
+                NameSuffix = "dan",
+                DisallowedPawns = new []
+                {
+                    "SFXPawn_Miranda"
+                }
             },
             new HeadAssetSource()
             {
@@ -250,24 +310,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             VectorParameter.WriteVectorParameters(kaidanScalpMaterial, vectorsSC);
         }
 
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
-        {
-            if (!CanRandomize(export)) return false;
-            return ForcedRun(export);
-        }
-
-        private static bool CanRandomize(ExportEntry export)
-        {
-            // It must be a default object and have the correct class set for the defaults
-            // Check superclass as our objectname is wrong
-            if (export.IsDefaultObject && export.ObjectName.Name.StartsWith("Default__SFXPawn_") && SquadmatePawnClasses.Any(x => export.Class.InheritsFrom(x.ClassName)))
-                return true;
-            return false;
-        }
-
         private static bool CanRandomize2(ExportEntry export)
         {
             if (export.IsDefaultObject || export.ClassName != "SkeletalMeshComponent") return false;
+            //if (export.UIndex == 3473)
+            //    Debugger.Break();
             var smp = export.GetProperty<ObjectProperty>("SkeletalMesh");
             if (smp == null || smp.Value == 0) return false;
             var entry = smp.ResolveToEntry(export.FileRef) as IEntry;
@@ -276,6 +323,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 return true; // It's a model
 
             // Check for Jacob or Wilson. Not entirely sure how we can do this reliably...
+            var parentObj = export.Parent as ExportEntry;
+            if (parentObj != null && parentObj.IsDefaultObject && export.ObjectName.Name.Contains("HeadMesh") && (parentObj.Class.InheritsFrom("SFXPawn_Jacob") || parentObj.Class.InheritsFrom("SFXPawn_Wilson")))
+            {
+                return true;
+            }
 
             //// It must be a default object and have the correct class set for the defaults
             //// Check superclass as our objectname is wrong
@@ -297,9 +349,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 var newAsset = HeadAssetSources.RandomElement();
                 var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => existingAsset.ObjectName.Name.Contains(x.GetCharName(), StringComparison.InvariantCultureIgnoreCase));
                 if (squadmateInfo == null)
-                    Debugger.Break();
+                {
+                    // Check if Wilson or Jacob
+                    squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => headMeshExp.Parent.ObjectName.Name.Contains(x.GetCharName(), StringComparison.InvariantCultureIgnoreCase));
+                    if (squadmateInfo == null)
+                        Debugger.Break();
+                }
 
-                while (newAsset.AssetPath == existingAsset.InstancedFullPath || !newAsset.CanApplyTo(squadmateInfo))
+                while (!newAsset.IsUsable || newAsset.AssetPath == existingAsset.InstancedFullPath || !newAsset.CanApplyTo(squadmateInfo))
                 {
                     // Ensure change
                     newAsset = HeadAssetSources.RandomElement();
@@ -339,8 +396,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
 
                     var strRef = actorTypeExp.GetProperty<StringRefProperty>("ActorGameNameStrRef");
-                    strRef.Value = newTlkId;
-                    actorTypeExp.WriteProperty(strRef);
+                    if (strRef != null)
+                    {
+                        strRef.Value = newTlkId;
+                        actorTypeExp.WriteProperty(strRef);
+                    }
                 }
 
                 // This is only useful in BioH files!!
@@ -494,11 +554,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(export.FileRef) is ExportEntry instHeadMesh)
                         {
                             instHeadMesh.RemoveProperty("Materials");
-                            if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
-                            {
-                                // We need to size it
-                                instHeadMesh.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));
-                            }
+                            // scaling breaks a lot of shit
+                            //if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
+                            //{
+                            //    // We need to size it
+                            //    instHeadMesh.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));
+                            //}
                         }
                     }
 
@@ -619,26 +680,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 worldBin.Actors[609] = newMirandaPawn;
                 world.WriteBinary(worldBin);
 
-                //mirandaI.ObjectName = "SFXPawn_Miranda_NOTUSED";
-
-                //jacobI.ObjectName = "SFXPawn_Jacob_NOTUSED";
-
-                //// Port in SFXPawn_Miranda, SFXPawn_Jacob. Maybe use their alternate outfits?
-                //var mirandaIdx = ThreadSafeRandom.Next(2);
-                //var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
-                //var classPath = "SFXGamePawns.SFXPawn_Miranda";
-                //if (mirandaIdx != 0)
-                //{
-                //    classPath += "_" + mirandaIdx;
-                //}
-                //var exportToPortIn = mirandaSourcePackage.FindExport(classPath);
-                //var newClass = PackageTools.PortExportIntoPackage(package, exportToPortIn);
-                //var mirandaPawn = package.GetUExport(3314);
-                //mirandaPawn.Class = newClass;
-                //var mirandaBin = mirandaPawn.GetPrePropBinary();
-                //mirandaBin.OverwriteRange(0x0, BitConverter.GetBytes(newClass.UIndex));
-                //mirandaBin.OverwriteRange(0x4, BitConverter.GetBytes(newClass.UIndex));
-                //mirandaPawn.WritePrePropsAndProperties(mirandaBin, mirandaPawn.GetProperties());
                 MERFileSystem.SavePackage(package);
                 return true;
             }

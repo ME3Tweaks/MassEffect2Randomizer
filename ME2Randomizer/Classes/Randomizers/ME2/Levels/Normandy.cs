@@ -51,7 +51,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             if (henchmenLOCInt250 != null && File.Exists(henchmenLOCInt250))
             {
                 var washroomP = MEPackageHandler.OpenMEPackage(henchmenLOCInt250);
-                PackageCache pc = new PackageCache();
+                MERPackageCache pc = new MERPackageCache();
                 var randomMale = MaleWashroomAudioSources.RandomElement();
                 var randomFemale = FemaleWashroomAudioSources.RandomElement();
 
@@ -177,6 +177,23 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 MERFileSystem.SavePackage(nor250Henchmen);
             }
+        }
+
+        private static void RandomizeTrashCompactor()
+        {
+            var packageF = MERFileSystem.GetPackageFile("BioA_Nor_310.pcc");
+            if (packageF != null && File.Exists(packageF))
+            {
+                var package = MEPackageHandler.OpenMEPackage(packageF);
+                if (package.TryGetUExport(2176, out var junkCube) && junkCube.ClassName == "SkeletalMesh")
+                {
+                    // We had to check the class name of the object cause it might be the vanilla version and not the HEN_VT one
+
+
+                    MERFileSystem.SavePackage(package);
+                }
+            }
+
         }
 
         private static void RandomizeNormandyHolo()

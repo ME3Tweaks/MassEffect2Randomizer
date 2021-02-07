@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.Utility;
@@ -34,11 +35,32 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindActorTypes;
+            dataworker.DoWork += Fuzzer;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync();
+        }
+
+        private void Fuzzer(object? sender, DoWorkEventArgs e)
+        {
+            var p = MEPackageHandler.OpenMEPackage(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\BioD_ProNor.pcc");
+            var timSKM = p.GetUExport(20872);
+            var skmH = ObjectBinary.From<SkeletalMesh>(timSKM);
+            foreach (var bone in skmH.RefSkeleton)
+            {
+                if (!bone.Name.Name.Contains("eye", StringComparison.InvariantCultureIgnoreCase)
+                && !bone.Name.Name.Contains("sneer", StringComparison.InvariantCultureIgnoreCase)
+                && !bone.Name.Name.Contains("nose", StringComparison.InvariantCultureIgnoreCase))
+                    continue;
+                var v3 = bone.Position;
+                v3.X *= ThreadSafeRandom.NextFloat(0.1, 1.9);
+                v3.Y *= ThreadSafeRandom.NextFloat(0.1, 1.9);
+                v3.Z *= ThreadSafeRandom.NextFloat(0.1, 1.9);
+                bone.Position = v3;
+            }
+            timSKM.WriteBinary(skmH);
+            p.Save();
         }
 
         #region ActorTypes
