@@ -233,7 +233,7 @@ namespace ME2Randomizer.Classes
         /// Sets the options up that can be selected and their methods they call
         /// </summary>
         /// <param name="RandomizationGroups"></param>
-        internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups)
+        internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
         {
 #if __ME2__
             RandomizationGroups.Add(new RandomizationGroup()
@@ -517,7 +517,8 @@ namespace ME2Randomizer.Classes
                 {
                     new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Vowels", Description="Swaps vowels in text", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "Vowels", Description="Changes vowels in text in a consistent manner, making a 'new' language", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate},
+                    new RandomizationOption() {HumanName = "UwU", Description="UwUifies all text in the game, often hilarious", PerformSpecificRandomizationDelegate = RTexts.UwuifyText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate},
                 }
             });
 

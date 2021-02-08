@@ -58,10 +58,19 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public bool OptionIsSelected { get; set; }
 
+        public void OnOptionIsSelectedChanged()
+        {
+            StateChangingDelegate?.Invoke(this);
+        }
+
         /// <summary>
         /// If the slider should be shown
         /// </summary>
         public bool HasSliderOption { get; set; }
+        /// <summary>
+        /// If option is mutually exclusive, all values must have same value here set, and then only one item can be picked (or none).
+        /// </summary>
+        public string MutualExclusiveSet { get; set; }
 
         /// <summary>
         /// The ticks to use, if this supports a slider value
@@ -124,6 +133,7 @@ namespace ME2Randomizer.Classes
         /// If this option is selectable/unselectable. Essentially changes the behavior of other randomizers only (parent) and does not have it's own algorithm
         /// </summary>
         public bool IsOptionOnly { get; set; }
+        public Action<RandomizationOption> StateChangingDelegate { get; internal set; }
 
 #pragma warning disable
         public event PropertyChangedEventHandler PropertyChanged;

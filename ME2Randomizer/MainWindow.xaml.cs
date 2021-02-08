@@ -108,7 +108,7 @@ namespace ME2Randomizer
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
-            Randomizer.SetupOptions(RandomizationGroups);
+            Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
             LoadCommands();
             InitializeComponent();
 
@@ -122,6 +122,21 @@ namespace ME2Randomizer
             Title += " " + version;
             SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
             PerformUpdateCheck();
+        }
+
+        private void optionStateChanging(RandomizationOption obj)
+        {
+            if (obj.MutualExclusiveSet != null && obj.OptionIsSelected)
+            {
+                var allOptions = RandomizationGroups.SelectMany(x => x.Options).Where(x=>x.MutualExclusiveSet == obj.MutualExclusiveSet);
+                foreach (var option in allOptions)
+                {
+                    if (option != obj)
+                    {
+                        option.OptionIsSelected = false; // turn off other options
+                    }
+                }
+            }
         }
 
         private List<string> GetContributorCredits()
