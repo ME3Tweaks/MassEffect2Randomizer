@@ -121,6 +121,63 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
     }
 
     /// <summary>
+    /// Class version of a Float Vector4. Easier to manipulate than a struct.
+    /// </summary>
+    public class CFVector4
+    {
+        public float W { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Z { get; set; }
+        public static CFVector4 FromStructProperty(StructProperty sp, string wKey, string xKey, string yKey, string zKey)
+        {
+            return new CFVector4()
+            {
+                W = sp.GetProp<FloatProperty>(wKey),
+                X = sp.GetProp<FloatProperty>(xKey),
+                Y = sp.GetProp<FloatProperty>(yKey),
+                Z = sp.GetProp<FloatProperty>(zKey)
+            };
+        }
+        public static CFVector4 FromVector4(Vector4 vector)
+        {
+            return new CFVector4()
+            {
+                W = vector.W,
+                X = vector.X,
+                Y = vector.Y,
+                Z = vector.Z
+            };
+        }
+        public Vector4 ToVector4()
+        {
+            return new Vector4()
+            {
+                W = W,
+                X = X,
+                Y = Y,
+                Z = Z
+            };
+        }
+
+        internal StructProperty ToStructProperty(string wName, string xName, string yName, string zName, string propName = null, bool isImmutable = true)
+        {
+            PropertyCollection props = new PropertyCollection();
+            props.Add(new FloatProperty(W, wName));
+            props.Add(new FloatProperty(X, xName));
+            props.Add(new FloatProperty(Y, yName));
+            props.Add(new FloatProperty(Z, zName));
+
+            return new StructProperty("LinearColor", props, propName, isImmutable);
+        }
+
+        public StructProperty ToLinearColorStructProperty(string propName = null)
+        {
+            return ToStructProperty("R", "G", "B", "A", propName, true);
+        }
+    }
+
+    /// <summary>
     /// Class version of a Float Vector3. Easier to manipulate than a struct.
     /// </summary>
     class CFVector3

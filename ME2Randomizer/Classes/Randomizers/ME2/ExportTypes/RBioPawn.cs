@@ -41,20 +41,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             return false;
         }
 
-        public static bool RandomizeHeadSize(ExportEntry export, RandomizationOption option)
-        {
-            if (!CanRandomize(export)) return false;
-            Log.Information("Randomizing headmesh for " + export.InstancedFullPath);
-            var existingSize = export.GetProperty<StructProperty>("DrawScale3D");
-            CFVector3 d3d = existingSize == null ? new CFVector3() { X = 1, Y = 1, Z = 1 } : CFVector3.FromStructProperty(existingSize, "X", "Y", "Z");
-
-            d3d.X *= ThreadSafeRandom.NextFloat(1 - option.SliderValue, 1 + option.SliderValue);
-            d3d.Y *= ThreadSafeRandom.NextFloat(1 - option.SliderValue, 1 + option.SliderValue);
-            d3d.Z *= ThreadSafeRandom.NextFloat(1 - option.SliderValue, 1 + option.SliderValue);
-            export.WriteProperty(d3d.ToStructProperty("X", "Y", "Z", "DrawScale3D", true));
-            return true;
-        }
-
         public static bool RandomizePawnSize(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;

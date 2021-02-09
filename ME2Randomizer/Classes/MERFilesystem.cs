@@ -9,6 +9,7 @@ using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
+using Serilog;
 
 namespace ME2Randomizer.Classes
 {
@@ -95,6 +96,7 @@ namespace ME2Randomizer.Classes
         {
             if (package.IsModified)
             {
+                Log.Information($"Saving package {Path.GetFileName(package.FilePath)}");
                 if (!alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
                 {
                     var fname = Path.GetFileName(package.FilePath);

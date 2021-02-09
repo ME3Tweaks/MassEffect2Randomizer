@@ -64,6 +64,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
         }
 
+        /// <summary>
+        /// Randomizes a tint.
+        /// </summary>
+        /// <param name="tint">A LinearColor struct (floatproperty values)</param>
+        /// <param name="randomizeAlpha"></param>
         public static void RandomizeTint(StructProperty tint, bool randomizeAlpha)
         {
             var a = tint.GetProp<FloatProperty>("A");
@@ -99,9 +104,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// </summary>
         /// <param name="getProp"></param>
         /// <returns></returns>
-        public static Vector4 FromLinearColorStructProperty(StructProperty getProp)
+        public static CFVector4 FromLinearColorStructProperty(StructProperty getProp)
         {
-            return new Vector4()
+            return new CFVector4()
             {
                 W = getProp.GetProp<FloatProperty>("R"),
                 X = getProp.GetProp<FloatProperty>("G"),
@@ -128,6 +133,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             props.Add(new IntProperty(val3, name3));
             props.Add(new IntProperty(val4, name4));
             return new StructProperty(structType, props, structname, isImmutable);
+        }
+
+        public static void RandomizeTint(CFVector4 linearColor, bool randomizeAlpha)
+        {
+            //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
+            //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
+            List<float> randomOrderChooser = new List<float>(3);
+            randomOrderChooser.Add(linearColor.X);
+            randomOrderChooser.Add(linearColor.Y);
+            randomOrderChooser.Add(linearColor.Z);
+
+            float totalTintValue = randomOrderChooser.Sum();
+            randomOrderChooser.Shuffle();
+
+            randomOrderChooser[0] = ThreadSafeRandom.NextFloat(0, totalTintValue);
+            totalTintValue -= randomOrderChooser[0];
+
+            randomOrderChooser[1] = ThreadSafeRandom.NextFloat(0, totalTintValue);
+            totalTintValue -= randomOrderChooser[1];
+
+            randomOrderChooser[2] = totalTintValue;
+
+            linearColor.W = randomOrderChooser.PullFirstItem();
+            linearColor.X = randomOrderChooser.PullFirstItem();
+            linearColor.Y = randomOrderChooser.PullFirstItem();
+
+            if (randomizeAlpha)
+            {
+                linearColor.Z = ThreadSafeRandom.NextFloat(0, 1);
+            }
         }
     }
 }

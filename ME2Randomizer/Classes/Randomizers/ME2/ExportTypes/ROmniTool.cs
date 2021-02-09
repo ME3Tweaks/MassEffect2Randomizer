@@ -118,7 +118,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 {
                     foreach (var vParm in vParms)
                     {
-                        Vector4 nv = new Vector4();
+                        CFVector4 nv = new CFVector4();
                         nv.W = ThreadSafeRandom.NextFloat(2000);
                         nv.X = ThreadSafeRandom.NextFloat(2000);
                         nv.Y = ThreadSafeRandom.NextFloat(2000);

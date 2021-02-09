@@ -153,7 +153,7 @@ namespace ME2Randomizer.Classes
                     //&& !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Professor", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
 
@@ -188,34 +188,6 @@ namespace ME2Randomizer.Classes
             TLKHandler.EndHandler();
             NonSharedPackageCache.Cache.ReleasePackages();
             ResetClasses();
-        }
-
-        private void CollectorEyeTool()
-        {
-            // Way too much work.
-            //int[] eyeExports = new int[] { 2214, 2215, 2216, 2217 };
-
-
-            //// Eye placer
-            //var pOrig = MEPackageHandler.OpenMEPackage(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary\correctedpawns\BioPawn_Collector_Batarian - Copy.pcc");
-            //var p = MEPackageHandler.OpenMEPackage(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary\correctedpawns\BioPawn_Collector_Batarian.pcc");
-            //foreach (var eyeExport in eyeExports)
-            //{
-            //    // Get original data
-            //    var orig = pOrig.GetUExport(eyeExport);
-
-            //    var origRelLoc = CFVector3.FromStructProperty(orig.GetProperty<StructProperty>("RelativeLocation"), "X", "Y", "Z");
-            //    var origRelRot = CIVector3.FromStructProperty(orig.GetProperty<StructProperty>("RelativeRotation"), "X", "Y", "Z");
-
-            //    var lfs = p.GetUExport(eyeExport);
-            //    //origRelRot.Z = (int) (2 * origRelRot.Z); //Z = extent?
-
-            //    lfs.WriteProperty(origRelLoc.ToLocationStructProperty( "RelativeLocation"));
-            //    lfs.WriteProperty(origRelRot.ToRotatorStructProperty( "RelativeRotation"));
-            //}
-
-            //p.Save();
-            //Debug.WriteLine("EyeTool done");
         }
 
         /// <summary>
@@ -321,7 +293,7 @@ namespace ME2Randomizer.Classes
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
                     },
                     new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",
-                        PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport,
+                        PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport2,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal, IsRecommended = true},
                     new RandomizationOption() {HumanName = "NPC hair", Description="Randomizes the hair on NPCs that have use a hair mesh",
                         PerformRandomizationOnExportDelegate = NPCHair.RandomizeExport,
@@ -517,8 +489,22 @@ namespace ME2Randomizer.Classes
                 {
                     new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Vowels", Description="Changes vowels in text in a consistent manner, making a 'new' language", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate},
-                    new RandomizationOption() {HumanName = "UwU", Description="UwUifies all text in the game, often hilarious", PerformSpecificRandomizationDelegate = RTexts.UwuifyText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Vowels", Description="Changes vowels in text in a consistent manner, making a 'new' language", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = RTexts.SUBOPTIONKEY_VOWELS_HARDMODE,
+                                HumanName = "Hurd Medi",
+                                Description = "Adds an additional 2 consonants to swap (for a total of 4 letter changes). Can make text extremely challenging to read",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
+                                IsOptionOnly = true
+                            }
+                        }
+                    },
+                    new RandomizationOption() {HumanName = "UwU", Description="UwUifies all text in the game, often hilarious. Based on Jade's OwO mod", PerformSpecificRandomizationDelegate = RTexts.UwuifyText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate},
                 }
             });
 
@@ -549,7 +535,7 @@ namespace ME2Randomizer.Classes
                     {
                         HumanName = "Random interpolations",
                         Description = "Randomly fuzzes interpolation data. Can make game very dizzying on higher values!",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
                         PerformRandomizationOnExportDelegate = RInterpTrackMove.RandomizeExport,
                         Ticks = "0.025,0.05,0.075,0.1,0.15,0.2,0.3,0.4,0.5",
                         HasSliderOption = true,

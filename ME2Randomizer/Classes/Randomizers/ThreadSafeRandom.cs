@@ -38,7 +38,7 @@ namespace ME2Randomizer.Classes.Randomizers
             }
         });
 
-        public static int Next(int min = 0, int max = Int32.MaxValue)
+        public static int Next(int min, int max)
         {
             if (SingleThreadMode)
                 return GlobalRandom.Next(min, max);

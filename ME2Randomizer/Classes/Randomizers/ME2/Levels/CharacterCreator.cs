@@ -45,6 +45,19 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         }
         public static bool RandomizeCharacterCreator(RandomizationOption option)
         {
+
+            if (true /*|| option.HasSubOptionSelected(CharacterCreator.MESS_UP_ICONIC_MALESHEP)*/)
+            {
+                var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
+                if (sfxgame != null && File.Exists(sfxgame))
+                {
+                    var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
+                    var shepMDL = sfxgameP.GetUExport(42539);
+                    RSkeletalMesh.FuzzSkeleton(shepMDL, option);
+                    MERFileSystem.SavePackage(sfxgameP);
+                }
+            }
+
             var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
             var charCreatorS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
 
@@ -104,13 +117,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
                     foreach (var color in colors)
                     {
-                        RStructs.RandomizeColor( color, true);
+                        RStructs.RandomizeColor(color, true);
                     }
                     export.WriteProperty(colors);
                 }
                 else if (export.ClassName == "BioMorphFaceFESliderMorph")
                 {
-                    //not sure if this one actually works due to how face morphs are limited
+                    // These don't work becuase of the limits in the morph system
+                    // So all this does is change how much the values change, not the max/min
                 }
                 else if (export.ClassName == "BioMorphFaceFESliderScalar" || export.ClassName == "BioMorphFaceFESliderSetMorph")
                 {

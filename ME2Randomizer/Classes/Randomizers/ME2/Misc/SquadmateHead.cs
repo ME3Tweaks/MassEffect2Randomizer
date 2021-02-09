@@ -297,7 +297,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var kaidanScalpMaterial = kaidanMDL.FileRef.FindExport("BIOG_HMM_HED_PROMorph.Kaiden.HMM_HED_PROKaiden_Scalp_Mat_1a");
 
             var vectorsFC = VectorParameter.GetVectorParameters(kaidanFacMaterial);
-            var color = new Vector4();
+            var color = new CFVector4();
             color.W = 0.6455554f;
             color.X = 0.3157628f;
             color.Y = 0.2157644f;

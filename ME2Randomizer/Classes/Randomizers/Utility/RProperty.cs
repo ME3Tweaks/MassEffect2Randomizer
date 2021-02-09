@@ -1,62 +1,128 @@
 ﻿using ME3ExplorerCore.Unreal;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.SharpDX;
 using NameProperty = ME3ExplorerCore.Unreal.NameProperty;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
-    class VectorParameter
+    class ScalarParameter
     {
-        public static List<VectorParameter> GetVectorParameters(ExportEntry export)
+        public static List<ScalarParameter> GetScalarParameters(ExportEntry export)
         {
-            var vectors = export.GetProperty<ArrayProperty<StructProperty>>("VectorParameterValues");
+            var vectors = export.GetProperty<ArrayProperty<StructProperty>>("ScalarParameterValues") ?? export.GetProperty<ArrayProperty<StructProperty>>("ScalarParameters");
             return vectors?.Select(FromStruct).ToList();
         }
 
-        public static void WriteVectorParameters(ExportEntry export, List<VectorParameter> parameters)
+        public static void WriteScalarParameters(ExportEntry export, List<ScalarParameter> parameters, string paramName = "ScalarParameterValues")
         {
-            var arr = new ArrayProperty<StructProperty>("VectorParameterValues");
+            var arr = new ArrayProperty<StructProperty>(paramName);
             arr.AddRange(parameters.Select(x => x.ToStruct()));
             export.WriteProperty(arr);
         }
 
-        public static VectorParameter FromStruct(StructProperty sp)
+        public static ScalarParameter FromStruct(StructProperty sp)
         {
-            VectorParameter vp = new VectorParameter
+            return new ScalarParameter
             {
                 Property = sp,
                 ParameterName = sp.GetProp<NameProperty>("ParameterName")?.Value,
-                ParameterValue = RStructs.FromLinearColorStructProperty(sp.GetProp<StructProperty>("ParameterValue"))
+                ParameterValue = sp.GetProp<FloatProperty>(sp.StructType == "SMAScalarParameter" ? "Parameter" : "ParameterValue").Value,
+                Group = sp.GetProp<NameProperty>("Group")
             };
-            //vp.ExpressionGuid = FGuid.FromStruct(sp.GetProp<StructProperty>("ExpressionGUID"));
-
-            return vp;
         }
 
         public StructProperty ToStruct()
         {
             PropertyCollection props = new PropertyCollection();
             props.Add(new NameProperty(ParameterName, "ParameterName"));
-            props.Add(RStructs.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
-                "R", "G", "B", "A", "ParameterValue"));
-            props.Add(RStructs.ToFourPartIntStruct("LinearColor", true, 0,0,0,0,
-                "A", "B", "C", "D", "ExpressionGUID"));
 
-            // Do we add a None?
-            return new StructProperty("VectorParameterValue", props);
+            if (Property.StructType == "SMAScalarParameter")
+            {
+                props.Add(new FloatProperty(ParameterValue, "Parameter"));
+                props.Add(Group);
+                return new StructProperty("SMAScalarParameter", props);
+            }
+            else
+            {
+                props.Add(new FloatProperty(ParameterValue, "ParameterValue"));
+                props.Add(RStructs.ToFourPartIntStruct("Guid", true, 0, 0, 0, 0,
+                    "A", "B", "C", "D", "ExpressionGUID"));
+                return new StructProperty("ScalarParameterValue", props);
+            }
         }
-        public Vector4 ParameterValue { get; set; }
+        public float ParameterValue { get; set; }
 
         public string ParameterName { get; set; }
 
+        /// <summary>
+        /// SMAScalarParameter only
+        /// </summary>
+        public NameProperty Group { get; set; }
+
         public StructProperty Property { get; set; }
+    }
+
+    class VectorParameter
+    {
+        public static List<VectorParameter> GetVectorParameters(ExportEntry export)
+        {
+            var vectors = export.GetProperty<ArrayProperty<StructProperty>>("VectorParameterValues") ?? export.GetProperty<ArrayProperty<StructProperty>>("VectorParameters");
+            return vectors?.Select(FromStruct).ToList();
+        }
+
+        public static void WriteVectorParameters(ExportEntry export, List<VectorParameter> parameters, string paramName = "VectorParameterValues")
+        {
+            var arr = new ArrayProperty<StructProperty>(paramName);
+            arr.AddRange(parameters.Select(x => x.ToStruct()));
+            export.WriteProperty(arr);
+        }
+
+        public static VectorParameter FromStruct(StructProperty sp)
+        {
+            return new VectorParameter
+            {
+                Property = sp,
+                ParameterName = sp.GetProp<NameProperty>("ParameterName")?.Value,
+                ParameterValue = RStructs.FromLinearColorStructProperty(sp.GetProp<StructProperty>(sp.StructType == "SMAVectorParameter" ? "Parameter" : "ParameterValue")),
+                Group = sp.GetProp<NameProperty>("Group")
+            };
+        }
+
+        public StructProperty ToStruct()
+        {
+            PropertyCollection props = new PropertyCollection();
+            props.Add(new NameProperty(ParameterName, "ParameterName"));
+
+            if (Property.StructType == "SMAVectorParameter")
+            {
+                props.Add(RStructs.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
+                    "R", "G", "B", "A", "Parameter"));
+                props.Add(Group);
+                return new StructProperty("SMAVectorParameter", props);
+            }
+            else
+            {
+                props.Add(RStructs.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
+                    "R", "G", "B", "A", "ParameterValue"));
+                props.Add(RStructs.ToFourPartIntStruct("Guid", true, 0, 0, 0, 0,
+                    "A", "B", "C", "D", "ExpressionGUID"));
+                return new StructProperty("VectorParameterValue", props);
+            }
+        }
+        public CFVector4 ParameterValue { get; set; }
+
+        public string ParameterName { get; set; }
+
+        /// <summary>
+        /// SMAVectorParameter only
+        /// </summary>
+        public NameProperty Group { get; set; }
+
+        public StructProperty Property { get; set; }
+
     }
 
     class RProperty

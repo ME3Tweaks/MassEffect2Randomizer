@@ -210,8 +210,9 @@
                 </StackPanel>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="50*"/>
-                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Vertical" Grid.Column="0" Margin="0,0,0,5" IsEnabled="{Binding AllowOptionsChanging}">
                         <RadioButton Content="Select what to randomize" Margin="4" GroupName="ERandomizationMode_SelectAny" Background="Transparent" ToolTip="Pick and choose what you want to randomize" 
@@ -221,7 +222,25 @@
                         <RadioButton Content="Give me a screed. I want to experience hell." Margin="4" GroupName="ERAndomizationMode_Screed" Background="Transparent" ToolTip="You want to experience hell itself with full randomization" 
                                 IsChecked="{Binding Path=SelectedRandomizeMode, Mode=TwoWay, Converter={StaticResource enumConverter}, ConverterParameter=ERandomizationMode_Screed}" />
                     </StackPanel>
-                    <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Bottom"  IsEnabled="{Binding AllowOptionsChanging}">
+                    <Grid Grid.Column="1" Margin="0,0,0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Legend" FontWeight="Bold" Grid.ColumnSpan="2" TextAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Text="Safe to use" Foreground="#a6ffbe"/>
+                        <TextBlock Grid.Row="2" Text="Safe but not 100% tested"/>
+                        <TextBlock Grid.Row="3" Text="Mostly safe, may cause a few issues" Foreground="#fff41f"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="Potentially game breaking. Use at your own risk" Foreground="#ff871f"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="RIP. Entertaining, but very likely game breaking" Foreground="#ff1f1f"/>
+                    </Grid>
+                    <StackPanel Orientation="Vertical" Grid.Column="2" VerticalAlignment="Bottom"  IsEnabled="{Binding AllowOptionsChanging}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5" HorizontalAlignment="Right">
                             <CheckBox Content="Multi-thread randomization" IsChecked="{Binding UseMultiThreadRNG}" HorizontalAlignment="Right" Margin="0,0,10,0" ToolTip="Enables faster randomization, but cannot be used with a seed."/>
                             <TextBlock Text="RNG Seed: " VerticalAlignment="Center" Visibility="{Binding UseMultiThreadRNG, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter='Inverse'}"/>

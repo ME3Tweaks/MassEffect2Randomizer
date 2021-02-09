@@ -17,6 +17,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class RTexts
     {
+        public const string SUBOPTIONKEY_VOWELS_HARDMODE = "VOWELS_HARDMODE";
+
         public static bool RandomizeIntroText(RandomizationOption arg)
         {
             string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("openingcrawls.xml");
@@ -50,11 +52,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             return true;
         }
 
-
-        private static readonly List<char> englishVowels = new List<char>(new[] { 'a', 'e', 'i', 'o', 'u' });
-        private static readonly List<char> upperCaseVowels = new List<char>(new[] { 'A', 'E', 'I', 'O', 'U' });
-
-
         public static bool UwuifyText(RandomizationOption option)
         {
             foreach (TalkFile tf in TLKHandler.GetOfficialTLKs())
@@ -66,6 +63,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     continue;
                 foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
                 {
+                    if (sref.Data.Contains("DLC_")) continue; // Don't modify
+
+                    //if (sref.StringID != 325648)
+                    //    continue;
                     // See if strref has CUSTOMTOKEN or a control symbol
                     List<int> skipRanges = new List<int>();
                     FindSkipRanges(sref, skipRanges);
@@ -77,13 +78,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     {
                         if (skipRanges.Any() && skipRanges[0] == i)
                         {
+                            sb.Append(sref.Data.Substring(skipRanges[0], skipRanges[1] - skipRanges[0]));
                             previousChar = (char)0x00;
-                            i = skipRanges[1];
+                            i = skipRanges[1] - 1; // We subtract one as the next iteration of the loop will +1 it again, which then will make it read the 'next' character
                             skipRanges.RemoveAt(0); // remove first 2
                             skipRanges.RemoveAt(0); // remove first 2
 
                             if (i >= sref.Data.Length - 1)
                                 break;
+                            continue;
                         }
 
                         currentChar = sref.Data[i];
@@ -94,6 +97,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         else if (currentChar == 'l' || currentChar == 'r')
                         {
                             sb.Append('w');
+                        }
+                        else if (currentChar == 'N' && (previousChar == 0x00 || previousChar == ' '))
+                        {
+                            sb.Append("Nyaa");
                         }
                         else if (currentChar == 'O' || currentChar == 'o')
                         {
@@ -143,8 +150,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         skipRanges.Add(startPos);
                         skipRanges.Add(i + 1);
                     }
-                    else
-                        Debug.WriteLine(insideStr);
+                    //else
+                    //    Debug.WriteLine(insideStr);
 
                     startPos = -1;
                     openingChar = (char)0x00;
@@ -153,14 +160,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 else if (startPos >= 0 && openingChar == '<' && sref.Data[i] == '>') //cust token
                 {
                     var insideStr = sref.Data.Substring(startPos + 1, i - startPos - 1);
-                    if (insideStr.StartsWith("CUSTOM") || insideStr.StartsWith("font")  || insideStr.StartsWith("/font") || insideStr.Equals("br", StringComparison.InvariantCultureIgnoreCase))
+                    if (insideStr.StartsWith("CUSTOM") || insideStr.StartsWith("font") || insideStr.StartsWith("/font") || insideStr.Equals("br", StringComparison.InvariantCultureIgnoreCase))
                     {
                         // custom token. Do not modify it
                         skipRanges.Add(startPos);
                         skipRanges.Add(i + 1);
                     }
-                    else
-                        Debug.WriteLine(insideStr);
+                    //else
+                    //Debug.WriteLine(insideStr);
 
                     startPos = -1;
                     openingChar = (char)0x00;
@@ -171,103 +178,127 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         }
 
         /// <summary>
-        /// Swap the vowels around
+        /// Gets map of uppercase consonants mapped to the same letter. The values can then be changed to build a translation map
+        /// </summary>
+        /// <returns></returns>
+        private static Dictionary<char, char> GetConsonantMap()
+        {
+            var consonants = "BCDFGHJKLMNPQRSTVWXYZ"; // Remaining consonants
+            return consonants.ToDictionary(x => x, x => x);
+        }
+
+        /// <summary>
+        /// Gets map of uppercase vowels mapped to the same letter. The values can then be changed to build a translation map
+        /// </summary>
+        /// <returns></returns>
+        private static Dictionary<char, char> GetVowelMap()
+        {
+            var vowels = "AEIOU".ToList(); // Remaining consonants
+            return vowels.ToDictionary(x => x, x => x);
+        }
+
+        /// <summary>
+        /// Swap the vowels around. Optional hard mode allows swapping 2 consonants to make it extra difficult to read
         /// </summary>
         /// <param name="Tlks"></param>
         public static bool RandomizeVowels(RandomizationOption option)
         {
-            List<char> scottishVowelOrdering;
-            List<char> upperScottishVowelOrdering;
-            Log.Information("Making text possibly scottish");
-            scottishVowelOrdering = new List<char>(new char[] { 'a', 'e', 'i', 'o', 'u' });
-            scottishVowelOrdering.Shuffle();
-            upperScottishVowelOrdering = new List<char>();
-            foreach (var c in scottishVowelOrdering)
+            // Map of what letter maps to what other letter
+            Log.Information("Randomizing vowels in words");
+            var hardMode = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_VOWELS_HARDMODE);
+
+            var vowels = GetVowelMap();
+            var vowelValues = vowels.Values.ToList();
+            foreach (var sourceVowel in vowels.Keys)
             {
-                upperScottishVowelOrdering.Add(char.ToUpper(c, CultureInfo.InvariantCulture));
+                var value = vowelValues.RandomElement();
+                while (hardMode && value == sourceVowel)
+                {
+                    value = vowelValues.RandomElement();
+                }
+
+                vowelValues.Remove(value); // Do not allow reassignment of same vowel
+                Debug.WriteLine($"Vowel Randomizer: {sourceVowel} -> {value}");
+                vowels[sourceVowel] = value;
             }
 
-            int currentTlkIndex = 0;
-            foreach (TalkFile tf in TLKHandler.GetOfficialTLKs())
+            var consonants = GetConsonantMap();
+            if (hardMode)
             {
-                var tfName = Path.GetFileNameWithoutExtension(tf.path);
-                var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
-                currentTlkIndex++;
-                int max = tf.StringRefs.Count();
-                int current = 0;
-
-                foreach (var sref in tf.StringRefs)
+                // Swap some consontants around
+                var numConsonantsToRandomize = 2;
+                var consonantValues = consonants.Values.ToList();
+                while (numConsonantsToRandomize > 0)
                 {
-                    current++;
-                    if (string.IsNullOrWhiteSpace(sref.Data) || sref.Data.Contains("DLC_")) continue; //This string has already been updated and should not be modified.
+                    var sourceValue = consonantValues.RandomElement();
+                    var value = consonantValues.RandomElement();
+                    while (sourceValue == value)
+                        value = consonantValues.RandomElement();
+                    consonantValues.Remove(value); // Do not allow reassignment of same vowel
+                    consonantValues.Remove(sourceValue); // Do not allow reassignment of same vowel
 
-                    if (!string.IsNullOrWhiteSpace(sref.Data))
-                    {
-                        string originalString = sref.Data;
-                        if (originalString.Length == 1)
-                        {
-                            continue; //Don't modify I, A
-                        }
+                    Debug.WriteLine($"Vowel Randomizer Hard Mode: {sourceValue} -> {value}");
 
-                        string[] words = originalString.Split(' ');
-                        for (int j = 0; j < words.Length; j++)
-                        {
-                            string word = words[j];
-                            if (word.Length == 1 || IsBlacklistedWord(word))
-                            {
-                                continue; //Don't modify I, A
-                            }
-
-                            char[] newStringAsChars = word.ToArray();
-                            for (int i = 0; i < word.Length; i++)
-                            {
-                                //Undercase
-                                var vowelIndex = englishVowels.IndexOf(word[i]);
-                                if (vowelIndex >= 0)
-                                {
-                                    if (i + 1 < word.Length && englishVowels.Contains(word[i + 1]))
-                                    {
-                                        continue; //don't modify dual vowel first letters.
-                                    }
-                                    else
-                                    {
-                                        newStringAsChars[i] = scottishVowelOrdering[vowelIndex];
-                                    }
-                                }
-                                else
-                                {
-                                    var upperVowelIndex = upperCaseVowels.IndexOf(word[i]);
-                                    if (upperVowelIndex >= 0)
-                                    {
-                                        if (i + 1 < word.Length && upperCaseVowels.Contains(word[i + 1]))
-                                        {
-                                            continue; //don't modify dual vowel first letters.
-                                        }
-                                        else
-                                        {
-                                            newStringAsChars[i] = upperScottishVowelOrdering[upperVowelIndex];
-                                        }
-                                    }
-                                }
-                            }
-
-                            words[j] = new string(newStringAsChars);
-                        }
-
-                        string rebuiltStr = string.Join(" ", words);
-                        TLKHandler.ReplaceString(sref.StringID, rebuiltStr, langCode);
-                    }
+                    consonants[sourceValue] = value;
+                    consonants[value] = sourceValue;
+                    numConsonantsToRandomize--;
                 }
             }
 
-            return true;
-        }
+            // Build full translation map (uppercase)
+            var translationMapUC = new[] { vowels, consonants }.SelectMany(dict => dict)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-        private static bool IsBlacklistedWord(string word)
-        {
-            if (word.Contains("<CUSTOM")) return true;
-            if (word.StartsWith("[") && word.EndsWith("]")) return true; //control token
-            return false;
+            // Add lowercase translation
+            var lowerCaseMap = translationMapUC.ToDictionary(x => char.ToLowerInvariant(x.Key), x => char.ToLowerInvariant(x.Value));
+
+            // Build a full translation
+            var translationMap = new[] { translationMapUC, lowerCaseMap }.SelectMany(dict => dict)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            Parallel.ForEach(TLKHandler.GetOfficialTLKs(), tf =>
+            {
+                var tfName = Path.GetFileNameWithoutExtension(tf.path);
+                var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
+
+                foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
+                {
+                    if (sref.Data.Contains("DLC_")) continue; // Don't modify
+
+                    // See if strref has CUSTOMTOKEN or a control symbol
+                    List<int> skipRanges = new List<int>();
+                    FindSkipRanges(sref, skipRanges);
+
+                    var newStr = sref.Data.ToArray();
+                    for (int i = 0; i < sref.Data.Length; i++) // For every letter
+                    {
+                        // Skip any items we should not skip.
+                        if (skipRanges.Any() && skipRanges[0] == i)
+                        {
+                            i = skipRanges[1] - 1; // We subtract one as the next iteration of the loop will +1 it again, which then will make it read the 'next' character
+                            skipRanges.RemoveAt(0); // remove first 2
+                            skipRanges.RemoveAt(0); // remove first 2
+
+                            if (i >= sref.Data.Length - 1)
+                                break;
+                            continue;
+                        }
+
+                        if (translationMap.ContainsKey(newStr[i]))
+                        {
+                            // Remap the letter
+                            newStr[i] = translationMap[newStr[i]];
+                        }
+                        else
+                        {
+                            // Do not change the letter. It might be something like <.
+                        }
+
+                        TLKHandler.ReplaceString(sref.StringID, new string(newStr), langCode);
+                    }
+                }
+            });
+            return true;
         }
     }
 }

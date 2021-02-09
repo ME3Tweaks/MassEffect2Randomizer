@@ -172,9 +172,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
                 // Check if this string should be replaced in this language
                 if (langCode != null && !Path.GetFileNameWithoutExtension(tf.path).EndsWith($@"_{langCode}")) continue;
                 //Debug.WriteLine($"TLK installing {stringid}: {newText}");
-                tf.ReplaceString(stringid, newText, true);
+                lock (syncObj)
+                {
+                    tf.ReplaceString(stringid, newText, true);
+                }
             }
         }
+
+        private object syncObj = new object();
 
         public static IEnumerable<TalkFile> GetOfficialTLKs()
         {
