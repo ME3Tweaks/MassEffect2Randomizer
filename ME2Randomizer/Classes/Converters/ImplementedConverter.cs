@@ -13,7 +13,14 @@ namespace ME2Randomizer.Classes.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is RandomizationOption ro)
+            {
+                if (ro.OptionIsSelected)
+                {
+                    return Brushes.Green;
+                }
+
                 return (!ro.IsOptionOnly && ro.PerformRandomizationOnExportDelegate == null && ro.PerformSpecificRandomizationDelegate == null) ? Brushes.Red : Brushes.Transparent;
+            }
             return Brushes.Maroon;
         }
 

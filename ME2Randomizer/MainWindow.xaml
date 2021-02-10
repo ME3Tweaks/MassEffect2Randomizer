@@ -39,7 +39,7 @@
              as the file name -->
         </FontFamily>
         <DataTemplate x:Key="RandomizationOptionTemplate" DataType="classes:RandomizationOption">
-            <StackPanel Background="{Binding Converter={StaticResource ImplementedConverter}}">
+            <StackPanel Background="{Binding Self, Converter={StaticResource ImplementedConverter}}">
                 <CheckBox Content="{Binding HumanName}" FontWeight="Bold" Margin="3" 
                           IsChecked="{Binding OptionIsSelected}"
                           Controls:CheckBoxHelper.CheckGlyphForegroundChecked="White"

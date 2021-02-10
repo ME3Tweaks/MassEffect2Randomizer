@@ -5,12 +5,16 @@ using System.Linq;
 using System.Text;
 using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
+using PropertyChanged;
 
 namespace ME2Randomizer.Classes
 {
     public class RandomizationOption : INotifyPropertyChanged
     {
-
+        /// <summary>
+        /// Used for forcing binding updates when the binded object is this object
+        /// </summary>
+        public RandomizationOption Self { get; set; }
         public enum EOptionDangerousness
         {
             /// <summary>
@@ -56,11 +60,17 @@ namespace ME2Randomizer.Classes
         /// <summary>
         /// If this option is selected for operation
         /// </summary>
+        [AlsoNotifyFor(nameof(Self))]
         public bool OptionIsSelected { get; set; }
 
         public void OnOptionIsSelectedChanged()
         {
             StateChangingDelegate?.Invoke(this);
+        }
+
+        public RandomizationOption()
+        {
+            Self = this;
         }
 
         /// <summary>

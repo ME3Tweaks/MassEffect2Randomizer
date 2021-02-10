@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
+using ME2Randomizer.Classes.Randomizers.Utility;
+using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
+using ME3ExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
@@ -19,6 +23,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     public class CharacterCreator
     {
         private static RandomizationOption SuperRandomOption = new RandomizationOption() { SliderValue = 10 };
+        public const string SUBOPTIONKEY_MALESHEP_COLORS = "SUBOPTION_MALESHEP_COLORS";
 
         public static bool RandomizeIconicFemShep(RandomizationOption option)
         {
@@ -43,21 +48,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             }
             return true;
         }
-        public static bool RandomizeCharacterCreator(RandomizationOption option)
-        {
 
-            if (true /*|| option.HasSubOptionSelected(CharacterCreator.MESS_UP_ICONIC_MALESHEP)*/)
+        public static bool RandomizeIconicMaleShep(RandomizationOption option)
+        {
+            var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
+            if (sfxgame != null && File.Exists(sfxgame))
             {
-                var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
-                if (sfxgame != null && File.Exists(sfxgame))
+                var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
+                var shepMDL = sfxgameP.GetUExport(42539);
+                var objBin = RSkeletalMesh.FuzzSkeleton(shepMDL, option);
+
+                if (option.HasSubOptionSelected(CharacterCreator.SUBOPTIONKEY_MALESHEP_COLORS))
                 {
-                    var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
-                    var shepMDL = sfxgameP.GetUExport(42539);
-                    RSkeletalMesh.FuzzSkeleton(shepMDL, option);
-                    MERFileSystem.SavePackage(sfxgameP);
+                    Dictionary<string, CFVector4> vectors = new();
+                    Dictionary<string, float> scalars = new();
+                    var materials = objBin.Materials;
+                    foreach (var mat in materials.Select(x => sfxgameP.GetUExport(x)))
+                    {
+                        RMaterialInstance.RandomizeSubMatInst(mat, vectors, scalars);
+                    }
                 }
+
+                MERFileSystem.SavePackage(sfxgameP);
+                return true;
             }
 
+            return false;
+        }
+
+        public static bool RandomizeCharacterCreator(RandomizationOption option)
+        {
             var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
             var charCreatorS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
 

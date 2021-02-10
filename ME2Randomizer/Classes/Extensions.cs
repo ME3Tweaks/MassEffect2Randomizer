@@ -3,9 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media;
 using ME2Randomizer.Classes.Randomizers;
+using ME3ExplorerCore.Packages;
+using ME3ExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes
 {
+    public static class UnrealExtensions
+    {
+        /// <summary>
+        /// Gets the defaults for this export - the export must be a class. Returns null if the defaults is an import.
+        /// </summary>
+        /// <param name="export"></param>
+        /// <returns></returns>
+        public static ExportEntry GetDefaults(this ExportEntry export)
+        {
+            return export.FileRef.GetUExport(ObjectBinary.From<UClass>(export).Defaults);
+        }
+    }
+
     public static class StringExtensions
     {
         public static SolidColorBrush ToBrush(this string hexColorString)

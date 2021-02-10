@@ -331,7 +331,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Iconic FemShep face",
-                        Description="Changes the default FemShep face. Iconic Maleshep is modeled",
+                        Description="Changes the default FemShep face",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7",
                         HasSliderOption = true,
@@ -339,6 +339,37 @@ namespace ME2Randomizer.Classes
                         SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
                         PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeIconicFemShep
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Iconic MaleShep face",
+                        Description="Changes the default MaleShep face. Due to it being modeled results are different than FemShep",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        Ticks = "0.25,0.5,1.0,1.25,1.5,2.0",
+                        HasSliderOption = true,
+                        IsRecommended = true,
+                        SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
+                        SliderValue = 1.0, // This must come after the converter
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeIconicMaleShep,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = CharacterCreator.SUBOPTIONKEY_MALESHEP_COLORS,
+                                HumanName = "Include colors",
+                                Description = "Also changes colors like skintone, eyes, scars",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                                IsOptionOnly = true
+                            }
+                        }
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Class powers",
+                        Description="Shuffles the powers of all classes. Weapon classes are unchanged. DO NOT RE-RANDOMIZE ON AN EXISTING SAVE, YOUR POWERS ARE SAVED INTO YOUR SAVE FILE.",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true,
+                        PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites
                     },
                 }
             });
@@ -376,6 +407,13 @@ namespace ME2Randomizer.Classes
                         Description = "Makes Shepard able to be ragdolled from various powers/attacks. Can greatly increase difficulty",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         PerformSpecificRandomizationDelegate = SFXGame.MakeShepardRagdollable,
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Remove running camera shake",
+                        Description = "Removes the camera shake when running",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        PerformSpecificRandomizationDelegate = SFXGame.RemoveStormCameraShake,
                     },
                 }
             });

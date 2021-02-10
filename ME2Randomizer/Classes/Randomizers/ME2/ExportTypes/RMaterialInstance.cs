@@ -127,8 +127,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
         // Jacob is not listed as an iconic appearance.
         // If we run skin randomizer it will look weird
-       // private static bool CanRandomizeNPCExport(ExportEntry export) => !export.IsDefaultObject && (export.IsA("BioPawn") || (export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && export.IsA("SFXSkeletalMeshActorMAT")));
-        private static bool CanRandomizeNPCExport2(ExportEntry export) => !export.IsDefaultObject && (export.IsA("BioPawn") ||  export.IsA("SFXSkeletalMeshActorMAT"));
+        // private static bool CanRandomizeNPCExport(ExportEntry export) => !export.IsDefaultObject && (export.IsA("BioPawn") || (export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && export.IsA("SFXSkeletalMeshActorMAT")));
+        private static bool CanRandomizeNPCExport2(ExportEntry export) => !export.IsDefaultObject && (export.IsA("BioPawn") || export.IsA("SFXSkeletalMeshActorMAT"));
 
         public static bool RandomizeNPCExport2(ExportEntry export, RandomizationOption randOption)
         {
@@ -189,54 +189,58 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         {
                             if (childMatObj.ResolveToEntry(export.FileRef) is ExportEntry childMat)
                             {
-
-                                // VECTOR PARAMETERS
-                                var vectorParameterValues = VectorParameter.GetVectorParameters(childMat);
-                                if (vectorParameterValues != null)
-                                {
-                                    foreach (var vpv in vectorParameterValues)
-                                    {
-                                        CFVector4 color;
-                                        if (!vectorValues.TryGetValue(vpv.ParameterName, out color))
-                                        {
-                                            color = vpv.ParameterValue;
-                                            RStructs.RandomizeTint(color, false);
-                                            vectorValues[vpv.ParameterName] = color;
-                                        }
-                                        else
-                                        {
-                                            vpv.ParameterValue = color;
-                                        }
-                                    }
-                                    Debug.WriteLine(export.InstancedFullPath);
-                                    VectorParameter.WriteVectorParameters(childMat, vectorParameterValues);
-                                }
-
-                                // SCALAR PARAMETERS
-                                var scalarParameterValues = ScalarParameter.GetScalarParameters(childMat);
-                                if (scalarParameterValues != null)
-                                {
-                                    foreach (var vpv in scalarParameterValues)
-                                    {
-                                        if (!scalarValues.TryGetValue(vpv.ParameterName, out float scalarVal))
-                                        {
-                                            // Write new
-                                            vpv.ParameterValue *= ThreadSafeRandom.NextFloat(0.75, 1.25);
-                                            scalarValues[vpv.ParameterName] = vpv.ParameterValue;
-                                        }
-                                        else
-                                        {
-                                            // Write existing
-                                            vpv.ParameterValue = scalarVal;
-                                        }
-                                    }
-                                    Debug.WriteLine(export.InstancedFullPath);
-                                    ScalarParameter.WriteScalarParameters(childMat, scalarParameterValues);
-                                }
+                                RandomizeSubMatInst(childMat, vectorValues, scalarValues);
                             }
                         }
                     }
                 }
+            }
+        }
+
+        public static void RandomizeSubMatInst(ExportEntry childMat, Dictionary<string, CFVector4> vectorValues, Dictionary<string, float> scalarValues)
+        {
+            // VECTOR PARAMETERS
+            var vectorParameterValues = VectorParameter.GetVectorParameters(childMat);
+            if (vectorParameterValues != null)
+            {
+                foreach (var vpv in vectorParameterValues)
+                {
+                    CFVector4 color;
+                    if (!vectorValues.TryGetValue(vpv.ParameterName, out color))
+                    {
+                        color = vpv.ParameterValue;
+                        RStructs.RandomizeTint(color, false);
+                        vectorValues[vpv.ParameterName] = color;
+                    }
+                    else
+                    {
+                        vpv.ParameterValue = color;
+                    }
+                }
+                Debug.WriteLine(childMat.InstancedFullPath);
+                VectorParameter.WriteVectorParameters(childMat, vectorParameterValues);
+            }
+
+            // SCALAR PARAMETERS
+            var scalarParameterValues = ScalarParameter.GetScalarParameters(childMat);
+            if (scalarParameterValues != null)
+            {
+                foreach (var vpv in scalarParameterValues)
+                {
+                    if (!scalarValues.TryGetValue(vpv.ParameterName, out float scalarVal))
+                    {
+                        // Write new
+                        vpv.ParameterValue *= ThreadSafeRandom.NextFloat(0.75, 1.25);
+                        scalarValues[vpv.ParameterName] = vpv.ParameterValue;
+                    }
+                    else
+                    {
+                        // Write existing
+                        vpv.ParameterValue = scalarVal;
+                    }
+                }
+                Debug.WriteLine(childMat.InstancedFullPath);
+                ScalarParameter.WriteScalarParameters(childMat, scalarParameterValues);
             }
         }
 

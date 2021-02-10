@@ -627,6 +627,24 @@ namespace MassEffectRandomizer.Classes
             }
         }
 
+
+        public static string CalculateMD5(Stream stream)
+        {
+            try
+            {
+                using var md5 = MD5.Create();
+                stream.Position = 0;
+                var hash = md5.ComputeHash(stream);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
+            catch (Exception e)
+            {
+                Log.Error("I/O ERROR CALCULATING CHECKSUM OF STREAM");
+                Log.Error(App.FlattenException(e));
+                return "";
+            }
+        }
+
         internal static string GetALOTMarkerFilePath()
         {
             string gamePath = GetGamePath();
