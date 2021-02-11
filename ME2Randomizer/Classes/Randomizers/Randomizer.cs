@@ -366,10 +366,11 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Class powers",
-                        Description="Shuffles the powers of all classes. Weapon classes are unchanged. DO NOT RE-RANDOMIZE ON AN EXISTING SAVE, YOUR POWERS ARE SAVED INTO YOUR SAVE FILE.",
+                        Description="Shuffles the powers of all classes. Weapon classes are unchanged. Loading an existing save after running this will cause you to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true,
-                        PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites
+                        PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
+                        RequiresTLK = true
                     },
                 }
             });

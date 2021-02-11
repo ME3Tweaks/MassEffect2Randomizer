@@ -263,7 +263,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     }
                     else
                     {
-                        Debug.WriteLine("wrong count of slider datas!");
+                        Debug.WriteLine("wrong count of slider datas for {} {slider.}!");
                     }
                 }
             }

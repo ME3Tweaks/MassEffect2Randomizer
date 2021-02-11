@@ -57,7 +57,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         /// Looks up a string, but only in a certain language
         /// </summary>
         /// <param name="stringId"></param>
-        /// <param name="langCode"></param>
+        /// <param name="langCode">Upper case lang code</param>
         /// <returns></returns>
         public static string TLKLookupByLang(int stringId, string langCode)
         {
@@ -111,7 +111,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         #region Private members
 
         private SortedSet<string> loadedLanguages = new SortedSet<string>();
-        private int NextDynamicID = 7893000;
+        private int NextDynamicID = 7421320;
         private void Start()
         {
             LoadedOfficialTalkFiles = new List<TalkFile>();

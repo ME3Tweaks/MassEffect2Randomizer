@@ -97,10 +97,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             else if (randFuncType == EAIFuncType.FUNCTYPE_HEAVYMECH_NUKEPOWER)
             {
                 // Export is ChooseDeathPower. Assuming that the power has not been modified in other ways.
-                var expData = exp.Data;
-                if (expData.Length != 259)
+                if (exp.DataSize != 259)
                     return false; // Do not operate on this function if it's modified as we will probably break it.
 
+                var expData = exp.Data;
                 if (ThreadSafeRandom.Next(2) == 0)
                 {
                     // It's boom time.
