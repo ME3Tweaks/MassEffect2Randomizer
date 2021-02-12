@@ -24,6 +24,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     {
         private static RandomizationOption SuperRandomOption = new RandomizationOption() { SliderValue = 10 };
         public const string SUBOPTIONKEY_MALESHEP_COLORS = "SUBOPTION_MALESHEP_COLORS";
+        public const string SUBOPTIONKEY_CHARCREATOR_NO_COLORS = "SUBOPTION_CHARCREATOR_COLORS";
 
         public static bool RandomizeIconicFemShep(RandomizationOption option)
         {
@@ -78,11 +79,22 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         public static bool RandomizeCharacterCreator(RandomizationOption option)
         {
-            var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
-            var charCreatorS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
+            var biop_charF = MERFileSystem.GetPackageFile(@"BioP_Char.pcc");
+            var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
+            var maleFrontEndData = biop_char.GetUExport(18753);
+            var femaleFrontEndData = biop_char.GetUExport(18754);
 
-            charCreatorS.SetSingleEntry("!MalePregeneratedHeadCodes", "CLEAR");
-            charCreatorS.SetSingleEntry("!FemalePregeneratedHeadCodes", "CLEAR");
+            var codeMapMale = CalculateCodeMap(maleFrontEndData);
+            var codeMapFemale = CalculateCodeMap(femaleFrontEndData);
+
+            var bg = CoalescedHandler.GetIniFile("BIOGame.ini");
+            var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
+            var charCreatorPCS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
+            var charCreatorControllerS = bg.GetOrAddSection("SFXGame.BioSFHandler_NewCharacter");
+
+            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
+            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
+
             int numToMake = 20;
             int i = 0;
 
@@ -90,28 +102,35 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             while (i < numToMake)
             {
                 i++;
-                charCreatorS.Entries.Add(GenerateHeadCode(false));
+                charCreatorPCS.Entries.Add(GenerateHeadCode(codeMapMale, false));
+                charCreatorControllerS.Entries.Add(GenerateHeadCode(codeMapMale, false));
             }
 
+
+
             // Female: 36 chars
+            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
+            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
+
             i = 0;
             while (i < numToMake)
             {
                 i++;
-                charCreatorS.Entries.Add(GenerateHeadCode(true));
+                charCreatorPCS.Entries.Add(GenerateHeadCode(codeMapFemale, true));
+                charCreatorControllerS.Entries.Add(GenerateHeadCode(codeMapFemale, true));
             }
 
-            var biop_charF = MERFileSystem.GetPackageFile(@"BioP_Char.pcc");
-            var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
-            var maleFrontEndData = biop_char.GetUExport(18753);
-            var femaleFrontEndData = biop_char.GetUExport(18754);
+
             randomizeFrontEnd(maleFrontEndData);
             randomizeFrontEnd(femaleFrontEndData);
+
 
             //Copy the final skeleton from female into male.
             var femBase = biop_char.GetUExport(3480);
             var maleBase = biop_char.GetUExport(3481);
             maleBase.WriteProperty(femBase.GetProperty<ArrayProperty<StructProperty>>("m_aFinalSkeleton"));
+
+            var randomizeColors = !option.HasSubOptionSelected(CharacterCreator.SUBOPTIONKEY_CHARCREATOR_NO_COLORS);
 
             foreach (var export in biop_char.Exports)
             {
@@ -132,7 +151,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         RMorphTarget.RandomizeExport(export, option);
                     }
                 }
-                else if (export.ClassName == "BioMorphFaceFESliderColour")
+                else if (export.ClassName == "BioMorphFaceFESliderColour" && randomizeColors)
                 {
                     var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
                     foreach (var color in colors)
@@ -180,17 +199,55 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             return true;
         }
 
-        private static DuplicatingIni.IniEntry GenerateHeadCode(bool female)
+
+        private static string unnotchedSliderCodeChars = "123456789ABCDEFGHIJKLMNOPQRSTUVW";
+
+        /// <summary>
+        /// Builds a map of position => allowable values (as a string)
+        /// </summary>
+        /// <param name="frontEndData"></param>
+        /// <returns></returns>
+        private static Dictionary<int, char[]> CalculateCodeMap(ExportEntry frontEndData)
         {
-            // Doubt this will actually work but whatevers.
-            return new DuplicatingIni.IniEntry(female ? "+FemalePregeneratedHeadCodes" : "+MalePregeneratedHeadCodes", RandomString(female ? 36 : 34));
+            Dictionary<int, char[]> map = new();
+            var props = frontEndData.GetProperties();
+            var categories = props.GetProp<ArrayProperty<StructProperty>>("MorphCategories");
+            int position = 0;
+            foreach (var category in categories)
+            {
+                foreach (var slider in category.GetProp<ArrayProperty<StructProperty>>("m_aoSliders"))
+                {
+                    if (!slider.GetProp<BoolProperty>("m_bNotched"))
+                    {
+                        map[position] = unnotchedSliderCodeChars.ToCharArray();
+                    }
+                    else
+                    {
+                        // It's notched
+                        map[position] = unnotchedSliderCodeChars.Substring(0, slider.GetProp<IntProperty>("m_iSteps")).ToCharArray();
+                    }
+
+                    position++;
+                }
+
+            }
+
+            return map;
         }
 
-        private static string RandomString(int length)
+        private static DuplicatingIni.IniEntry GenerateHeadCode(Dictionary<int, char[]> codeMap, bool female)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[ThreadSafeRandom.Next(s.Length)]).ToArray());
+            // Doubt this will actually work but whatevers.
+            int numChars = female ? 36 : 34;
+            var headCode = new char[numChars];
+            int i = 0;
+            while (i < numChars)
+            {
+                headCode[i] = codeMap[i].RandomElement();
+                i++;
+            }
+
+            return new DuplicatingIni.IniEntry(female ? "+FemalePregeneratedHeadCodes" : "+MalePregeneratedHeadCodes", new string(headCode));
         }
 
         private static void randomizeFrontEnd(ExportEntry frontEnd)
@@ -229,6 +286,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         }
 
+
         private static void randomizeBaseHead(StructProperty basehead, ExportEntry frontEnd, Dictionary<string, StructProperty> sliders)
         {
             var bhSettings = basehead.GetProp<ArrayProperty<StructProperty>>("m_fBaseHeadSettings");
@@ -249,7 +307,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 {
                     //it's indexed
                     var maxIndex = slider.GetProp<IntProperty>("m_iSteps");
-                    val.Value = ThreadSafeRandom.Next(maxIndex); //will have to see if isteps is inclusive or not.
+                    val.Value = ThreadSafeRandom.Next(maxIndex);
                 }
                 else
                 {
@@ -263,7 +321,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     }
                     else
                     {
-                        Debug.WriteLine("wrong count of slider datas for {} {slider.}!");
+                        // This is just a guess
+                        val.Value = ThreadSafeRandom.NextFloat(0, 1f);
                     }
                 }
             }

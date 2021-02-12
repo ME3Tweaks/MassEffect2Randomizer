@@ -150,10 +150,10 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     if (true
-                    //&& !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Professor", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Vixen", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("ROMMirranda", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
 
@@ -255,13 +255,15 @@ namespace ME2Randomizer.Classes
                         Description="Changes the BioFaceMorph used by some pawns",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                     },
-                    new RandomizationOption()
-                    {
-                        HumanName = "NPC Faces - Extra jacked up",
-                        Description = "Changes the MorphTargets that map bones to the face morph system",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        PerformRandomizationOnExportDelegate = RMorphTarget.RandomizeGlobalExport
-                    },
+                    // Sadly not used by anything but shepard
+                    // For some reason data is embedded into files even though it's never used there
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "NPC Faces - Extra jacked up",
+                    //    Description = "Changes the MorphTargets that map bones to the face morph system",
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    //    PerformRandomizationOnExportDelegate = RMorphTarget.RandomizeGlobalExport
+                    //},
                     new RandomizationOption() {HumanName = "Eyes (excluding Illusive Man)",
                         Description="Changes the colors of eyes",
                         IsRecommended = true,
@@ -323,10 +325,23 @@ namespace ME2Randomizer.Classes
                 GroupName = "Character Creator",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Premade faces", IsRecommended = true,
+                    new RandomizationOption() {
+                        HumanName = "Premade faces", 
+                        IsRecommended = true,
                         Description = "Completely randomizes settings including skin tones and slider values. Adds extra premade faces",
                         PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = CharacterCreator.SUBOPTIONKEY_CHARCREATOR_NO_COLORS,
+                                HumanName = "Don't randomize colors",
+                                Description = "Prevents changing colors such as skin tone, teeth, eyes, etc",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                                IsOptionOnly = true
+                            }
+                        }
                     },
                     new RandomizationOption()
                     {
@@ -343,7 +358,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Iconic MaleShep face",
-                        Description="Changes the default MaleShep face. Due to it being modeled results are different than FemShep",
+                        Description="Changes the bones in default MaleShep face. Due to it being modeled, the changes only occur when the face moves",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         Ticks = "0.25,0.5,1.0,1.25,1.5,2.0",
                         HasSliderOption = true,

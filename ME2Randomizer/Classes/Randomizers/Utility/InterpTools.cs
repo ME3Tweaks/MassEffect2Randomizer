@@ -180,7 +180,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
     /// <summary>
     /// Class version of a Float Vector3. Easier to manipulate than a struct.
     /// </summary>
-    class CFVector3
+    public class CFVector3
     {
         public float X { get; set; }
         public float Y { get; set; }

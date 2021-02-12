@@ -70,12 +70,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             {
                 foreach (var v in lm.Vertices)
                 {
+                    var posDelta = v.PositionDelta;
                     if (shiftDirection == 0)
-                        v.PositionDelta.X *= shiftAmt;
+                        posDelta.X *= shiftAmt;
                     if (shiftDirection == 1)
-                        v.PositionDelta.Y *= shiftAmt;
+                        posDelta.Y *= shiftAmt;
                     if (shiftDirection == 2)
-                        v.PositionDelta.Z *= shiftAmt;
+                        posDelta.Z *= shiftAmt;
+                    v.PositionDelta = posDelta; // Require reassignment
                 }
             }
 
@@ -92,6 +94,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         /// <returns></returns>
         public static bool RandomizeGlobalExport(ExportEntry export, RandomizationOption option)
         {
+            // Extra Jacked Up Randomizer
+            // Doesn't seem to reliably work...
             if (export.FileRef.FilePath.EndsWith("BioP_Char.pcc", StringComparison.InvariantCultureIgnoreCase)) return false;
             if (export.FileRef.FilePath.Contains("Player", StringComparison.InvariantCultureIgnoreCase)) return false;
             return RandomizeExport(export, option);

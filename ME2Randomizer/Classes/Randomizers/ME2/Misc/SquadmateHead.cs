@@ -141,14 +141,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         private static HeadAssetSource[] HeadAssetSources = new[]
         {
-            //new HeadAssetSource()
-            //{
-            //    PackageFile = "BioH_Vixen_00.pcc",
-            //    AssetPath = "BIOG_HMF_HED_PROMorph_R.PROMiranda.HMF_HED_PRO_Miranda_MDL",
-            //    IsFemaleAsset = true,
-            //    NameSuffix = "anda",
-            //    IsSquadmateHead = true
-            //},
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Vixen_00.pcc",
+                AssetPath = "BIOG_HMF_HED_PROMorph_R.PROMiranda.HMF_HED_PRO_Miranda_MDL",
+                IsFemaleAsset = true,
+                NameSuffix = "anda",
+                IsSquadmateHead = true
+            },
             new HeadAssetSource()
             {
                 PackageFile = "ThaneNoChest.pcc",
@@ -158,14 +158,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 IsSquadmateHead = true,
                 IsCorrectedAsset = true
             },
-            //new HeadAssetSource()
-            //{
-            //    PackageFile = "BioH_Convict_00.pcc",
-            //    AssetPath = "BIOG_HMF_HED_PROMorph_R.PROJack.HMF_HED_PROJack_MDL",
-            //    IsFemaleAsset = true,
-            //    NameSuffix = "ck",
-            //    IsSquadmateHead = true
-            //},
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Convict_00.pcc",
+                AssetPath = "BIOG_HMF_HED_PROMorph_R.PROJack.HMF_HED_PROJack_MDL",
+                IsFemaleAsset = true,
+                NameSuffix = "ck",
+                IsSquadmateHead = true
+            },
             new HeadAssetSource()
             {
                 PackageFile = "BioH_Professor_00.pcc",
@@ -181,40 +181,40 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 NameSuffix = "ion",
                 IsUsable = false
             },
-            //new HeadAssetSource()
-            //{
-            //    PackageFile = "BioH_Garrus_00.pcc",
-            //    AssetPath = "BIOG_TUR_HED_PROMorph_R.PROGarrus.TUR_HED_PROGarrus_Damage_MDL",
-            //    NameSuffix = "rus",
-            //    IsSquadmateHead = true,
-            //    DisallowedPawns = new []
-            //    {
-            //        "SFXPawn_Miranda"
-            //    }
-            //},
-            //new HeadAssetSource()
-            //{
-            //    PackageFile = "BioH_Leading_00.pcc",
-            //    AssetPath = "BIOG_HMM_HED_PROMorph.Jacob.HMM_HED_PROJacob_MDL",
-            //    GenderSwapDrawScale = 0.961f, //Male -> Female
-            //    NameSuffix = "cob",
-            //        IsSquadmateHead = true,
-            //        DisallowedPawns = new []
-            //        {
-            //            "SFXPawn_Miranda"
-            //        }
-            //},
-            //new HeadAssetSource()
-            //{
-            //    PackageFile = "BioH_Mystic_00.pcc",
-            //    AssetPath = "BIOG_ASA_HED_PROMorph_R.Samara.ASA_HED_PROSamara_MDL",
-            //    NameSuffix = "ara",
-            //    IsSquadmateHead = true,
-            //    DisallowedPawns = new []
-            //    {
-            //        "SFXPawn_Miranda"
-            //    }
-            //},
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Garrus_00.pcc",
+                AssetPath = "BIOG_TUR_HED_PROMorph_R.PROGarrus.TUR_HED_PROGarrus_Damage_MDL",
+                NameSuffix = "rus",
+                IsSquadmateHead = true,
+                DisallowedPawns = new []
+                {
+                    "SFXPawn_Miranda"
+                }
+            },
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Leading_00.pcc",
+                AssetPath = "BIOG_HMM_HED_PROMorph.Jacob.HMM_HED_PROJacob_MDL",
+                GenderSwapDrawScale = 0.961f, //Male -> Female
+                NameSuffix = "cob",
+                    IsSquadmateHead = true,
+                    DisallowedPawns = new []
+                    {
+                        "SFXPawn_Miranda"
+                    }
+            },
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Mystic_00.pcc",
+                AssetPath = "BIOG_ASA_HED_PROMorph_R.Samara.ASA_HED_PROSamara_MDL",
+                NameSuffix = "ara",
+                IsSquadmateHead = true,
+                DisallowedPawns = new []
+                {
+                    "SFXPawn_Miranda"
+                }
+            },
 
             new HeadAssetSource()
             {
@@ -378,6 +378,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 var owningPawn = headMeshExp.Parent as ExportEntry;
                 if (owningPawn == null)
                     Debugger.Break();
+                var owningPawnIsClassDef = owningPawn.ClassName.StartsWith("SFXPawn_");
 
                 var newName = squadmateInfo.NamePrefix + newAsset.NameSuffix;
                 var newTlkId = TLKHandler.GetNewTLKID();
@@ -403,7 +404,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
                 }
 
-                // This is only useful in BioH files!!
                 // Clean up the materials in the instance of the pawn.
                 // Have to do full search cause naming system doesn't seem consistent
                 // Only look for children of TheWorld so we can do integer check
@@ -414,7 +414,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     if (instance.ClassName == "SkeletalMeshComponent")
                     {
                         instance.RemoveProperty("Materials");
-                        if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
+                        if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset && instance.GetProperty<ObjectProperty>("SkeletalMesh") is ObjectProperty obj && obj.Value != 0)
                         {
                             // We need to size it
                             instance.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));

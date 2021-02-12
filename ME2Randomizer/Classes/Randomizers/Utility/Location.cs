@@ -1,17 +1,11 @@
 ﻿using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.SharpDX;
 using ME3ExplorerCore.Unreal;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
     public static class Location
     {
-        public static void SetLocation(ExportEntry export, Vector3 location)
+        public static void SetLocation(ExportEntry export, CFVector3 location)
         {
             StructProperty prop = export.GetProperty<StructProperty>("location");
             SetLocation(prop, location);
@@ -31,14 +25,14 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             prop.GetProp<FloatProperty>("Z").Value = z;
         }
 
-        public static void SetLocation(StructProperty prop, Vector3 vector)
+        public static void SetLocation(StructProperty prop, CFVector3 vector)
         {
             prop.GetProp<FloatProperty>("X").Value = vector.X;
             prop.GetProp<FloatProperty>("Y").Value = vector.Y;
             prop.GetProp<FloatProperty>("Z").Value = vector.Z;
         }
 
-        public static Vector3? GetLocation(ExportEntry export)
+        public static CFVector3? GetLocation(ExportEntry export)
         {
             float x = 0, y = 0, z = int.MinValue;
             var prop = export.GetProperty<StructProperty>("location");
@@ -60,7 +54,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                     }
                 }
 
-                return new Vector3(x, y, z);
+                return new CFVector3() { X = x, Y = y, Z = z };
             }
 
             return null;

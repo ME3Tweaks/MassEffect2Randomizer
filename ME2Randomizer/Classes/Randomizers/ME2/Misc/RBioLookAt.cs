@@ -16,10 +16,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var location = Location.GetLocation(export);
             if (location != null)
             {
-                var locS = location.Value;
-                locS.X = ThreadSafeRandom.NextFloat(-100000, 100000);
-                locS.Y = ThreadSafeRandom.NextFloat(-100000, 100000);
-                locS.Z = ThreadSafeRandom.NextFloat(-100000, 100000);
+                var locS = location;
+                if (ThreadSafeRandom.Next(10) == 0)
+                {
+                    locS.X = ThreadSafeRandom.NextFloat(-100000, 100000);
+                    locS.Y = ThreadSafeRandom.NextFloat(-100000, 100000);
+                    locS.Z = ThreadSafeRandom.NextFloat(-100000, 100000);
+                } else
+                {
+                    // Fuzz it
+                    locS.X *= ThreadSafeRandom.NextFloat(.25, 1.75);
+                    locS.Y *= ThreadSafeRandom.NextFloat(.25, 1.75);
+                    locS.Z *= ThreadSafeRandom.NextFloat(.25, 1.75);
+                }
+
                 Location.SetLocation(export, locS);
                 return true;
             }
