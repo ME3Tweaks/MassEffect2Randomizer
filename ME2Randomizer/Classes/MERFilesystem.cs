@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Helpers;
@@ -52,7 +55,35 @@ namespace ME2Randomizer.Classes
             }
         }
 
+        public static void Finalize(OptionsPackage selectedOptions)
+        {
+            var metacmmFile = Path.Combine(dlcModPath, @"_metacmm.txt");
+            Version version = Assembly.GetExecutingAssembly().GetName().Version;
+            var metacmm = new MetaCMM()
+            {
+                InstalledBy = $"Mass Effect 2 Randomizer {version}",
+                ModName = "Mass Effect 2 Randomization",
+                Version = version.ToString(),
+            };
+            var allOptions = new List<string>();
+            foreach (var option in selectedOptions.SelectedOptions)
+            {
+                allOptions.Add(option.HumanName);
+                if (option.SubOptions != null)
+                {
+                    foreach (var suboption in option.SubOptions)
+                    {
+                        if (suboption.OptionIsSelected)
+                        {
+                            allOptions.Add($"{option.HumanName}: {suboption.HumanName}");
+                        }
+                    }
+                }
+            }
 
+            metacmm.OptionsSelectedAtInstallTime.AddRange(allOptions);
+            File.WriteAllText(metacmmFile, metacmm.ToCMMText());
+        }
 
         public static CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
         public static void ReloadLoadedFiles()

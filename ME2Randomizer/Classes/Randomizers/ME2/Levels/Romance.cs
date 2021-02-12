@@ -12,7 +12,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     {
         public static bool PerformRandomization(RandomizationOption option)
         {
-            RandomizeRomance(); // NEEDS FINISHED
+            RandomizeRomance();
             return true;
         }
 
@@ -51,7 +51,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 // Repoint to our randomswitch
                 var penultimateOutbound = SeqTools.GetOutboundLinksOfNode(outToRepoint);
                 penultimateOutbound[0].Clear();
-                penultimateOutbound[0].Add(new SeqTools.OutboundLink() { InputLinkIdx = 0, LinkedOp = randomSwitch });
+                //penultimateOutbound[0].Add(new SeqTools.OutboundLink() { InputLinkIdx = 0, LinkedOp = randomSwitch });
+ 
+                // DEBUG ONLY: FORCE LINK
+                penultimateOutbound[0].Add(new SeqTools.OutboundLink() { InputLinkIdx = 0, LinkedOp = romChooserPackage.GetUExport(27) });
                 SeqTools.WriteOutboundLinksToNode(outToRepoint, penultimateOutbound);
 
                 MERFileSystem.SavePackage(romChooserPackage);

@@ -152,8 +152,8 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Vixen", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("ROMMirranda", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("ROM", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
 
@@ -186,6 +186,7 @@ namespace ME2Randomizer.Classes
             TFCBuilder.EndTFCs();
             CoalescedHandler.EndHandler();
             TLKHandler.EndHandler();
+            MERFileSystem.Finalize(SelectedOptions);
             NonSharedPackageCache.Cache.ReleasePackages();
             ResetClasses();
         }

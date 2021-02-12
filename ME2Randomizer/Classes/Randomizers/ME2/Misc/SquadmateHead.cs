@@ -7,6 +7,8 @@ using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.Utility;
+using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
+using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.SharpDX;
@@ -31,6 +33,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             public bool IsFemale { get; set; }
             public bool IsSwappable { get; set; } = true;
             public string NamePrefix { get; set; }
+            public bool SameGenderOnly { get; set; }
+            public string InternalName { get; set; }
 
             public string GetCharName()
             {
@@ -39,22 +43,22 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         }
         private static SquadMate[] SquadmatePawnClasses = new[]
         {
-            new SquadMate() {ClassName = "SFXPawn_Garrus", NamePrefix = "Gar"},
-            new SquadMate() {ClassName = "SFXPawn_Grunt", NamePrefix = "Gru"},
-            new SquadMate() {ClassName = "SFXPawn_Jack", IsFemale = true, NamePrefix = "Ja"},
-            new SquadMate() {ClassName = "SFXPawn_Jacob", NamePrefix = "Jac"},
-            new SquadMate() {ClassName = "SFXPawn_Legion", NamePrefix = "Leg"}, // Is swappable?
-            new SquadMate() {ClassName = "SFXPawn_Miranda", IsFemale = true, NamePrefix = "Mir"},
-            new SquadMate() {ClassName = "SFXPawn_Mordin",NamePrefix = "Mor"},
-            new SquadMate() {ClassName = "SFXPawn_Samara", IsFemale = true,NamePrefix = "Sam"},
-            new SquadMate() {ClassName = "SFXPawn_Tali", IsSwappable = false, NamePrefix = "Ta"},
-            new SquadMate() {ClassName = "SFXPawn_Thane",NamePrefix = "Th"},
+            new SquadMate() {ClassName = "SFXPawn_Garrus", InternalName="Garrus",NamePrefix = "Gar"},
+            new SquadMate() {ClassName = "SFXPawn_Grunt", InternalName="Garrus",NamePrefix = "Gru"},
+            new SquadMate() {ClassName = "SFXPawn_Jack", InternalName="Convict",IsFemale = true, NamePrefix = "Ja", SameGenderOnly = true}, // her neck is too smol
+            new SquadMate() {ClassName = "SFXPawn_Jacob", InternalName="Leading",NamePrefix = "Jac"},
+            new SquadMate() {ClassName = "SFXPawn_Legion", InternalName="Geth",NamePrefix = "Leg"}, // Is swappable?
+            new SquadMate() {ClassName = "SFXPawn_Miranda", InternalName="Vixen",IsFemale = true, NamePrefix = "Mir", SameGenderOnly = true}, // her neck really ruins things
+            new SquadMate() {ClassName = "SFXPawn_Mordin",InternalName="Professor",NamePrefix = "Mor"},
+            new SquadMate() {ClassName = "SFXPawn_Samara", InternalName="Mystic",IsFemale = true,NamePrefix = "Sam"},
+            new SquadMate() {ClassName = "SFXPawn_Tali", InternalName="Tali",IsSwappable = false, NamePrefix = "Ta"},
+            new SquadMate() {ClassName = "SFXPawn_Thane",InternalName="Assassin",NamePrefix = "Th"},
             new SquadMate() {ClassName = "SFXPawn_Wilson",NamePrefix = "Wil"},
 
             // DLC
-            new SquadMate() {ClassName = "SFXPawn_Zaeed", NamePrefix = "Za"}, //VT
-            new SquadMate() {ClassName = "SFXPawn_Kasumi", IsFemale = true, NamePrefix = "Ka"}, //MT
-            new SquadMate() {ClassName = "SFXPawn_Liara", IsFemale = true,NamePrefix = "Li"}, //EXP_Part01
+            new SquadMate() {ClassName = "SFXPawn_Zaeed", InternalName="Veteran",NamePrefix = "Za"}, //VT
+            new SquadMate() {ClassName = "SFXPawn_Kasumi", InternalName="Thief",IsFemale = true, NamePrefix = "Ka"}, //MT
+            new SquadMate() {ClassName = "SFXPawn_Liara", InternalName="Liara",IsFemale = true,NamePrefix = "Li"}, //EXP_Part01
         };
 
         class HeadAssetSource : IlliumHub.AssetSource
@@ -130,11 +134,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             public bool CanApplyTo(SquadMate squadmateInfo)
             {
+                if (squadmateInfo.SameGenderOnly && IsFemaleAsset != squadmateInfo.IsFemale)
+                    return false;
                 if (AllowedPawns == null && DisallowedPawns == null) return true;
                 if (DisallowedPawns != null && DisallowedPawns.Contains(squadmateInfo.ClassName))
                     return false;
                 if (AllowedPawns == null)
                     return true;
+
                 return AllowedPawns.Contains(squadmateInfo.ClassName);
             }
         }
@@ -156,7 +163,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 GenderSwapDrawScale = 0.961f, //Male -> Female. Might need more for miranda. This is tuned for samara
                 NameSuffix="ne",
                 IsSquadmateHead = true,
-                IsCorrectedAsset = true
+                IsCorrectedAsset = true,
+                DisallowedPawns = new []
+                {
+                    "SFXPawn_Thane" // Prevent installing this corrected asset onto thane
+                }
+            },
+            // Thane LOOKUP INFO ONLY
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Assassin.pcc",
+                AssetPath = "BIOG_DRL_HED_PROThane_R.Thane.DRL_HED_PROTHANE_MDL",
+                GenderSwapDrawScale = 0.961f, //Male -> Female. Might need more for miranda. This is tuned for samara
+                NameSuffix="ne",
+                IsSquadmateHead = true,
+                IsUsable = false,
             },
             new HeadAssetSource()
             {
@@ -171,11 +192,19 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 PackageFile = "BioH_Professor_00.pcc",
                 AssetPath = "BIOG_SAL_HED_PROMorph_R.Mordin.SAL_HED_PROMordin_MDL",
                 NameSuffix = "din",
-                IsSquadmateHead = true
+                IsSquadmateHead = true,
+                DisallowedPawns = new[]
+                {
+                    "SFXPawn_Jack",
+                    "SFXPawn_Miranda",
+                    "SFXPawn_Samara",
+                    "SFXPawn_Kasumi",
+                    "SFXPawn_Morinth",
+                }
             },
             new HeadAssetSource()
             {
-                  // HAS TOO MANY BONES
+                // HAS TOO MANY BONES
                 PackageFile = "BioH_Geth_00.pcc",
                 AssetPath = "BIOG_GTH_HED_PROMorph.GTH_HED_PROLegion_MDL",
                 NameSuffix = "ion",
@@ -189,7 +218,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 IsSquadmateHead = true,
                 DisallowedPawns = new []
                 {
-                    "SFXPawn_Miranda"
+                    "SFXPawn_Jack",
+                    "SFXPawn_Miranda",
+                    "SFXPawn_Samara",
+                    "SFXPawn_Kasumi",
+                    "SFXPawn_Morinth",
                 }
             },
             new HeadAssetSource()
@@ -198,11 +231,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 AssetPath = "BIOG_HMM_HED_PROMorph.Jacob.HMM_HED_PROJacob_MDL",
                 GenderSwapDrawScale = 0.961f, //Male -> Female
                 NameSuffix = "cob",
-                    IsSquadmateHead = true,
-                    DisallowedPawns = new []
-                    {
-                        "SFXPawn_Miranda"
-                    }
+                IsSquadmateHead = true,
+                DisallowedPawns = new[]
+                {
+                    "SFXPawn_Jacob" // Do not allow putting same head onto jacob (since he uses facemorph this will prevent this check from even being reached)
+                }
             },
             new HeadAssetSource()
             {
@@ -210,10 +243,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 AssetPath = "BIOG_ASA_HED_PROMorph_R.Samara.ASA_HED_PROSamara_MDL",
                 NameSuffix = "ara",
                 IsSquadmateHead = true,
-                DisallowedPawns = new []
-                {
-                    "SFXPawn_Miranda"
-                }
             },
 
             new HeadAssetSource()
@@ -262,10 +291,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 GenderSwapDrawScale = 0.961f, //Male -> Female
                 IsCorrectedAsset = true,
                 NameSuffix = "per",
-                DisallowedPawns = new []
-                {
-                    "SFXPawn_Miranda"
-                }
             },
             new HeadAssetSource()
             {
@@ -275,10 +300,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 GenderSwapDrawScale = 0.95f, //Male -> Female. Might need more for miranda. This is tuned for samara
                 PostPortingFixupDelegate = MakeKaidanNoLongerHulk,
                 NameSuffix = "dan",
-                DisallowedPawns = new []
-                {
-                    "SFXPawn_Miranda"
-                }
             },
             new HeadAssetSource()
             {
@@ -286,7 +307,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 AssetPath = "BIOG_HMF_HED_PROMorph_R.PROAshley.HMF_HED_PRO_Ashley_MDL_LOD0",
                 HairAssetPath = "BIOG_HMF_HIR_PRO.Ashley.HMF_HIR_PROAshley_MDL",
                 UseMemorySafe = true,
-                GenderSwapDrawScale = 0.99f, // Shrink neck just a bit. Ruins miranda, she might only work with female assets
+                IsFemaleAsset = true,
                 NameSuffix="ley"
             }
         };
@@ -312,8 +333,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         private static bool CanRandomize2(ExportEntry export)
         {
-            if (export.IsDefaultObject || export.ClassName != "SkeletalMeshComponent") return false;
-            //if (export.UIndex == 3473)
+            if (export.IsDefaultObject || export.ClassName != "SkeletalMeshComponent" || export.ObjectFlags.Has(UnrealFlags.EObjectFlags.DebugPostLoad)) return false;
+            //if (export.UIndex == 5373)
             //    Debugger.Break();
             var smp = export.GetProperty<ObjectProperty>("SkeletalMesh");
             if (smp == null || smp.Value == 0) return false;
@@ -322,11 +343,30 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             if (HeadAssetSources.Any(x => x.IsSquadmateHead && x.AssetPath == fpath)) // is this an existing squadmate head asset?
                 return true; // It's a model
 
-            // Check for Jacob or Wilson. Not entirely sure how we can do this reliably...
             var parentObj = export.Parent as ExportEntry;
-            if (parentObj != null && parentObj.IsDefaultObject && export.ObjectName.Name.Contains("HeadMesh") && (parentObj.Class.InheritsFrom("SFXPawn_Jacob") || parentObj.Class.InheritsFrom("SFXPawn_Wilson")))
+            if (parentObj != null)
             {
-                return true;
+                var parentProps = parentObj.GetProperties();
+                var headMeshProp = parentProps.GetProp<ObjectProperty>("HeadMesh");
+                if (headMeshProp != null && headMeshProp.Value == export.UIndex)
+                {
+                    // Check for Jacob or Wilson. Not entirely sure how we can do this reliably...
+                    // This seems to be coded to find embedded jacob/wilson pawns?
+                    if (parentObj.IsDefaultObject && export.ObjectName.Name.Contains("HeadMesh") && (parentObj.Class.InheritsFrom("SFXPawn_Jacob") || parentObj.Class.InheritsFrom("SFXPawn_Wilson")))
+                    {
+                        return true;
+                    }
+
+                    // Specific finder for jacob biopawns
+                    // Look for biopawn instances (Like in 110ROMJacob) with tag containing 'Leading'
+                    if (parentObj.ClassName == "BioPawn"
+                        && parentObj.GetProperty<ObjectProperty>("ActorType") is ObjectProperty actorTypeObj
+                        && actorTypeObj.ResolveToEntry(export.FileRef) is IEntry actorType
+                        && actorType.ObjectName.Name.Contains("leading", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
             }
 
             //// It must be a default object and have the correct class set for the defaults
@@ -350,10 +390,23 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => existingAsset.ObjectName.Name.Contains(x.GetCharName(), StringComparison.InvariantCultureIgnoreCase));
                 if (squadmateInfo == null)
                 {
-                    // Check if Wilson or Jacob
+                    // Check if Wilson or Jacob BASIC
                     squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => headMeshExp.Parent.ObjectName.Name.Contains(x.GetCharName(), StringComparison.InvariantCultureIgnoreCase));
                     if (squadmateInfo == null)
-                        Debugger.Break();
+                    {
+                        // Check tag?
+                        var parentTag = (headMeshExp.Parent as ExportEntry).GetProperty<NameProperty>("Tag");
+                        if (parentTag != null && parentTag.Value.Name.StartsWith("hench_"))
+                        {
+                            var searchName = parentTag.Value.Name;
+                            squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => searchName.Contains(x.InternalName, StringComparison.InvariantCultureIgnoreCase));
+                        }
+                    }
+                }
+
+                if (squadmateInfo == null)
+                {
+                    Debugger.Break();
                 }
 
                 while (!newAsset.IsUsable || newAsset.AssetPath == existingAsset.InstancedFullPath || !newAsset.CanApplyTo(squadmateInfo))
@@ -369,6 +422,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Write the properties.
                 skelMesh.Value = newMdl.UIndex;
                 headMeshExp.WriteProperty(skelMesh);
+                headMeshExp.ObjectFlags |= UnrealFlags.EObjectFlags.DebugPostLoad; // Mark as modified so we do not re-randomize it
 
                 // update the bone positions... dunno if this is a good idea or not
                 UpdateBonePositionsForHead(existingAsset, newMdl);
@@ -442,12 +496,33 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                     // Clone existing mesh
                     var hairMeshExp = EntryCloner.CloneEntry(headMeshExp);
+                    hairMeshExp.Archetype = null;
                     hairMeshExp.ObjectName = "HairMesh";
+
                     hairMeshExp.RemoveProperty("AnimTreeTemplate");
                     hairMeshExp.WriteProperty(new ObjectProperty(hairMDL.UIndex, "SkeletalMesh"));
 
                     // Write hair mesh prop
                     owningPawn.WriteProperty(new ObjectProperty(hairMeshExp.UIndex, owningPawn.IsDefaultObject ? "HairMesh" : "m_oHairMesh"));
+
+
+                    if (instance != null && instance.ClassName.StartsWith("SFXPawn_") && newAsset.HairAssetPath != null)
+                    {
+                        // Add a blank hairmesh object that archetypes off the class version
+
+                        // Clone headmesh
+                        var subHeadMeshExp = instance.GetProperty<ObjectProperty>("HeadMesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
+
+                        var subhairMeshExp = EntryCloner.CloneEntry(subHeadMeshExp);
+                        subhairMeshExp.ObjectName = "SubHairMesh";
+                        subhairMeshExp.Archetype = hairMeshExp;
+                        var hairMeshExpProps = hairMeshExp.GetProperties();
+                        hairMeshExpProps.RemoveAll(x => x.Name.Name != "ShadowParent" && x.Name.Name != "ParentAnimComponent");
+                        subhairMeshExp.WriteProperties(hairMeshExpProps);
+
+                        // Write hair mesh prop
+                        instance.WriteProperty(new ObjectProperty(subhairMeshExp.UIndex, "m_oHairMesh"));
+                    }
                 }
 
                 if (squadmateInfo.ClassName == "SFXPawn_Thane")
@@ -455,7 +530,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     // We must update his mesh to get rid of those lime windshield wipers
 
                     IMEPackage newMeshP;
-                    if (headMeshExp.ObjectName == "Default__SFXPawn_Thane_02")
+                    var parent = headMeshExp.Parent as ExportEntry;
+                    if (parent.ObjectName == "Default__SFXPawn_Thane_02")
                     {
                         // Install DLC version of mesh
                         newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc")));
@@ -466,7 +542,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelids.pcc")));
                     }
 
-                    var meshExp = headMeshExp.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
+                    var meshExp = parent.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
                     var meshVal = meshExp.GetProperty<ObjectProperty>("SkeletalMesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
                     var newMDL = newMeshP.FindExport(meshVal.InstancedFullPath);
 
@@ -506,115 +582,135 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             newMdl.WriteBinary(newBin);
         }
 
-        private static bool ForcedRun(ExportEntry export, bool doWorldCheck = true)
-        {
-            var myClass = export.ClassName;
-            var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => export.Class.InheritsFrom(x.ClassName));
-            if (squadmateInfo != null && export.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(export.FileRef) is ExportEntry headMeshExp)
-            {
-                var skelMesh = headMeshExp.GetProperty<ObjectProperty>("SkeletalMesh");
-                if (skelMesh != null)
-                {
-                    // Select a new asset.
-                    var existingAsset = skelMesh.ResolveToEntry(export.FileRef);
-                    var newAsset = HeadAssetSources.RandomElement();
-                    while (newAsset.AssetPath == existingAsset.InstancedFullPath || !newAsset.CanApplyTo(squadmateInfo))
-                    {
-                        // Ensure change
-                        newAsset = HeadAssetSources.RandomElement();
-                    }
+        //private static bool ForcedRun(ExportEntry export, bool doWorldCheck = true)
+        //{
+        //    var myClass = export.ClassName;
+        //    var squadmateInfo = SquadmatePawnClasses.FirstOrDefault(x => export.Class.InheritsFrom(x.ClassName));
+        //    if (squadmateInfo != null && export.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(export.FileRef) is ExportEntry headMeshExp)
+        //    {
+        //        var skelMesh = headMeshExp.GetProperty<ObjectProperty>("SkeletalMesh");
+        //        if (skelMesh != null)
+        //        {
+        //            // Select a new asset.
+        //            var existingAsset = skelMesh.ResolveToEntry(export.FileRef);
+        //            var newAsset = HeadAssetSources.RandomElement();
+        //            while (newAsset.AssetPath == existingAsset.InstancedFullPath || !newAsset.CanApplyTo(squadmateInfo))
+        //            {
+        //                // Ensure change
+        //                newAsset = HeadAssetSources.RandomElement();
+        //            }
 
-                    // Port in the new asset.
-                    var sourceExp = newAsset.GetAsset();
-                    var newMdl = PackageTools.PortExportIntoPackage(export.FileRef, sourceExp, useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
+        //            // Port in the new asset.
+        //            var sourceExp = newAsset.GetAsset();
+        //            var newMdl = PackageTools.PortExportIntoPackage(export.FileRef, sourceExp, useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
 
-                    // Write the properties.
-                    skelMesh.Value = newMdl.UIndex;
-                    headMeshExp.WriteProperty(skelMesh);
+        //            // Write the properties.
+        //            skelMesh.Value = newMdl.UIndex;
+        //            headMeshExp.WriteProperty(skelMesh);
 
-                    var newName = squadmateInfo.NamePrefix + newAsset.NameSuffix;
-                    var newTlkId = TLKHandler.GetNewTLKID();
-                    TLKHandler.ReplaceString(newTlkId, newName);
-                    export.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
-                    if (export.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(export.FileRef) is ExportEntry actorTypeExp)
-                    {
-                        actorTypeExp.indexValue = ThreadSafeRandom.Next(265789564); // make it memory unique. Not sure this matters if pawn is not
-                        var strRef = actorTypeExp.GetProperty<StringRefProperty>("ActorGameNameStrRef");
-                        strRef.Value = newTlkId;
-                        actorTypeExp.WriteProperty(strRef);
-                    }
+        //            var newName = squadmateInfo.NamePrefix + newAsset.NameSuffix;
+        //            var newTlkId = TLKHandler.GetNewTLKID();
+        //            TLKHandler.ReplaceString(newTlkId, newName);
+        //            export.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
+        //            if (export.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(export.FileRef) is ExportEntry actorTypeExp)
+        //            {
+        //                actorTypeExp.indexValue = ThreadSafeRandom.Next(265789564); // make it memory unique. Not sure this matters if pawn is not
+        //                var strRef = actorTypeExp.GetProperty<StringRefProperty>("ActorGameNameStrRef");
+        //                strRef.Value = newTlkId;
+        //                actorTypeExp.WriteProperty(strRef);
+        //            }
 
-                    // Clean up the materials in the instance of the pawn.
-                    // Have to do full search cause naming system doesn't seem consistent
-                    // Only look for children of TheWorld so we can do integer check
-                    var persistentLevel = export.ClassName == "BioPawn" ? null : export.FileRef.FindExport("TheWorld.PersistentLevel");
-                    var instance = export.ClassName == "BioPawn" ? export : export.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex && x.ClassName == myClass);
-                    if (instance != null)
-                    {
-                        if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(export.FileRef) is ExportEntry instHeadMesh)
-                        {
-                            instHeadMesh.RemoveProperty("Materials");
-                            // scaling breaks a lot of shit
-                            //if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
-                            //{
-                            //    // We need to size it
-                            //    instHeadMesh.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));
-                            //}
-                        }
-                    }
+        //            // Clean up the materials in the instance of the pawn.
+        //            // Have to do full search cause naming system doesn't seem consistent
+        //            // Only look for children of TheWorld so we can do integer check
+        //            var persistentLevel = export.ClassName == "BioPawn" ? null : export.FileRef.FindExport("TheWorld.PersistentLevel");
+        //            var instance = export.ClassName == "BioPawn" ? export : export.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex && x.ClassName == myClass);
 
-                    // Remove morph head from the biopawn, if any, as this will corrupt the head
-                    export.RemoveProperty("MorphHead");
+        //            // Instance will be of type BioPawn or SFXPawn_XXX and will NOT be the defaults
+        //            if (instance != null)
+        //            {
+        //                if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(export.FileRef) is ExportEntry instHeadMesh)
+        //                {
+        //                    instHeadMesh.RemoveProperty("Materials");
+        //                    // scaling breaks a lot of shit
+        //                    //if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
+        //                    //{
+        //                    //    // We need to size it
+        //                    //    instHeadMesh.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));
+        //                    //}
+        //                }
+        //            }
 
-                    // Add hair asset if necessary
-                    if (newAsset.HairAssetPath != null)
-                    {
-                        // Port in hair
-                        var hairMDL = PackageTools.PortExportIntoPackage(export.FileRef, newAsset.GetHairAsset(), useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
+        //            // Remove morph head from the biopawn, if any, as this will corrupt the head
+        //            export.RemoveProperty("MorphHead");
 
-                        // Clone existing mesh
-                        var hairMeshExp = EntryCloner.CloneEntry(headMeshExp);
-                        hairMeshExp.ObjectName = "HairMesh";
-                        hairMeshExp.RemoveProperty("AnimTreeTemplate");
-                        hairMeshExp.WriteProperty(new ObjectProperty(hairMDL.UIndex, "SkeletalMesh"));
+        //            // Add hair asset if necessary
+        //            if (newAsset.HairAssetPath != null)
+        //            {
+        //                // Port in hair
+        //                var hairMDL = PackageTools.PortExportIntoPackage(export.FileRef, newAsset.GetHairAsset(), useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
 
-                        // Write hair mesh prop
-                        export.WriteProperty(new ObjectProperty(hairMeshExp.UIndex, "m_oHairMesh"));
-                    }
+        //                // Clone existing mesh
+        //                var hairMeshExp = EntryCloner.CloneEntry(headMeshExp);
+        //                hairMeshExp.ObjectName = "HairMesh";
+        //                hairMeshExp.RemoveProperty("AnimTreeTemplate");
+        //                hairMeshExp.WriteProperty(new ObjectProperty(hairMDL.UIndex, "SkeletalMesh"));
 
-                    if (squadmateInfo.ClassName == "SFXPawn_Thane")
-                    {
-                        // We must update his mesh to get rid of those lime windshield wipers
+        //                // Write hair mesh prop
+        //                export.WriteProperty(new ObjectProperty(hairMeshExp.UIndex, "m_oHairMesh"));
 
-                        IMEPackage newMeshP;
-                        if (export.ObjectName == "Default__SFXPawn_Thane_02")
-                        {
-                            // Install DLC version of mesh
-                            newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc")));
-                        }
-                        else
-                        {
-                            // Install basegame version of mesh
-                            newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelids.pcc")));
-                        }
+        //                if (instance != null && instance.ClassName.StartsWith("SFXPawn_") && newAsset.HairAssetPath != null)
+        //                {
+        //                    // Add a blank hairmesh object that archetypes off the class version
 
-                        var meshExp = export.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(export.FileRef) as ExportEntry;
-                        var meshVal = meshExp.GetProperty<ObjectProperty>("SkeletalMesh").ResolveToEntry(export.FileRef) as ExportEntry;
-                        var newMDL = newMeshP.FindExport(meshVal.InstancedFullPath);
+        //                    // Clone headmesh
+        //                    var subHeadMeshExp = instance.GetProperty<ObjectProperty>("HeadMesh").ResolveToEntry(export.FileRef) as ExportEntry;
 
-                        // Technically this should work
-                        EntryImporter.ReplaceExportDataWithAnother(newMDL, meshVal);
+        //                    var subhairMeshExp = EntryCloner.CloneEntry(subHeadMeshExp);
+        //                    subhairMeshExp.ObjectName = "SubHairMesh";
+        //                    subhairMeshExp.Archetype = hairMeshExp;
+        //                    var hairMeshExpProps = hairMeshExp.GetProperties();
+        //                    hairMeshExpProps.RemoveAll(x => x.Name.Name != "ShadowParent" && x.Name.Name != "ParentAnimComponent");
+        //                    subhairMeshExp.WriteProperties(hairMeshExpProps);
 
-                    }
+        //                    // Write hair mesh prop
+        //                    instance.WriteProperty(new ObjectProperty(hairMeshExp.UIndex, "m_oHairMesh"));
+        //                }
+        //            }
 
-                    // Post install fixup
-                    newAsset.PostPortingFixupDelegate?.Invoke(newMdl);
-                    return true;
-                }
-            }
+        //            if (squadmateInfo.ClassName == "SFXPawn_Thane")
+        //            {
+        //                // We must update his mesh to get rid of those lime windshield wipers
 
-            return false;
-        }
+        //                IMEPackage newMeshP;
+        //                if (export.ObjectName == "Default__SFXPawn_Thane_02")
+        //                {
+        //                    // Install DLC version of mesh
+        //                    newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc")));
+        //                }
+        //                else
+        //                {
+        //                    // Install basegame version of mesh
+        //                    newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelids.pcc")));
+        //                }
+
+        //                var meshExp = export.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(export.FileRef) as ExportEntry;
+        //                var meshVal = meshExp.GetProperty<ObjectProperty>("SkeletalMesh").ResolveToEntry(export.FileRef) as ExportEntry;
+        //                var newMDL = newMeshP.FindExport(meshVal.InstancedFullPath);
+
+        //                // Technically this should work
+        //                EntryImporter.ReplaceExportDataWithAnother(newMDL, meshVal);
+
+        //            }
+
+        //            // Post install fixup
+        //            newAsset.PostPortingFixupDelegate?.Invoke(newMdl);
+        //            return true;
+        //        }
+        //    }
+
+        //    return false;
+        //}
 
         public static bool FilePrerun(IMEPackage package, RandomizationOption arg2)
         {
