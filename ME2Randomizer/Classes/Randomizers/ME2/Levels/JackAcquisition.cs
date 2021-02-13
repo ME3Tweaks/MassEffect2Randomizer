@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
+using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
@@ -13,24 +14,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {
     class JackAcquisition
     {
-        /// <summary>
-        /// People who survived ME1's onslaught of SizeSixteens' stream
-        /// </summary>
-        private static string[] prisonerNames = new[]
-        {
-            "Nalie Walie",
-            "Jed Ted",
-            "Mok",
-            "Shamrock Snipes",
-            "Steeler Wayne",
-            "Castle Arrrgh",
-            "Bev",
-            "Lurxx",
-            "Chirra Kitteh",
-            "Daynan",
-            "dnc510", // new
-            "Audemus" // new
-        };
 
         public static bool PerformRandomization(RandomizationOption option)
         {
@@ -43,12 +26,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
         private static void ChangePrisonerNames()
         {
-            var prisonerNameChoices = prisonerNames.ToList();
-            prisonerNameChoices.Shuffle();
-            TLKHandler.ReplaceString(342079, prisonerNameChoices.PullFirstItem()); // Prisoner 780
-            TLKHandler.ReplaceString(342078, prisonerNameChoices.PullFirstItem()); // Prisoner 403
-            TLKHandler.ReplaceString(BeatPrisonerTLKID, prisonerNameChoices.PullFirstItem()); // Beat Prisoner
-            TLKHandler.ReplaceString(BeatPrisonerGuardTLKID, prisonerNameChoices.PullFirstItem()); // Beating Guard
+            TLKHandler.ReplaceString(342079, SizeSixteensChatHandler.GetMember()); // Prisoner 780
+            TLKHandler.ReplaceString(342078, SizeSixteensChatHandler.GetMember()); // Prisoner 403
+            TLKHandler.ReplaceString(BeatPrisonerTLKID, SizeSixteensChatHandler.GetMember()); // Beat Prisoner
+            TLKHandler.ReplaceString(BeatPrisonerGuardTLKID, SizeSixteensChatHandler.GetMember()); // Beating Guard
 
             // Make it so the beating scene shows names
             var cellBLock3F = MERFileSystem.GetPackageFile("BioD_PrsCvA_103CellBlock03.pcc");

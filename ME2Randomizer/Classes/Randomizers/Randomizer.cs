@@ -152,8 +152,8 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("ROM", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("EntryMenu", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
 
@@ -199,6 +199,7 @@ namespace ME2Randomizer.Classes
             SquadmateHead.ResetClass();
             PawnPorting.ResetClass();
             NPCHair.ResetClass();
+            SizeSixteensChatHandler.ResetClass();
         }
 
 
@@ -227,7 +228,7 @@ namespace ME2Randomizer.Classes
                                 5 => "Total madness",
                                 _ => "Error"
                             },
-                        SliderValue = 4, // This must come after the converter
+                        SliderValue = 3, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
@@ -479,7 +480,7 @@ namespace ME2Randomizer.Classes
                     //new RandomizationOption() {HumanName = "Tali Acquisition"}, //sfxgame tla damagetype
                     new RandomizationOption() {HumanName = "Citadel", Description = "Changes many things across the level", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "Makes ArchAngel deadly", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true, RequiresTLK = true},
                     new RandomizationOption() {HumanName = "Jack Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = JackAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, RequiresTLK = true, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Illium Hub", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = IlliumHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Omega Hub", Description = "Changes various things across Omega's Hub area", PerformSpecificRandomizationDelegate = OmegaHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
