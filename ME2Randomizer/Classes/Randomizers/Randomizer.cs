@@ -149,13 +149,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    //if (true
-                    ////&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("EntryMenu", StringComparison.InvariantCultureIgnoreCase)
+                    if (true
+                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
-                    //)
-                    //    return;
+                    )
+                        return;
 
                     var package = MEPackageHandler.OpenMEPackage(file);
 
@@ -620,14 +620,14 @@ namespace ME2Randomizer.Classes
                     },
                     new RandomizationOption()
                     {
-                        HumanName = "Conversation Wheel", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport,
+                        HumanName = "Conversation Wheel", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExportReplies,
                         Description = "Changes replies in wheel. Can make conversations hard to exit",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe
                     },
                     new RandomizationOption()
                     {
                         HumanName = "Actors in conversations",
-                        PerformRandomizationOnExportDelegate = RSFXSeqAct_StartConversation.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExportActors,
                         Description = "Changes pawn roles in conversations",
                         IsRecommended = true
                     },

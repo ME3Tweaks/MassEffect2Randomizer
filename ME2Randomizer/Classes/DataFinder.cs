@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
+using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.Utility;
@@ -35,7 +36,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += Fuzzer;
+            dataworker.DoWork += FindActorTypes;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -82,6 +83,7 @@ namespace ME2Randomizer.Classes
             mainWindow.ProgressBarIndeterminate = false;
             mainWindow.ProgressBar_Bottom_Max = files.Count;
             SortedSet<string> actorTypeNames = new SortedSet<string>();
+            TLKHandler.StartHandler();
             foreach (var f in files)
             {
                 mainWindow.CurrentProgressValue = i;
@@ -99,7 +101,17 @@ namespace ME2Randomizer.Classes
                             {
                                 if (actorE.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(p) is ExportEntry atypeexp)
                                 {
-                                    actorTypeNames.Add(atypeexp.ObjectName.Instanced);
+                                    var displayNameVal = atypeexp.GetProperty<StringRefProperty>("ActorGameNameStrRef");
+                                    if (displayNameVal != null)
+                                    {
+                                        var displayName = TLKHandler.TLKLookupByLang(displayNameVal.Value, "INT");
+                                        actorTypeNames.Add($"{atypeexp.ObjectName.Instanced}: {displayName}");
+                                    }
+                                    else
+                                    {
+                                        actorTypeNames.Add(atypeexp.ObjectName.Instanced);
+
+                                    }
                                 }
                             }
                         }
@@ -1079,5 +1091,6 @@ namespace ME2Randomizer.Classes
             }
         }
         #endregion
+
     }
 }
