@@ -67,14 +67,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         public static bool PerformRandomization(RandomizationOption option)
         {
             MakeGarrusDeadly();
-            AddSizeChatMembers();
             return true;
-        }
-
-        private static void AddSizeChatMembers()
-        {
-            TLKHandler.ReplaceString(236473, SizeSixteensChatHandler.GetMember()); // Guy
-            TLKHandler.ReplaceString(233780, SizeSixteensChatHandler.GetMember()); // Freelancer
         }
     }
 }

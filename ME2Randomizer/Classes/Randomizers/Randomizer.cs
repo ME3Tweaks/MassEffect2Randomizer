@@ -149,13 +149,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    if (true
-                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("EntryMenu", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                        return;
+                    //if (true
+                    ////&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("EntryMenu", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
+                    //)
+                    //    return;
 
                     var package = MEPackageHandler.OpenMEPackage(file);
 
@@ -199,7 +199,7 @@ namespace ME2Randomizer.Classes
             SquadmateHead.ResetClass();
             PawnPorting.ResetClass();
             NPCHair.ResetClass();
-            SizeSixteensChatHandler.ResetClass();
+            SizeSixteens.ResetClass();
         }
 
 
@@ -328,7 +328,7 @@ namespace ME2Randomizer.Classes
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption() {
-                        HumanName = "Premade faces", 
+                        HumanName = "Premade faces",
                         IsRecommended = true,
                         Description = "Completely randomizes settings including skin tones and slider values. Adds extra premade faces",
                         PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator,
@@ -401,38 +401,13 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
-                    new RandomizationOption()
-                    {
-                        HumanName = "Enable basic friendly fire",
-                        PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
-                        Description = "Enables weapons to damage friendlies",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
-                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
-                        {
-                            new RandomizationOption()
-                            {
-                                IsOptionOnly = true,
-                                SubOptionKey = SFXGame.SUBOPTIONKEY_CARELESSFF,
-                                HumanName = "Careless mode",
-                                Description = "Attack enemies, regardless of friendly casualties"
-                            }
-                        }
-                    },
-                    new RandomizationOption()
-                    {
-                        HumanName = "Shepard ragdollable",
-                        Description = "Makes Shepard able to be ragdolled from various powers/attacks. Can greatly increase difficulty",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
-                        PerformSpecificRandomizationDelegate = SFXGame.MakeShepardRagdollable,
-                    },
-                    new RandomizationOption()
-                    {
-                        HumanName = "Remove running camera shake",
-                        Description = "Removes the camera shake when running",
+                    new RandomizationOption() {HumanName = "SizeSixteens mode",
+                        Description = "Mass Effect Randomizer was originally designed for the streamer SizeSixteens. This option installs many SizeSixteens specific changes, and continues the story from the ME1Randomizer stream he did in 2019",
+                        PerformSpecificRandomizationDelegate = SizeSixteens.InstallSSChanges,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        PerformSpecificRandomizationDelegate = SFXGame.RemoveStormCameraShake,
-                    },
+                        RequiresTLK = true,
+                        IsRecommended = true},
+
                 }
             });
 
@@ -479,12 +454,57 @@ namespace ME2Randomizer.Classes
                     //new RandomizationOption() {HumanName = "Prologue"},
                     //new RandomizationOption() {HumanName = "Tali Acquisition"}, //sfxgame tla damagetype
                     new RandomizationOption() {HumanName = "Citadel", Description = "Changes many things across the level", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Freedom's Progress", Description = "Changes the monster", PerformSpecificRandomizationDelegate = FreedomsProgress.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true, RequiresTLK = true},
-                    new RandomizationOption() {HumanName = "Jack Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = JackAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, RequiresTLK = true, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Illium Hub", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = IlliumHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Omega Hub", Description = "Changes various things across Omega's Hub area", PerformSpecificRandomizationDelegate = OmegaHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Omega Hub", Description = "Improved dancing technique", PerformSpecificRandomizationDelegate = OmegaHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Suicide Mission", Description = "Significantly changes level. Greatly increases difficulty", PerformSpecificRandomizationDelegate = CollectorBase.PerformRandomization, RequiresTLK = true, IsRecommended = true},
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Gameplay",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Enable basic friendly fire",
+                        PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
+                        Description = "Enables weapons to damage friendlies (enemy and player)",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                SubOptionKey = SFXGame.SUBOPTIONKEY_CARELESSFF,
+                                HumanName = "Careless mode",
+                                Description = "Attack enemies, regardless of friendly casualties"
+                            }
+                        }
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Shepard ragdollable",
+                        Description = "Makes Shepard able to be ragdolled from various powers/attacks. Can greatly increase difficulty",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        PerformSpecificRandomizationDelegate = SFXGame.MakeShepardRagdollable,
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Remove running camera shake",
+                        Description = "Removes the camera shake when running",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        PerformSpecificRandomizationDelegate = SFXGame.RemoveStormCameraShake,
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "One hit kill",
+                        Description = "Makes Shepard die upon taking any damage. Removes bonuses that grant additional health. Extremely difficult, do not mix with other randomizers",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe,
+                        PerformSpecificRandomizationDelegate = OneHitKO.InstallOHKO,
+                    },
                 }
             });
 

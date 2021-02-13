@@ -152,7 +152,94 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         {
             RandomizeVIPShepDance();
             RandomizeAfterlifeShepDance();
+            RandomizeALDancers();
             return true;
+        }
+
+        private static void RandomizeALDancers()
+        {
+            {
+                var denBar = MERFileSystem.GetPackageFile(@"BioD_OmgHub_220DenBar.pcc");
+                if (denBar != null)
+                {
+                    var denBarP = MEPackageHandler.OpenMEPackage(denBar);
+                    RandomizeDancer(denBarP.GetUExport(1287));
+                    RandomizeDancer(denBarP.GetUExport(1288));
+                    RandomizeDancer(denBarP.GetUExport(1289));
+                    RandomizeDancer(denBarP.GetUExport(1292));
+                    RandomizeDancer(denBarP.GetUExport(1293));
+                    MERFileSystem.SavePackage(denBarP);
+                }
+            }
+
+            var denDance = MERFileSystem.GetPackageFile(@"BioD_OmgHub_230DenDance.pcc");
+            if (denDance != null)
+            {
+                var denDanceP = MEPackageHandler.OpenMEPackage(denDance);
+                RandomizeDancer(denDanceP.GetUExport(1257)); //sit
+                RandomizeDancer(denDanceP.GetUExport(1250));
+                RandomizeDancer(denDanceP.GetUExport(1251));
+
+                // shep sits at dancer. it uses different pawn.
+                var entertainerBPSKM = denDanceP.GetUExport(4322);
+                var newInfo = IlliumHub.DancerOptions.RandomElement();
+                while (newInfo.Location != null || newInfo.Rotation != null || newInfo.KeepHead == false)
+                {
+                    // I don't want anything that requires specific positioning data, and I want to keep the head.
+                    newInfo = IlliumHub.DancerOptions.RandomElement();
+                }
+
+                var newDancerMDL = PackageTools.PortExportIntoPackage(denDanceP, newInfo.BodyAsset.GetAsset());
+                entertainerBPSKM.WriteProperty(new ObjectProperty(newDancerMDL,"SkeletalMesh"));
+                MERFileSystem.SavePackage(denDanceP);
+            }
+        }
+
+        private static void RandomizeDancer(ExportEntry skeletalMeshActorMatArchetype)
+        {
+            // Install new head and body assets
+            var newInfo = IlliumHub.DancerOptions.RandomElement();
+            while (newInfo.Location != null || newInfo.Rotation != null)
+            {
+                // I don't want anything that requires specific positioning data
+                newInfo = IlliumHub.DancerOptions.RandomElement();
+            }
+
+            var newBody = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.BodyAsset.GetAsset());
+
+            var bodySM = skeletalMeshActorMatArchetype.GetProperty<ObjectProperty>("SkeletalMeshComponent").ResolveToEntry(skeletalMeshActorMatArchetype.FileRef) as ExportEntry;
+            var headSM = skeletalMeshActorMatArchetype.GetProperty<ObjectProperty>("HeadMesh").ResolveToEntry(skeletalMeshActorMatArchetype.FileRef) as ExportEntry;
+
+            bodySM.WriteProperty(new ObjectProperty(newBody.UIndex, "SkeletalMesh"));
+
+            if (newInfo.HeadAsset != null)
+            {
+                var newHead = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.HeadAsset.GetAsset());
+                headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "SkeletalMesh"));
+            }
+            else if (!newInfo.KeepHead)
+            {
+                headSM.RemoveProperty("SkeletalMesh");
+            }
+
+
+            if (newInfo.DrawScale != 1)
+            {
+                // Install DS3D on the archetype. It works. Not gonna question it
+                var ds = new CFVector3()
+                {
+                    X = newInfo.DrawScale,
+                    Y = newInfo.DrawScale,
+                    Z = newInfo.DrawScale,
+                };
+                skeletalMeshActorMatArchetype.WriteProperty(ds.ToLocationStructProperty("DrawScale3D")); //hack
+            }
+
+            if (newInfo.MorphFace != null)
+            {
+                var newHead = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.MorphFace.GetAsset());
+                headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "MorphHead"));
+            }
         }
     }
 }

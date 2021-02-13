@@ -23,7 +23,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         }
 
 
-        private static DancerSource[] DancerOptions = new[]
+        public static DancerSource[] DancerOptions = new[]
         {
             // Human reaper
             new DancerSource()
@@ -87,16 +87,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     {
                         PackageFile = "BioP_RprGtA.pcc",
                         AssetPath = "BIOG_ZMB_ARM_NKD_R.NKDd.ZMB_ARM_NKDd_MDL"
-                    },
-                },
-                // Husk
-                new DancerSource()
-                {
-                    KeepHead = false,
-                    BodyAsset = new AssetSource()
-                    {
-                        PackageFile = "BioD_CitHub_Embassy.pcc",
-                        AssetPath = "BIOG_NCA_VOL_NKD_R.NKDd.NCA_FAC_VOL_NKDa_MDL"
                     },
                 },
                 // Volus. Because why not
