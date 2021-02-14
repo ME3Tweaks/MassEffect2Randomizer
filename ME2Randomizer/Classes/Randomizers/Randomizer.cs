@@ -407,6 +407,13 @@ namespace ME2Randomizer.Classes
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true,
                         IsRecommended = true},
+#if DEBUG
+                    new RandomizationOption() {HumanName = "Skip splash",
+                        Description = "Skips the splash screen",
+                        PerformSpecificRandomizationDelegate = EntryMenu.SetupFastStartup,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        OptionIsSelected = true},
+#endif
 
                 }
             });

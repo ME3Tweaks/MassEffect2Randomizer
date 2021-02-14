@@ -9,6 +9,7 @@ using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
 using static ME2Randomizer.Classes.Randomizers.Utility.InterpTools;
+using static ME2Randomizer.Classes.Randomizers.Utility.SeqTools;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
@@ -160,16 +161,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 foreach (var varilink in applicableLinks)
                 {
                     var repointedItem = shuffleMap[varilink.LinkedNodes[0].UIndex];
-                    if (varilink.LinkedNodes[0] == playerEntry || repointedItem == playerEntry.UIndex)
-                    {
-                        // Build FindActor mapping for player
-                        // it should be:
-                        // Player -> [Some actor, like Pup1_1]
-                        // Pup1_1 -> Player
-                        // When parsing the interpdatas, change the findactor's
-                        // by this methodology
-                        BuildActorMap(findActorMap, varilink, repointedItem, package);
-                    }
+                    //if (varilink.LinkedNodes[0] == playerEntry || repointedItem == playerEntry.UIndex)
+                    //{
+                    // Build FindActor mapping for player
+                    // it should be:
+                    // Player -> [Some actor, like Pup1_1]
+                    // Pup1_1 -> Player
+                    // When parsing the interpdatas, change the findactor's
+                    // by this methodology
+                    BuildActorMap(findActorMap, varilink, repointedItem);
+                    //}
 
                     // Actor map for updating the bioconversation
 
@@ -182,8 +183,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 // Write the updated links out.
                 SeqTools.WriteVariableLinksToNode(convStart, seqLinks);
 
-                
-                
+
+
                 // Update the localizations
                 foreach (var loc in Localizations)
                 {
@@ -210,8 +211,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                             {
                                 var props = it.Export.GetProperties();
                                 var findActor = props.GetProp<NameProperty>("m_nmFindActor");
-                                if (findActor != null && findActorMap.TryGetValue(findActor.Value, out var newInfo))
+                                if (findActor != null && findActor.Value.Name != "Owner" && findActorMap.TryGetValue(findActor.Value, out var newInfo))
                                 {
+
+                                    Debug.WriteLine($"Updating find actor info: {findActor.Value.Instanced} -> {newInfo.FindActor.Instanced}");
                                     findActor.Value = newInfo.FindActor;
                                     if (newInfo.FindMode != null)
                                     {
@@ -246,6 +249,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                             }
                         }
                     }
+                    MERFileSystem.SavePackage(bioConversation.FileRef);
                 }
             }
 
@@ -292,15 +296,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             return true;
         }
 
-        private static void BuildActorMap(Dictionary<NameReference, ActorLookup> findActorMap, SeqTools.VarLinkInfo varilink, int repointedItem, IMEPackage package)
+        private static void BuildActorMap(Dictionary<NameReference, ActorLookup> findActorMap, VarLinkInfo sourceLink, int newSourceLinkEntryUindex)
         {
-            var newEntryValue = package.GetUExport(repointedItem);
-            EActorTrackFindActorMode? lookupMode = null;
-            NameReference? lookedValue;
-            if (newEntryValue.ClassName == "SeqVar_Player")
+            var originalInfo = GetLookupInfo(sourceLink.LinkedNodes[0] as ExportEntry, sourceLink);
+            ActorLookup lookupInfo = GetLookupInfo(sourceLink.LinkedNodes[0].FileRef.GetUExport(newSourceLinkEntryUindex), sourceLink);
+            findActorMap[originalInfo.FindActor] = lookupInfo;
+        }
+
+        private static ActorLookup GetLookupInfo(ExportEntry entry, VarLinkInfo varilink)
+        {
+            ActorLookup lookupInfo = new ActorLookup();
+
+            if (entry.ClassName == "SeqVar_Player")
             {
                 // We now look for 'Player'
-                lookedValue = "Player";
+                lookupInfo.FindActor = "Player";
             }
             else
             {
@@ -310,28 +320,67 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     // We don't need to do owner as everything for Owner seems to be always pointing
                     // to the input of the SfxSeqAct_StartConversation
                     // So if we change it there, it... in theory should change
-                    // case "Owner":
-                    //    lookedValue = new NameReference("Pup1", 2);
-                    //    lookupMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
-                    //    break;
+                    case "Owner":
+                        lookupInfo.FindActor = "Owner"; // Special case. We should not change owner to something else. We should only update what owner now points to 
+                        // or something... this shit is so confusing
+                        break;
                     case "Puppet1_1":
-                        lookedValue = new NameReference("Pup1", 2);
-                        lookupMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                        lookupInfo.FindActor = new NameReference("Pup1", 2);
+                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
                         break;
                     case "Puppet1_2":
-                        lookedValue = new NameReference("Pup1", 3);
-                        lookupMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                        lookupInfo.FindActor = new NameReference("Pup1", 3);
+                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
                         break;
                     case "Puppet2_1":
-                        lookedValue = new NameReference("Pup2", 2);
-                        lookupMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                        lookupInfo.FindActor = new NameReference("Pup2", 2);
+                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
                         break;
                     case "Puppet2_2":
-                        lookedValue = new NameReference("Pup2", 3);
-                        lookupMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                        lookupInfo.FindActor = new NameReference("Pup2", 3);
+                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                        break;
+                    case "Node1":
+                    case "Node2":
+                    case "Node3":
+                        if (entry.ClassName == "BioSeqVar_ObjectFindByTag")
+                        {
+                            var tag = entry.GetProperty<StrProperty>("m_sObjectTagToFind");
+                            if (tag != null)
+                            {
+                                lookupInfo.FindActor = tag.Value;
+                            }
+                        }
+                        else if (entry.ClassName == "SeqVar_Object")
+                        {
+                            // Pinned object.
+                            var resolvedEntry = entry.GetProperty<ObjectProperty>("ObjValue").ResolveToEntry(entry.FileRef) as ExportEntry;
+                            if (resolvedEntry != null)
+                            {
+                                // Look for it's tag and use that cause it's what will probably be used in the 
+                                // conversation
+                                var tag = resolvedEntry.GetProperty<NameProperty>("Tag");
+                                if (tag != null)
+                                {
+                                    lookupInfo.FindActor = tag.Value;
+                                }
+                            }
+                            else
+                            {
+                                Debug.WriteLine("Could not resolve object!");
+                            }
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Unknown type on Node convo item");
+                        }
+                        break;
+                    default:
+                        Debugger.Break();
                         break;
                 }
             }
+            return lookupInfo;
         }
 
         private static string[] DisallowedConvoSwaps = new[]

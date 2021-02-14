@@ -75,7 +75,8 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <summary>
         /// Removes a sequence element from the graph, by repointing incoming references to the ones referenced by outgoing items on this export. This is a very basic utility, only use it for items with one input and potentially multiple outputs.
         /// </summary>
-        /// <param name="seqElement"></param>
+        /// <param name="seqElement">Th sequence object to skip</param>
+        /// <param name="outboundLinkIdx">The 0-indexed outbound link that should be attached the preceding entry element, as if this one had fired that link.</param>
         public static void SkipSequenceElement(ExportEntry seqElement, int outboundLinkIdx)
         {
             // List of outbound link elements on the specified item we want to skip. These will be placed into the inbound item
