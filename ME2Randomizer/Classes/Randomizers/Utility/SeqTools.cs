@@ -350,7 +350,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <returns></returns>
         public static ExportEntry GetParentSequence(ExportEntry export, bool lookup = false)
         {
-            var result =  export?.GetProperty<ObjectProperty>("ParentSequence")?.ResolveToEntry(export.FileRef) as ExportEntry;
+            var result = export?.GetProperty<ObjectProperty>("ParentSequence")?.ResolveToEntry(export.FileRef) as ExportEntry;
             while (lookup && result != null && result.ClassName != "Sequence")
             {
                 result = result.GetProperty<ObjectProperty>("ParentSequence")?.ResolveToEntry(export.FileRef) as ExportEntry;
@@ -367,6 +367,20 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         public static void WriteObjValue(ExportEntry export, IEntry objValue)
         {
             export.WriteProperty(new ObjectProperty(objValue.UIndex, "ObjValue"));
+        }
+
+        public static void PrintVarLinkInfo(List<VarLinkInfo> seqLinks)
+        {
+            foreach (var link in seqLinks)
+            {
+                Debug.WriteLine($"VarLink {link.LinkDesc}, expected type: {link.ExpectedTypeName}");
+                foreach (var linkedNode in link.LinkedNodes.OfType<ExportEntry>())
+                {
+                    var findTag = linkedNode.GetProperty<StrProperty>("m_sObjectTagToFind");
+                    var objValue = linkedNode.GetProperty<ObjectProperty>("ObjValue");
+                    Debug.WriteLine($"   {linkedNode.UIndex} {linkedNode.ObjectName.Instanced} {findTag?.Value} {objValue?.ResolveToEntry(linkedNode.FileRef).ObjectName.Instanced}");
+                }
+            }
         }
     }
 }

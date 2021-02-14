@@ -152,7 +152,7 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("300UpperWing", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
@@ -627,7 +627,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Actors in conversations",
-                        PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExportActors,
+                        PerformFileSpecificRandomization = RBioConversation.RandomizeExportActorsInPackage,
                         Description = "Changes pawn roles in conversations",
                         IsRecommended = true
                     },

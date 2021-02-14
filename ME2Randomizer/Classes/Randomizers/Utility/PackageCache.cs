@@ -22,6 +22,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         public override IMEPackage GetCachedPackage(string packageName, bool openIfNotInCache = true)
         {
             // May need way to set maximum size of dictionary so we don't hold onto too much memory.
+            packageName = Path.GetFileName(packageName); // Ensure we only use filename
             if (Cache.TryGetValue(packageName, out var package))
             {
                 return package;
