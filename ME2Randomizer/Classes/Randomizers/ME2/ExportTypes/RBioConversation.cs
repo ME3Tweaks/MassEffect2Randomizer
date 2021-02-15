@@ -222,30 +222,49 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                                     }
                                     else
                                     {
-                                        props.RemoveNamedProperty("m_eFindActorNode");
+                                        props.RemoveNamedProperty("m_eFindActorMode");
                                     }
-
-                                    it.Export.WriteProperties(props);
-
-                                    //if (IsAllowedFindActor(findActor))
-                                    //{
-                                    //    if (actorsToFind.All(x => x.FindActor.Instanced != findActor.Value.Instanced))
-                                    //    {
-
-                                    //        ActorLookup al = new ActorLookup() { FindActor = findActor.Value };
-                                    //        var lookupType = it.Export.GetProperty<EnumProperty>("m_eFindActorMode");
-                                    //        if (lookupType != null && Enum.TryParse<EActorTrackFindActorMode>(lookupType.Value.Name, out var result))
-                                    //        {
-                                    //            al.FindMode = result;
-                                    //        }
-
-                                    //        actorsToFind.Add(al);
-                                    //    }
-
-                                    //    // add track
-                                    //    tracksToUpdate.Add(it);
-                                    //}
                                 }
+
+                                var lookAtKeys = props.GetProp<ArrayProperty<StructProperty>>("m_aLookAtKeys");
+                                if (lookAtKeys != null)
+                                {
+                                    foreach (var lookAtS in lookAtKeys)
+                                    {
+                                        var lookAt = lookAtS.GetProp<NameProperty>("nmFindActor");
+
+                                        if (lookAt.Value.Name != "Owner" && findActorMap.TryGetValue(lookAt.Value, out var newInfoLA))
+                                        {
+                                            Debug.WriteLine($"Updating lookat find actor info: {lookAt.Value.Instanced} -> {newInfoLA.FindActor.Instanced}");
+                                            lookAt.Value = newInfoLA.FindActor;
+                                            var lookatFindMode = newInfoLA.FindMode?.ToString();
+                                            lookatFindMode ??= "ActorTrack_FindActorByTag"; // if it's null, set it to the default. As this is struct, the property must exist
+                                            lookAtS.Properties.AddOrReplaceProp(new EnumProperty(lookatFindMode, "EActorTrackFindActorMode", MERFileSystem.Game, "m_eFindActorMode"));
+
+                                        }
+                                    }
+                                }
+
+                                it.Export.WriteProperties(props);
+
+                                //if (IsAllowedFindActor(findActor))
+                                //{
+                                //    if (actorsToFind.All(x => x.FindActor.Instanced != findActor.Value.Instanced))
+                                //    {
+
+                                //        ActorLookup al = new ActorLookup() { FindActor = findActor.Value };
+                                //        var lookupType = it.Export.GetProperty<EnumProperty>("m_eFindActorMode");
+                                //        if (lookupType != null && Enum.TryParse<EActorTrackFindActorMode>(lookupType.Value.Name, out var result))
+                                //        {
+                                //            al.FindMode = result;
+                                //        }
+
+                                //        actorsToFind.Add(al);
+                                //    }
+
+                                //    // add track
+                                //    tracksToUpdate.Add(it);
+                                //}
                             }
                         }
                     }
@@ -311,6 +330,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             {
                 // We now look for 'Player'
                 lookupInfo.FindActor = "Player";
+                entry.WriteProperty(new BoolProperty(true, "bReturnPawns")); // This is required for moved links to work. So just always add it
             }
             else
             {
@@ -322,7 +342,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     // So if we change it there, it... in theory should change
                     case "Owner":
                         lookupInfo.FindActor = "Owner"; // Special case. We should not change owner to something else. We should only update what owner now points to 
-                        // or something... this shit is so confusing
+                                                        // or something... this shit is so confusing
                         break;
                     case "Puppet1_1":
                         lookupInfo.FindActor = new NameReference("Pup1", 2);
