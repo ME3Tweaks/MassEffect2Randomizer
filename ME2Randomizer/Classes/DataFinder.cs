@@ -36,7 +36,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindActorTypes;
+            dataworker.DoWork += FindPortableGuns;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -486,7 +486,7 @@ namespace ME2Randomizer.Classes
                 ////x.Contains("ReaperCombat")
                 // )
                 .ToList();
-            mainWindow.CurrentOperationText = "Scanning for stuff";
+            mainWindow.CurrentOperationText = "Building Weapon List for enemies";
             int numdone = 0;
             int numtodo = files.Count;
 
@@ -498,19 +498,19 @@ namespace ME2Randomizer.Classes
 
             // Maps instanced full path to list of instances
             ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>> mapping = new ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>>();
-            //Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
-            //{
-            //    mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
-            //    Interlocked.Increment(ref numdone);
+            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
+            {
+                mainWindow.CurrentOperationText = $"Building Weapon List for enemies [{numdone}/{numtodo}]";
+                Interlocked.Increment(ref numdone);
 
-            //    var package = MEPackageHandler.OpenMEPackage(file);
-            //    var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
-            //    foreach (var skm in sfxweapons)
-            //    {
-            //        BuildGunInfo(skm, mapping, package, startupFileCache, false);
-            //    }
-            //    mainWindow.CurrentProgressValue = numdone;
-            //});
+                var package = MEPackageHandler.OpenMEPackage(file);
+                var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject);
+                foreach (var skm in sfxweapons)
+                {
+                    BuildGunInfo(skm, mapping, package, startupFileCache, false);
+                }
+                mainWindow.CurrentProgressValue = numdone;
+            });
 
             // Corrected, embedded guns that required file coalescing for portability
             var correctedGuns = Utilities.ListStaticAssets("binary.correctedloadouts.weapons");
@@ -532,7 +532,7 @@ namespace ME2Randomizer.Classes
                 gunL.Value.ReplaceAll(gunL.Value.OrderBy(x => x.RequiresStartupPackage).ThenBy(x => x.PackageFileSize).ToList());
             }
 
-            // Build power info list
+            // Build gun info list
             var reducedGunInfos = mapping.Select(x => x.Value[0]);
 
             var jsonList = JsonConvert.SerializeObject(reducedGunInfos, Formatting.Indented);
@@ -899,9 +899,9 @@ namespace ME2Randomizer.Classes
         #endregion
 
         #region Utilities
-        private static PackageCache GetGlobalCache()
+        private static MERPackageCache GetGlobalCache()
         {
-            var cache = new PackageCache();
+            var cache = new MERPackageCache();
             cache.GetCachedPackage("Core.pcc");
             cache.GetCachedPackage("SFXGame.pcc");
             cache.GetCachedPackage("Startup_INT.pcc");
@@ -921,7 +921,7 @@ namespace ME2Randomizer.Classes
         {
             // Force into memory
             //var importExtras = EntryImporter.GetPossibleAssociatedFiles(package);
-            PackageCache lpc = new PackageCache();
+            MERPackageCache lpc = new MERPackageCache();
             //foreach (var ie in importExtras)
             //{
             //    lpc.GetCachedPackage(ie);

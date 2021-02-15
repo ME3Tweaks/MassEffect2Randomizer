@@ -152,30 +152,39 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("300UpperWing", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Exp1", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
-
-                    var package = MEPackageHandler.OpenMEPackage(file);
-
-                    foreach (var rp in perFileRandomizers)
+                    try
                     {
-                        // Specific randomization pass before the exports are processed
-                        rp.PerformFileSpecificRandomization(package, rp);
-                    }
-
-                    for (int i = 0; i < package.ExportCount; i++)
-                    //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
-                    {
-                        var exp = package.Exports[i];
-                        foreach (var r in perExportRandomizers)
+                        var package = MEPackageHandler.OpenMEPackage(file);
+                        //Debug.WriteLine(file);
+                        foreach (var rp in perFileRandomizers)
                         {
-                            r.PerformRandomizationOnExportDelegate(exp, r);
+                            // Specific randomization pass before the exports are processed
+                            rp.PerformFileSpecificRandomization(package, rp);
                         }
-                    }
 
-                    MERFileSystem.SavePackage(package);
+                        if (perExportRandomizers.Any())
+                        {
+                            for (int i = 0; i < package.ExportCount; i++)
+                            //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
+                            {
+                                var exp = package.Exports[i];
+                                foreach (var r in perExportRandomizers)
+                                {
+                                    r.PerformRandomizationOnExportDelegate(exp, r);
+                                }
+                            }
+                        }
+
+                        MERFileSystem.SavePackage(package);
+                    }
+                    catch (Exception e)
+                    {
+                        Debugger.Break();
+                    }
                 });
             }
 

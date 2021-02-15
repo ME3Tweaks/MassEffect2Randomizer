@@ -27,6 +27,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         {
             public NameReference FindActor { get; set; }
             public EActorTrackFindActorMode? FindMode { get; set; }
+            public bool CouldNotResolve { get; set; }
         }
 
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioConversation";
@@ -75,8 +76,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
             foreach (var convStart in conversationStartExports)
             {
-                if (convStart.UIndex != 4341)
-                    continue;
+                //if (convStart.UIndex < 13638)
+                //    continue;
                 var bioConvImport = convStart.GetProperty<ObjectProperty>("Conv").ResolveToEntry(package) as ImportEntry;
                 List<string> inputTags = new();
 
@@ -192,9 +193,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     var conv = new ConversationExtended(bioConversation);
                     conv.LoadConversation(null, true);
 
-                    List<ActorLookup> actorsToFind = new List<ActorLookup>();
-                    List<InterpTrack> tracksToUpdate = new();
-
                     // Step 1. Catalog all actor tags that can be searched for in this conversation.
                     var entries = conv.ReplyList.ToList();
                     entries.AddRange(conv.EntryList);
@@ -203,6 +201,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         if (v.Interpdata == null)
                             continue;
                         var interpData = v.Interpdata;
+
                         InterpData id = new InterpData(interpData);
                         var convo = id.InterpGroups.FirstOrDefault(x => x.GroupName == "Conversation");
                         if (convo != null)
@@ -211,7 +210,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                             {
                                 var props = it.Export.GetProperties();
                                 var findActor = props.GetProp<NameProperty>("m_nmFindActor");
-                                if (findActor != null && findActor.Value.Name != "Owner" && findActorMap.TryGetValue(findActor.Value, out var newInfo))
+                                if (findActor != null && findActor.Value.Name != "Owner" && findActorMap.TryGetValue(findActor.Value, out var newInfo) && newInfo.FindActor.Name != null)
                                 {
 
                                     Debug.WriteLine($"Updating find actor info: {findActor.Value.Instanced} -> {newInfo.FindActor.Instanced}");
@@ -233,14 +232,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                                     {
                                         var lookAt = lookAtS.GetProp<NameProperty>("nmFindActor");
 
-                                        if (lookAt.Value.Name != "Owner" && findActorMap.TryGetValue(lookAt.Value, out var newInfoLA))
+                                        if (lookAt.Value.Name != "Owner" && findActorMap.TryGetValue(lookAt.Value, out var newInfoLA) && newInfoLA.FindActor.Name != null)
                                         {
                                             Debug.WriteLine($"Updating lookat find actor info: {lookAt.Value.Instanced} -> {newInfoLA.FindActor.Instanced}");
+                                            if (newInfoLA.FindActor.Name == null)
+                                                Debugger.Break();
                                             lookAt.Value = newInfoLA.FindActor;
                                             var lookatFindMode = newInfoLA.FindMode?.ToString();
                                             lookatFindMode ??= "ActorTrack_FindActorByTag"; // if it's null, set it to the default. As this is struct, the property must exist
-                                            lookAtS.Properties.AddOrReplaceProp(new EnumProperty(lookatFindMode, "EActorTrackFindActorMode", MERFileSystem.Game, "m_eFindActorMode"));
-
+                                            lookAtS.Properties.AddOrReplaceProp(new EnumProperty(lookatFindMode, "EActorTrackFindActorMode", MERFileSystem.Game, "eFindActorMode"));
                                         }
                                     }
                                 }
@@ -319,7 +319,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         {
             var originalInfo = GetLookupInfo(sourceLink.LinkedNodes[0] as ExportEntry, sourceLink);
             ActorLookup lookupInfo = GetLookupInfo(sourceLink.LinkedNodes[0].FileRef.GetUExport(newSourceLinkEntryUindex), sourceLink);
-            findActorMap[originalInfo.FindActor] = lookupInfo;
+            if (lookupInfo != null && originalInfo != null && !lookupInfo.CouldNotResolve && !originalInfo.CouldNotResolve)
+            {
+                // Some dynamically set objects we won't be able to do. RIP
+                // May make it return something so we can tell if we should randomize this conversation at all
+                findActorMap[originalInfo.FindActor] = lookupInfo;
+            }
         }
 
         private static ActorLookup GetLookupInfo(ExportEntry entry, VarLinkInfo varilink)
@@ -334,72 +339,134 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             }
             else
             {
-                switch (varilink.LinkDesc)
+                if (varilink.LinkDesc.StartsWith("Node"))
                 {
 
-                    // We don't need to do owner as everything for Owner seems to be always pointing
-                    // to the input of the SfxSeqAct_StartConversation
-                    // So if we change it there, it... in theory should change
-                    case "Owner":
-                        lookupInfo.FindActor = "Owner"; // Special case. We should not change owner to something else. We should only update what owner now points to 
-                                                        // or something... this shit is so confusing
-                        break;
-                    case "Puppet1_1":
-                        lookupInfo.FindActor = new NameReference("Pup1", 2);
-                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
-                        break;
-                    case "Puppet1_2":
-                        lookupInfo.FindActor = new NameReference("Pup1", 3);
-                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
-                        break;
-                    case "Puppet2_1":
-                        lookupInfo.FindActor = new NameReference("Pup2", 2);
-                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
-                        break;
-                    case "Puppet2_2":
-                        lookupInfo.FindActor = new NameReference("Pup2", 3);
-                        lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
-                        break;
-                    case "Node1":
-                    case "Node2":
-                    case "Node3":
-                        if (entry.ClassName == "BioSeqVar_ObjectFindByTag")
+                    if (entry.ClassName == "BioSeqVar_ObjectFindByTag")
+                    {
+                        var tag = entry.GetProperty<StrProperty>("m_sObjectTagToFind");
+                        if (tag != null)
                         {
-                            var tag = entry.GetProperty<StrProperty>("m_sObjectTagToFind");
+                            lookupInfo.FindActor = tag.Value;
+                        }
+                        else
+                        {
+                            // ??
+                            Debug.WriteLine("Could not find object by tag, tag was missing!");
+                        }
+                    }
+                    else if (entry.ClassName == "SeqVar_Object")
+                    {
+                        // Pinned object.
+                        var resolvedEntry = entry.GetProperty<ObjectProperty>("ObjValue")?.ResolveToEntry(entry.FileRef) as ExportEntry;
+                        if (resolvedEntry != null)
+                        {
+                            // Look for it's tag and use that cause it's what will probably be used in the 
+                            // conversation
+                            var tag = resolvedEntry.GetProperty<NameProperty>("Tag");
                             if (tag != null)
                             {
                                 lookupInfo.FindActor = tag.Value;
                             }
-                        }
-                        else if (entry.ClassName == "SeqVar_Object")
-                        {
-                            // Pinned object.
-                            var resolvedEntry = entry.GetProperty<ObjectProperty>("ObjValue").ResolveToEntry(entry.FileRef) as ExportEntry;
-                            if (resolvedEntry != null)
-                            {
-                                // Look for it's tag and use that cause it's what will probably be used in the 
-                                // conversation
-                                var tag = resolvedEntry.GetProperty<NameProperty>("Tag");
-                                if (tag != null)
-                                {
-                                    lookupInfo.FindActor = tag.Value;
-                                }
-                            }
                             else
                             {
-                                Debug.WriteLine("Could not resolve object!");
+                                //Debug.WriteLine("No tag on resolved object! Is it dynamic?");
+                                //lookupInfo.FindActor = entry.GetProperty<NameProperty>("m_nmFindActor").Value; // keep the original value, I guess
+                                lookupInfo.CouldNotResolve = true;
                             }
                         }
                         else
                         {
-                            Debug.WriteLine("Unknown type on Node convo item");
+                           //Debug.WriteLine("Could not resolve object! Is it dynamic?");
+                            //lookupInfo.FindActor = entry.GetProperty<NameProperty>("m_nmFindActor").Value; // keep the original value, I guess
+                            lookupInfo.CouldNotResolve = true;
                         }
-                        break;
-                    default:
-                        Debugger.Break();
-                        break;
+                    }
+                    else if (entry.ClassName == "SeqVar_ScopedNamed")
+                    {
+                        // We have to find an object in the sequence that has the VarName
+                        // What a dumb system
+                        var findVarName = entry.GetProperty<NameProperty>("FindVarName");
+                        if (findVarName == null)
+                        {
+                            Debugger.Break();
+                        }
+
+                        var seqObjs = SeqTools.GetAllSequenceElements(entry).OfType<ExportEntry>();
+                        foreach (var seqObj in seqObjs)
+                        {
+                            var props = seqObj.GetProperties();
+                            var varname = props.GetProp<NameProperty>("VarName");
+                            if (varname != null && varname.Value == findVarName.Value)
+                            {
+                                // Pinned object.
+                                var resolvedEntry = props.GetProp<ObjectProperty>("ObjValue")?.ResolveToEntry(entry.FileRef) as ExportEntry;
+                                if (resolvedEntry != null)
+                                {
+                                    // Look for it's tag and use that cause it's what will probably be used in the 
+                                    // conversation
+                                    var tag = resolvedEntry.GetProperty<NameProperty>("Tag");
+                                    if (tag != null)
+                                    {
+                                        lookupInfo.FindActor = tag.Value;
+                                    }
+                                    else
+                                    {
+                                        //Debug.WriteLine("No tag on resolved object! Is it dynamic?");
+                                        //lookupInfo.FindActor = entry.GetProperty<NameProperty>("m_nmFindActor").Value; // keep the original value, I guess
+                                        lookupInfo.CouldNotResolve = true;
+                                    }
+                                }
+                                else
+                                {
+                                    //Debug.WriteLine("Could not resolve object! Is it dynamic?");
+                                    //lookupInfo.FindActor = entry.GetProperty<NameProperty>("m_nmFindActor").Value; // keep the original value, I guess
+                                    lookupInfo.CouldNotResolve = true;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Unknown type on Node convo item: {entry.ClassName}");
+                    }
+                }
+                else
+                {
+                    switch (varilink.LinkDesc)
+                    {
+
+                        // We don't need to do owner as everything for Owner seems to be always pointing
+                        // to the input of the SfxSeqAct_StartConversation
+                        // So if we change it there, it... in theory should change
+                        case "Owner":
+                            lookupInfo.FindActor = "Owner"; // Special case. We should not change owner to something else. We should only update what owner now points to 
+                            // or something... this shit is so confusing
+                            break;
+                        case "Puppet1_1":
+                            lookupInfo.FindActor = new NameReference("Pup1", 2);
+                            lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                            break;
+                        case "Puppet1_2":
+                            lookupInfo.FindActor = new NameReference("Pup1", 3);
+                            lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                            break;
+                        case "Puppet2_1":
+                            lookupInfo.FindActor = new NameReference("Pup2", 2);
+                            lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                            break;
+                        case "Puppet2_2":
+                            lookupInfo.FindActor = new NameReference("Pup2", 3);
+                            lookupInfo.FindMode = EActorTrackFindActorMode.ActorTrack_FindActorByNode;
+                            break;
+                        default:
+                            Debugger.Break();
+                            break;
+                    }
                 }
             }
+
             return lookupInfo;
         }
 

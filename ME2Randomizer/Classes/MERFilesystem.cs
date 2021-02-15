@@ -104,7 +104,7 @@ namespace ME2Randomizer.Classes
                 ReloadLoadedFiles();
             }
             bool packageFile = packagename.RepresentsPackageFilePath();
-            if (packageFile)
+            if (packageFile && DLCModCookedPath != null)
             {
                 // Check if the package is already in the mod folder
                 var packageName = Path.GetFileName(packagename);
