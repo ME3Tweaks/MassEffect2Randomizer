@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -65,6 +66,11 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 }
             }
             return null; //Package could not be found
+        }
+
+        public IReadOnlyCollection<IMEPackage> GetPackages()
+        {
+            return new ReadOnlyCollection<IMEPackage>(Cache.Values.ToList());
         }
     }
 }

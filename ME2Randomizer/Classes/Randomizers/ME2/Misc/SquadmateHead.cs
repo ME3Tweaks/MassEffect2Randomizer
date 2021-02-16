@@ -20,7 +20,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class SquadmateHead
     {
-        private static PackageCache HeadAssetCache = new PackageCache();
+        private static MERPackageCache HeadAssetCache = new MERPackageCache();
 
         public static void ResetClass()
         {
@@ -104,7 +104,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// </summary>
             public bool IsUsable { get; set; } = true;
 
-            public override ExportEntry GetAsset()
+            public override ExportEntry GetAsset(MERPackageCache cache = null)
             {
                 if (IsCorrectedAsset)
                 {

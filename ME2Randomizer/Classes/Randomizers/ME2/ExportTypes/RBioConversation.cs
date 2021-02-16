@@ -78,7 +78,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             {
                 //if (convStart.UIndex < 13638)
                 //    continue;
-                var bioConvImport = convStart.GetProperty<ObjectProperty>("Conv").ResolveToEntry(package) as ImportEntry;
+                var bioConvImportProp = convStart.GetProperty<ObjectProperty>("Conv");
+                if (bioConvImportProp == null)
+                    continue; // Some conversation starts are just filler stubs and are missing data like Nor_340a/bZaeed
+                var bioConvImport = bioConvImportProp.ResolveToEntry(package) as ImportEntry;
                 List<string> inputTags = new();
 
                 // Shuffle the inputs to the conversation. We will store these and then have to update the Owner and Player tags
@@ -377,7 +380,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         }
                         else
                         {
-                           //Debug.WriteLine("Could not resolve object! Is it dynamic?");
+                            //Debug.WriteLine("Could not resolve object! Is it dynamic?");
                             //lookupInfo.FindActor = entry.GetProperty<NameProperty>("m_nmFindActor").Value; // keep the original value, I guess
                             lookupInfo.CouldNotResolve = true;
                         }

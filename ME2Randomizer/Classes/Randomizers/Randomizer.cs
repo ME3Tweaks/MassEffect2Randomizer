@@ -151,8 +151,8 @@ namespace ME2Randomizer.Classes
 
                     if (true
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Exp1", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Exp1", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
@@ -455,7 +455,7 @@ namespace ME2Randomizer.Classes
                 {
                     new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
+                    //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
                 }
@@ -644,8 +644,9 @@ namespace ME2Randomizer.Classes
                     {
                         HumanName = "Actors in conversations",
                         PerformFileSpecificRandomization = RBioConversation.RandomizeExportActorsInPackage,
-                        Description = "Changes pawn roles in conversations",
-                        IsRecommended = true
+                        Description = "Changes pawn roles in conversations. Somewhat buggy simply due to complexity and restrictions in engine, but can be entertaining",
+                        IsRecommended = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
                     },
                 }
             });

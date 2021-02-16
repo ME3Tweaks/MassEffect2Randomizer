@@ -18,8 +18,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// </summary>
         private static string[] AllowedAIClasses =
         {
-            "SFXAI_Aggressive",
-            "SFXAI_Defensive",
+            //"SFXAI_Aggressive", // Not used in ME2
+            //"SFXAI_Defensive" // Not used in ME2
             "SFXAI_Humanoid",
             "SFXAI_Vanguard",
         };
@@ -54,6 +54,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             aiFuncType = EAIFuncType.FUNCTYPE_NOTALLOWED;
             if (export.ClassName == "BioPawnChallengeScaledType")
             {
+                if (export.ObjectName.Name.Contains("hench"))
+                    return false;
                 aiFuncType = EAIFuncType.FUNCTYPE_AICLASSSWAP;
                 return true; // This pawn can have it's AI class changed.
             }

@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.ME2.Levels;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 using Serilog;
@@ -12,6 +14,51 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class OneHitKO
     {
+        class OHKOAsset : IlliumHub.AssetSource
+        {
+            public string[] PropertiesToZeroOut { get; set; }
+        }
+
+        private static OHKOAsset[] ZeroOutStatAssets = new[]
+        {
+            // Miranda
+            new OHKOAsset(){ PackageFile = "BioH_Vixen_00.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_MirandaPassive", PropertiesToZeroOut = new [] {"SquadHealthBonus"}},
+            new OHKOAsset(){ PackageFile = "BioH_Vixen_01.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_MirandaPassive", PropertiesToZeroOut = new [] {"SquadHealthBonus"}},
+            new OHKOAsset(){ PackageFile = "BioH_Vixen_02.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_MirandaPassive", PropertiesToZeroOut = new [] {"SquadHealthBonus"}},
+
+            new OHKOAsset(){ PackageFile = "BioH_Vixen_00.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_MirandaPassive_Evolved2", PropertiesToZeroOut = new [] {"SquadHealthBonus"}},
+            new OHKOAsset(){ PackageFile = "BioH_Vixen_01.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_MirandaPassive_Evolved2", PropertiesToZeroOut = new [] {"SquadHealthBonus"}},
+            new OHKOAsset(){ PackageFile = "BioH_Vixen_02.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_MirandaPassive_Evolved2", PropertiesToZeroOut = new [] {"SquadHealthBonus"}},
+
+            // Barrier
+            new OHKOAsset(){ PackageFile = "SFXPower_Barrier_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Barrier_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+            new OHKOAsset(){ PackageFile = "SFXPower_Barrier_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Barrier_Heavy_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+
+            // Reave
+            new OHKOAsset(){ PackageFile = "SFXPower_Reave_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Reave_Player", PropertiesToZeroOut = new [] {"HealthRegenMult", "HealthBonusDuration"}},
+
+            // Dominate
+            new OHKOAsset(){ PackageFile = "SFXPower_Dominate_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Dominate_Player", PropertiesToZeroOut = new [] {"ShieldStrength"}},
+            new OHKOAsset(){ PackageFile = "SFXPower_Dominate_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Dominate_Evolved1_Player", PropertiesToZeroOut = new [] {"ShieldStrength"}},
+
+            // Geth Shield Boost
+            new OHKOAsset(){ PackageFile = "SFXPower_GethShieldBoost_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_GethShieldBoost_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+            new OHKOAsset(){ PackageFile = "SFXPower_GethShieldBoost_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_GethShieldBoost_Evolved1_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+            // Shield Boost (in same file)
+            new OHKOAsset(){ PackageFile = "SFXPower_GethShieldBoost_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_ShieldBoost_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+            new OHKOAsset(){ PackageFile = "SFXPower_GethShieldBoost_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_ShieldBoost_Evolved1_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+
+            // Fortification
+            new OHKOAsset(){ PackageFile = "SFXPower_Fortification_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Fortification_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+            new OHKOAsset(){ PackageFile = "SFXPower_Fortification_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Fortification_Evolved2_Player", PropertiesToZeroOut = new [] {"ShieldValue"}},
+
+            // Power Armor
+            new OHKOAsset(){ PackageFile = "SFXCharacterClass_Sentinel.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_PowerArmor", PropertiesToZeroOut = new [] {"ShieldStrength"}},
+            new OHKOAsset(){ PackageFile = "SFXCharacterClass_Sentinel.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_PowerArmor_Evolved2", PropertiesToZeroOut = new [] {"ShieldStrength"}},
+
+        };
+
+
         public static bool InstallOHKO(RandomizationOption arg)
         {
             Log.Information("Installing One-Hit KO");
@@ -35,34 +82,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
             }
 
-            // Vanguard biotic charge stuff
-            {
-                var ccVanguard = MERFileSystem.GetPackageFile("SFXCharacterClass_Vanguard.pcc");
-                if (ccVanguard != null && File.Exists(ccVanguard))
-                {
-                    var ccVanguardP = MEPackageHandler.OpenMEPackage(ccVanguard);
-
-                    var vanPassive2 = ccVanguardP.GetUExport(404);
-                    var hbVP2 = vanPassive2.GetProperty<ArrayProperty<FloatProperty>>("HealthBonus");
-                    hbVP2[0].Value = 0;
-                    hbVP2[1].Value = 0;
-                    hbVP2[2].Value = 0;
-                    hbVP2[3].Value = 0;
-                    vanPassive2.WriteProperty(hbVP2);
-
-                    var vanPassive = ccVanguardP.GetUExport(400);
-                    vanPassive.WriteProperty(hbVP2);
-
-                    // Remove immunity on charge
-                    var shieldEffectOnApplied = ccVanguardP.GetUExport(530);
-                    var seData = shieldEffectOnApplied.Data;
-                    NopRange(seData, 0x2BF, 0x13);
-                    shieldEffectOnApplied.Data = seData;
-
-                    MERFileSystem.SavePackage(ccVanguardP);
-                }
-            }
-
             // Player classes - Remove shields, set maxhealth to 1
             string[] classes = new[] { "Adept", "Engineer", "Infiltrator", "Sentinel", "Soldier", "Vanguard" };
             foreach (var c in classes)
@@ -82,37 +101,92 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     health.GetProp<FloatProperty>("Y").Value = 1;
 
                     ccLoadout.WriteProperties(ccProps);
+
+                    // Remove any passive powers
+                    ZeroOutStatList(charClassP.FindExport($"SFXGameContent_Powers.SFXPower_{c}Passive"), "HealthBonus", false);
+                    ZeroOutStatList(charClassP.FindExport($"SFXGameContent_Powers.SFXPower_{c}Passive_Evolved1"), "HealthBonus", false);
+                    ZeroOutStatList(charClassP.FindExport($"SFXGameContent_Powers.SFXPower_{c}Passive_Evolved2"), "HealthBonus", false);
+
+                    if (c == "Vanguard")
+                    {
+                        // Patch the immunity effect
+                        var shieldEffectOnApplied = charClassP.GetUExport(530);
+                        var seData = shieldEffectOnApplied.Data;
+                        NopRange(seData, 0x2BF, 0x13);
+                        shieldEffectOnApplied.Data = seData;
+                    }
+
                     MERFileSystem.SavePackage(charClassP);
                 }
             }
 
-            // Remove health bonus from Reave
+            // Zero out stats in tables
+            MERPackageCache cache = new MERPackageCache();
+            foreach (var asset in ZeroOutStatAssets)
             {
-                var reaveF = MERFileSystem.GetPackageFile("SFXPower_Reave_Player.pcc");
-                if (reaveF != null && File.Exists(reaveF))
+                var statClass = asset.GetAsset(cache);
+                if (statClass != null)
                 {
-                    var reaveP = MEPackageHandler.OpenMEPackage(reaveF);
-
-                    var defaultReave = reaveP.GetUExport(27);
-                    var regen = defaultReave.GetProperty<ArrayProperty<FloatProperty>>("HealthRegenMult");
-                    regen[0].Value = 0;
-                    regen[1].Value = 0;
-                    regen[2].Value = 0;
-                    regen[3].Value = 0;
-                    defaultReave.WriteProperty(regen);
-
-                    var bonusDuration = defaultReave.GetProperty<ArrayProperty<FloatProperty>>("HealthBonusDuration");
-                    bonusDuration[0].Value = 0;
-                    bonusDuration[1].Value = 0;
-                    bonusDuration[2].Value = 0;
-                    bonusDuration[3].Value = 0;
-                    defaultReave.WriteProperty(bonusDuration);
-
-                    MERFileSystem.SavePackage(reaveP);
+                    foreach (var zos in asset.PropertiesToZeroOut)
+                    {
+                        ZeroOutStatList(statClass, zos, true);
+                    }
                 }
             }
 
+            foreach (var package in cache.GetPackages())
+            {
+                MERFileSystem.SavePackage(package);
+            }
+
+            {
+                //var reaveF = MERFileSystem.GetPackageFile("SFXPower_Reave_Player.pcc");
+                //if (reaveF != null && File.Exists(reaveF))
+                //{
+                //    var reaveP = MEPackageHandler.OpenMEPackage(reaveF);
+
+                //    var defaultReave = reaveP.GetUExport(27);
+                //    var regen = defaultReave.GetProperty<ArrayProperty<FloatProperty>>("HealthRegenMult");
+                //    regen[0].Value = 0;
+                //    regen[1].Value = 0;
+                //    regen[2].Value = 0;
+                //    regen[3].Value = 0;
+                //    defaultReave.WriteProperty(regen);
+
+                //    var bonusDuration = defaultReave.GetProperty<ArrayProperty<FloatProperty>>("HealthBonusDuration");
+                //    bonusDuration[0].Value = 0;
+                //    bonusDuration[1].Value = 0;
+                //    bonusDuration[2].Value = 0;
+                //    bonusDuration[3].Value = 0;
+                //    defaultReave.WriteProperty(bonusDuration);
+
+                //    MERFileSystem.SavePackage(reaveP);
+                //}
+            }
+
             return true;
+        }
+
+        private static void ZeroOutStatList(ExportEntry statClassExp, string propertyName, bool createIfNonExistent)
+        {
+            var statExp = statClassExp.GetDefaults();
+            var stat = statExp.GetProperty<ArrayProperty<FloatProperty>>(propertyName);
+            if (stat == null && createIfNonExistent)
+            {
+                stat = new ArrayProperty<FloatProperty>(propertyName);
+            }
+
+            if (stat == null)
+                return; // Nothing to do
+
+            stat.Clear();
+            int i = 0;
+            while (i < 4)
+            {
+                stat.Add(new FloatProperty(0));
+                i++;
+            }
+            statExp.WriteProperty(stat);
         }
 
         /// <summary>

@@ -191,10 +191,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             public string PackageFile { get; set; }
             public string AssetPath { get; set; }
 
-            public virtual ExportEntry GetAsset()
+            public virtual ExportEntry GetAsset(MERPackageCache cache = null)
             {
-                var packageF = MERFileSystem.GetPackageFile(PackageFile);
-                return packageF != null ? MEPackageHandler.OpenMEPackage(packageF).FindExport(AssetPath) : null;
+                IMEPackage package = null;
+                if (cache != null)
+                    package = cache.GetCachedPackage(PackageFile);
+                else
+                {
+                    var packageF = MERFileSystem.GetPackageFile(PackageFile);
+                    if (packageF != null)
+                    {
+                        package = MEPackageHandler.OpenMEPackage(packageF);
+                    }
+                }
+
+                return package?.FindExport(AssetPath);
             }
         }
 

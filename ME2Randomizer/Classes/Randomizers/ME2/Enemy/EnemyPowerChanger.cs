@@ -7,6 +7,7 @@ using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
+using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
@@ -34,6 +35,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
             "Geth_Supercharge", // Used by SFXAI_GethTrooper Combat_Geth_Berserk
             // Krogan charge, used by it's AI
+            "CombatDrone_Death",
         };
 
         /// <summary>
@@ -184,7 +186,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         || PowerName.Contains("Zaeed") // Only use player version. The normal one doesn't throw the grenade
                         || PowerName.Contains("HuskTesla")
                         || PowerName.Contains("Kasumi") // Depends on her AI
-
+                        || PowerName.Contains("CombatDroneDeath") // Crashes the game
+                        || PowerName.Contains("DeathChoir") // Buggy on non-praetorian, maybe crashes game?
+                        
+                        || PowerName.Contains("Lift_TwrMwA") // Not sure what this does, but culling itCrashes the game, maybe
                     )
                     )
                 {
@@ -308,7 +313,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                                 sourcePackage.Save(outP, true);
                             }
                         }
-
                     }
 
                     newEntry = PackageTools.CreateImportForClass(sourceExport, targetPackage, newParent);
@@ -323,9 +327,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
                 else
                 {
-                    Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
-                    var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
-                        newParent, true, out newEntry, crossPCCObjectMap);
+                    List<EntryStringPair> relinkResults = null;
+                    if (PackageTools.IsPersistentPackage(powerInfo.PackageFileName))
+                    {
+                        Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
+                        relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
+                            newParent, true, out newEntry, crossPCCObjectMap);
+                    }
+                    else
+                    {
+                        MERPackageCache cache = new MERPackageCache();
+                        relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
+                    }
 
                     if (relinkResults.Any())
                     {

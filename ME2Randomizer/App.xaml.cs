@@ -105,7 +105,7 @@ namespace ME2Randomizer
             Log.Information("===========================================================================");
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
             string version = fvi.FileVersion;
-            Log.Information("Mass Effect 2/3 Randomizer " + version);
+            Log.Information("Mass Effect 2 Randomizer " + version);
             Log.Information("Application boot: " + DateTime.UtcNow.ToString());
 
             #region Update mode boot
@@ -172,7 +172,7 @@ namespace ME2Randomizer
         /// <param name="e">Exception to process</param>
         static void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            string errorMessage = string.Format("Mass Effect Randomizer has crashed! This is the exception that caused the crash:");
+            string errorMessage = string.Format("Mass Effect 2 Randomizer has crashed! This is the exception that caused the crash:");
             string st = FlattenException(e.Exception);
             Log.Fatal(errorMessage);
             Log.Fatal(st);
@@ -189,7 +189,7 @@ namespace ME2Randomizer
         {
             if (!POST_STARTUP)
             {
-                string errorMessage = string.Format("Mass Effect Randomizer has encountered a fatal startup crash:\n" + FlattenException(e));
+                string errorMessage = string.Format("Mass Effect 2 Randomizer has encountered a fatal startup crash:\n" + FlattenException(e));
                 File.WriteAllText(Path.Combine(Utilities.GetAppDataFolder(), "FATAL_STARTUP_CRASH.txt"), errorMessage);
             }
         }
@@ -219,11 +219,11 @@ namespace ME2Randomizer
     class Options
     {
         [Option('u', "update-dest-path",
-          HelpText = "Indicates where this booting instance of Mass Effect 2/3 Randomizer should attempt to copy itself and reboot to")]
+          HelpText = "Indicates where this booting instance of Mass Effect 2 Randomizer should attempt to copy itself and reboot to")]
         public string UpdateDest { get; set; }
 
         [Option('c', "completing-update",
-            HelpText = "Indicates that we are booting a new copy of Mass Effect 2/3 Randomizer that has just been upgraded")]
+            HelpText = "Indicates that we are booting a new copy of Mass Effect 2 Randomizer that has just been upgraded")]
         public bool BootingNewUpdate { get; set; }
     }
 }

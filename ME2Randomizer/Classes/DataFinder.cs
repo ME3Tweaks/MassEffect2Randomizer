@@ -36,7 +36,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindPortableGuns;
+            dataworker.DoWork += FindPortablePowers;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -211,7 +211,7 @@ namespace ME2Randomizer.Classes
 
             public void PortIntoPackage(IMEPackage destPackage)
             {
-                PackageCache c = new PackageCache();
+                MERPackageCache c = new MERPackageCache();
 
                 foreach (var v in Groups)
                 {
@@ -554,7 +554,7 @@ namespace ME2Randomizer.Classes
 
             var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
             var importDependencies = dependencies.OfType<ImportEntry>().ToList();
-            var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
+            var usable = CheckImports(importDependencies, package, startupFileCache, null, out var missingImport);
             if (usable)
             {
                 var pi = new EnemyWeaponChanger.GunInfo(skm, isCorrectedPackage);
@@ -713,7 +713,7 @@ namespace ME2Randomizer.Classes
         #endregion
 
         #region Powers
-        private void BuildPowerInfo(ExportEntry powerExport, ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping, IMEPackage package, PackageCache startupFileCache, bool isCorrectedPackage)
+        private void BuildPowerInfo(ExportEntry powerExport, ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping, IMEPackage package, PackageCache startupFileCache, PackageCache localCache, bool isCorrectedPackage)
         {
             // See if power is fully defined in package?
             var classInfo = ObjectBinary.From<UClass>(powerExport);
@@ -722,7 +722,7 @@ namespace ME2Randomizer.Classes
 
             var dependencies = EntryImporter.GetAllReferencesOfExport(powerExport);
             var importDependencies = dependencies.OfType<ImportEntry>().ToList();
-            var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
+            var usable = CheckImports(importDependencies, package, startupFileCache, localCache, out var missingImport);
             if (usable)
             {
                 var pi = new EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
@@ -766,8 +766,8 @@ namespace ME2Randomizer.Classes
         private void FindPortablePowers(object sender, DoWorkEventArgs e)
         {
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
-                //.Where(x => x.Contains("SFXPower") || x.Contains("BioP"))
-                .Where(x => x.Contains("SFXPower_StasisNew"))
+                .Where(x => x.Contains("SFXPower") || x.Contains("BioP") || x.Contains("SFXCharacter"))
+                //.Where(x => x.Contains("SFXPower_StasisNew"))
                 .ToList();
             mainWindow.CurrentOperationText = "Scanning for stuff";
             int numdone = 0;
@@ -791,15 +791,15 @@ namespace ME2Randomizer.Classes
                 var sfxPowers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
                 foreach (var sfxPow in sfxPowers)
                 {
-                    BuildPowerInfo(sfxPow, mapping, package, startupFileCache, true);
+                    BuildPowerInfo(sfxPow, mapping, package, startupFileCache, null,true);
                 }
             }
 
             Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
               {
-                  mainWindow.CurrentOperationText = $"Scanning for stuff [{numdone}/{numtodo}]";
+                  mainWindow.CurrentOperationText = $"Finding portable powers [{numdone}/{numtodo}]";
                   Interlocked.Increment(ref numdone);
-
+                  MERPackageCache localCache = new MERPackageCache();
                   var package = MEPackageHandler.OpenMEPackage(file);
                   var powers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
                   foreach (var skm in powers.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
@@ -811,7 +811,7 @@ namespace ME2Randomizer.Classes
 
                       var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
                       var importDependencies = dependencies.OfType<ImportEntry>().ToList();
-                      var usable = CheckImports(importDependencies, package, startupFileCache, out var missingImport);
+                      var usable = CheckImports(importDependencies, package, startupFileCache, localCache, out var missingImport);
                       if (usable)
                       {
                           var pi = new EnemyPowerChanger.PowerInfo(skm, false);
@@ -917,11 +917,11 @@ namespace ME2Randomizer.Classes
         /// Checks to see if the listed imports can be reliably resolved as being in memory via their parents and localizations.
         /// </summary>
         /// <param name="imports"></param>
-        private static bool CheckImports(List<ImportEntry> imports, IMEPackage package, PackageCache globalCache, out ImportEntry unresolvableEntry)
+        private static bool CheckImports(List<ImportEntry> imports, IMEPackage package, PackageCache globalCache, PackageCache lpc, out ImportEntry unresolvableEntry)
         {
             // Force into memory
             //var importExtras = EntryImporter.GetPossibleAssociatedFiles(package);
-            MERPackageCache lpc = new MERPackageCache();
+            lpc ??= new MERPackageCache();
             //foreach (var ie in importExtras)
             //{
             //    lpc.GetCachedPackage(ie);
