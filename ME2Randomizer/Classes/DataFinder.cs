@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
+using ME2Randomizer.Classes.Randomizers.ME2;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
@@ -36,7 +37,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindPortablePowers;
+            dataworker.DoWork += ME2Debug.CheckImportsWithPersistence;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;

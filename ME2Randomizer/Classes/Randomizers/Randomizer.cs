@@ -152,7 +152,7 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     && !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Exp1", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("OmgGrA", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;

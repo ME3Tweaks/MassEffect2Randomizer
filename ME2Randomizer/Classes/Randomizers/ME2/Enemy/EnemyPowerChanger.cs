@@ -188,7 +188,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         || PowerName.Contains("Kasumi") // Depends on her AI
                         || PowerName.Contains("CombatDroneDeath") // Crashes the game
                         || PowerName.Contains("DeathChoir") // Buggy on non-praetorian, maybe crashes game?
-                        
+
                         || PowerName.Contains("Lift_TwrMwA") // Not sure what this does, but culling itCrashes the game, maybe
                     )
                     )
@@ -267,7 +267,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         }
 
         /// <summary>
-        /// Porsta  power into a package
+        /// Ports a power into a package
         /// </summary>
         /// <param name="targetPackage"></param>
         /// <param name="powerInfo"></param>
@@ -284,6 +284,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             {
                 sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(powerInfo.PackageFileName);
             }
+
             if (sourcePackage != null)
             {
                 var sourceExport = sourcePackage.GetUExport(powerInfo.SourceUIndex);
@@ -345,6 +346,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         Debugger.Break();
                     }
                 }
+
                 return newEntry;
             }
             return null; // No package was found
@@ -379,6 +381,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
             }
 
+            var originalPowerUIndexes = powers.Where(x => x.Value > 0).Select(x => x.Value).ToList();
+
             foreach (var power in powers.ToList())
             {
                 if (power.Value == 0) return false; // Null entry in weapons list
@@ -398,20 +402,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 if (existingPowerEntry == null || randomNewPower.PowerName != existingPowerEntry.ObjectName)
                 {
                     if (powers.Any(x => power.Value != int.MinValue && power.ResolveToEntry(export.FileRef).ObjectName == randomNewPower.PowerName))
-                        continue; // Duplicate powers crash the game
+                        continue; // Duplicate powers crash the game. It seems this code is not bulletproof here and needs changed a bit...
 
-                    Log.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "New Power"} => {randomNewPower.PowerName }");
+                    Log.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "(+New Power)"} => {randomNewPower.PowerName }");
                     // It's a different gun.
 
                     // See if we need to port this in
                     var fullName = randomNewPower.PackageName + "." + randomNewPower.PowerName; // SFXGameContent_Powers.SFXPower_Hoops
                     var existingVersionOfPower = export.FileRef.FindEntry(fullName);
-                    if (existingVersionOfPower == null)
-                    {
-                        existingVersionOfPower = export.FileRef.FindExport(fullName);
-                    }
 
-                    IMEPackage sourcePackage = null;
                     if (existingVersionOfPower != null)
                     {
                         // Power does not need ported in
@@ -420,7 +419,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     else
                     {
                         // Power needs ported in
-                        power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower, out sourcePackage).UIndex;
+                        power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower, out _).UIndex;
                     }
 
                     foreach (var addlPow in randomNewPower.AdditionalRequiredPowers)
@@ -443,6 +442,22 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             // Strip any blank powers we might have added, remove any duplicates
             powers.RemoveAll(x => x.Value == int.MinValue);
             powers.ReplaceAll(powers.ToList().Distinct()); //tolist prevents concurrent modification in nested linq
+
+            // DEBUG
+#if DEBUG
+            var duplicates = powers
+                .GroupBy(i => i.Value)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key).ToList();
+            if (duplicates.Any())
+            {
+                foreach (var dup in duplicates)
+                {
+                    Debug.WriteLine($"DUPLICATE POWER IN LOADOUT {export.FileRef.GetEntry(dup).ObjectName}");
+                }
+                Debugger.Break();
+            }
+#endif
             export.WriteProperty(powers);
 
             // Our precalculated map should have accounted for imports already, so we odn't need to worry about missing imports upstream
@@ -456,6 +471,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             if (export.indexValue < 10 && !PackageTools.IsPersistentPackage(pName) && !PackageTools.IsLocalizationPackage(pName))
             {
                 export.ObjectName = new NameReference(export.ObjectName, ThreadSafeRandom.Next(2000));
+            }
+
+            if (originalPowerUIndexes.Any())
+            {
+                // We should ensure the original objects are still referenced so shared objects they have (vfx?) are kept in memory
+                // Dunno if this actually fixes the problems...
+                var theWorld = export.FileRef.FindExport("TheWorld");
+                var world = ObjectBinary.From<World>(theWorld);
+                var extarRefs = world.ExtraReferencedObjects.ToList();
+                extarRefs.AddRange(originalPowerUIndexes.Select(x => new UIndex(x)));
+                world.ExtraReferencedObjects = extarRefs.Distinct().ToArray();
+                theWorld.WriteBinary(world);
             }
 
             return true;
