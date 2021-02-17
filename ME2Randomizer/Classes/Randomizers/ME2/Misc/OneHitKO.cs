@@ -82,6 +82,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
             }
 
+            // ProCer tutorials setting min1Health
+            SetupProCer();
+
             // Player classes - Remove shields, set maxhealth to 1
             string[] classes = new[] { "Adept", "Engineer", "Infiltrator", "Sentinel", "Soldier", "Vanguard" };
             foreach (var c in classes)
@@ -165,6 +168,29 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             return true;
+        }
+
+        private static void SetupProCer()
+        {
+            /*
+             * PLAYER
+                Min1Health in BioD_ProCer.pcc, export 1171, sequence TheWorld.PersistentLevel.Main_Sequence, target SeqVar_Player
+                Min1Health in BioD_ProCer_100RezRoom.pcc, export 3956, sequence TheWorld.PersistentLevel.Main_Sequence.LS0_LevelLoad, target SeqVar_Player
+             */
+            var DPProCerF = MERFileSystem.GetPackageFile("BioD_ProCer.pcc");
+            if (DPProCerF != null && File.Exists(DPProCerF))
+            {
+                var bpProCerP = MEPackageHandler.OpenMEPackage(DPProCerF);
+                bpProCerP.GetUExport(1171).WriteProperty(new IntProperty(0, "bValue"));
+                MERFileSystem.SavePackage(bpProCerP);
+            }
+            var rezRoom = MERFileSystem.GetPackageFile("BioD_ProCer_100RezRoom.pcc");
+            if (rezRoom != null && File.Exists(rezRoom))
+            {
+                var rezRoomP = MEPackageHandler.OpenMEPackage(rezRoom);
+                rezRoomP.GetUExport(3956).WriteProperty(new IntProperty(0, "bValue"));
+                MERFileSystem.SavePackage(rezRoomP);
+            }
         }
 
         private static void ZeroOutStatList(ExportEntry statClassExp, string propertyName, bool createIfNonExistent)
