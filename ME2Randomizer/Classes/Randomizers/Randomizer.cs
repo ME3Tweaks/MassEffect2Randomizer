@@ -152,8 +152,8 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                     && !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("OmgGrA", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Omg", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Prs", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
                     try

@@ -165,14 +165,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             public PowerInfo() { }
             public PowerInfo(ExportEntry export, bool isCorrectedPackage)
             {
+                PowerName = export.ObjectName;
                 if (!MapPowerType(export) && !IsWhitelistedPower(export))
                 {
+                    // Whitelisted powers bypass this check
                     // Powers that do not list a capability type are subclasses. We will not support using these
                     IsUsable = false;
                     return;
                 }
-
-                PowerName = export.ObjectName;
+                if (PowerName.Contains("FlashBang"))
+                    Debugger.Break();
                 if (!IsWhitelistedPower(PowerName) &&
                     // Forced blacklist after whitelist
                     (
@@ -181,15 +183,19 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         || PowerName.Contains("FirstAid")
                         || PowerName.Contains("Player")
                         || PowerName.Contains("GunshipRocket")
-                        || PowerName.Contains("NPC")
+                        || PowerName.Contains("NPC") // this technically should be used, but too lazy to write algo to figure it out
                         || PowerName.Contains("Player")
                         || PowerName.Contains("Zaeed") // Only use player version. The normal one doesn't throw the grenade
                         || PowerName.Contains("HuskTesla")
                         || PowerName.Contains("Kasumi") // Depends on her AI
                         || PowerName.Contains("CombatDroneDeath") // Crashes the game
                         || PowerName.Contains("DeathChoir") // Buggy on non-praetorian, maybe crashes game?
-
+                        || PowerName.Contains("Varren") // Don't use this
                         || PowerName.Contains("Lift_TwrMwA") // Not sure what this does, but culling itCrashes the game, maybe
+                        || PowerName.Contains("Crush") // Don't let enemies use this, it won't do anything useful for the most part
+                        || PowerName == "SFXPower_MechDog" // dunno what this is
+                        || PowerName == "SFXPower_CombatDroneAttack" // Combat drone only
+                        || PowerName.Contains("Dominate") // This is pointless against player squad
                     )
                     )
                 {
@@ -218,11 +224,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             {
                 switch (export.ObjectName)
                 {
+                    // Check for 01's as basegame has stub 00 versions
                     case "SFXPower_Flashbang_NPC":
-                        FileDependency = "BioH_Thief_00.pcc"; // Test for Kasumi DLC
+                        FileDependency = "BioH_Thief_01.pcc"; // Test for Kasumi DLC
                         break;
                     case "SFXPower_ZaeedUnique_Player":
-                        FileDependency = "BioH_Veteran_00.pcc"; // Test for Kasumi DLC
+                        FileDependency = "BioH_Veteran_01.pcc"; // Test for Kasumi DLC
                         break;
                 }
             }

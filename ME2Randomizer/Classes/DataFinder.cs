@@ -37,7 +37,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += ME2Debug.CheckImportsWithPersistence;
+            dataworker.DoWork += FindPortablePowers;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -545,6 +545,7 @@ namespace ME2Randomizer.Classes
         }
 
         private static ConcurrentDictionary<string, string> UnusableGuns = new ConcurrentDictionary<string, string>();
+        private static ConcurrentDictionary<string, string> UnusablePowers = new ConcurrentDictionary<string, string>();
 
         private void BuildGunInfo(ExportEntry skm, ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>> mapping, IMEPackage package, PackageCache startupFileCache, bool isCorrectedPackage)
         {
@@ -726,18 +727,15 @@ namespace ME2Randomizer.Classes
             var usable = CheckImports(importDependencies, package, startupFileCache, localCache, out var missingImport);
             if (usable)
             {
+                //if (powerExport.ObjectName.Name == "SFXPower_Flashbang_NPC")
+                //    Debugger.Break();
                 var pi = new EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
-                if ((pi.RequiresStartupPackage &&
-                     !pi.PackageFileName.StartsWith("SFX"))
-                //|| pi.GunName.Contains("Player")
-                //|| pi.GunName.Contains("AsteroidRocketLauncher")
-                //|| pi.GunName.Contains("VehicleRocketLauncher"
-
-                )
+                if ((pi.RequiresStartupPackage && !pi.PackageFileName.StartsWith("SFX")))
                 {
                     // We do not allow startup files that have levels
                     pi.IsUsable = false;
                 }
+
                 if (pi.IsUsable)
                 {
                     Debug.WriteLine($"Usable sfxpower: {powerExport.InstancedFullPath} in {Path.GetFileName(package.FilePath)}");
@@ -749,28 +747,33 @@ namespace ME2Randomizer.Classes
 
                     instanceList.Add(pi);
                 }
+                else
+                {
+                    Debug.WriteLine($"Denied power {pi.PowerName}");
+                }
             }
             else
             {
-                Debug.WriteLine($"Not usable weapon: {powerExport.InstancedFullPath} in {Path.GetFileName(package.FilePath)}, missing import {missingImport.FullPath}");
+                Debug.WriteLine($"Not usable power: {powerExport.InstancedFullPath} in {Path.GetFileName(package.FilePath)}, missing import {missingImport.FullPath}");
                 if (mapping.ContainsKey(powerExport.InstancedFullPath))
                 {
-                    UnusableGuns.Remove(powerExport.InstancedFullPath, out _);
+                    UnusablePowers.Remove(powerExport.InstancedFullPath, out _);
                 }
                 else
                 {
-                    UnusableGuns[powerExport.InstancedFullPath] = missingImport.FullPath;
+                    UnusablePowers[powerExport.InstancedFullPath] = missingImport.FullPath;
                 }
             }
         }
 
         private void FindPortablePowers(object sender, DoWorkEventArgs e)
         {
+            // SETUP STAGE 1
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
-                .Where(x => x.Contains("SFXPower") || x.Contains("BioP") || x.Contains("SFXCharacter"))
+                .Where(x => x.Contains("SFXPower") || x.Contains("SFXCharacter"))
                 //.Where(x => x.Contains("SFXPower_StasisNew"))
                 .ToList();
-            mainWindow.CurrentOperationText = "Scanning for stuff";
+            mainWindow.CurrentOperationText = "Finding portable powers (stage 1)";
             int numdone = 0;
             int numtodo = files.Count;
 
@@ -778,10 +781,13 @@ namespace ME2Randomizer.Classes
             mainWindow.ProgressBar_Bottom_Max = files.Count();
             mainWindow.ProgressBar_Bottom_Min = 0;
 
+            // PREP WORK
             var startupFileCache = GetGlobalCache();
 
             // Maps instanced full path to list of instances
             ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping = new ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>>();
+
+            // STAGE 1====================
 
             // Corrected, embedded powers that required file coalescing for portability or other corrections in order to work on enemies
             var correctedPowers = Utilities.ListStaticAssets("binary.correctedloadouts.powers");
@@ -792,13 +798,13 @@ namespace ME2Randomizer.Classes
                 var sfxPowers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
                 foreach (var sfxPow in sfxPowers)
                 {
-                    BuildPowerInfo(sfxPow, mapping, package, startupFileCache, null,true);
+                    BuildPowerInfo(sfxPow, mapping, package, startupFileCache, null, true);
                 }
             }
 
             Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
               {
-                  mainWindow.CurrentOperationText = $"Finding portable powers [{numdone}/{numtodo}]";
+                  mainWindow.CurrentOperationText = $"Finding portable powers (stage 1) [{numdone}/{numtodo}]";
                   Interlocked.Increment(ref numdone);
                   MERPackageCache localCache = new MERPackageCache();
                   var package = MEPackageHandler.OpenMEPackage(file);
@@ -836,6 +842,64 @@ namespace ME2Randomizer.Classes
                   }
                   mainWindow.CurrentProgressValue = numdone;
               });
+
+            // PHASE 2
+
+            files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+                .Where(x => x.Contains("BioD")
+                || x.Contains("BioP"))
+                .ToList();
+            mainWindow.CurrentOperationText = "Finding portable powers (Stage 2)";
+            numdone = 0;
+            numtodo = files.Count;
+
+            mainWindow.ProgressBarIndeterminate = false;
+            mainWindow.ProgressBar_Bottom_Max = files.Count();
+            mainWindow.ProgressBar_Bottom_Min = 0;
+
+            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
+            {
+                mainWindow.CurrentOperationText = $"Finding portable powers (Stage 2) [{numdone}/{numtodo}]";
+                Interlocked.Increment(ref numdone);
+                if (!file.Contains("BioD"))
+                    return; // BioD only
+                MERPackageCache localCache = new MERPackageCache();
+                var package = MEPackageHandler.OpenMEPackage(file);
+                var powers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject && !mapping.ContainsKey(x.InstancedFullPath));
+                foreach (var skm in powers.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
+                {
+                    // See if power is fully defined in package?
+                    var classInfo = ObjectBinary.From<UClass>(skm);
+                    if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+                        continue; // This class cannot be used as a power, it is abstract
+
+                    var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
+                    var importDependencies = dependencies.OfType<ImportEntry>().ToList();
+                    var usable = CheckImports(importDependencies, package, startupFileCache, localCache, out var missingImport);
+                    if (usable)
+                    {
+                        var pi = new EnemyPowerChanger.PowerInfo(skm, false);
+
+                        if (pi.IsUsable)
+                        {
+                            Debug.WriteLine($"Usable power: {skm.InstancedFullPath} in {package.FilePath}");
+                            if (!mapping.TryGetValue(skm.InstancedFullPath, out var instanceList))
+                            {
+                                instanceList = new List<EnemyPowerChanger.PowerInfo>();
+                                mapping[skm.InstancedFullPath] = instanceList;
+                            }
+
+                            instanceList.Add(pi);
+                        }
+                    }
+                    else
+                    {
+                        //Debug.WriteLine($"Not usable power: {skm.InstancedFullPath} in {package.FilePath}");
+                    }
+                }
+                mainWindow.CurrentProgressValue = numdone;
+            });
+
 
             // PERFORM REDUCE OPERATION
 
@@ -934,6 +998,8 @@ namespace ME2Randomizer.Classes
             {
                 if (import.InstancedFullPath == "BioVFX_Z_TEXTURES.Generic.Glass_Shards_Norm")
                     continue; // this is native for some reason
+                if (import.InstancedFullPath.StartsWith("Engine.") || import.InstancedFullPath.StartsWith("Core."))
+                    continue; // These are waste of time to resolve as they'll be there.
 
                 //Debug.Write($@"Resolving {import.FullPath}...");
                 var export = ResolveImport(import, globalCache, lpc);
@@ -1093,5 +1159,85 @@ namespace ME2Randomizer.Classes
         }
         #endregion
 
+        #region Debug
+
+        private void DebugPorting(object sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            //var testName = "BioD_KroPrL_100Ruins.pcc";
+            var testName = "BioD_OmgGrA_420CDGarrusIntro.pcc";
+            var sourceP = MEPackageHandler.OpenMEPackage($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\{testName}");
+
+            // Port in powers. Do not use them.
+            EnemyPowerChanger.LoadPowers();
+            List<EnemyPowerChanger.PowerInfo> powersToPort = new();
+            powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Shockwave"));
+            //powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Pull"));
+            //powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Reave"));
+            //powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Fortification_Vorcha"));
+
+
+            foreach (var power in powersToPort)
+            {
+                Debug.WriteLine($"Porting power: {power.PowerName}");
+
+                // Test single pull in
+                var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("SFXCharacterClass_Adept.pcc");
+                //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(power.PackageFileName);
+                //var sourceExport = sourcePackage.FindExport("BioVFX_B_Powers.08_Pull.Pull_VFX_Appearance");
+                //EntryExporter.ExportExportToPackage(sourceExport, sourceP, out _);
+
+                // Test pulling in SFXPower_Pull without VFX prop
+                //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("BioP_ProCer.pcc");
+                //var sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPower_Pull");
+                //var defaults = sourceExport.GetDefaults();
+                ////defaults.WriteProperty(new ObjectProperty(0,"VFX")); // Setting this to zero makes it work. But porting the item this references in also doesn't break it.
+                //EntryExporter.ExportExportToPackage(sourceExport, sourceP, out _);
+
+                // Pull in VFX then pull in power
+                //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("BioP_ProCer.pcc");
+                //var
+
+                //sourcePackage.FindExport("BioVFX_B_Lift.PostProcess.FB_MotionBlur_Distorting").RemoveProperty("Effects"); // Fixes the issue.
+                //sourcePackage.FindExport("BioVFX_B_Lift.PostProcess.FB_MotionBlur_Distorting.BioMaterialInstanceEffect_0").RemoveProperty("Material");
+
+                var sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPower_Shockwave");
+                //var defaults = sourceExport.GetDefaults();
+                //defaults.WriteProperty(new ObjectProperty(0, "VFX")); // Setting this to zero doesn't change anything if you port in the upper stuff afterwards
+                //defaults.RemoveProperty("EvolvedPowerClass1");
+                //defaults.RemoveProperty("EvolvedPowerClass2");
+                //defaults.RemoveProperty("PowerScriptClass");
+                //sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPowerScript_PullProjectile");
+                //defaults = sourceExport.GetDefaults();
+                //defaults.RemoveProperty("m_oCrustEffect");
+
+                //sourceP = NonSharedPackageCache.Cache.GetCachedPackage("/c.pcc");
+                //EntryExporter.ExportExportToPackage(sourceExport, sourceP, out _);
+                //sourceP.Save();
+
+
+
+                // Way power does it
+                power.PackageFileName = "SFXCharacterClass_Adept.pcc";
+                power.SourceUIndex = sourceExport.UIndex;
+                EnemyPowerChanger.PortPowerIntoPackage(sourceP, power, out _);
+            }
+
+            sourceP.Save($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\{testName}");
+        }
+
+        private void FindSerialSizeMismatches(object? sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            var packages = Directory.GetFiles(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC", "*.pcc");
+            foreach (var packageF in packages)
+            {
+                var package = MEPackageHandler.OpenMEPackage(packageF);
+                foreach (var v in package.Exports)
+                {
+                    var binary = ObjectBinary.FromDEBUG(v);
+                }
+            }
+        }
+
+        #endregion
     }
 }
