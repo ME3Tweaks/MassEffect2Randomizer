@@ -74,7 +74,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         private static int AddNewRandomizedMovementSpeed(ExportEntry bio_appr_character)
         {
-            ImportEntry sfxMovementData = bio_appr_character.FileRef.Imports.FirstOrDefault(x => x.FullPath == "SFXGame.SFXMovementData");
+            ImportEntry sfxMovementData = bio_appr_character.FileRef.FindImport("SFXGame.SFXMovementData");
             if (sfxMovementData == null)
             {
                 // Import needs added

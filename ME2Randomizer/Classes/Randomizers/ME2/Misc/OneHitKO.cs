@@ -55,7 +55,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // Power Armor
             new OHKOAsset(){ PackageFile = "SFXCharacterClass_Sentinel.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_PowerArmor", PropertiesToZeroOut = new [] {"ShieldStrength"}},
             new OHKOAsset(){ PackageFile = "SFXCharacterClass_Sentinel.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_PowerArmor_Evolved2", PropertiesToZeroOut = new [] {"ShieldStrength"}},
-
         };
 
 

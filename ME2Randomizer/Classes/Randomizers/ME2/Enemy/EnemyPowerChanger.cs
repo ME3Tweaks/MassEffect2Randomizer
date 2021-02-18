@@ -20,7 +20,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 {
     class EnemyPowerChanger
     {
-        public string[] PowersToNotSwap = new[]
+        private static string[] PowersToNotSwap = new[]
         {
             // Collector powers, used by it's AI
             "SFXPower_CollectorWarp", //Used by Combat_Collector_Possessed
@@ -34,8 +34,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             "Shockwave_NPC", //Used by the asari in LOTSB
 
             "Geth_Supercharge", // Used by SFXAI_GethTrooper Combat_Geth_Berserk
-            // Krogan charge, used by it's AI
-            "CombatDrone_Death",
+            "KroganCharge", // Krogan charge, used by it's AI
+            "CombatDrone_Death", // Used by combat drone
         };
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         || PowerName.Contains("FirstAid")
                         || PowerName.Contains("Player")
                         || PowerName.Contains("GunshipRocket")
-                        || PowerName.Contains("NPC") // this technically should be used, but too lazy to write algo to figure it out
+                        || (PowerName.Contains("NPC") && PowerName != "SFXPower_CombatDrone_NPC") // this technically should be used, but too lazy to write algo to figure it out
                         || PowerName.Contains("Player")
                         || PowerName.Contains("Zaeed") // Only use player version. The normal one doesn't throw the grenade
                         || PowerName.Contains("HuskTesla")
@@ -195,6 +195,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         || PowerName.Contains("Crush") // Don't let enemies use this, it won't do anything useful for the most part
                         || PowerName == "SFXPower_MechDog" // dunno what this is
                         || PowerName == "SFXPower_CombatDroneAttack" // Combat drone only
+                        || PowerName == "SFXPower_CombatDrone" // Player version is way too OP. Enforce NPC version
                         || PowerName.Contains("Dominate") // This is pointless against player squad
                     )
                     )
@@ -402,6 +403,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     if (existingPowerEntry.ObjectName.Name.Contains("Melee", StringComparison.InvariantCultureIgnoreCase) && ThreadSafeRandom.Next(2) == 0)
                     {
                         continue; // Don't randomize power
+                    }
+                    var pwrName = $"SFXPower_{existingPowerEntry.ObjectName.Name}";
+                    if (PowersToNotSwap.Contains(pwrName))
+                    {
+                        continue; // Do not change this power
                     }
                 }
 
