@@ -149,13 +149,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    //if (true
+                    if (true
                     //&& !file.Contains("CitHub_100Dock", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Bio", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
-                    //)
-                    //    return;
+                    )
+                        return;
                     try
                     {
                         var package = MEPackageHandler.OpenMEPackage(file);

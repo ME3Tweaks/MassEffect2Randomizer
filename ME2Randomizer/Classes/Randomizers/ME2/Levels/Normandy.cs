@@ -18,8 +18,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
     {
         public static bool PerformRandomization(RandomizationOption option)
         {
-            RandomizeNormandyHolo();
             AddBurgersToCookingQuest();
+            RandomizeNormandyHolo();
             RandomizeWrongWashroomSFX();
             return true;
         }
