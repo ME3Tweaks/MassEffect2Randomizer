@@ -56,7 +56,7 @@
   <PropertyGroup Condition="'$(Configuration)'=='ME2Debug'">
     <DefineConstants>DEBUG;__ME2__</DefineConstants>
     <XamlDebuggingInformation>True</XamlDebuggingInformation>
-    <DebugType>embedded</DebugType>
+    <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='ME2Release'">
@@ -94,10 +94,10 @@
     </PackageReference>
     <PackageReference Include="MahApps.Metro" Version="2.4.3" />
     <PackageReference Include="Microsoft-Windows10-APICodePack-Core" Version="1.1.5" />
-    <PackageReference Include="Octokit" Version="0.48.0" />
+    <PackageReference Include="Octokit" Version="0.49.0" />
     <PackageReference Include="PropertyChanged.Fody" Version="3.3.1" />
     <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="1.0.1" />
+    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
     <PackageReference Include="System.Management" Version="5.0.0" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
@@ -123,6 +123,14 @@
   <PropertyGroup>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     <ApplicationIcon>masseffectrandomizer.ico</ApplicationIcon>
+    <Company>ME3Tweaks</Company>
+    <Product>Mass Effect 2 Randomizer</Product>
+    <Description>Randomizer for Mass Effect 2</Description>
+    <AssemblyVersion>0.8.0.0</AssemblyVersion>
+    <FileVersion>0.8.0.0</FileVersion>
+    <Copyright>2019-2021 ME3Tweaks</Copyright>
+    <Version>0.8</Version>
+    <Authors>ME3Tweaks</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ME2Debug|x64'">

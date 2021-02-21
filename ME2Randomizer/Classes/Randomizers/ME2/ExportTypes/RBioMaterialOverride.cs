@@ -36,7 +36,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                             var currentValue = scalarParameter.GetProp<FloatProperty>("sValue");
                             if (currentValue != null)
                             {
-                                Debug.WriteLine("Randomizing FREK HAIR HEDSCAR");
+                                //Debug.WriteLine("Randomizing FREK HAIR HEDSCAR");
 
                                 if (currentValue > 1)
                                 {

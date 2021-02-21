@@ -149,13 +149,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    if (true
-                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Jnk", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Omg", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Prs", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                        return;
+                    //if (true
+                    //&& !file.Contains("CitHub_100Dock", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
+                    //)
+                    //    return;
                     try
                     {
                         var package = MEPackageHandler.OpenMEPackage(file);
@@ -219,6 +219,7 @@ namespace ME2Randomizer.Classes
         internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
         {
 #if __ME2__
+            EnemyPowerChanger.Init(null); // Load the initial list
             RandomizationGroups.Add(new RandomizationGroup()
             {
                 GroupName = "Faces",
@@ -439,7 +440,8 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by basic non-interactable NPCs. Some may T-pose due to the sheer complexity of this randomizer",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActorMAT.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
                     new RandomizationOption()
                     {
-                        HumanName = "Pawn sizes", Description = "Changes the size of characters. Will break various things, but may still be playable", PerformRandomizationOnExportDelegate = RBioPawn.RandomizePawnSize, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe,
+                        HumanName = "Pawn sizes", Description = "Changes the size of characters. Will break a lot of things", PerformRandomizationOnExportDelegate = RBioPawn.RandomizePawnSize, 
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
                         Ticks = "0.1,0.2,0.3,0.4,0.5,0.75",
                         HasSliderOption = true,
                         SliderToTextConverter = x=> $"Maximum size change: {Math.Round(x * 100)}%",
@@ -457,7 +459,23 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true,
+                      // Debug stuff.
+                        HasSliderOption = true,
+                        Ticks = string.Join(",",Enumerable.Range(-1,EnemyPowerChanger.Powers.Count + 1)),
+                        SliderToTextConverter = x =>
+                        {
+                            if (x < 0)
+                                return "All powers";
+                            var idx = (int) x;
+                            return EnemyPowerChanger.Powers[idx].PowerName;
+                        },
+                        SliderValue = -1,
+                        // End debug stuff
+
+                    },
                 }
             });
 
@@ -643,11 +661,21 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Actors in conversations",
-                        PerformFileSpecificRandomization = RBioConversation.RandomizeExportActorsInPackage,
+                        PerformFileSpecificRandomization = RBioConversation.RandomizePackageActorsInConversation,
                         Description = "Changes pawn roles in conversations. Somewhat buggy simply due to complexity and restrictions in engine, but can be entertaining",
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
                     },
+                    // Crashes game too often :/
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "Music",
+                    //    PerformSpecificRandomizationDelegate = RMusic.Init,
+                    //    PerformRandomizationOnExportDelegate = RMusic.RandomizeMusic,
+                    //    Description = "Changes what audio is played. Due to how audio is layered in ME2 this may be annoying",
+                    //    IsRecommended = false,
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    //}
                 }
             });
 

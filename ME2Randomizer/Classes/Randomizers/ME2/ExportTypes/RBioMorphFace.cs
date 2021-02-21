@@ -29,7 +29,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             return true;
         }
 
-        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioMorphFace";
+        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioMorphFace" && !export.FileRef.FilePath.Contains("BioH_");
         public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
@@ -68,17 +68,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             }
 
             export.WriteProperties(props);
-
-            // Todo: Somehow move this to another export or something.
-            //if (mainWindow.RANDSETTING_PAWN_CLOWNMODE)
-            //{
-            //    var materialoverride = props.GetProp<ObjectProperty>("m_oMaterialOverrides");
-            //    if (materialoverride != null)
-            //    {
-            //        var overrides = export.FileRef.GetUExport(materialoverride.Value);
-            //        RandomizeMaterialOverride(overrides);
-            //    }
-            //}
             return true;
         }
     }

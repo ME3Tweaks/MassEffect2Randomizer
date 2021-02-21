@@ -20,7 +20,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             //if (exp.UIndex != 1999) return false;
             try
             {
-                Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");
+                //Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");
                 //var d = exp.Data;
                 var animSet = ObjectBinary.From<FaceFXAnimSet>(exp);
                 for (int i = 0; i < animSet.Lines.Count(); i++)

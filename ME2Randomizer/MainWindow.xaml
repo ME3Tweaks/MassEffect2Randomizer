@@ -217,9 +217,9 @@
                     <StackPanel Orientation="Vertical" Grid.Column="0" Margin="0,0,0,5" IsEnabled="{Binding AllowOptionsChanging}">
                         <RadioButton Content="Select what to randomize" Margin="4" GroupName="ERandomizationMode_SelectAny" Background="Transparent" ToolTip="Pick and choose what you want to randomize" 
                                      IsChecked="{Binding Path=SelectedRandomizeMode, Mode=TwoWay, Converter={StaticResource enumConverter}, ConverterParameter=ERandomizationMode_SelectAny}" />
-                        <RadioButton Content="Randomize a common set of stuff" Margin="4" GroupName="ERandomizationMode_Common" Background="Transparent" ToolTip="Randomize the game in a mostly safe way" 
+                        <RadioButton Content="Use recommended settings" Margin="4" GroupName="ERandomizationMode_Common" Background="Transparent" ToolTip="Randomize the game in a mostly safe way" 
                                      IsChecked="{Binding Path=SelectedRandomizeMode, Mode=TwoWay, Converter={StaticResource enumConverter}, ConverterParameter=ERandomizationMode_Common}" />
-                        <RadioButton Content="Give me a screed. I want to experience hell." Margin="4" GroupName="ERAndomizationMode_Screed" Background="Transparent" ToolTip="You want to experience hell itself with full randomization" 
+                        <RadioButton Content="Burn this game to the ground" Margin="4" GroupName="ERAndomizationMode_Screed" Background="Transparent" ToolTip="You want to experience hell itself with full randomization" 
                                 IsChecked="{Binding Path=SelectedRandomizeMode, Mode=TwoWay, Converter={StaticResource enumConverter}, ConverterParameter=ERandomizationMode_Screed}" />
                     </StackPanel>
                     <Grid Grid.Column="1" Margin="0,0,0,5">

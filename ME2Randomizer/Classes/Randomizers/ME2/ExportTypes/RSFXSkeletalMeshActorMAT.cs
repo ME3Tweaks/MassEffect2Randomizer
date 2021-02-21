@@ -25,7 +25,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             if (!CanRandomize(export)) return false;
             if (export.GetProperty<ObjectProperty>("SkeletalMeshComponent")?.ResolveToEntry(export.FileRef) is ExportEntry smc)
             {
-                Debug.WriteLine($"Installing new lite animations for {export.InstancedFullPath}");
+                //Debug.WriteLine($"Installing new lite animations for {export.InstancedFullPath}");
                 var animsets = smc.GetProperty<ArrayProperty<ObjectProperty>>("AnimSets");
                 var animTreeTemplate = smc.GetProperty<ObjectProperty>("AnimTreeTemplate")?.ResolveToEntry(export.FileRef) as ExportEntry;
                 if (animsets != null && animTreeTemplate != null)

@@ -22,7 +22,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             MakeTubesSectionHarder();
             RandomizeTheLongWalk(option);
             AutomatePlatforming400(option);
-            //        InstallBorger();
+            InstallBorger();
             //RandomizeTheFinalBattle(option);
             return true;
         }

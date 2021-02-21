@@ -46,12 +46,7 @@ namespace ME2Randomizer
 
         public App() : base()
         {
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            string exePath = assembly.Location;
-            string exeFolder = Directory.GetParent(exePath).ToString();
             LogDir = Path.Combine(Utilities.GetAppDataFolder(), "logs");
-
-
             string[] args = Environment.GetCommandLineArgs();
             Parsed<Options> parsedCommandLineArgs = null;
             string updateDestinationPath = null;
@@ -66,27 +61,27 @@ namespace ME2Randomizer
                     parsedCommandLineArgs = (Parsed<Options>)result;
                     if (parsedCommandLineArgs.Value.UpdateDest != null)
                     {
-                        if (File.Exists(parsedCommandLineArgs.Value.UpdateDest))
-                        {
-                            updateDestinationPath = parsedCommandLineArgs.Value.UpdateDest;
-                        }
-                        if (parsedCommandLineArgs.Value.BootingNewUpdate)
-                        {
-                            Thread.Sleep(1000); //Delay boot to ensure update executable finishes
-                            try
-                            {
-                                string updateFile = Path.Combine(exeFolder, "MassEffectRandomizer-Update.exe");
-                                if (File.Exists(updateFile))
-                                {
-                                    File.Delete(updateFile);
-                                    Log.Information("Deleted staged update");
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Warning("Unable to delete staged update: " + e.ToString());
-                            }
-                        }
+                        //if (File.Exists(parsedCommandLineArgs.Value.UpdateDest))
+                        //{
+                        //    updateDestinationPath = parsedCommandLineArgs.Value.UpdateDest;
+                        //}
+                        //if (parsedCommandLineArgs.Value.BootingNewUpdate)
+                        //{
+                        //    Thread.Sleep(1000); //Delay boot to ensure update executable finishes
+                        //    try
+                        //    {
+                        //        string updateFile = Path.Combine(exeFolder, "MassEffectRandomizer-Update.exe");
+                        //        if (File.Exists(updateFile))
+                        //        {
+                        //            File.Delete(updateFile);
+                        //            Log.Information("Deleted staged update");
+                        //        }
+                        //    }
+                        //    catch (Exception e)
+                        //    {
+                        //        Log.Warning("Unable to delete staged update: " + e.ToString());
+                        //    }
+                        //}
                     }
                 }
             }
@@ -95,16 +90,16 @@ namespace ME2Randomizer
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File(Path.Combine(LogDir, $"me2rlog.txt"), rollingInterval: RollingInterval.Day, flushToDiskInterval: new TimeSpan(0, 0, 15))
 #if DEBUG
-      .WriteTo.Debug()
+      //.WriteTo.Debug()
 #endif
       .CreateLogger();
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
             POST_STARTUP = true;
             ToolTipService.ShowDurationProperty.OverrideMetadata(
-                typeof(DependencyObject), new FrameworkPropertyMetadata(Int32.MaxValue));
+                typeof(DependencyObject), new FrameworkPropertyMetadata(int.MaxValue));
             Log.Information("===========================================================================");
-            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-            string version = fvi.FileVersion;
+
+            string version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
             Log.Information("Mass Effect 2 Randomizer " + version);
             Log.Information("Application boot: " + DateTime.UtcNow.ToString());
 
@@ -117,28 +112,28 @@ namespace ME2Randomizer
                 {
 
                     i++;
-                    try
-                    {
-                        Log.Information("Applying update");
-                        File.Copy(assembly.Location, updateDestinationPath, true);
-                        Log.Information("Update applied, restarting...");
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error("Error applying update: " + e.Message);
-                        if (i < 8)
-                        {
-                            Thread.Sleep(1000);
-                            Log.Warning("Attempt #" + (i + 1));
-                        }
-                        else
-                        {
-                            Log.Fatal("Unable to apply update after 8 attempts. We are giving up.");
-                            MessageBox.Show("Update was unable to apply. See the application log for more information. If this continues to happen please come to the ME3Tweaks discord, or download a new copy from GitHub.");
-                            Environment.Exit(1);
-                        }
-                    }
+                    //try
+                    //{
+                    //    Log.Information("Applying update");
+                    //    File.Copy(assembly.Location, updateDestinationPath, true);
+                    //    Log.Information("Update applied, restarting...");
+                    //    break;
+                    //}
+                    //catch (Exception e)
+                    //{
+                    //    Log.Error("Error applying update: " + e.Message);
+                    //    if (i < 8)
+                    //    {
+                    //        Thread.Sleep(1000);
+                    //        Log.Warning("Attempt #" + (i + 1));
+                    //    }
+                    //    else
+                    //    {
+                    //        Log.Fatal("Unable to apply update after 8 attempts. We are giving up.");
+                    //        MessageBox.Show("Update was unable to apply. See the application log for more information. If this continues to happen please come to the ME3Tweaks discord, or download a new copy from GitHub.");
+                    //        Environment.Exit(1);
+                    //    }
+                    //}
                 }
                 Log.Information("Rebooting into normal mode to complete update");
                 ProcessStartInfo psi = new ProcessStartInfo(updateDestinationPath);

@@ -24,18 +24,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         {
             // Collector powers, used by it's AI
             "SFXPower_CollectorWarp", //Used by Combat_Collector_Possessed
-            "Singularity_NPC", // Used by Combat_Collector_Possessed
-            "Collector_Pulse", // Used by Combat_Collector_Possessed
+            "SFXPower_Singularity_NPC", // Used by Combat_Collector_Possessed
+            "SFXPower_Collector_Pulse", // Used by Combat_Collector_Possessed
 
-            "HuskMelee_Right", //Used by SwipeAttack() in SFXAI_Husk
-            "HuskMelee_Left",
+            "SFXPower_HuskMelee_Right", //Used by SwipeAttack() in SFXAI_Husk
+            "SFXPower_HuskMelee_Left",
 
-            "BioticChargeLong_NPC", // Used by the asari in LOTSB
-            "Shockwave_NPC", //Used by the asari in LOTSB
+            "SFXPower_BioticChargeLong_NPC", // Used by the asari in LOTSB
+            "SFXPower_Shockwave_NPC", //Used by the asari in LOTSB
 
-            "Geth_Supercharge", // Used by SFXAI_GethTrooper Combat_Geth_Berserk
-            "KroganCharge", // Krogan charge, used by it's AI
-            "CombatDrone_Death", // Used by combat drone
+            "SFXPower_Geth_Supercharge", // Used by SFXAI_GethTrooper Combat_Geth_Berserk
+            "SFXPower_KroganCharge", // Krogan charge, used by it's AI
+            "SFXPower_CombatDrone_Death", // Used by combat drone
         };
 
         /// <summary>
@@ -173,8 +173,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     IsUsable = false;
                     return;
                 }
-                if (PowerName.Contains("FlashBang"))
-                    Debugger.Break();
                 if (!IsWhitelistedPower(PowerName) &&
                     // Forced blacklist after whitelist
                     (
@@ -195,6 +193,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         || PowerName.Contains("Crush") // Don't let enemies use this, it won't do anything useful for the most part
                         || PowerName == "SFXPower_MechDog" // dunno what this is
                         || PowerName == "SFXPower_CombatDroneAttack" // Combat drone only
+                        || PowerName == "SFXPower_HeavyMechExplosion" // This is not actually used and doesn't seem to work but is on some pawns
                         || PowerName == "SFXPower_CombatDrone" // Player version is way too OP. Enforce NPC version
                         || PowerName.Contains("Dominate") // This is pointless against player squad
                     )
@@ -309,7 +308,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 IEntry newEntry;
                 if (powerInfo.ImportOnly)
                 {
-                    Debug.WriteLine($"ImportOnly in file {targetPackage.FilePath}");
+                    //Debug.WriteLine($"ImportOnly in file {targetPackage.FilePath}");
                     if (powerInfo.RequiresStartupPackage)
                     {
                         ThreadSafeDLCStartupPackage.AddStartupPackage(Path.GetFileNameWithoutExtension(powerInfo.PackageFileName));
@@ -336,9 +335,29 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
                 else
                 {
+
+                    // DEBUG ONLY-----------------------------------
+                    //var defaults = sourceExport.GetDefaults();
+                    ////defaults.RemoveProperty("VFX");
+                    //var vfx = defaults.GetProperty<ObjectProperty>("VFX").ResolveToEntry(sourcePackage) as ExportEntry;
+                    //vfx.RemoveProperty("PlayerCrust");
+                    //vfx.FileRef.GetUExport(1544).RemoveProperty("oPrefab");
+
+                    ////vfx = defaults.FileRef.GetUExport(6211); // Prefab
+                    ////vfx.RemoveProperty("WorldImpactVisualEffect");
+                    //MERPackageCache cached = new MERPackageCache();
+                    //EntryExporter.ExportExportToPackage(vfx, targetPackage, out newEntry, cached);
+                    //PackageTools.AddReferencesToWorld(targetPackage, new [] {newEntry as ExportEntry});
+
+                    //return null;
+
+
+                    // END DEBUG ONLY--------------------------------
+
                     List<EntryStringPair> relinkResults = null;
                     if (PackageTools.IsPersistentPackage(powerInfo.PackageFileName))
                     {
+                        // Faster this way, without having to check imports
                         Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
                         relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
                             newParent, true, out newEntry, crossPCCObjectMap);
@@ -362,7 +381,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
         // This can probably be changed later
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "SFXLoadoutData"
-                                                                && !export.ObjectName.Name.Contains("Drone");
+                                                                && !export.ObjectName.Name.Contains("Drone")
+                                                                && Path.GetFileName(export.FileRef.FilePath).StartsWith("Bio");
 
         internal static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
@@ -404,18 +424,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     {
                         continue; // Don't randomize power
                     }
-                    var pwrName = $"SFXPower_{existingPowerEntry.ObjectName.Name}";
-                    if (PowersToNotSwap.Contains(pwrName))
+                    if (PowersToNotSwap.Contains(existingPowerEntry.ObjectName.Name))
                     {
+                        Debug.WriteLine($"Not changing power {existingPowerEntry.ObjectName.Name}");
                         continue; // Do not change this power
                     }
                 }
 
-                var randomNewPower = Powers.RandomElement();
+                // DEBUG
+                PowerInfo randomNewPower = null;
+                if (option.SliderValue < 0)
+                {
+                    randomNewPower = Powers.RandomElement();
+                }
+                else
+                {
+                    randomNewPower = Powers[(int) option.SliderValue];
+                }
+
+                while (export.ObjectName.Name.Contains("Krogan", StringComparison.InvariantCultureIgnoreCase) && randomNewPower.Type == EPowerCapabilityType.Death)
+                {
+                    Debug.WriteLine(@"Re-roll no-death-power on krogan");
+                    // Reroll. Krogan AI has something weird about it
+                    randomNewPower = Powers.RandomElement();
+                }
+
                 if (existingPowerEntry == null || randomNewPower.PowerName != existingPowerEntry.ObjectName)
                 {
                     if (powers.Any(x => power.Value != int.MinValue && power.ResolveToEntry(export.FileRef).ObjectName == randomNewPower.PowerName))
                         continue; // Duplicate powers crash the game. It seems this code is not bulletproof here and needs changed a bit...
+
 
                     Log.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "(+New Power)"} => {randomNewPower.PowerName }");
                     // It's a different gun.
@@ -432,7 +470,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     else
                     {
                         // Power needs ported in
-                        power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower, out _).UIndex;
+                        power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower, out _)?.UIndex ?? int.MinValue;
                     }
 
                     foreach (var addlPow in randomNewPower.AdditionalRequiredPowers)
@@ -490,12 +528,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             {
                 // We should ensure the original objects are still referenced so shared objects they have (vfx?) are kept in memory
                 // Dunno if this actually fixes the problems...
-                var theWorld = export.FileRef.FindExport("TheWorld");
-                var world = ObjectBinary.From<World>(theWorld);
-                var extarRefs = world.ExtraReferencedObjects.ToList();
-                extarRefs.AddRange(originalPowerUIndexes.Select(x => new UIndex(x)));
-                world.ExtraReferencedObjects = extarRefs.Distinct().ToArray();
-                theWorld.WriteBinary(world);
+                PackageTools.AddReferencesToWorld(export.FileRef, originalPowerUIndexes.Select(x => export.FileRef.GetUExport(x)));
             }
 
             return true;

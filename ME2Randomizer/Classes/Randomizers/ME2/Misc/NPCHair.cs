@@ -152,7 +152,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             if (export.Archetype is ImportEntry imp)
                             {
                                 // oof
-                                arch = EntryImporter.ResolveImport(imp);
+                                arch = EntryImporter.ResolveImport(imp, MERFileSystem.GetGlobalCache());
                             }
                             hairMeshExp = hairExpSKM;
                             var result = export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) == isArchetypeCheck && CanRandomize(arch, true, out _); // look at archetype

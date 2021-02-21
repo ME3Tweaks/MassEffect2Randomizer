@@ -299,6 +299,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             {
                 sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(gunInfo.PackageFileName);
             }
+
             if (sourcePackage != null)
             {
                 var sourceExport = sourcePackage.GetUExport(gunInfo.SourceUIndex);
@@ -358,7 +359,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         {
             Invalid,
             Loadout,
-            ApprBody
+            ApprBody,
+            SetWeapon
         }
 
         /// <summary>
@@ -381,13 +383,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 wrtype = EWRType.ApprBody;
                 return true;
             }
-
-            if (export.ClassName == "SFXLoadoutData"
-                && !export.ObjectName.Name.Contains("HeavyWeaponMech") // Not actually sure we can't randomize this one
-                && !export.ObjectName.Name.Contains("BOS_Reaper") // Don't randomize the final boss cause it'd really make him stupid
-                && export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons") != null)
+            else if (export.ClassName == "SFXLoadoutData"
+                     //&& !export.ObjectName.Name.Contains("HeavyWeaponMech") // Not actually sure we can't randomize this one
+                     && !export.ObjectName.Name.Contains("BOS_Reaper") // Don't randomize the final boss cause it'd really make him stupid
+                     && export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons") != null)
             {
                 wrtype = EWRType.Loadout;
+                return true;
+            }
+            else if (export.ClassName == "BioSeqAct_SetWeapon")
+            {
+                wrtype = EWRType.SetWeapon;
                 return true;
             }
 
@@ -402,6 +408,27 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 return RandomizeWeaponLoadout(export, option);
             else if (wrtype == EWRType.ApprBody)
                 return InstallWeaponAnims(export, option);
+            // This seems kind of pointless so we're not going to enable it
+            //else if (wrtype == EWRType.SetWeapon)
+            //    return SetWeaponSeqAct(export, option);
+            return false;
+        }
+
+        private static bool SetWeaponSeqAct(ExportEntry export, RandomizationOption option)
+        {
+            if (ThreadSafeRandom.Next(1) == 0)
+            {
+                var cWeapon = export.GetProperty<ObjectProperty>("cWeapon");
+                if (cWeapon != null && cWeapon.Value != 0)
+                {
+                    var randGun = VisibleAvailableWeapons.RandomElement();
+                    Debug.WriteLine($"Changing SetWeapon from {cWeapon.ResolveToEntry(export.FileRef).ObjectName} to {randGun.GunName}");
+                    cWeapon.Value = PortWeaponIntoPackage(export.FileRef, randGun).UIndex;
+                    export.WriteProperty(cWeapon);
+                }
+                return true;
+            }
+
             return false;
         }
 

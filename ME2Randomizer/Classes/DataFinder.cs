@@ -37,7 +37,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindPortablePowers;
+            dataworker.DoWork += BuildMusicInfo;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -64,6 +64,71 @@ namespace ME2Randomizer.Classes
             timSKM.WriteBinary(skmH);
             p.Save();
         }
+
+        #region Music
+        private void BuildMusicInfo(object sender, DoWorkEventArgs e)
+        {
+            // SETUP STAGE 1
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, includeAFCs: true).Values
+                .Where(x => Path.GetFileNameWithoutExtension(x).StartsWith("SFXGame") || Path.GetFileNameWithoutExtension(x).StartsWith("BioS") || (x.EndsWith(".afc")/* && x.Contains("wwise", StringComparison.InvariantCultureIgnoreCase)*/))
+                //.Where(x => x.Contains("SFXPower_StasisNew"))
+                .ToList();
+            mainWindow.CurrentOperationText = "Finding music";
+            int numdone = 0;
+            int numtodo = files.Count;
+
+            mainWindow.ProgressBarIndeterminate = false;
+            mainWindow.ProgressBar_Bottom_Max = files.Count(x => x.RepresentsPackageFilePath());
+            mainWindow.ProgressBar_Bottom_Min = 0;
+
+            // PREP WORK
+            //var startupFileCache = GetGlobalCache();
+
+            // Maps instanced full path to list of instances
+            ConcurrentDictionary<string, List<RMusic.MusicStreamInfo>> mapping = new();
+            var syncObj = new object();
+            foreach (var sf in files)
+            {
+                mainWindow.CurrentOperationText = $"Finding music [{numdone}/{numtodo}]";
+                mainWindow.CurrentProgressValue = numdone;
+                Interlocked.Increment(ref numdone);
+                if (!sf.RepresentsPackageFilePath())
+                    continue; // Not a package
+                var package = MEPackageHandler.OpenMEPackage(sf);
+                foreach (var exp in package.Exports.Where(x=>!x.IsDefaultObject && x.ClassName == "WwiseStream"))
+                {
+                    RMusic.MusicStreamInfo musInfo = new RMusic.MusicStreamInfo(exp, files);
+                    if (musInfo.IsUsable)
+                    {
+                        Debug.WriteLine($"Usable music: {musInfo.StreamFullPath}");
+                        lock (syncObj)
+                        {
+                            if (!mapping.TryGetValue(musInfo.StreamFullPath, out var existingList))
+                            {
+                                existingList = new List<RMusic.MusicStreamInfo>();
+                                mapping[musInfo.StreamFullPath] = existingList;
+                            }
+
+                            existingList.Add(musInfo);
+                        }
+                    }
+                }
+            }
+
+            // Perform reduce operation
+            List<RMusic.MusicStreamInfo> reduced = new();
+            foreach (var v in mapping)
+            {
+                // We only care about the count. Not the individual infos.
+                var item = v.Value.First();
+                item.InstanceCount = v.Value.Count;
+                reduced.Add(item);
+            }
+
+            var jsonList = JsonConvert.SerializeObject(reduced, Formatting.Indented);
+            File.WriteAllText(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\musiclistme2.json", jsonList);
+        }
+        #endregion
 
         #region ActorTypes
 
@@ -495,7 +560,7 @@ namespace ME2Randomizer.Classes
             mainWindow.ProgressBar_Bottom_Max = files.Count();
             mainWindow.ProgressBar_Bottom_Min = 0;
 
-            var startupFileCache = GetGlobalCache();
+            var startupFileCache = MERFileSystem.GetGlobalCache();
 
             // Maps instanced full path to list of instances
             ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>> mapping = new ConcurrentDictionary<string, List<EnemyWeaponChanger.GunInfo>>();
@@ -608,7 +673,7 @@ namespace ME2Randomizer.Classes
             mainWindow.ProgressBar_Bottom_Max = files.Count();
             mainWindow.ProgressBar_Bottom_Min = 0;
 
-            var startupFileCache = GetGlobalCache();
+            var startupFileCache = MERFileSystem.GetGlobalCache();
 
             // Maps instanced full path to list of instances
             // Loadout full path -> caller supports visible weapons
@@ -782,7 +847,7 @@ namespace ME2Randomizer.Classes
             mainWindow.ProgressBar_Bottom_Min = 0;
 
             // PREP WORK
-            var startupFileCache = GetGlobalCache();
+            var startupFileCache = MERFileSystem.GetGlobalCache();
 
             // Maps instanced full path to list of instances
             ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping = new ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>>();
@@ -964,20 +1029,6 @@ namespace ME2Randomizer.Classes
         #endregion
 
         #region Utilities
-        private static MERPackageCache GetGlobalCache()
-        {
-            var cache = new MERPackageCache();
-            cache.GetCachedPackage("Core.pcc");
-            cache.GetCachedPackage("SFXGame.pcc");
-            cache.GetCachedPackage("Startup_INT.pcc");
-            cache.GetCachedPackage("Engine.pcc");
-            cache.GetCachedPackage("WwiseAudio.pcc");
-            cache.GetCachedPackage("SFXOnlineFoundation.pcc");
-            cache.GetCachedPackage("PlotManagerMap.pcc");
-            cache.GetCachedPackage("GFxUI.pcc");
-            return cache;
-        }
-
         /// <summary>
         /// Checks to see if the listed imports can be reliably resolved as being in memory via their parents and localizations.
         /// </summary>

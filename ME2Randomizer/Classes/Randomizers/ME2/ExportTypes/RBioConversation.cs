@@ -66,13 +66,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             return false;
         }
 
-        public static bool RandomizeExportActorsInPackage(IMEPackage package, RandomizationOption option)
+        public static bool RandomizePackageActorsInConversation(IMEPackage package, RandomizationOption option)
         {
             var conversationStartExports = package.Exports.Where(CanRandomizeSeqActStartConvo).ToList();
             if (!conversationStartExports.Any())
                 return false;
 
-            MERPackageCache cache = new MERPackageCache();
+            MERPackageCache localCache = new MERPackageCache();
 
             foreach (var convStart in conversationStartExports)
             {
@@ -182,7 +182,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     varilink.LinkedNodes[0] = package.GetUExport(repointedItem);
                 }
 
-                SeqTools.PrintVarLinkInfo(seqLinks);
+                //SeqTools.PrintVarLinkInfo(seqLinks);
 
                 // Write the updated links out.
                 SeqTools.WriteVariableLinksToNode(convStart, seqLinks);
@@ -192,18 +192,57 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 // Update the localizations
                 foreach (var loc in Localizations)
                 {
-                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, cache, loc);
+                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERFileSystem.GetGlobalCache(),localCache, loc);
                     var conv = new ConversationExtended(bioConversation);
                     conv.LoadConversation(null, true);
 
-                    // Step 1. Catalog all actor tags that can be searched for in this conversation.
-                    var entries = conv.ReplyList.ToList();
-                    entries.AddRange(conv.EntryList);
-                    foreach (var v in entries)
+                    // Step 1. Update tags via map
+                    var allConvEntries = conv.ReplyList.ToList();
+                    allConvEntries.AddRange(conv.EntryList);
+                    foreach (var convNode in allConvEntries)
                     {
-                        if (v.Interpdata == null)
+                        // Update speaker
+                        if (convNode.IsReply)
+                        {
+                            // Player. We can't do anything (or can we?)
+                        }
+                        else
+                        {
+                            // Non-player node. We can change the tag
+                            var speakerTag = convNode.SpeakerTag;
+
+                            // Even though it is dictionary, since it is NameRef, it is considered case sensitive. We have to use case insensitive check
+                            var newName = findActorMap.FirstOrDefault(x => x.Key.Instanced.Equals(speakerTag.SpeakerName, StringComparison.InvariantCultureIgnoreCase)).Value;
+                            if (newName != null && newName.FindActor.Name != null)
+                            {
+                                var newTagIdx = conv.Speakers.FirstOrDefault(x => x.SpeakerName.Equals(newName.FindActor.Instanced, StringComparison.InvariantCultureIgnoreCase));
+                                if (newTagIdx != null)
+                                {
+                                    convNode.SpeakerIndex = newTagIdx.SpeakerID;
+                                }
+                                else
+                                {
+                                    var newSpeaker = new SpeakerExtended(conv.Speakers.Count - 3, new NameReference(newName.FindActor.Name.ToLower(), newName.FindActor.Number));
+                                    newSpeaker.FaceFX_Male = speakerTag.FaceFX_Male;
+                                    newSpeaker.FaceFX_Female = speakerTag.FaceFX_Male;
+
+                                    conv.Speakers.Add(newSpeaker);
+                                    convNode.SpeakerIndex = newSpeaker.SpeakerID;
+                                    //Debugger.Break();
+                                }
+                            }
+                            else
+                            {
+                                //Debugger.Break();
+                            }
+                        }
+
+
+
+                        // Update interpolation data
+                        if (convNode.Interpdata == null)
                             continue;
-                        var interpData = v.Interpdata;
+                        var interpData = convNode.Interpdata;
 
                         InterpData id = new InterpData(interpData);
                         var convo = id.InterpGroups.FirstOrDefault(x => x.GroupName == "Conversation");
@@ -216,7 +255,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                                 if (findActor != null && findActor.Value.Name != "Owner" && findActorMap.TryGetValue(findActor.Value, out var newInfo) && newInfo.FindActor.Name != null)
                                 {
 
-                                    Debug.WriteLine($"Updating find actor info: {findActor.Value.Instanced} -> {newInfo.FindActor.Instanced}");
+                                    //Debug.WriteLine($"Updating find actor info: {findActor.Value.Instanced} -> {newInfo.FindActor.Instanced}");
                                     findActor.Value = newInfo.FindActor;
                                     if (newInfo.FindMode != null)
                                     {
@@ -237,7 +276,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                                         if (lookAt.Value.Name != "Owner" && findActorMap.TryGetValue(lookAt.Value, out var newInfoLA) && newInfoLA.FindActor.Name != null)
                                         {
-                                            Debug.WriteLine($"Updating lookat find actor info: {lookAt.Value.Instanced} -> {newInfoLA.FindActor.Instanced}");
+                                            //Debug.WriteLine($"Updating lookat find actor info: {lookAt.Value.Instanced} -> {newInfoLA.FindActor.Instanced}");
                                             if (newInfoLA.FindActor.Name == null)
                                                 Debugger.Break();
                                             lookAt.Value = newInfoLA.FindActor;
@@ -271,6 +310,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                             }
                         }
                     }
+                    conv.SerializeNodes(); // Write the updated info back
                     MERFileSystem.SavePackage(bioConversation.FileRef);
                 }
             }

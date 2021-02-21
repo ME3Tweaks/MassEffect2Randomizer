@@ -217,7 +217,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         vpv.ParameterValue = color;
                     }
                 }
-                Debug.WriteLine(childMat.InstancedFullPath);
+                //Debug.WriteLine(childMat.InstancedFullPath);
                 VectorParameter.WriteVectorParameters(childMat, vectorParameterValues);
             }
 
@@ -239,7 +239,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         vpv.ParameterValue = scalarVal;
                     }
                 }
-                Debug.WriteLine(childMat.InstancedFullPath);
+                //Debug.WriteLine(childMat.InstancedFullPath);
                 ScalarParameter.WriteScalarParameters(childMat, scalarParameterValues);
             }
         }

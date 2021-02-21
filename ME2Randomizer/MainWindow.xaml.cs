@@ -89,9 +89,21 @@ namespace ME2Randomizer
             {
                 foreach (var option in group.Options)
                 {
-                    if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Screed) option.OptionIsSelected = true;
-                    if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_SelectAny) option.OptionIsSelected = false;
-                    if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common) option.OptionIsSelected = option.IsRecommended;
+                    SetOptionOnRecommendation(option);
+                }
+            }
+        }
+
+        private void SetOptionOnRecommendation(RandomizationOption option)
+        {
+            if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Screed) option.OptionIsSelected = option.Dangerousness < RandomizationOption.EOptionDangerousness.Danger_RIP;
+            if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_SelectAny) option.OptionIsSelected = false;
+            if (SelectedRandomizeMode == RandomizationMode.ERandomizationMode_Common) option.OptionIsSelected = option.IsRecommended;
+            if (option.SubOptions != null)
+            {
+                foreach (var subOption in option.SubOptions)
+                {
+                    SetOptionOnRecommendation(subOption);
                 }
             }
         }
@@ -108,7 +120,6 @@ namespace ME2Randomizer
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
-            Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
             LoadCommands();
             InitializeComponent();
 
@@ -143,7 +154,10 @@ namespace ME2Randomizer
         {
             var contributors = new List<string>();
             contributors.Add("Mellin - 3D modeling");
+            contributors.Add("Jenya - 3D modeling");
             contributors.Add("Audemus - Textures");
+            contributors.Add("JadeBarker - Technical assistance");
+
             return contributors;
         }
 
@@ -435,6 +449,7 @@ namespace ME2Randomizer
             // Load ME3ExplorerCore
             ME3ExplorerCoreLib.InitLib(TaskScheduler.FromCurrentSynchronizationContext());
             MEPackageHandler.GlobalSharedCacheEnabled = false;
+            Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
             ShowProgressPanel = false;
         }
 

@@ -407,17 +407,6 @@
     "iscorrectedpackage": true
   },
   {
-    "packagename": "SFXGameContentDLC_PRE_Gamestop",
-    "packagefilename": "SFXHeavyWeapon_Blackstorm.pcc",
-    "sourceuindex": 76,
-    "weaponclassification": 5,
-    "hasgunmesh": true,
-    "gunname": "SFXHeavyWeapon_Blackstorm",
-    "importonly": true,
-    "requiresstartuppackage": true,
-    "iscorrectedpackage": false
-  },
-  {
     "packagename": "SFXGameContent_Inventory",
     "packagefilename": "SFXWeapon_GethMiniGun.pcc",
     "sourceuindex": 4,

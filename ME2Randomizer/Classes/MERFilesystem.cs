@@ -8,6 +8,7 @@ using System.Reflection;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Misc;
@@ -154,6 +155,30 @@ namespace ME2Randomizer.Classes
             Utilities.ExtractInternalFileToMemory($"starterkit.{Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
             using ZipArchive archive = new ZipArchive(zipMemory);
             archive.ExtractToDirectory(dlcpath);
+        }
+
+        private static MERPackageCache GlobalCache;
+
+        /// <summary>
+        /// Gets the global cache of files that can be used for looking up imports
+        /// </summary>
+        /// <returns></returns>
+        public static MERPackageCache GetGlobalCache()
+        {
+            if (GlobalCache == null)
+            {
+                GlobalCache = new MERPackageCache();
+                GlobalCache.GetCachedPackage("Core.pcc");
+                GlobalCache.GetCachedPackage("SFXGame.pcc");
+                GlobalCache.GetCachedPackage("Startup_INT.pcc");
+                GlobalCache.GetCachedPackage("Engine.pcc");
+                GlobalCache.GetCachedPackage("WwiseAudio.pcc");
+                GlobalCache.GetCachedPackage("SFXOnlineFoundation.pcc");
+                GlobalCache.GetCachedPackage("PlotManagerMap.pcc");
+                GlobalCache.GetCachedPackage("GFxUI.pcc");
+            }
+
+            return GlobalCache;
         }
 
         /// <summary>

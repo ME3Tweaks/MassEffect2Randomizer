@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
+using ME3ExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
@@ -110,7 +111,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             else
             {
                 // Memory safe, fixes upstream
-                var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
+                var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, MERFileSystem.GetGlobalCache(), cache);
                 if (relinkedResults.Any())
                 {
                     Debugger.Break();
@@ -154,6 +155,16 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             };
             targetPackage.AddImport(imp);
             return imp;
+        }
+
+        public static void AddReferencesToWorld(IMEPackage package, IEnumerable<ExportEntry> newRefs)
+        {
+            var theWorld = package.FindExport("TheWorld");
+            var world = ObjectBinary.From<World>(theWorld);
+            var extarRefs = world.ExtraReferencedObjects.ToList();
+            extarRefs.AddRange(newRefs.Select(x => new UIndex(x.UIndex)));
+            world.ExtraReferencedObjects = extarRefs.Distinct().ToArray();
+            theWorld.WriteBinary(world);
         }
     }
 }

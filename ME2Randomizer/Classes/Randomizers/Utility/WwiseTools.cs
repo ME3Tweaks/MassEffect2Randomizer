@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
@@ -24,6 +25,28 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             var targetId = targetAudioStream.GetProperty<IntProperty>("Id");
             props.AddOrReplaceProp(targetId);
             targetAudioStream.WritePropertiesAndBinary(props, bin);
+        }
+
+        /// <summary>
+        /// ME2 SPECIFIC<para/>
+        /// Repoint a WwiseStream to play the data from another precomputed stream.
+        /// </summary>
+        /// <param name="originalExport">The audio you want to play (e.g. this is the audio that will be 'installed')</param>
+        /// <param name="targetAudioStream">The audio stream that you want to replace.</param>
+        public static void RepointWwiseStreamToInfo(RMusic.MusicStreamInfo streamInfo, ExportEntry targetAudioStream)
+        {
+            WwiseStream stream = new WwiseStream();
+            stream.Filename = ""; // Just make sure it's not set to null so internal code thinks this is not Pcc stored.
+            stream.DataSize = streamInfo.DataSize;
+            stream.Unk1 = stream.Unk2 = stream.Unk3 = stream.Unk4 = stream.Unk5 = 1;
+            stream.UnkGuid = streamInfo.UnkGuid;
+            stream.DataOffset = streamInfo.DataOffset;
+
+            PropertyCollection props = new PropertyCollection();
+            props.Add(targetAudioStream.GetProperty<IntProperty>("Id")); // Use the existing Id
+            props.Add(new NameProperty(streamInfo.Filename, "Filename")); // AFC file
+            props.Add(new NameProperty(streamInfo.BankName, "BankName")); // ?
+            targetAudioStream.WritePropertiesAndBinary(props, stream);
         }
 
         /// <summary>

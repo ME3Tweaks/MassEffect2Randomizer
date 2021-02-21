@@ -4,9 +4,11 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
 using ME3ExplorerCore.Packages;
+using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
@@ -34,7 +36,25 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 var file = MERFileSystem.GetPackageFile(packageName);
                 if (file != null && File.Exists(file))
                 {
-                    package = MEPackageHandler.OpenMEPackage(file);
+                    int i = 3;
+                    while (i > 0)
+                    {
+                        try
+                        {
+                            i--;
+                            package = MEPackageHandler.OpenMEPackage(file);
+                        }
+                        catch (IOException e)
+                        {
+                            // This is a cheap hack around potential multithreading issues
+                            Log.Warning($@"I/O Exception opening {file}: {e.Message}. We have {i} attempts remaining to open this package");
+                            Thread.Sleep(1000);
+                        }
+                    }
+
+                    if (package == null)
+                        return null;
+
                     Cache[packageName] = package;
                     return package;
                 }

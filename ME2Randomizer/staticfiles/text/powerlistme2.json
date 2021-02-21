@@ -144,30 +144,6 @@
     "additionalrequiredpowers": []
   },
   {
-    "powername": "SFXPower_LightMechShock",
-    "packagename": "SFXGameContent_Powers",
-    "packagefilename": "BioD_ProFre_200Vorcha.pcc",
-    "sourceuindex": 453,
-    "type": 2,
-    "filedependency": null,
-    "iscorrectedpackage": false,
-    "importonly": false,
-    "requiresstartuppackage": false,
-    "additionalrequiredpowers": []
-  },
-  {
-    "powername": "SFXPower_RobotDeathExplosion",
-    "packagename": "SFXGameContent_Powers",
-    "packagefilename": "BioD_ProFre_200Vorcha.pcc",
-    "sourceuindex": 458,
-    "type": 7,
-    "filedependency": null,
-    "iscorrectedpackage": false,
-    "importonly": false,
-    "requiresstartuppackage": false,
-    "additionalrequiredpowers": []
-  },
-  {
     "powername": "SFXPower_CollectorPulse",
     "packagename": "SFXGameContent_Powers",
     "packagefilename": "BioD_EndGm2_120TheHives.pcc",
@@ -269,18 +245,6 @@
     "packagefilename": "BioD_BchLmL_302MechFight.pcc",
     "sourceuindex": 519,
     "type": 0,
-    "filedependency": null,
-    "iscorrectedpackage": false,
-    "importonly": false,
-    "requiresstartuppackage": false,
-    "additionalrequiredpowers": []
-  },
-  {
-    "powername": "SFXPower_HeavyMechExplosion",
-    "packagename": "SFXGameContent_Powers",
-    "packagefilename": "BioD_BchLmL_302MechFight.pcc",
-    "sourceuindex": 513,
-    "type": 7,
     "filedependency": null,
     "iscorrectedpackage": false,
     "importonly": false,
