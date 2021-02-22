@@ -101,7 +101,7 @@ namespace ME2Randomizer.Classes
         {
             if (LoadedFiles == null)
             {
-                Debug.WriteLine("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
+                Log.Warning("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
                 ReloadLoadedFiles();
             }
             bool packageFile = packagename.RepresentsPackageFilePath();
@@ -117,6 +117,10 @@ namespace ME2Randomizer.Classes
             }
 
             var retFile = LoadedFiles.TryGetValue(packagename, out var result);
+            if (!retFile)
+            {
+                Log.Warning($"Could not find package file: {packagename}! Loaded files count: {LoadedFiles.Count}");
+            }
             return result; // can return null
         }
 
@@ -128,15 +132,16 @@ namespace ME2Randomizer.Classes
         {
             if (package.IsModified)
             {
-                Log.Information($"Saving package {Path.GetFileName(package.FilePath)}");
                 if (!alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
                 {
                     var fname = Path.GetFileName(package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
+                    Log.Information($"Saving package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
                     package.Save(packageNewPath, true);
                 }
                 else
                 {
+                    Log.Information($"Saving package {Path.GetFileName(package.FilePath)} => {package.FilePath}");
                     package.Save(compress: true);
                 }
             }

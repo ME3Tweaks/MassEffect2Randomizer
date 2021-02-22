@@ -13,7 +13,7 @@
                       Loaded="MainWindow_Loaded" 
                       Title="Mass Effect 2 Randomizer" 
                       MinWidth="1280"
-                      Height="900"
+                      Height="700"
                       Icon="masseffectrandomizer.ico"
                       MinHeight="900"
                       DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -205,6 +205,9 @@
                         </Button>
                         <Button DockPanel.Dock="Right" Click="DataFinder_Click" Padding="20,0,20,0" Visibility="Visible">
                             <fonts:OutlinedTextBlock Text="Run Data Finder" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
+                        </Button>
+                        <Button DockPanel.Dock="Right" Click="MemAnalyzer_Click" Padding="20,0,20,0" Visibility="Visible">
+                            <fonts:OutlinedTextBlock Text="Memory Analyzer" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
                     </DockPanel>
                 </StackPanel>

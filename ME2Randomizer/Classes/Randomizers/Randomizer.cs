@@ -21,6 +21,7 @@ using ME3ExplorerCore.Misc;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
 using ME2Randomizer.Classes.Randomizers.Utility;
+using ME3ExplorerCore.Memory;
 using ME3ExplorerCore.SharpDX;
 
 namespace ME2Randomizer.Classes
@@ -60,8 +61,6 @@ namespace ME2Randomizer.Classes
 
         public void Randomize(OptionsPackage op)
         {
-            //PawnPorting.PortHelper(); // debug only
-
             SelectedOptions = op;
             ThreadSafeRandom.Reset();
             if (!SelectedOptions.UseMultiThread)
@@ -80,7 +79,14 @@ namespace ME2Randomizer.Classes
                 mainWindow.SeedTextBox.Text = seed.ToString();
             }
 
-            Log.Information("-------------------------STARTING RANDOMIZER WITH SEED " + seed + "--------------------------");
+            if (SelectedOptions.UseMultiThread)
+            {
+                Log.Information("-------------------------STARTING RANDOMIZER (MULTI THREAD)--------------------------");
+            }
+            else
+            {
+                Log.Information("-------------------------STARTING RANDOMIZER WITH SEED " + seed + "--------------------------");
+            }
             randomizationWorker.RunWorkerAsync();
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Indeterminate, mainWindow);
         }
@@ -97,7 +103,7 @@ namespace ME2Randomizer.Classes
 
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
-
+            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 256, 128, 2048, false);
             ResetClasses();
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
@@ -105,6 +111,8 @@ namespace ME2Randomizer.Classes
             var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
 
             MERFileSystem.InitMERFS(SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
 
             // Prepare the TLK
 #if __ME2__
@@ -114,6 +122,8 @@ namespace ME2Randomizer.Classes
 #endif
 
             // Pass 1: All randomizers that are file specific
+            
+            Log.Information(@"");
             foreach (var sr in specificRandomizers)
             {
                 Log.Information($"Running specific randomizer {sr.HumanName}");
@@ -135,12 +145,14 @@ namespace ME2Randomizer.Classes
                 mainWindow.ProgressBar_Bottom_Max = files.Count();
                 mainWindow.ProgressBar_Bottom_Min = 0;
                 int currentFileNumber = 0;
+
 #if DEBUG
                 Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 3 : 1 }, (file) =>
 #else
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
 #endif
                 {
+
                     var name = Path.GetFileNameWithoutExtension(file);
                     if (SpecializedFiles.Contains(name)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
                     // Todo: Filter out BioD_Nor_103aGalaxyMap.pcc so we don't randomize galaxy map by accident
@@ -149,15 +161,16 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    if (true
+                    //if (true
                     //&& !file.Contains("CitHub_100Dock", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("Bio", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                        return;
+                    //)
+                    //    return;
                     try
                     {
+                        Log.Information($@"Opening package {file}");
                         var package = MEPackageHandler.OpenMEPackage(file);
                         //Debug.WriteLine(file);
                         foreach (var rp in perFileRandomizers)
@@ -183,9 +196,13 @@ namespace ME2Randomizer.Classes
                     }
                     catch (Exception e)
                     {
+                        Log.Error($@"Exception randomizing: {e.Message}");
                         Debugger.Break();
                     }
                 });
+
+                sw.Stop();
+                Log.Information($"Randomization time: {sw.Elapsed.ToString()}");
             }
 
             mainWindow.ProgressBarIndeterminate = true;
@@ -196,8 +213,11 @@ namespace ME2Randomizer.Classes
             CoalescedHandler.EndHandler();
             TLKHandler.EndHandler();
             MERFileSystem.Finalize(SelectedOptions);
-            NonSharedPackageCache.Cache.ReleasePackages();
             ResetClasses();
+            MemoryManager.SetUsePooledMemory(false);
+            MemoryManager.ResetMemoryManager();
+            NonSharedPackageCache.Cache.ReleasePackages();
+
         }
 
         /// <summary>
@@ -219,7 +239,10 @@ namespace ME2Randomizer.Classes
         internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
         {
 #if __ME2__
-            EnemyPowerChanger.Init(null); // Load the initial list
+
+#if DEBUG
+            //EnemyPowerChanger.Init(null); // Load the initial list
+#endif
             RandomizationGroups.Add(new RandomizationGroup()
             {
                 GroupName = "Faces",
@@ -440,7 +463,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by basic non-interactable NPCs. Some may T-pose due to the sheer complexity of this randomizer",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActorMAT.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
                     new RandomizationOption()
                     {
-                        HumanName = "Pawn sizes", Description = "Changes the size of characters. Will break a lot of things", PerformRandomizationOnExportDelegate = RBioPawn.RandomizePawnSize, 
+                        HumanName = "Pawn sizes", Description = "Changes the size of characters. Will break a lot of things", PerformRandomizationOnExportDelegate = RBioPawn.RandomizePawnSize,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
                         Ticks = "0.1,0.2,0.3,0.4,0.5,0.75",
                         HasSliderOption = true,
@@ -462,19 +485,19 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true,
-                      // Debug stuff.
-                        HasSliderOption = true,
-                        Ticks = string.Join(",",Enumerable.Range(-1,EnemyPowerChanger.Powers.Count + 1)),
-                        SliderToTextConverter = x =>
-                        {
-                            if (x < 0)
-                                return "All powers";
-                            var idx = (int) x;
-                            return EnemyPowerChanger.Powers[idx].PowerName;
-                        },
-                        SliderValue = -1,
-                        // End debug stuff
-
+                        // Debug stuff.
+#if DEBUG
+                        //HasSliderOption = true,
+                        //Ticks = string.Join(",",Enumerable.Range(-1,EnemyPowerChanger.Powers.Count + 1)),
+                        //SliderToTextConverter = x =>
+                        //{
+                        //    if (x < 0)
+                        //        return "All powers";
+                        //    var idx = (int) x;
+                        //    return EnemyPowerChanger.Powers[idx].PowerName;
+                        //},
+                        //SliderValue = -1, // End debug stuff
+#endif
                     },
                 }
             });

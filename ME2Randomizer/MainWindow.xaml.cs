@@ -20,6 +20,7 @@ using MassEffectRandomizer.Classes.Updater;
 using ME2Randomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
+using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
 using ME3ExplorerCore;
 using ME3ExplorerCore.Helpers;
@@ -139,7 +140,7 @@ namespace ME2Randomizer
         {
             if (obj.MutualExclusiveSet != null && obj.OptionIsSelected)
             {
-                var allOptions = RandomizationGroups.SelectMany(x => x.Options).Where(x=>x.MutualExclusiveSet == obj.MutualExclusiveSet);
+                var allOptions = RandomizationGroups.SelectMany(x => x.Options).Where(x => x.MutualExclusiveSet == obj.MutualExclusiveSet);
                 foreach (var option in allOptions)
                 {
                     if (option != obj)
@@ -469,6 +470,7 @@ namespace ME2Randomizer
             string temppath = Path.GetTempPath();
             string exe = Path.Combine(temppath, "MassEffectRandomizer-Update.exe");
 
+            // FIX FOR .NET CORE SINGLE FILE
             Assembly assembly = Assembly.GetExecutingAssembly();
             string exePath = assembly.Location;
 
@@ -581,5 +583,10 @@ namespace ME2Randomizer
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private void MemAnalyzer_Click(object sender, RoutedEventArgs e)
+        {
+            new MemoryAnalyzerUI().Show();
+        }
     }
 }

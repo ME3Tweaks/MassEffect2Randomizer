@@ -90,7 +90,7 @@ namespace ME2Randomizer
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File(Path.Combine(LogDir, $"me2rlog.txt"), rollingInterval: RollingInterval.Day, flushToDiskInterval: new TimeSpan(0, 0, 15))
 #if DEBUG
-      //.WriteTo.Debug()
+      .WriteTo.Debug()
 #endif
       .CreateLogger();
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;

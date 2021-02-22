@@ -61,25 +61,29 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool InstallOHKO(RandomizationOption arg)
         {
             Log.Information("Installing One-Hit KO");
+
+            var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
+            if (sfxgame != null && File.Exists(sfxgame))
             {
-                var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
-                if (sfxgame != null && File.Exists(sfxgame))
-                {
-                    var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
+                var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
 
-                    // Blood on screen VFX
-                    sfxgameP.GetUExport(29336).RemoveProperty("BleedOutEventPair");
-                    sfxgameP.GetUExport(29336).RemoveProperty("BleedOutVFXTemplate");
+                // Blood on screen VFX
+                sfxgameP.GetUExport(29336).RemoveProperty("BleedOutEventPair");
+                sfxgameP.GetUExport(29336).RemoveProperty("BleedOutVFXTemplate");
 
-                    // Prevent weird landing glitch
-                    var fallingStateLanded = sfxgameP.GetUExport(11293);
-                    var landedData = fallingStateLanded.Data;
-                    NopRange(landedData, 0x2C, 0x14);
-                    fallingStateLanded.Data = landedData;
+                // Prevent weird landing glitch
+                var fallingStateLanded = sfxgameP.GetUExport(11293);
+                var landedData = fallingStateLanded.Data;
+                NopRange(landedData, 0x2C, 0x14);
+                fallingStateLanded.Data = landedData;
 
-                    MERFileSystem.SavePackage(sfxgameP);
-                }
+                MERFileSystem.SavePackage(sfxgameP);
             }
+            else
+            {
+
+            }
+
 
             // ProCer tutorials setting min1Health
             SetupProCer();
