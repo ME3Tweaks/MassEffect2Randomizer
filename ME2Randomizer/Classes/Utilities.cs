@@ -67,7 +67,7 @@ namespace MassEffectRandomizer.Classes
 
         internal static string GetAppDataFolder()
         {
-            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MassEffectRandomizer");
+            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MassEffect2Randomizer");
             Directory.CreateDirectory(folder);
             return folder;
         }

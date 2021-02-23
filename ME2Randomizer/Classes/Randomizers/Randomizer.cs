@@ -161,16 +161,16 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    //if (true
-                    //&& !file.Contains("CitHub_100Dock", StringComparison.InvariantCultureIgnoreCase)
+                    if (true
+                    && !file.Contains("BioD_OmgPrA_202Warzone", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
-                    //)
-                    //    return;
+                    )
+                        return;
                     try
                     {
-                        Log.Information($@"Opening package {file}");
+                        //Log.Information($@"Opening package {file}");
                         var package = MEPackageHandler.OpenMEPackage(file);
                         //Debug.WriteLine(file);
                         foreach (var rp in perFileRandomizers)
@@ -214,8 +214,8 @@ namespace ME2Randomizer.Classes
             TLKHandler.EndHandler();
             MERFileSystem.Finalize(SelectedOptions);
             ResetClasses();
-            MemoryManager.SetUsePooledMemory(false);
             MemoryManager.ResetMemoryManager();
+            MemoryManager.SetUsePooledMemory(false);
             NonSharedPackageCache.Cache.ReleasePackages();
 
         }
@@ -248,6 +248,15 @@ namespace ME2Randomizer.Classes
                 GroupName = "Faces",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
+#if DEBUG
+                    new RandomizationOption()
+                    {
+                        Description="Runs debug code randomization",
+                        HumanName = "Debug randomizer", 
+                        PerformRandomizationOnExportDelegate = DebugTools.DebugRandomizer.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },
+#endif
                     new RandomizationOption()
                     {
                         Description="Changes facial animation. The best feature of MER",

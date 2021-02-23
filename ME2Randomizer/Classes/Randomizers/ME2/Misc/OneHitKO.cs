@@ -36,6 +36,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             // Reave
             new OHKOAsset(){ PackageFile = "SFXPower_Reave_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Reave_Player", PropertiesToZeroOut = new [] {"HealthRegenMult", "HealthBonusDuration"}},
+            
+            // Player Reave evolutions don't inherit from reave_player for some reason. So we must also change them too
+            new OHKOAsset(){ PackageFile = "SFXPower_Reave_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Reave_Evolved1_Player", PropertiesToZeroOut = new [] {"HealthRegenMult", "HealthBonusDuration"}},
+            new OHKOAsset(){ PackageFile = "SFXPower_Reave_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Reave_Evolved2_Player", PropertiesToZeroOut = new [] {"HealthRegenMult", "HealthBonusDuration"}},
 
             // Dominate
             new OHKOAsset(){ PackageFile = "SFXPower_Dominate_Player.pcc" , AssetPath = "SFXGameContent_Powers.SFXPower_Dominate_Player", PropertiesToZeroOut = new [] {"ShieldStrength"}},

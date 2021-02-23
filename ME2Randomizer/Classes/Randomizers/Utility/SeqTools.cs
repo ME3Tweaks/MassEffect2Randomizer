@@ -75,31 +75,30 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <summary>
         /// Removes a sequence element from the graph, by repointing incoming references to the ones referenced by outgoing items on this export. This is a very basic utility, only use it for items with one input and potentially multiple outputs.
         /// </summary>
-        /// <param name="seqElement">Th sequence object to skip</param>
+        /// <param name="skillGameSeqRef">Th sequence object to skip</param>
         /// <param name="outboundLinkIdx">The 0-indexed outbound link that should be attached the preceding entry element, as if this one had fired that link.</param>
-        public static void SkipSequenceElement(ExportEntry seqElement, int outboundLinkIdx)
+        public static void SkipSequenceElement(ExportEntry skillGameSeqRef, int outboundLinkIdx)
         {
             // List of outbound link elements on the specified item we want to skip. These will be placed into the inbound item
-            Debug.WriteLine($@"Attempting to skip {seqElement.UIndex} in {seqElement.FileRef.FilePath}");
-            var outboundList = seqElement.GetProperty<ArrayProperty<StructProperty>>("OutputLinks")[outboundLinkIdx].GetProp<ArrayProperty<StructProperty>>("Links");
-            var replacementItems = outboundList.Select(x => OutboundLink.FromStruct(x, seqElement.FileRef)).ToList(); // List of items we should replace them with.
+            Debug.WriteLine($@"Attempting to skip {skillGameSeqRef.UIndex} in {skillGameSeqRef.FileRef.FilePath}");
+            var outboundListOnSkillGame = SeqTools.GetOutboundLinksOfNode(skillGameSeqRef);
+            var inboundListToSkillgame = SeqTools.FindOutboundConnectionsToNode(skillGameSeqRef, SeqTools.GetAllSequenceElements(skillGameSeqRef).OfType<ExportEntry>());
 
+            var newTargetNodes = outboundListOnSkillGame[0];
 
-            var inboundNodes = FindOutboundConnectionsToNode(seqElement, GetAllSequenceElements(seqElement).OfType<ExportEntry>().ToList());
-
-            foreach (var preNode in inboundNodes)
+            foreach (var preNode in inboundListToSkillgame)
             {
                 // For every node that links to the one we want to skip...
                 var preNodeLinks = GetOutboundLinksOfNode(preNode);
 
                 foreach (var ol in preNodeLinks)
                 {
-                    var numRemoved = ol.RemoveAll(x => x.LinkedOp == seqElement);
+                    var numRemoved = ol.RemoveAll(x => x.LinkedOp == skillGameSeqRef);
 
                     if (numRemoved > 0)
                     {
                         // At least one was removed. Repoint it
-                        ol.AddRange(replacementItems);
+                        ol.AddRange(newTargetNodes);
                     }
                 }
 
@@ -186,6 +185,15 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                     new IntProperty(InputLinkIdx, "InputLInkIdx"),
                     new NoneProperty());
             }
+
+            public static OutboundLink FromTargetExport(ExportEntry exportEntry, int inputLinkIdx)
+            {
+                return new OutboundLink()
+                {
+                    LinkedOp = exportEntry,
+                    InputLinkIdx = inputLinkIdx
+                };
+            }
         }
 
         /// <summary>
@@ -194,7 +202,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <param name="node"></param>
         /// <param name="sequenceElements"></param>
         /// <returns></returns>
-        public static List<ExportEntry> FindOutboundConnectionsToNode(ExportEntry node, List<ExportEntry> sequenceElements)
+        public static List<ExportEntry> FindOutboundConnectionsToNode(ExportEntry node, IEnumerable<ExportEntry> sequenceElements)
         {
             List<ExportEntry> referencingNodes = new List<ExportEntry>();
 

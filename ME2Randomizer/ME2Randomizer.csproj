@@ -39,7 +39,7 @@
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\longfaceudina.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\monkaanderson.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\scarymiranda.bin" />
-    <None Remove="Debug\MemoryAnalyzerUI.xaml" />
+    <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
     <None Remove="staticfiles\binary\correctedloadouts\powers\SFXHeavyWeapon_ReaperMIRV.pcc" />
     <None Remove="staticfiles\binary\correctedpawns\SFXPawn_Garm.pcc" />
     <None Remove="staticfiles\binary\correctedpawns\SFXPawn_GethColossus.pcc" />
