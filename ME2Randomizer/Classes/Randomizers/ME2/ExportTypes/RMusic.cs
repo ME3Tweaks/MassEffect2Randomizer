@@ -111,7 +111,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     AudioInfo ai = new AudioInfo();
                     var dataStream = ExternalFileHelper.ReadExternalData(afc, DataOffset, DataSize);
 
-                    EndianReader er = new EndianReader(dataStream);
+                    using EndianReader er = new EndianReader(dataStream);
                     var header = er.ReadStringASCII(4);
                     if (header == "RIFX") er.Endian = Endian.Big;
                     if (header == "RIFF") er.Endian = Endian.Little;

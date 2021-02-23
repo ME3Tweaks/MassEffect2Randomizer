@@ -35,6 +35,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool DetectAndSkipMiniGameSeqRefs(ExportEntry exp, RandomizationOption option)
         {
             if (!CanApplySkip(exp)) return false;
+
+            // Update the credits
+            var minigameVarLinks = SeqTools.GetVariableLinksOfNode(exp);
+            // Update the Out: Value Remaining to something random.
+            var ovrNode = minigameVarLinks.FirstOrDefault(x => x.LinkDesc == "OUT: Value Remaining")?.LinkedNodes.FirstOrDefault();
+            if (ovrNode is ExportEntry ovr)
+            {
+                ovr.WriteProperty(new IntProperty(ThreadSafeRandom.Next(1, 2400), "IntValue"));
+            }
+
+
             SeqTools.SkipSequenceElement(exp, 0); //Success is link 0
             return true;
         }
