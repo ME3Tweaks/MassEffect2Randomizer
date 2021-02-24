@@ -39,6 +39,7 @@
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\longfaceudina.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\monkaanderson.bin" />
     <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\scarymiranda.bin" />
+    <None Remove="DebugTools\DebugWindow.xaml" />
     <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
     <None Remove="staticfiles\binary\correctedloadouts\powers\SFXHeavyWeapon_ReaperMIRV.pcc" />
     <None Remove="staticfiles\binary\correctedpawns\SFXPawn_Garm.pcc" />
@@ -86,6 +87,13 @@
     <EmbeddedResource Include="Classes\Randomizers\ME2\TextureMovieAssets\**\*.bik" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="MainWindowUIComponents\**" />
+    <EmbeddedResource Remove="MainWindowUIComponents\**" />
+    <None Remove="MainWindowUIComponents\**" />
+    <Page Remove="MainWindowUIComponents\**" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
@@ -112,7 +120,6 @@
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\DatapadScreens\Datapad01_Screen\" />
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs\" />
     <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts\" />
-    <Folder Include="MainWindowUIComponents\" />
     <Folder Include="staticfiles\binary\correctedloadouts\powers\" />
     <Folder Include="staticfiles\binary\squadmatefaces\" />
   </ItemGroup>
