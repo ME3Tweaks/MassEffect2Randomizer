@@ -103,7 +103,7 @@ namespace ME2Randomizer.Classes
 
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
-            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 256, 128, 2048, false);
+            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.MebiByte * 2, 128, 2048, false);
             ResetClasses();
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
@@ -155,19 +155,17 @@ namespace ME2Randomizer.Classes
 
                     var name = Path.GetFileNameWithoutExtension(file);
                     if (SpecializedFiles.Contains(name)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
-                    // Todo: Filter out BioD_Nor_103aGalaxyMap.pcc so we don't randomize galaxy map by accident
-                    // Todo: Filter out BioP_Char so we don't randomize it by accident
 
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    //if (true
-                    //&& !file.Contains("BioD_OmgPrA_202Warzone", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
-                    //)
-                    //    return;
+                    if (true
+                    && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
+                    )
+                        return;
                     try
                     {
                         //Log.Information($@"Opening package {file}");
@@ -295,7 +293,7 @@ namespace ME2Randomizer.Classes
                         IsRecommended = true,
                         SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
-                        PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExportNonHench,
                         Description="Changes the BioFaceMorph used by some pawns",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                     },

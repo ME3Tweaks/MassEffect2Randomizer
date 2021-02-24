@@ -11,28 +11,54 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
     class RBioMorphFace
     {
         private static RandomizationOption henchFaceOption = new RandomizationOption() { SliderValue = .3f };
+
+        private static string[] SquadmateMorphHeadPaths =
+        {
+            "BIOG_Hench_FAC.HMM.hench_wilson",
+            "BIOG_Hench_FAC.HMM.hench_leadingman"
+        };
+
         public static bool RandomizeSquadmateFaces(RandomizationOption option)
         {
-            var henchFiles = MERFileSystem.LoadedFiles.Where(x => x.Key.StartsWith("BioH_"));
+            var henchFiles = MERFileSystem.LoadedFiles.Where(x => x.Key.StartsWith("BioH_")
+                                                                  || x.Key.StartsWith("BioP_ProCer")
+                                                                  || x.Key.StartsWith("BioD_ProCer")
+                                                                  || x.Key == "BioD_EndGm1_110ROMJacob.pcc");
             foreach (var h in henchFiles)
             {
                 var hPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(h.Key));
-
-                var morphFaces = hPackage.Exports.Where(x => x.ClassName == "BioMorphFace");
-                foreach (var mf in morphFaces)
+                foreach (var smhp in SquadmateMorphHeadPaths)
                 {
-                    RandomizeExport(mf, henchFaceOption);
-                }
+                    var mf = hPackage.FindExport(smhp);
+                    if (mf != null)
+                    {
+                        RandomizeInternal(mf, henchFaceOption);
 
+                    }
+                }
                 MERFileSystem.SavePackage(hPackage);
             }
             return true;
         }
 
-        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioMorphFace" && !export.FileRef.FilePath.Contains("BioH_");
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        private static bool CanRandomizeNonHench(ExportEntry export) => !export.IsDefaultObject 
+                                                                && export.ClassName == @"BioMorphFace" 
+                                                                && !export.ObjectName.Name.Contains("hench_leadingman") 
+                                                                && !export.ObjectName.Name.Contains("hench_wilson");
+        public static bool RandomizeExportNonHench(ExportEntry export, RandomizationOption option)
         {
-            if (!CanRandomize(export)) return false;
+            if (!CanRandomizeNonHench(export)) return false;
+            RandomizeInternal(export, option);
+            return true;
+        }
+
+        /// <summary>
+        /// Randomizes the export. Does not check CanRandomize()
+        /// </summary>
+        /// <param name="export"></param>
+        /// <param name="option"></param>
+        private static void RandomizeInternal(ExportEntry export, RandomizationOption option)
+        {
             var props = export.GetProperties();
             ArrayProperty<StructProperty> m_aMorphFeatures = props.GetProp<ArrayProperty<StructProperty>>("m_aMorphFeatures");
             if (m_aMorphFeatures != null)
@@ -68,7 +94,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             }
 
             export.WriteProperties(props);
-            return true;
         }
     }
 }

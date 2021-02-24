@@ -33,7 +33,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             {
                 var femP = MEPackageHandler.OpenMEPackage(femF);
                 var femMorphFace = femP.GetUExport(682);
-                RBioMorphFace.RandomizeExport(femMorphFace, option);
+                RBioMorphFace.RandomizeExportNonHench(femMorphFace, option);
                 var matSetup = femP.GetUExport(681);
                 RBioMaterialOverride.RandomizeExport(matSetup, option);
 
@@ -136,7 +136,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             {
                 if (export.ClassName == "BioMorphFace" && !export.ObjectName.Name.Contains("Iconic"))
                 {
-                    RBioMorphFace.RandomizeExport(export, SuperRandomOption); //.3 default
+                    RBioMorphFace.RandomizeExportNonHench(export, SuperRandomOption); //.3 default
                 }
                 else if (export.ClassName == "MorphTarget")
                 {

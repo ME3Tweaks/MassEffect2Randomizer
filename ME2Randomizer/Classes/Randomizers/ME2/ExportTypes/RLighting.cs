@@ -24,7 +24,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         public static bool RandomizeExport(ExportEntry export,RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
-            Log.Information($@"Randomizing light {export.UIndex}");
+            //Log.Information($@"Randomizing light {export.UIndex}");
             var lc = export.GetProperty<StructProperty>("LightColor");
             if (lc == null)
             {
