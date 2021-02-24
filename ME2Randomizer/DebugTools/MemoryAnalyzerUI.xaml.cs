@@ -70,21 +70,16 @@ namespace ME2Randomizer.DebugTools
         public ICommand AttemptResetMemoryManagerCommand { get; set; }
         private void LoadCommands()
         {
-            AttemptResetMemoryManagerCommand =
-                new GenericCommand(
-                    () =>
+            AttemptResetMemoryManagerCommand = new GenericCommand(() =>
                     {
                         MemoryManager.ResetMemoryManager();
-
-                    },
-                () => true
-                    );
-
+                        MaxMemoryObserved = 0L;
+                    });
         }
-
 
         public string LastRefreshText { get; set; }
         public string CurrentMemoryUsageText { get; set; }
+        private static long MaxMemoryObserved { get; set; } = 0L;
 
         private void automatedRefresh_Tick(object sender, EventArgs e)
         {
@@ -116,13 +111,17 @@ namespace ME2Randomizer.DebugTools
         public string TotalLargeInUseStr { get; set; }
         public string MemoryBlockSize { get; set; }
         public string MaxBufferSize { get; set; }
+        public string MaxMemoryObservedText { get; set; }
+
         private void Refresh()
         {
             TrackedMemoryObjects.Where(x => !x.IsAlive()).ToList().ForEach(x => x.RemainingLifetimeAfterGC--);
             TrackedMemoryObjects.RemoveAll(x => !x.IsAlive() && x.RemainingLifetimeAfterGC < 0);
             InstancedTrackedMemoryObjects.ReplaceAll(TrackedMemoryObjects);
             LastRefreshText = "Last refreshed: " + DateTime.Now;
-            CurrentMemoryUsageText = "Current process allocation: " + FileSize.FormatSize(System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64);
+
+            var sizeUsed = System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64;
+            CurrentMemoryUsageText = "Current memory usage: " + FileSize.FormatSize(sizeUsed);
 
             TotalLargeInUseStr = FileSize.FormatSize(MemoryManager.LargePoolTotalSize);
             LargeInUseStr = FileSize.FormatSize(MemoryManager.LargePoolInUseSize);
@@ -134,14 +133,14 @@ namespace ME2Randomizer.DebugTools
             MemoryBlockSize = FileSize.FormatSize(MemoryManager.BlockSize);
             SmallBlocksAvailable = MemoryManager.SmallBlocksAvailable;
             LargeBlocksAvailable = MemoryManager.LargeBlocksAvailable;
+
+            MaxMemoryObserved = Math.Max(MaxMemoryObserved, sizeUsed);
+            MaxMemoryObservedText = $"Max memory used: {FileSize.FormatSize(MaxMemoryObserved)}";
             //foreach (var item in InstancedTrackedMemoryObjects)
             //{
             //    item.RefreshStatus();
             //}
         }
-
-        
-
 
         private void CleanUpOldRefs_Click(object sender, RoutedEventArgs e)
         {

@@ -41,7 +41,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool RandomizeExport(ExportEntry exp,  RandomizationOption option)
         {
             if (!CanRandomize(exp)) return false;
-            Log.Information("Randomizing eye color");
+            //Log.Information("Randomizing eye color");
             RMaterialInstance.RandomizeExport(exp, null);
             return true;
         }

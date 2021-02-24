@@ -178,7 +178,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
                     // Actor map for updating the bioconversation
 
-                    Debug.WriteLine($"Shuffle actor on varilink in convo: {varilink.LinkedNodes[0].ObjectName.Instanced} => {package.GetUExport(repointedItem).ObjectName.Instanced}");
+                    //Debug.WriteLine($"Shuffle actor on varilink in convo: {varilink.LinkedNodes[0].ObjectName.Instanced} => {package.GetUExport(repointedItem).ObjectName.Instanced}");
                     varilink.LinkedNodes[0] = package.GetUExport(repointedItem);
                 }
 

@@ -25,7 +25,6 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock TextWrapping="Wrap" Text="{Binding CurrentMemoryUsageText}" HorizontalAlignment="Left"/>
             <TextBlock TextWrapping="Wrap" Text="{Binding LastRefreshText}" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Right"/>
             <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0">
                 <Button Content="Clear garbage collected references" Padding="5,3,5,3" Margin="0,5,0,5" Click="CleanUpOldRefs_Click"/>
@@ -76,7 +75,8 @@
                 <TextBlock Text="Free:" Grid.Row="5" Grid.Column="2"/>
                 <TextBlock Text="Free blocks:" Grid.Row="6" Grid.Column="0"/>
                 <TextBlock Text="Free blocks:" Grid.Row="6" Grid.Column="2"/>
-            <!-- Data -->
+                
+                <!-- Data -->
                 <TextBlock Text="{Binding TotalLargeInUseStr}" Width="100"  Grid.Row="3" Grid.Column="1"/>
                 <TextBlock Text="{Binding TotalSmallInUseStr}" Width="100" Grid.Row="3" Grid.Column="3"/>
                 <TextBlock Text="{Binding LargeInUseStr}" Width="100"  Grid.Row="4" Grid.Column="1"/>
@@ -86,6 +86,9 @@
 
                 <TextBlock Text="{Binding LargeBlocksAvailable}" Width="100" Grid.Row="6" Grid.Column="1"/>
                 <TextBlock Text="{Binding SmallBlocksAvailable}" Width="100" Grid.Row="6" Grid.Column="3"/>
+
+                <TextBlock TextWrapping="Wrap" Text="{Binding CurrentMemoryUsageText}" Grid.Row="7" Grid.ColumnSpan="2" HorizontalAlignment="Left"/>
+                <TextBlock TextWrapping="Wrap" Text="{Binding MaxMemoryObservedText}" Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="7" HorizontalAlignment="Left"/>
 
             <TextBlock Text="Memory Manager" FontWeight="Bold" Grid.Row="1" Grid.Column="5"/>
                 <Button Content="Attempt Reset" Grid.Row="2" Grid.RowSpan="2" Grid.Column="5" Command="{Binding AttemptResetMemoryManagerCommand}"/>

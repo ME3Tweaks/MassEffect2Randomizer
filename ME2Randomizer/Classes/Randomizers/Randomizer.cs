@@ -85,7 +85,7 @@ namespace ME2Randomizer.Classes
             }
             else
             {
-                Log.Information("-------------------------STARTING RANDOMIZER WITH SEED " + seed + "--------------------------");
+                Log.Information($"------------------------STARTING RANDOMIZER WITH SEED {seed}--------------------------");
             }
             randomizationWorker.RunWorkerAsync();
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Indeterminate, mainWindow);
@@ -103,7 +103,7 @@ namespace ME2Randomizer.Classes
 
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
-            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.MebiByte * 2, 128, 2048, false);
+            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
             ResetClasses();
             mainWindow.CurrentOperationText = "Initializing randomizer";
             mainWindow.ProgressBarIndeterminate = true;
@@ -122,15 +122,12 @@ namespace ME2Randomizer.Classes
 #endif
 
             // Pass 1: All randomizers that are file specific
-            
-            Log.Information(@"");
             foreach (var sr in specificRandomizers)
             {
                 Log.Information($"Running specific randomizer {sr.HumanName}");
                 mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
                 sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
             }
-
 
             // Pass 2: All exports
             var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
@@ -147,7 +144,7 @@ namespace ME2Randomizer.Classes
                 int currentFileNumber = 0;
 
 #if DEBUG
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 3 : 1 }, (file) =>
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
 #else
                 Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
 #endif
@@ -159,13 +156,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    if (true
-                    && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                        return;
+                    //if (true
+                    //&& !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
+                    //)
+                    //    return;
                     try
                     {
                         //Log.Information($@"Opening package {file}");
@@ -199,9 +196,12 @@ namespace ME2Randomizer.Classes
                     }
                 });
 
-                sw.Stop();
-                Log.Information($"Randomization time: {sw.Elapsed.ToString()}");
+
             }
+
+
+            sw.Stop();
+            Log.Information($"Randomization time: {sw.Elapsed.ToString()}");
 
             mainWindow.ProgressBarIndeterminate = true;
             mainWindow.CurrentOperationText = "Finishing up";

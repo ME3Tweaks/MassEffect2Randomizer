@@ -47,7 +47,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var boneDefinitions = export.GetProperty<ArrayProperty<StructProperty>>(export.ClassName == @"BioLookAtDefinition" ? "BoneDefinitions" : "m_aLookBoneDefs");
             if (boneDefinitions != null)
             {
-                Log.Information($"Randomizing BioLookAtDefinition {export.UIndex}");
+                //Log.Information($"Randomizing BioLookAtDefinition {export.UIndex}");
                 foreach (var item in boneDefinitions)
                 {
                     //if (item.GetProp<NameProperty>("m_nBoneName").Value.Name.StartsWith("Eye"))
