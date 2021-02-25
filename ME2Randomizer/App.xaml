@@ -1,7 +1,6 @@
 ﻿<Application x:Class="ME2Randomizer.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:MassEffectRandomizer"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -13,6 +12,13 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/themes/dark.violet.xaml" />
                 <ResourceDictionary Source="Classes\Updater\WiderDialogStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <FontFamily x:Key="AeroLight">
+                pack://application:,,,/fonts/#AeroLight
+                <!-- Note: NameOfFont can be font by double clicking
+             on font from explorer and writing down name
+             of the font reported.  Its not the same
+             as the file name -->
+            </FontFamily>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

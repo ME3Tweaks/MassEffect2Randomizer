@@ -31,13 +31,6 @@
                 <SolidColorBrush x:Key="HighlightBrush" Color="White" />
             </Style.Resources>
         </Style>
-        <FontFamily x:Key="AeroLight">
-            pack://application:,,,/fonts/#AeroLight
-            <!-- Note: NameOfFont can be font by double clicking
-             on font from explorer and writing down name
-             of the font reported.  Its not the same
-             as the file name -->
-        </FontFamily>
         <DataTemplate x:Key="RandomizationOptionTemplate" DataType="classes:RandomizationOption">
             <StackPanel Background="{Binding Self, Converter={StaticResource ImplementedConverter}}">
                 <CheckBox Content="{Binding HumanName}" FontWeight="Bold" Margin="3" 
@@ -203,11 +196,8 @@
                         <Button DockPanel.Dock="Right" Command="{Binding StartRandomizationCommand}"  Padding="20,0,20,0">
                             <fonts:OutlinedTextBlock Text="Randomize" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
-                        <Button DockPanel.Dock="Right" Click="DataFinder_Click" Padding="20,0,20,0" Visibility="Visible">
-                            <fonts:OutlinedTextBlock Text="Run Data Finder" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
-                        </Button>
-                        <Button DockPanel.Dock="Right" Click="MemAnalyzer_Click" Padding="20,0,20,0" Visibility="Visible">
-                            <fonts:OutlinedTextBlock Text="Memory Analyzer" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
+                        <Button DockPanel.Dock="Right" Click="DebugWindow_Click" Padding="20,0,20,0" Visibility="Visible">
+                            <fonts:OutlinedTextBlock Text="Debug Tools" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
                     </DockPanel>
                 </StackPanel>

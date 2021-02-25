@@ -21,6 +21,7 @@ using ME2Randomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.DebugTools;
+//using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
 using ME3ExplorerCore;
 using ME3ExplorerCore.Helpers;
@@ -557,11 +558,6 @@ namespace ME2Randomizer
             Utilities.OpenWebPage(App.DISCORD_INVITE_LINK);
         }
 
-        private void DataFinder_Click(object sender, RoutedEventArgs e)
-        {
-            DataFinder df = new DataFinder(this);
-        }
-
         private void Combobox_LogSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
@@ -584,9 +580,10 @@ namespace ME2Randomizer
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private void MemAnalyzer_Click(object sender, RoutedEventArgs e)
+
+        private void DebugWindow_Click(object sender, RoutedEventArgs e)
         {
-            new MemoryAnalyzerUI().Show();
+            new DebugWindow(this).Show();
         }
     }
 }
