@@ -629,6 +629,8 @@ namespace ME2Randomizer.Classes
                     || pi.GunName.Contains("Player")
                     || pi.GunName.Contains("AsteroidRocketLauncher")
                     || pi.GunName.Contains("VehicleRocketLauncher")
+                    || pi.GunName.Contains("FreezeGun") // Doesn't fire
+                    || pi.GunName.Contains("ArcProjector") // Fires but uses player variables for targeting so it doesn't work
                 )
                 {
                     // We do not allow startup files that have levels
