@@ -76,11 +76,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 foreach (var p in parents)
                 {
                     var sourceFullPath = p.InstancedFullPath;
-                    var matchingParent = targetPackage.FindExport(sourceFullPath) as IEntry;
-                    if (matchingParent == null)
-                    {
-                        matchingParent = targetPackage.FindImport(sourceFullPath);
-                    }
+                    var matchingParent = targetPackage.FindEntry(sourceFullPath);
 
                     if (matchingParent != null)
                     {
@@ -98,7 +94,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
 
             IEntry newEntry;
-            if (!useMemorySafeImport)
+            if (!useMemorySafeImport )
             {
                 Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. Should probably just be part of the method
                 var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,

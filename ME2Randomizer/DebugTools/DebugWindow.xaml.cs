@@ -43,5 +43,10 @@ namespace ME2Randomizer.DebugTools
         {
             ME2Debug.TestAllImportsInMERFS();
         }
+
+        private void BuildStartupFile_Click(object sender, RoutedEventArgs e)
+        {
+            ME2Debug.BuildStartupPackage();
+        }
     }
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
+using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
@@ -65,10 +66,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         /// <returns></returns>
         public static bool Init(RandomizationOption option)
         {
-            WeaponAnimsPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("WeaponAnims.pcc")));
+            WeaponAnimsPackage = MERFileSystem.GetStartupPackage();
             WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
             LoadGuns();
-            InstallGlobalWeaponAnims(option);
+            MERFileSystem.InstallStartupPackage(); // Contains weapon animations
             return true;
         }
 
@@ -335,10 +336,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
                 else
                 {
-
-                    Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
-                    var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
-                        newParent, true, out newEntry, crossPCCObjectMap, errorOccuredCB);
+                    List<EntryStringPair> relinkResults = null;
+                    if (gunInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(gunInfo.PackageFileName) && MERFileSystem.GetPackageFile(gunInfo.PackageFileName.ToLocalizedFilename()) == null))
+                    {
+                        // Faster this way, without having to check imports
+                        Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
+                        relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
+                            newParent, true, out newEntry, crossPCCObjectMap);
+                    }
+                    else
+                    {
+                        // MEMORY SAFE (resolve imports to exports)
+                        MERPackageCache cache = new MERPackageCache();
+                        relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
+                    }
 
                     if (relinkResults.Any())
                     {
@@ -478,7 +489,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             return false;
         }
 
-        private static bool InstallGlobalWeaponAnims(RandomizationOption option)
+        /*private static bool InstallGlobalWeaponAnims(RandomizationOption option)
         {
             var objsToPort = WeaponAnimsPackage.Exports.Where(x => x.ClassName == "AnimSet").ToList();
             //var persistentPackages = MERFileSystem.LoadedFiles.Keys.Where(x => x.StartsWith("BioP_")
@@ -511,7 +522,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             });
 
             return true;
-        }
+        }*/
 
 
         private static bool RandomizeWeaponLoadout(ExportEntry export, RandomizationOption option)

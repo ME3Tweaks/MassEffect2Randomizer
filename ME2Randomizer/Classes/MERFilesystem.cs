@@ -36,7 +36,7 @@ namespace ME2Randomizer.Classes
 
         public static void InitMERFS(bool loadTLK)
         {
-            // Is there reason to do this here...?
+            installedStartupPackage = false;
             ReloadLoadedFiles();
 
             var dlcmodPath = Path.Combine(MEDirectories.GetDefaultGamePath(Game), "BioGame", "DLC", $"DLC_MOD_{Game}Randomizer");
@@ -54,6 +54,30 @@ namespace ME2Randomizer.Classes
             {
                 TLKHandler.StartHandler();
             }
+        }
+
+        /// <summary>
+        /// Installs the DLC mod's startup package and adds it to the startup ini files
+        /// </summary>
+        public static void InstallStartupPackage()
+        {
+            if (installedStartupPackage)
+                return;
+            installedStartupPackage = true;
+            var startupPackage = GetStartupPackage();
+            MERFileSystem.SavePackage(startupPackage, true);
+
+            ThreadSafeDLCStartupPackage.AddStartupPackage($"Startup_DLC_MOD_{MERFileSystem.Game}Randomizer");
+        }
+
+        /// <summary>
+        /// Fetches the DLC mod component's startup package
+        /// </summary>
+        /// <returns></returns>
+        public static IMEPackage GetStartupPackage()
+        {
+            var startupDestName = $"Startup_DLC_MOD_{MERFileSystem.Game}Randomizer_INT.pcc";
+            return MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile(startupDestName)), startupDestName);
         }
 
         public static void Finalize(OptionsPackage selectedOptions)
@@ -84,6 +108,7 @@ namespace ME2Randomizer.Classes
 
             metacmm.OptionsSelectedAtInstallTime.AddRange(allOptions);
             File.WriteAllText(metacmmFile, metacmm.ToCMMText());
+            GlobalCache = null;
         }
 
         public static CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
@@ -97,6 +122,11 @@ namespace ME2Randomizer.Classes
             }
         }
 
+        /// <summary>
+        /// Gets a package file from the MER filesystem, checking in the DLC mod folder first, then the original game files. Returns null if a package is not found in the laoded files list or the DLC mod.
+        /// </summary>
+        /// <param name="packagename"></param>
+        /// <returns></returns>
         public static string GetPackageFile(string packagename)
         {
             if (LoadedFiles == null)
@@ -128,9 +158,9 @@ namespace ME2Randomizer.Classes
         /// Saves an open package, if it is modified. Saves it to the correct location.
         /// </summary>
         /// <param name="package"></param>
-        public static void SavePackage(IMEPackage package)
+        public static void SavePackage(IMEPackage package, bool forceSave = false)
         {
-            if (package.IsModified)
+            if (package.IsModified || forceSave)
             {
                 if (!alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
                 {
@@ -163,6 +193,7 @@ namespace ME2Randomizer.Classes
         }
 
         private static MERPackageCache GlobalCache;
+        private static bool installedStartupPackage;
 
         /// <summary>
         /// Gets the global cache of files that can be used for looking up imports

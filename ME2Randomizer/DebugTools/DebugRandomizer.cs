@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes;
+using ME3ExplorerCore.ME1.Unreal.UnhoodBytecode;
 using ME3ExplorerCore.Packages;
 
 namespace ME2Randomizer.DebugTools
@@ -14,6 +15,12 @@ namespace ME2Randomizer.DebugTools
         {
             // Write debug code here
             //var hi = arg1.InstancedFullPath;
+            if (arg1.ClassName == "Function")
+            {
+                var unFunc = UE3FunctionReader.ReadFunction(arg1);
+                TextBuilder tb = new TextBuilder();
+                unFunc.Decompile(tb, false, false);
+            }
             return true;
         }
     }

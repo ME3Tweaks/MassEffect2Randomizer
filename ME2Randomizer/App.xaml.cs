@@ -25,6 +25,14 @@ namespace ME2Randomizer
         internal static string MainThemeColor = "Violet";
         private static bool POST_STARTUP = false;
         public const string DISCORD_INVITE_LINK = "https://discord.gg/s8HA6dc";
+
+#if DEBUG
+        public static bool IsDebug => true;
+#else
+        public static bool IsDebug => false;
+#endif
+        public static Visibility IsDebugVisibility => IsDebug ? Visibility.Visible : Visibility.Collapsed;
+
         [STAThread]
         public static void Main()
         {

@@ -19,7 +19,7 @@ namespace ME2Randomizer.Classes.Converters
                     return Brushes.Green;
                 }
 
-                return (!ro.IsOptionOnly && ro.PerformRandomizationOnExportDelegate == null && ro.PerformSpecificRandomizationDelegate == null) ? Brushes.Red : Brushes.Transparent;
+                return (!ro.IsOptionOnly && ro.PerformRandomizationOnExportDelegate == null && ro.PerformSpecificRandomizationDelegate == null && ro.PerformFileSpecificRandomization == null) ? Brushes.Red : Brushes.Transparent;
             }
             return Brushes.Maroon;
         }

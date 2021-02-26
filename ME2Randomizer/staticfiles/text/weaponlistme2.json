@@ -187,17 +187,6 @@
     "iscorrectedpackage": false
   },
   {
-    "packagename": "SFXGameContentDLC_CER_Arc",
-    "packagefilename": "SFXHeavyWeapon_ArcProjector.pcc",
-    "sourceuindex": 403,
-    "weaponclassification": 5,
-    "hasgunmesh": true,
-    "gunname": "SFXHeavyWeapon_ArcProjector",
-    "importonly": true,
-    "requiresstartuppackage": true,
-    "iscorrectedpackage": false
-  },
-  {
     "packagename": "SFXGameContentDLC_CER_02",
     "packagefilename": "Startup_CER_02_int.pcc",
     "sourceuindex": 56,
@@ -284,17 +273,6 @@
     "importonly": true,
     "requiresstartuppackage": true,
     "iscorrectedpackage": true
-  },
-  {
-    "packagename": "SFXGameContent_Inventory",
-    "packagefilename": "SFXHeavyWeapon_FreezeGun.pcc",
-    "sourceuindex": 35,
-    "weaponclassification": 5,
-    "hasgunmesh": true,
-    "gunname": "SFXHeavyWeapon_FreezeGun",
-    "importonly": false,
-    "requiresstartuppackage": false,
-    "iscorrectedpackage": false
   },
   {
     "packagename": "SFXGameContent_Inventory",

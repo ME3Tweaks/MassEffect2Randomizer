@@ -7,6 +7,7 @@
                       xmlns:converters="clr-namespace:ME2Randomizer.Classes.Converters"
                       xmlns:classes="clr-namespace:ME2Randomizer.Classes"
                       xmlns:ui="clr-namespace:ME2Randomizer.ui"
+                      xmlns:global="clr-namespace:ME2Randomizer"
                       x:Class="ME2Randomizer.MainWindow" 
                       IconScalingMode="ScaleDownLargerFrame" 
                       mc:Ignorable="d" 
@@ -196,7 +197,7 @@
                         <Button DockPanel.Dock="Right" Command="{Binding StartRandomizationCommand}"  Padding="20,0,20,0">
                             <fonts:OutlinedTextBlock Text="Randomize" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
-                        <Button DockPanel.Dock="Right" Click="DebugWindow_Click" Padding="20,0,20,0" Visibility="Visible">
+                        <Button DockPanel.Dock="Right" Click="DebugWindow_Click" Padding="20,0,20,0" Visibility="{x:Static global:App.IsDebugVisibility}">
                             <fonts:OutlinedTextBlock Text="Debug Tools" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
                     </DockPanel>
