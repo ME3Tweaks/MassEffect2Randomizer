@@ -315,7 +315,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
 
                 // 1. Setup the link that will be used.
-                var newParent = EntryExporter.PortParents(sourceExport, targetPackage);
+                var newParent = EntryExporter.PortParents(sourceExport, targetPackage, gunInfo.ImportOnly);
 
                 void errorOccuredCB(string s)
                 {
