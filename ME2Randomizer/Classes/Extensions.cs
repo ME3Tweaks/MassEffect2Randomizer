@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Media;
 using ME2Randomizer.Classes.Randomizers;
@@ -26,6 +27,25 @@ namespace ME2Randomizer.Classes
         public static SolidColorBrush ToBrush(this string hexColorString)
         {
             return (SolidColorBrush)(new BrushConverter().ConvertFrom(hexColorString));
+        }
+
+        /// <summary>
+        /// Returns a localized version of this filename, such as Startup.pcc to Startup_INT.pcc. Works on full paths too.
+        /// </summary>
+        /// <param name="origName"></param>
+        /// <returns></returns>
+        public static string ToLocalizedFilename(this string origName)
+        {
+            var fname = Path.GetFileNameWithoutExtension(origName);
+            var parent = Directory.GetParent(origName);
+            if (parent == null)
+            {
+                return $"{fname}_INT.{Path.GetExtension(origName)}";
+            }
+            return Path.Combine(parent.FullName, $"{fname}_INT.{Path.GetExtension(origName)}");
+
+
+
         }
 
         /// <summary>

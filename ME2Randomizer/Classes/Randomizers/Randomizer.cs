@@ -109,6 +109,21 @@ namespace ME2Randomizer.Classes
             mainWindow.ProgressBarIndeterminate = true;
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
             var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
+            var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
+
+            // Log randomizers
+            Log.Information("Randomizers used in this pass:");
+            foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers))
+            {
+                Log.Information($" - {sr.HumanName}");
+                if (sr.SubOptions != null)
+                {
+                    foreach (var subR in sr.SubOptions)
+                    {
+                        Log.Information($"   - {subR.HumanName}");
+                    }
+                }
+            }
 
             MERFileSystem.InitMERFS(SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
             Stopwatch sw = new Stopwatch();
@@ -130,7 +145,6 @@ namespace ME2Randomizer.Classes
             }
 
             // Pass 2: All exports
-            var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
             if (perExportRandomizers.Any() || perFileRandomizers.Any())
             {
                 mainWindow.CurrentOperationText = "Getting list of files...";
@@ -156,13 +170,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    if (true
-                    && !file.Contains("EndGm", StringComparison.InvariantCultureIgnoreCase)
+                    //if (true
+                    //&& !file.Contains("EndGm", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                        return;
+                    //)
+                    //    return;
                     try
                     {
                         //Log.Information($@"Opening package {file}");
@@ -250,7 +264,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         Description="Runs debug code randomization",
-                        HumanName = "Debug randomizer", 
+                        HumanName = "Debug randomizer",
                         PerformRandomizationOnExportDelegate = DebugTools.DebugRandomizer.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
@@ -277,12 +291,15 @@ namespace ME2Randomizer.Classes
                         PerformRandomizationOnExportDelegate = SquadmateHead.RandomizeExport2,
                         PerformFileSpecificRandomization = SquadmateHead.FilePrerun,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        RequiresTLK = true
+                        RequiresTLK = true,
+                        MutualExclusiveSet = "SquadHead",
+                        IsRecommended = true
                     },
                     new RandomizationOption() {HumanName = "Squadmate faces",
                         Description = "Only works on Wilson and Jacob, unfortunately. Other squadmates are fully modeled",
                         PerformSpecificRandomizationDelegate = RBioMorphFace.RandomizeSquadmateFaces,
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        MutualExclusiveSet = "SquadHead"
                     },
 
                     new RandomizationOption()
@@ -445,8 +462,8 @@ namespace ME2Randomizer.Classes
                         Description = "Mass Effect Randomizer was originally designed for the streamer SizeSixteens. This option installs many SizeSixteens specific changes, and continues the story from the ME1Randomizer stream he did in 2019",
                         PerformSpecificRandomizationDelegate = SizeSixteens.InstallSSChanges,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        RequiresTLK = true,
-                        IsRecommended = true},
+                        RequiresTLK = true
+                    },
 #if DEBUG
                     new RandomizationOption() {HumanName = "Skip splash",
                         Description = "Skips the splash screen",

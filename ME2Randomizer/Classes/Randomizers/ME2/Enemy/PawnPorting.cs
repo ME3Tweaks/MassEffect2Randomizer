@@ -305,14 +305,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
             if (pawnPackage != null)
             {
-                PackageTools.PortExportIntoPackage(targetPackage, pawnPackage.FindExport(pawn.AssetToPortIn));
+                PackageTools.PortExportIntoPackage(targetPackage, pawnPackage.FindExport(pawn.AssetToPortIn), useMemorySafeImport: !pawn.IsCorrectedPackage);
 
                 // Ensure the assets are too as they may not be directly referenced except in the level instance
                 foreach (var asset in pawn.AssetPaths)
                 {
                     if (targetPackage.FindExport(asset) == null)
                     {
-                        PackageTools.PortExportIntoPackage(targetPackage, pawnPackage.FindExport(asset));
+                        PackageTools.PortExportIntoPackage(targetPackage, pawnPackage.FindExport(asset), useMemorySafeImport: !pawn.IsCorrectedPackage);
                     }
                 }
 
