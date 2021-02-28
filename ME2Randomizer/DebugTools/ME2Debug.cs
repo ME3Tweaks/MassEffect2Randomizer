@@ -15,6 +15,30 @@ namespace ME2Randomizer.DebugTools
 {
     class ME2Debug
     {
+        public static void GetExportsInPersistentThatAreAlsoInSub()
+        {
+            var dlcModPath = Path.Combine(MEDirectories.GetDefaultGamePath(MERFileSystem.Game), "BioGame", "DLC", $"DLC_MOD_{MERFileSystem.Game}Randomizer", "CookedPC");
+
+            var oldPersistentFile = MEPackageHandler.OpenMEPackage(Path.Combine(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC", "BioP_JnkKgA.pcc"));
+            var newPersistentFile = MEPackageHandler.OpenMEPackage(Path.Combine(dlcModPath, "BioP_JnkKgA.pcc"));
+
+            var oldExpList = oldPersistentFile.Exports.Select(x => x.InstancedFullPath);
+            var newExpList = newPersistentFile.Exports.Select(x => x.InstancedFullPath);
+
+            var newExports = newExpList.Except(oldExpList).ToList();
+
+            var subFile = MEPackageHandler.OpenMEPackage(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\BioD_JnkKgA_300Labs.pcc");
+            var subExports = subFile.Exports.Select(x => x.InstancedFullPath);
+
+            var sameExports = subExports.Intersect(newExports).ToList();
+
+            foreach(var v in sameExports)
+            {
+                Debug.WriteLine(v);
+            }
+        }
+
+
         public static void TestAllImportsInMERFS()
         {
             var dlcModPath = Path.Combine(MEDirectories.GetDefaultGamePath(MERFileSystem.Game), "BioGame", "DLC", $"DLC_MOD_{MERFileSystem.Game}Randomizer", "CookedPC");

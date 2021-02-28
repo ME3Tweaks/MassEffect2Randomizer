@@ -474,6 +474,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower, out _)?.UIndex ?? int.MinValue;
                     }
 
+                    if (existingPowerEntry != null && existingPowerEntry.UIndex > 0 && PackageTools.IsPersistentPackage(export.FileRef.FilePath))
+                    {
+                        // Make sure we add the original power to the list of referenced memory objects
+                        // so subfiles that depend on this power existing don't crash the game!
+                        var world = export.FileRef.FindExport("TheWorld");
+                        var worldBin = ObjectBinary.From<World>(world);
+                        var extraRefs = worldBin.ExtraReferencedObjects.ToList();
+                        extraRefs.Add(new UIndex(existingPowerEntry.UIndex));
+                        worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
+                        world.WriteBinary(worldBin);
+                    }
+
                     foreach (var addlPow in randomNewPower.AdditionalRequiredPowers)
                     {
                         var existingPow = export.FileRef.FindEntry(addlPow);

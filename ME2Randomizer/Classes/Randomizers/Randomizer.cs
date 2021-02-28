@@ -170,13 +170,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    //if (true
-                    //&& !file.Contains("EndGm", StringComparison.InvariantCultureIgnoreCase)
+                    if (true
+                    && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
-                    //)
-                    //    return;
+                    )
+                        return;
                     try
                     {
                         //Log.Information($@"Opening package {file}");
@@ -254,6 +254,7 @@ namespace ME2Randomizer.Classes
 
 #if DEBUG
             //EnemyPowerChanger.Init(null); // Load the initial list
+            EnemyWeaponChanger.Preboot(); // Load the initial list
 #endif
             RandomizationGroups.Add(new RandomizationGroup()
             {
@@ -505,7 +506,28 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Enemy loadouts",Description = "Gives enemies different guns", PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Enemy loadouts",
+                        Description = "Gives enemies different guns", 
+                        PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, 
+                        PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init, 
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, 
+                        IsRecommended = true,
+                        // Debug stuff.
+#if DEBUG
+                        HasSliderOption = true,
+                        Ticks = string.Join(",",Enumerable.Range(-1,EnemyWeaponChanger.AllAvailableWeapons.Count + 1)),
+                        SliderToTextConverter = x =>
+                        {
+                            if (x < 0)
+                                return "All weapons";
+                            var idx = (int) x;
+                            return EnemyWeaponChanger.AllAvailableWeapons[idx].GunName;
+                        },
+                        SliderValue = -1, // End debug stuff
+#endif
+
+
+                    },
                     new RandomizationOption()
                     {
                         HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true,

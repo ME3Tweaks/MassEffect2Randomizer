@@ -129,7 +129,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 if (wi.Contains($"DLC_MOD_{MERFileSystem.Game}Randomizer"))
                     continue; // Skip randomizer folders
-
+                Log.Information($@"Randomizing weapon ini {wi}");
                 //Log.Information("Randomizing weapons in ini: " + wi);
                 var dlcWeapIni = DuplicatingIni.LoadIni(wi);
                 RandomizeWeaponIni(dlcWeapIni, me2rbioweapon);
@@ -153,7 +153,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             "GUIClassName",
             "GUIClassDescription",
             "PrettyName",
-            "bInfiniteAmmo"
+            "bInfiniteAmmo",
+            "ShortDescription",
+            "NoAmmoFireSoundDelay",
+            "bUpgradesBasicWeapon",
+            "LowAmmoSoundThreshold",
+            "SteamSoundThreshold",
+            "LaserTimer",
+            "LaserFireTimer",
+            "TracerSpawnOffset",
+            "TraceRange",
+            "bUseSniperCam",
+            "bZoomSnapEnabled",
+            "bNotRegularWeaponGUI",
+
         };
 
         private static void RandomizeWeaponIni(DuplicatingIni vanillaFile, DuplicatingIni randomizerIni)
@@ -326,13 +339,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                 {
                                     //Debug.WriteLine(entry.Key);
                                     var initialValue = entry.Value.ToString();
-                                    var isInt = int.TryParse(entry.Value, out var burstVal);
-                                    var isFloat = float.TryParse(entry.Value, out var floatVal);
+                                    var isInt = int.TryParse(entry.Value, out var valueInt);
+                                    var isFloat = float.TryParse(entry.Value, out var valueFloat);
                                     switch (entry.Key)
                                     {
                                         case "BurstRounds":
                                             {
-                                                var burstMax = burstVal * 2;
+                                                var burstMax = valueInt * 2;
                                                 entry.Value = (ThreadSafeRandom.Next(burstMax) + 1).ToString();
                                             }
                                             break;
@@ -342,7 +355,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                                 entry.Value = ThreadSafeRandom.NextFloat(.1, 2).ToString();
                                             }
                                             break;
-                                            //case 
+                                        case "RecoilInterpSpeed":
+                                        case "RecoilFadeSpeed":
+                                        case "RecoilZoomFadeSpeed":
+                                        case "RecoilYawScale":
+                                        case "RecoilYawFrequency":
+                                        case "RecoilYawNoise":
+                                        case "DamageHench":
+                                        case "BurstRefireTime":
+                                            {
+                                                entry.Value = ThreadSafeRandom.NextFloat(valueFloat / 2, valueFloat * 1.5).ToString();
+                                            }
+                                            break;
+                                        default:
+                                            Debug.WriteLine($"Undone key: {entry.Key}");
+                                            break;
                                     }
 
                                     if (entry.Value != initialValue)

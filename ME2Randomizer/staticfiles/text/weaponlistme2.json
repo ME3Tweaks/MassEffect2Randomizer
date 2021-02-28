@@ -397,14 +397,14 @@
   },
   {
     "packagename": "SFXGameContent_Inventory",
-    "packagefilename": "SFXHeavyWeapon_ReaperMIRV.pcc",
-    "sourceuindex": 2,
+    "packagefilename": "SFXHeavyWeapon_GrenadeLauncher.pcc",
+    "sourceuindex": 5,
     "weaponclassification": 5,
     "hasgunmesh": true,
     "gunname": "SFXHeavyWeapon_GrenadeLauncher",
     "importonly": false,
     "requiresstartuppackage": false,
-    "iscorrectedpackage": true
+    "iscorrectedpackage": false
   },
   {
     "packagename": "SFXGameContent_Inventory",

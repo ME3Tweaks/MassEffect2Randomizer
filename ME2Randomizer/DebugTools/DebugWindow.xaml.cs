@@ -48,5 +48,10 @@ namespace ME2Randomizer.DebugTools
         {
             ME2Debug.BuildStartupPackage();
         }
+
+        private void CheckExports_Click(object sender, RoutedEventArgs e)
+        {
+            ME2Debug.GetExportsInPersistentThatAreAlsoInSub();
+        }
     }
 }
