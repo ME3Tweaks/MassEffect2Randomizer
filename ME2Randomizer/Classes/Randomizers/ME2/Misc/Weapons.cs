@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using MassEffectRandomizer.Classes;
@@ -166,6 +167,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             "bUseSniperCam",
             "bZoomSnapEnabled",
             "bNotRegularWeaponGUI",
+            "ZoomSnapDuration",
+            "bFrictionEnabled",
+            "MaxMagneticCorrectionAngle",
+            "MagneticCorrectionThresholdAngle",
+            "InitialSpareMagazines",
+            "InitialMagazines",
+            "MinZoomSnapDistance",
+            "MaxZoomSnapDistance",
+            "RecoilYawFrequench",
+            "RecoilYawBias",
+            "BeamInterpTime",
 
         };
 
@@ -299,7 +311,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                                                 float range = Max - Min;
                                                 if (range == 0) range = 0.1f * Max;
-                                                float rangeExtension = range * 15f; //50%
+                                                float rangeExtension = range * .5f; //50%
+                                                if (ThreadSafeRandom.Next(10) == 0)
+                                                {
+                                                    rangeExtension = range * 15f; // Extreme
+                                                }
+
 
                                                 float newMin = Math.Max(0, ThreadSafeRandom.NextFloat(Min - rangeExtension, Min + rangeExtension));
                                                 float newMax = ThreadSafeRandom.NextFloat(Max - rangeExtension, Max + rangeExtension);
@@ -352,7 +369,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                         case "RateOfFireAI":
                                         case "DamageAI":
                                             {
-                                                entry.Value = ThreadSafeRandom.NextFloat(.1, 2).ToString();
+                                                entry.Value = ThreadSafeRandom.NextFloat(.1, 2).ToString(CultureInfo.InvariantCulture);
                                             }
                                             break;
                                         case "RecoilInterpSpeed":
@@ -363,9 +380,49 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                         case "RecoilYawNoise":
                                         case "DamageHench":
                                         case "BurstRefireTime":
+                                        case "ZoomAccFirePenalty":
+                                        case "ZoomAccFireInterpSpeed":
+                                        case "FirstHitDamage":
+                                        case "SecondHitDamage":
+                                        case "ThirdHitDamage":
                                             {
-                                                entry.Value = ThreadSafeRandom.NextFloat(valueFloat / 2, valueFloat * 1.5).ToString();
+                                                entry.Value = ThreadSafeRandom.NextFloat(valueFloat / 2, valueFloat * 1.5).ToString(CultureInfo.InvariantCulture);
                                             }
+                                            break;
+                                        case "bIsAutomatic":
+                                            {
+                                                var curValue = bool.Parse(entry.Value);
+                                                entry.Value = ThreadSafeRandom.Next(5) == 0 ? (!curValue).ToString() : entry.Value.ToString();
+                                            }
+                                            break;
+                                        case "MinRefireTime":
+                                            {
+                                                entry.Value = ThreadSafeRandom.NextFloat(0.01, 1).ToString();
+                                            }
+                                            break;
+                                        case "AccFirePenalty":
+                                        case "AccFireInterpSpeed":
+                                            {
+                                                entry.Value = ThreadSafeRandom.NextFloat(0, valueFloat * 1.75).ToString(CultureInfo.InvariantCulture);
+                                            }
+                                            break;
+                                        case "AmmoPerShot":
+                                            {
+                                                if (ThreadSafeRandom.Next(10) == 0)
+                                                {
+                                                    entry.Value = "2";
+                                                }
+                                                // Otherwise do not change
+                                            }
+                                            break;
+                                        case "AIBurstRefireTimeMin":
+                                            entry.Value = ThreadSafeRandom.NextFloat(0, 2).ToString(CultureInfo.InvariantCulture);
+                                            break;
+                                        case "AIBurstRefireTimeMax":
+                                            entry.Value = ThreadSafeRandom.NextFloat(1, 5).ToString(CultureInfo.InvariantCulture);
+                                            break;
+                                        case "MaxSpareAmmo":
+                                            entry.Value = ThreadSafeRandom.Next(valueInt / 10, valueInt * 2).ToString(CultureInfo.InvariantCulture);
                                             break;
                                         default:
                                             Debug.WriteLine($"Undone key: {entry.Key}");

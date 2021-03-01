@@ -42,7 +42,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                         try
                         {
                             i--;
-                            package = MEPackageHandler.OpenMEPackage(file);
+                            package = MERFileSystem.OpenMEPackage(file);
                         }
                         catch (IOException e)
                         {

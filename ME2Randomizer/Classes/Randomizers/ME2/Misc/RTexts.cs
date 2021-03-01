@@ -18,6 +18,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     class RTexts
     {
         public const string SUBOPTIONKEY_VOWELS_HARDMODE = "VOWELS_HARDMODE";
+        public const string SUBOPTIONKEY_UWU_KEEPCASING = "UWU_KEEPCASING";
 
         public static bool RandomizeIntroText(RandomizationOption arg)
         {
@@ -54,6 +55,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         public static bool UwuifyText(RandomizationOption option)
         {
+            bool keepCasing = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_UWU_KEEPCASING);
             foreach (TalkFile tf in TLKHandler.GetOfficialTLKs())
             {
                 var tfName = Path.GetFileNameWithoutExtension(tf.path);
@@ -92,7 +94,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         currentChar = sref.Data[i];
                         if (currentChar == 'L' || currentChar == 'R')
                         {
-                            sb.Append('W');
+                            sb.Append(keepCasing ? 'W' : 'w');
                         }
                         else if (currentChar == 'l' || currentChar == 'r')
                         {
@@ -100,7 +102,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         }
                         else if (currentChar == 'N' && (previousChar == 0x00 || previousChar == ' '))
                         {
-                            sb.Append("Nyaa");
+                            sb.Append(keepCasing ? "Nyaa" : "nyaa");
                         }
                         else if (currentChar == 'O' || currentChar == 'o')
                         {
@@ -111,19 +113,19 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             }
                             else
                             {
-                                sb.Append(sref.Data[i]);
+                                sb.Append(keepCasing ? sref.Data[i] : char.ToLower(sref.Data[i]));
                             }
                         }
                         else
                         {
-                            sb.Append(sref.Data[i]);
+                            sb.Append(keepCasing ? sref.Data[i] : char.ToLower(sref.Data[i]));
                         }
 
                         previousChar = currentChar;
                     }
 
                     var str = sb.ToString();
-                    str = str.Replace("fuck", "UwU", StringComparison.InvariantCultureIgnoreCase);
+                    str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
                     TLKHandler.ReplaceString(sref.StringID, str, langCode);
                 }
             }

@@ -295,7 +295,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 var pF = MERFileSystem.GetPackageFile(pawn.PackageFilename);
                 if (pF != null)
                 {
-                    pawnPackage = MEPackageHandler.OpenMEPackage(pF);
+                    pawnPackage = MERFileSystem.OpenMEPackage(pF);
                 }
                 else
                 {

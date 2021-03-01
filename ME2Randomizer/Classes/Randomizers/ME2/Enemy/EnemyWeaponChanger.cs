@@ -256,12 +256,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         {
             List<GunInfo> guns = new();
             var objName = export.ObjectName.Name;
-            if (objName.Contains("SecurityMech"))
-            {
-                // Others crash the game? AssaultRifle def does
-                guns.AddRange(VisibleAvailableWeapons.Where(x => x.WeaponClassification == GunInfo.EWeaponClassification.SMG));
-            }
-            else if (LoadoutSupportsVisibleMapping.TryGetValue(export.FullPath, out var supportsVisibleWeapons))
+            
+            // was crashing due to BioP memory being GC'd
+            //if (objName.Contains("SecurityMech"))
+            //{
+            //    // Others crash the game? AssaultRifle def does
+            //    guns.AddRange(VisibleAvailableWeapons.Where(x => x.WeaponClassification == GunInfo.EWeaponClassification.SMG));
+            //}
+            //else 
+            if (LoadoutSupportsVisibleMapping.TryGetValue(export.FullPath, out var supportsVisibleWeapons))
             {
                 // We use FullPath instead of instanced as the loadout number may change across randomization
                 if (supportsVisibleWeapons)

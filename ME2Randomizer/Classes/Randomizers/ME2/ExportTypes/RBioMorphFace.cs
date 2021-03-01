@@ -26,7 +26,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                                                                   || x.Key == "BioD_EndGm1_110ROMJacob.pcc");
             foreach (var h in henchFiles)
             {
-                var hPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(h.Key));
+                var hPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(h.Key));
                 foreach (var smhp in SquadmateMorphHeadPaths)
                 {
                     var mf = hPackage.FindExport(smhp);

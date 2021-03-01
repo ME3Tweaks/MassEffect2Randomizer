@@ -56,6 +56,20 @@ namespace ME2Randomizer.Classes
             }
         }
 
+        private static object openSavePackageSyncObj = new object();
+
+        /// <summary>
+        /// Opens packages in a memory safe fashion using a lock.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="forceLoadFromDisk"></param>
+        /// <param name="quickload"></param>
+        /// <returns></returns>
+        public static IMEPackage OpenMEPackage(string path, bool forceLoadFromDisk = false, bool quickload = false)
+        {
+            return MEPackageHandler.OpenMEPackage(path, forceLoadFromDisk: forceLoadFromDisk, quickLoad: quickload, diskIOSyncLock: openSavePackageSyncObj);
+        }
+
         /// <summary>
         /// Installs the DLC mod's startup package and adds it to the startup ini files
         /// </summary>
@@ -166,13 +180,19 @@ namespace ME2Randomizer.Classes
                 {
                     var fname = Path.GetFileName(package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
-                    Log.Information($"Saving package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
-                    package.Save(packageNewPath, true);
+                    lock (openSavePackageSyncObj)
+                    {
+                        Log.Information($"Saving package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
+                        package.Save(packageNewPath, true);
+                    }
                 }
                 else
                 {
                     Log.Information($"Saving package {Path.GetFileName(package.FilePath)} => {package.FilePath}");
-                    package.Save(compress: true);
+                    lock (openSavePackageSyncObj)
+                    {
+                        package.Save(compress: true);
+                    }
                 }
             }
         }

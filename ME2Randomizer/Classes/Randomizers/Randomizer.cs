@@ -113,7 +113,7 @@ namespace ME2Randomizer.Classes
 
             // Log randomizers
             Log.Information("Randomizers used in this pass:");
-            foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers))
+            foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers).Distinct())
             {
                 Log.Information($" - {sr.HumanName}");
                 if (sr.SubOptions != null)
@@ -171,16 +171,16 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     if (true
-                    && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("BioD", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
                     try
                     {
                         //Log.Information($@"Opening package {file}");
-                        var package = MEPackageHandler.OpenMEPackage(file);
+                        var package = MERFileSystem.OpenMEPackage(file);
                         //Debug.WriteLine(file);
                         foreach (var rp in perFileRandomizers)
                         {
@@ -507,10 +507,10 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Enemy loadouts",
-                        Description = "Gives enemies different guns", 
-                        PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport, 
-                        PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init, 
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, 
+                        Description = "Gives enemies different guns",
+                        PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport,
+                        PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true,
                         // Debug stuff.
 #if DEBUG
@@ -683,7 +683,21 @@ namespace ME2Randomizer.Classes
                             }
                         }
                     },
-                    new RandomizationOption() {HumanName = "UwU", Description="UwUifies all text in the game, often hilarious. Based on Jade's OwO mod", PerformSpecificRandomizationDelegate = RTexts.UwuifyText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate},
+                    new RandomizationOption() {HumanName = "UwU",
+                        Description="UwUifies all text in the game, often hilarious. Based on Jade's OwO mod", PerformSpecificRandomizationDelegate = RTexts.UwuifyText,
+                        RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText",
+                        StateChangingDelegate=optionChangingDelegate,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Keep casing",
+                                Description = "Keeps upper and lower casing.",
+                                SubOptionKey = RTexts.SUBOPTIONKEY_UWU_KEEPCASING
+                            }
+                        }
+                    },
                 }
             });
 

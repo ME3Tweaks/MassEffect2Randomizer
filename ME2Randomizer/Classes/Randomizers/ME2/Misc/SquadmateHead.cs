@@ -114,7 +114,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 else
                 {
                     var packageF = MERFileSystem.GetPackageFile(PackageFile);
-                    return packageF != null ? MEPackageHandler.OpenMEPackage(packageF).FindExport(AssetPath) : null;
+                    return packageF != null ? MERFileSystem.OpenMEPackage(packageF).FindExport(AssetPath) : null;
                 }
             }
 
@@ -128,7 +128,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 else
                 {
                     var packageF = MERFileSystem.GetPackageFile(PackageFile);
-                    return packageF != null ? MEPackageHandler.OpenMEPackage(packageF).FindExport(HairAssetPath) : null;
+                    return packageF != null ? MERFileSystem.OpenMEPackage(packageF).FindExport(HairAssetPath) : null;
                 }
             }
 
@@ -717,6 +717,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var packagename = Path.GetFileName(package.FilePath);
             if (packagename.Equals("BioP_ProCer.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda and Jacob pawns at end of stage
             {
+                // Remove these pawns from BioP memory
+                // Might be able to make it lose the references
                 Log.Information("Fixing BioP_ProCer Miranda/Jacob");
                 //package.GetUExport(1562).ObjectName = "SFXPawn_Miranda_UNUSED";
                 //package.GetUExport(1555).ObjectName = "SFXPawn_Ja_UNUSED";
@@ -748,8 +750,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                 // Miranda
                 var mirandaIdx = ThreadSafeRandom.Next(2);
+#if DEBUG
                 mirandaIdx = 1; //debug
-                var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+#endif
+                var mirandaSourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
                 var classPath = $"TheWorld.PersistentLevel.SFXPawn_Miranda_";
                 if (mirandaIdx != 0)
                 {
@@ -804,7 +808,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Miranda
                 var mirandaIdx = ThreadSafeRandom.Next(2);
                 mirandaIdx = 1;
-                var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+                var mirandaSourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
                 var classPath = $"TheWorld.PersistentLevel.SFXPawn_Miranda_";
                 if (mirandaIdx != 0)
                 {
@@ -866,7 +870,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                 //jacobI.ObjectName = "SFXPawn_Jacob_NOTUSED";
 
-                //// Port in SFXPawn_Miranda, SFXPawn_Jacob. Maybe use their alternate outfits?
+                // Port in SFXPawn_Miranda, SFXPawn_Jacob. Maybe use their alternate outfits?
                 //var mirandaIdx = ThreadSafeRandom.Next(2);
                 //var mirandaSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
                 //var classPath = "SFXGamePawns.SFXPawn_Miranda";
@@ -882,7 +886,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 //mirandaBin.OverwriteRange(0x0, BitConverter.GetBytes(newClass.UIndex));
                 //mirandaBin.OverwriteRange(0x4, BitConverter.GetBytes(newClass.UIndex));
                 //mirandaPawn.WritePrePropsAndProperties(mirandaBin, mirandaPawn.GetProperties());
-                MERFileSystem.SavePackage(package);
+                //MERFileSystem.SavePackage(package);
                 return true;
             }
 
@@ -906,7 +910,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             foreach (var oldProp in oldPawnProps)
             {
                 var matchingProp = props.FirstOrDefault(x => x.Name == oldProp.Name);
-                if (matchingProp == null || oldProp.Name == "Location" || oldProp.Name == "Rotation" || oldProp.Name == "Tag")
+                if (!(oldProp is ObjectProperty) && (matchingProp == null || oldProp.Name == "Location" || oldProp.Name == "Rotation" || oldProp.Name == "Tag"))
                 {
                     props.AddOrReplaceProp(oldProp);
                 }

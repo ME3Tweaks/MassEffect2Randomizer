@@ -53,11 +53,12 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <returns></returns>
         public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false, bool useMemorySafeImport = false, PackageCache cache = null)
         {
+            Debug.WriteLine($"Porting {sourceExport.InstancedFullPath} from {sourceExport.FileRef.FilePath} into {targetPackage.FilePath}");
             var existing = targetPackage.FindExport(sourceExport.InstancedFullPath);
             if (existing != null)
                 return existing;
 
-            // Create parent heirarchy
+            // Create parent hierarchy
             IEntry newParent = null;
             if (createParentPackages)
             {
@@ -94,7 +95,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
 
             IEntry newEntry;
-            if (!useMemorySafeImport )
+            if (!useMemorySafeImport)
             {
                 Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. Should probably just be part of the method
                 var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
