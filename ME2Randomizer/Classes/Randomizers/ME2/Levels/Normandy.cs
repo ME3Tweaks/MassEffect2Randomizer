@@ -81,7 +81,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             {
                 var nor250Henchmen = MEPackageHandler.OpenMEPackage(cookingAreaF);
 
-                var packageBin = Utilities.GetEmbeddedStaticFilesBinaryFile("Delux2go_Edmonton_Burger.pcc");
+                var packageBin = MERUtilities.GetEmbeddedStaticFilesBinaryFile("Delux2go_Edmonton_Burger.pcc");
                 var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
 
                 List<ExportEntry> addedBurgers = new List<ExportEntry>();

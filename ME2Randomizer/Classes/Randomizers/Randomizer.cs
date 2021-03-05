@@ -172,9 +172,9 @@ namespace ME2Randomizer.Classes
 
                     if (true
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Bch", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
                     try
@@ -237,6 +237,7 @@ namespace ME2Randomizer.Classes
         /// </summary>
         private void ResetClasses()
         {
+            RMorphTarget.ResetClass();
             SquadmateHead.ResetClass();
             PawnPorting.ResetClass();
             NPCHair.ResetClass();
@@ -357,7 +358,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",
                         PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport2,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "NPC hair", Description="Randomizes the hair on NPCs that have use a hair mesh",
+                    new RandomizationOption() {HumanName = "NPC hair", Description="Randomizes the hair on NPCs that have a hair mesh",
                         PerformRandomizationOnExportDelegate = NPCHair.RandomizeExport,
                         PerformSpecificRandomizationDelegate = NPCHair.Init,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
@@ -440,11 +441,11 @@ namespace ME2Randomizer.Classes
                     },
                     new RandomizationOption()
                     {
-                        HumanName = "Class powers",
-                        Description="Shuffles the powers of all classes. Weapon classes are unchanged. Loading an existing save after running this will cause you to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        HumanName = "Psychological profiles",
+                        Description="Completely changes the backstories of Shepard, with both new stories and continuations from ME1 Randomizer's stories",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         IsRecommended = true,
-                        PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizePsychProfiles,
                         RequiresTLK = true
                     },
                 }
@@ -506,7 +507,7 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Enemy loadouts",
+                    new RandomizationOption() {HumanName = "Enemy weapons",
                         Description = "Gives enemies different guns",
                         PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport,
                         PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init,
@@ -569,6 +570,15 @@ namespace ME2Randomizer.Classes
                 GroupName = "Gameplay",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
+                    new RandomizationOption()
+                    {
+                        HumanName = "Class powers",
+                        Description="Shuffles the powers of all player classes. Weapon classes are unchanged. Loading an existing save after running this will cause you to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true,
+                        PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
+                        RequiresTLK = true
+                    },
                     new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption()
                     {

@@ -32,6 +32,7 @@ namespace ME2Randomizer
         public static bool IsDebug => false;
 #endif
         public static Visibility IsDebugVisibility => IsDebug ? Visibility.Visible : Visibility.Collapsed;
+        public static bool BetaAvailable { get; set; }
 
         [STAThread]
         public static void Main()
@@ -54,7 +55,6 @@ namespace ME2Randomizer
 
         public App() : base()
         {
-            LogDir = Path.Combine(Utilities.GetAppDataFolder(), "logs");
             string[] args = Environment.GetCommandLineArgs();
             Parsed<Options> parsedCommandLineArgs = null;
             string updateDestinationPath = null;
@@ -95,21 +95,8 @@ namespace ME2Randomizer
             }
             #endregion
 
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.File(Path.Combine(LogDir, $"me2rlog.txt"), rollingInterval: RollingInterval.Day, flushToDiskInterval: new TimeSpan(0, 0, 15))
-#if DEBUG
-      .WriteTo.Debug()
-#endif
-      .CreateLogger();
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
             POST_STARTUP = true;
-            ToolTipService.ShowDurationProperty.OverrideMetadata(
-                typeof(DependencyObject), new FrameworkPropertyMetadata(int.MaxValue));
-            Log.Information("===========================================================================");
-
-            string version = System.Reflection.Assembly.GetEntryAssembly().GetName().Version.ToString();
-            Log.Information("Mass Effect 2 Randomizer " + version);
-            Log.Information("Application boot: " + DateTime.UtcNow.ToString());
 
             #region Update mode boot
             if (updateDestinationPath != null)
@@ -152,20 +139,6 @@ namespace ME2Randomizer
                 Current.Shutdown();
             }
             #endregion
-            System.Windows.Controls.ToolTipService.ShowOnDisabledProperty.OverrideMetadata(typeof(Control),
-           new FrameworkPropertyMetadata(true));
-
-            //try
-            //{
-            //    var application = new App();
-            //    application.InitializeComponent();
-            //    application.Run();
-            //}
-            //catch (Exception e)
-            //{
-            //    OnFatalCrash(e);
-            //    throw e;
-            //}
         }
 
         /// <summary>
@@ -179,9 +152,6 @@ namespace ME2Randomizer
             string st = FlattenException(e.Exception);
             Log.Fatal(errorMessage);
             Log.Fatal(st);
-            //Log.Information("Forcing beta mode off before exiting...");
-            //Utilities.WriteRegistryKey(Registry.CurrentUser, AlotAddOnGUI.MainWindow.REGISTRY_KEY, AlotAddOnGUI.MainWindow.SETTINGSTR_BETAMODE, 0);
-            //File.Create(Utilities.GetAppCrashFile());
         }
 
         /// <summary>
@@ -193,7 +163,7 @@ namespace ME2Randomizer
             if (!POST_STARTUP)
             {
                 string errorMessage = string.Format("Mass Effect 2 Randomizer has encountered a fatal startup crash:\n" + FlattenException(e));
-                File.WriteAllText(Path.Combine(Utilities.GetAppDataFolder(), "FATAL_STARTUP_CRASH.txt"), errorMessage);
+                File.WriteAllText(Path.Combine(MERUtilities.GetAppDataFolder(), "FATAL_STARTUP_CRASH.txt"), errorMessage);
             }
         }
 

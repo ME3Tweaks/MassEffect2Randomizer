@@ -33,10 +33,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         {
             if (AllAvailableWeapons == null)
             {
-                string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("weaponloadoutrules.json");
+                string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("weaponloadoutrules.json");
                 LoadoutSupportsVisibleMapping = JsonConvert.DeserializeObject<ConcurrentDictionary<string, bool>>(fileContents);
 
-                fileContents = Utilities.GetEmbeddedStaticFilesTextFile("weaponlistme2.json");
+                fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("weaponlistme2.json");
                 var allGuns = JsonConvert.DeserializeObject<List<GunInfo>>(fileContents).ToList();
                 AllAvailableWeapons = new List<GunInfo>();
                 VisibleAvailableWeapons = new List<GunInfo>();
@@ -290,7 +290,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             IMEPackage sourcePackage;
             if (gunInfo.IsCorrectedPackage)
             {
-                var sourceData = Utilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.weapons." + gunInfo.PackageFileName);
+                var sourceData = MERUtilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.weapons." + gunInfo.PackageFileName);
                 sourcePackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(sourceData));
 
                 if (gunInfo.ImportOnly)
@@ -428,8 +428,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             if (!CanRandomize(export, out var wrtype)) return false;
             if (wrtype == EWRType.Loadout)
                 return RandomizeWeaponLoadout(export, option);
-            //else if (wrtype == EWRType.ApprBody)
-            //    return InstallWeaponAnims(export, option);
+            else if (wrtype == EWRType.ApprBody)
+                return InstallWeaponAnims(export, option);
             // This seems kind of pointless so we're not going to enable it
             //else if (wrtype == EWRType.SetWeapon)
             //    return SetWeaponSeqAct(export, option);

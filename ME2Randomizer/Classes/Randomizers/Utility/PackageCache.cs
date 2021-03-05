@@ -77,7 +77,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
             if (openIfNotInCache)
             {
-                var embeddedData = Utilities.GetEmbeddedStaticFilesBinaryFile(embeddedPath, isFullPath);
+                var embeddedData = MERUtilities.GetEmbeddedStaticFilesBinaryFile(embeddedPath, isFullPath);
                 if (embeddedData != null)
                 {
                     package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(embeddedData));

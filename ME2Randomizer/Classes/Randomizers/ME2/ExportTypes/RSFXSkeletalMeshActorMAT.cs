@@ -17,7 +17,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
     class RSFXSkeletalMeshActorMAT
     {
-        private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && exp.ClassName == "SFXSkeletalMeshActorMAT";
+        private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && exp.ClassName == "SFXSkeletalMeshActorMAT" && !exp.ObjectName.Name.Contains("Dead", StringComparison.InvariantCultureIgnoreCase);
         private static string[] smaKeywords = new[] { "Dancing", "Dance", "Angry", "Cursing", "Fearful", "ROM", "Drunk", "Kiss", "Headbutt", "Hugging", "Consoling", "Come_Here", "Cough", "Count", "Bhand_Slapped" };
 
         public static bool RandomizeBasicGestures(ExportEntry export, RandomizationOption option)

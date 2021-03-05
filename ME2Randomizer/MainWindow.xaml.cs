@@ -2,33 +2,24 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Navigation;
+using ALOTInstallerCore.ModManager.ME3Tweaks;
+using ALOTInstallerCore.PlatformSpecific.Windows;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using MassEffectRandomizer.Classes;
-using MassEffectRandomizer.Classes.Updater;
 using ME2Randomizer.Classes;
+using ME2Randomizer.Classes.Controllers;
 using ME2Randomizer.Classes.Randomizers;
-using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.DebugTools;
 //using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
-using ME3ExplorerCore;
-using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Misc;
-using ME3ExplorerCore.Packages;
-using Microsoft.Win32;
-using Octokit;
 using Serilog;
 
 namespace ME2Randomizer
@@ -38,7 +29,7 @@ namespace ME2Randomizer
     /// </summary>
     public partial class MainWindow : MetroWindow, INotifyPropertyChanged
     {
-        private static string FaqLink = "https://me3tweaks.com/masseffectrandomizer/faq";
+        private static string FaqLink = "https://me3tweaks.com/masseffect2randomizer/faq";
         public static bool DEBUG_LOGGING { get; internal set; }
 
         public enum RandomizationMode
@@ -49,6 +40,12 @@ namespace ME2Randomizer
         }
         public bool UseMultiThreadRNG { get; set; } = true;
 
+        #region Flyouts
+        public bool LogUploaderFlyoutOpen { get; set; }
+        public bool FirstRunFlyoutOpen { get; set; }
+        #endregion
+
+        public string GamePathString { get; set; } = "Please wait";
         public bool ShowProgressPanel { get; set; }
         public RandomizationMode SelectedRandomizeMode { get; set; }
 
@@ -71,14 +68,14 @@ namespace ME2Randomizer
         public double ProgressBar_Bottom_Min { get; set; }
         public double ProgressBar_Bottom_Max { get; set; }
         public bool ProgressBarIndeterminate { get; set; }
-        private Randomizer randomizer;
-        ProgressDialogController updateprogresscontroller;
+        public LogCollector.LogItem SelectedLogForUpload { get; set; }
+        public ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new ObservableCollectionExtended<LogCollector.LogItem>();
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             try
             {
-                Utilities.OpenWebPage(((Hyperlink)sender).NavigateUri.AbsoluteUri);
+                MERUtilities.OpenWebPage(((Hyperlink)sender).NavigateUri.AbsoluteUri);
             }
             catch (Exception)
             {
@@ -131,10 +128,10 @@ namespace ME2Randomizer
             SeedTextBox.Text = preseed.ToString();
 #endif
             Version version = Assembly.GetExecutingAssembly().GetName().Version;
-            TextBlock_AssemblyVersion.Text = "Version " + version;
+            TextBlock_AssemblyVersion.Text = $"Version {version}";
             Title += " " + version;
             SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
-            PerformUpdateCheck();
+            //PerformUpdateCheck();
         }
 
         private void optionStateChanging(RandomizationOption obj)
@@ -165,10 +162,14 @@ namespace ME2Randomizer
 
         #region Commands
         public GenericCommand StartRandomizationCommand { get; set; }
+        public GenericCommand CloseLogUICommand { get; set; }
+        public GenericCommand UploadSelectedLogCommand { get; set; }
 
         private void LoadCommands()
         {
             StartRandomizationCommand = new GenericCommand(StartRandomization, CanStartRandomization);
+            CloseLogUICommand = new GenericCommand(() => LogUploaderFlyoutOpen = false, () => LogUploaderFlyoutOpen);
+            UploadSelectedLogCommand = new GenericCommand(() => LogUploaderFlyoutOpen = false, () => SelectedLogForUpload != null);
         }
 
         #endregion
@@ -181,37 +182,12 @@ namespace ME2Randomizer
 
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            //var files = File.ReadAllLines(@"C:\users\mgame\desktop\fileslist.txt");
-            //var dest = @"E:\Documents\BioWare\Mass Effect 2\BIOGame\Movies";
-            //var src = @"E:\Documents\BioWare\Mass Effect 2\BIOGame\Movies\load_f01.bik";
-            //foreach (var file in files)
-            //{
-            //    var rdest = Path.Combine(dest, file);
-            //    if (File.Exists(rdest)) continue;
-            //    File.Copy(src, rdest);
-            //}
+            StartupUIController.BeginFlow(this);
+        }
 
-            //List<(string, string)> strs = new List<(string, string)>();
-            //var fils = Directory.GetFiles(@"D:\Origin Games\Mass Effect 2\BioGame\CookedPC\BIOGame_INT");
-            //foreach (var fil in fils)
-            //{
-            //    var x = XDocument.Load(fil);
-            //    foreach (var str in x.Descendants("String"))
-            //    {
-            //        if (str.Value.Contains("plague", StringComparison.InvariantCultureIgnoreCase))
-            //        {
-            //            strs.Add((str.Attribute("id").ToString(), str.Value));
-            //        }
-            //    }
-            //}
-
-            //foreach (var str in strs)
-            //{
-            //    Debug.WriteLine($"<String id=\"{str.Item1}\">{str.Item2}</String>");
-            //}
-
-
-            string me2Path = Utilities.GetGamePath(allowMissing: true);
+        private async void Startup()
+        {
+            string me2Path = MERUtilities.GetGamePath(allowMissing: true);
 
             //int installedGames = 5;
             bool me2installed = (me2Path != null);
@@ -224,11 +200,11 @@ namespace ME2Randomizer
                 Environment.Exit(1);
             }
 
-            GameLocationTextbox.Text = "Game Path: " + me2Path;
+            GameLocationTextbox.Text = $"Game Path: {me2Path}";
             Log.Information("Game is installed at " + me2Path);
 
             Log.Information("Detecting locale...");
-            if (!Utilities.IsSupportedLocale())
+            if (!MERUtilities.IsSupportedLocale())
             {
                 Log.Error("Unable to detect INT locale.");
                 await this.ShowMessageAsync("Mass Effect 2 unsupported locale", "Mass Effect 2 Randomizer only works with INT(english) locales of the game. Your current installation locale is unsupported or could not determined (could not detect loc_int files). Mass Effect 2 Randomizer is written against the INT locale and will not work with other localizations of the game. The application will now exit. If you need assistance, please come to the ME3Tweaks Discord.");
@@ -236,13 +212,13 @@ namespace ME2Randomizer
                 Environment.Exit(1);
             }
 
-            string path = Utilities.GetGameBackupPath();
+            string path = MERUtilities.GetGameBackupPath();
             if (path != null)
             {
                 BackupRestoreText = "Restore";
                 BackupRestore_Button.ToolTip = "Click to restore game from " + Environment.NewLine + path;
 
-                string testME2Installed = Utilities.GetGamePath();
+                string testME2Installed = MERUtilities.GetGamePath();
                 if (testME2Installed == null)
                 {
                     Log.Error("Mass Effect detected as installed, but files are missing");
@@ -276,10 +252,10 @@ namespace ME2Randomizer
         private bool CanStartRandomization() => SeedTextBox != null && int.TryParse(SeedTextBox.Text, out var value) && value != 0;
         private async void StartRandomization()
         {
-            if (!Utilities.isGameRunning())
+            if (!MERUtilities.IsGameRunning(MERFileSystem.Game))
             {
                 ShowProgressPanel = true;
-                randomizer = new Randomizer(this);
+                var randomizer = new Randomizer(this);
 
                 AllowOptionsChanging = false;
 
@@ -309,209 +285,35 @@ namespace ME2Randomizer
             }
         }
 
-        private async void PerformUpdateCheck()
+        public void FinalizeInterfaceLoad()
         {
-            Log.Information("Checking for application updates from github");
-            ProgressBarIndeterminate = true;
-            CurrentOperationText = "Checking for application updates";
-            var versInfo = Assembly.GetEntryAssembly().GetName().Version;
-            var client = new GitHubClient(new ProductHeaderValue("MassEffect2Randomizer"));
-            try
-            {
-                int myReleaseAge = 0;
-                var releases = await client.Repository.Release.GetAll("Mgamerz", "MassEffect2Randomizer");
-                if (releases.Count > 0)
-                {
-                    Log.Information("Fetched application releases from github");
-
-                    //The release we want to check is always the latest, so [0]
-                    Release latest = null;
-                    Version latestVer = new Version("0.0.0.0");
-                    foreach (Release r in releases)
-                    {
-                        if (r.Assets.Count > 0)
-                        {
-                            Version releaseVersion = new Version(r.TagName);
-                            if (versInfo < releaseVersion)
-                            {
-                                myReleaseAge++;
-                            }
-
-                            if (releaseVersion > latestVer)
-                            {
-                                latest = r;
-                                latestVer = releaseVersion;
-                            }
-                        }
-                    }
-
-                    if (latest != null)
-                    {
-                        Log.Information("Latest available: " + latest.TagName);
-                        Version releaseName = new Version(latest.TagName);
-                        if (versInfo < releaseName && latest.Assets.Count > 0)
-                        {
-                            bool upgrade = false;
-                            bool canCancel = true;
-                            Log.Information("Latest release is applicable to us.");
-
-                            string versionInfo = "";
-                            int daysAgo = (DateTime.Now - latest.PublishedAt.Value).Days;
-                            string ageStr = "";
-                            if (daysAgo == 1)
-                            {
-                                ageStr = "1 day ago";
-                            }
-                            else if (daysAgo == 0)
-                            {
-                                ageStr = "today";
-                            }
-                            else
-                            {
-                                ageStr = daysAgo + " days ago";
-                            }
-
-                            versionInfo += "\nReleased " + ageStr;
-                            MetroDialogSettings mds = new MetroDialogSettings();
-                            mds.AffirmativeButtonText = "Update";
-                            mds.NegativeButtonText = "Later";
-                            mds.DefaultButtonFocus = MessageDialogResult.Affirmative;
-
-                            string message = "Mass Effect Randomizer " + releaseName + " is available. You are currently using version " + versInfo + "." + versionInfo;
-                            UpdateAvailableDialog uad = new UpdateAvailableDialog(message, latest.Body, this);
-                            await this.ShowMetroDialogAsync(uad, mds);
-                            await uad.WaitUntilUnloadedAsync();
-                            upgrade = uad.wasUpdateAccepted();
-
-                            if (upgrade)
-                            {
-                                Log.Information("Downloading update for application");
-
-                                //there's an update
-                                message = "Downloading update...";
-
-                                updateprogresscontroller = await this.ShowProgressAsync("Downloading update", message, canCancel);
-                                updateprogresscontroller.SetIndeterminate();
-                                WebClient downloadClient = new WebClient();
-
-                                downloadClient.Headers["Accept"] = "application/vnd.github.v3+json";
-                                downloadClient.Headers["user-agent"] = "MassEffectRandomizer";
-                                string temppath = Path.GetTempPath();
-                                int downloadProgress = 0;
-                                downloadClient.DownloadProgressChanged += (s, e) =>
-                                {
-                                    if (downloadProgress != e.ProgressPercentage)
-                                    {
-                                        Log.Information("Program update download percent: " + e.ProgressPercentage);
-                                    }
-
-                                    string downloadedStr = FileSize.FormatSize(e.BytesReceived) + " of " + FileSize.FormatSize(e.TotalBytesToReceive);
-                                    updateprogresscontroller.SetMessage(message + "\n\n" + downloadedStr);
-
-                                    downloadProgress = e.ProgressPercentage;
-                                    updateprogresscontroller.SetProgress((double)e.ProgressPercentage / 100);
-                                };
-                                updateprogresscontroller.Canceled += async (s, e) =>
-                                {
-                                    if (downloadClient != null)
-                                    {
-                                        Log.Information("Application update was in progress but was canceled.");
-                                        downloadClient.CancelAsync();
-                                        await updateprogresscontroller.CloseAsync();
-                                    }
-                                };
-                                downloadClient.DownloadFileCompleted += UpdateDownloadCompleted;
-                                string downloadPath = Path.Combine(temppath, "MassEffectRandomizer-Update.exe");
-                                //DEBUG ONLY
-                                Uri downloadUri = new Uri(latest.Assets[0].BrowserDownloadUrl);
-                                downloadClient.DownloadFileAsync(downloadUri, downloadPath, new KeyValuePair<ProgressDialogController, string>(updateprogresscontroller, downloadPath));
-                            }
-                            else
-                            {
-                                Log.Warning("Application update was declined");
-                            }
-                        }
-                        else
-                        {
-                            //up to date
-                            CurrentOperationText = "Application up to date";
-                        }
-                    }
-                }
-                else
-                {
-                    Log.Information("No releases found on Github");
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error("Error checking for update: " + e);
-            }
-
-            // Load ME3ExplorerCore
-            ME3ExplorerCoreLib.InitLib(TaskScheduler.FromCurrentSynchronizationContext());
-            MEPackageHandler.GlobalSharedCacheEnabled = false;
             Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
             ShowProgressPanel = false;
         }
 
-
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            // close all active threads
-            //if (randomizer != null && randomizer.Busy){
-            //    Environment.Exit(0); //force close threads
-            //}
-            // Let app close itself
-        }
-
-        private void UpdateDownloadCompleted(object sender, AsyncCompletedEventArgs e)
-        {
-            Log.Information("Update downloaded - rebooting to new downloaded file, in update mode");
-            string temppath = Path.GetTempPath();
-            string exe = Path.Combine(temppath, "MassEffectRandomizer-Update.exe");
-
-            // FIX FOR .NET CORE SINGLE FILE
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            string exePath = assembly.Location;
-
-            string args = "--update-dest-path \"" + exePath + "\"";
-            Utilities.runProcess(exe, args, true);
-            while (true)
-            {
-                try
-                {
-                    Environment.Exit(0);
-                }
-                catch (TaskCanceledException)
-                {
-                    //something to do with how shutting down works.
-                }
-            }
-        }
-
         private void Logs_Click(object sender, RoutedEventArgs e)
         {
-            //LogUploaderFlyoutOpen = true;
-        }
-
-        private void Diagnostics_Click(object sender, RoutedEventArgs e)
-        {
-            //DiagnosticsFlyoutOpen = true;
+            LogUploaderFlyoutOpen = true;
         }
 
         private async void BackupRestore_Click(object sender, RoutedEventArgs e)
         {
-            string path = Utilities.GetGameBackupPath();
+            string path = MERUtilities.GetGameBackupPath();
             if (path != null)
             {
                 MetroDialogSettings settings = new MetroDialogSettings();
-                settings.NegativeButtonText = "Cancel";
-                settings.AffirmativeButtonText = "Restore";
-                MessageDialogResult result = await this.ShowMessageAsync("Restoring Mass Effect 2 from backup", "Restoring Mass Effect 2 will wipe out the current installation and put your game back to the state when you backed it up. Are you sure you want to do this?", MessageDialogStyle.AffirmativeAndNegative, settings);
-                if (result == MessageDialogResult.Affirmative)
+                settings.NegativeButtonText = "Full";
+                settings.FirstAuxiliaryButtonText = "Cancel";
+                settings.AffirmativeButtonText = "Quick";
+                settings.DefaultButtonFocus = MessageDialogResult.Affirmative;
+                MessageDialogResult result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores files only modified Mass Effect 2 Randomizer, delete DLC mod component\n\nFull: Deletes entire game installation and restores the backup in it's place. Fully resets the game to the backup state?", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                if (result == MessageDialogResult.FirstAuxiliary)
                 {
-                    //RestoreGame();
+                    // Do nothing. User canceled
+                }
+                else
+                {
+
                 }
             }
         }
@@ -523,10 +325,9 @@ namespace ME2Randomizer
 
         private void Button_FirstTimeRunDismiss_Click(object sender, RoutedEventArgs e)
         {
-            //FirstRunFlyoutOpen = false;
-            bool? hasShownFirstRun = Utilities.GetRegistrySettingBool("HasRunFirstRun");
-            Utilities.WriteRegistryKey(Registry.CurrentUser, App.REGISTRY_KEY, "HasRunFirstRun", true);
-            //PerformPostStartup();
+            //bool? hasShownFirstRun = RegistryHandler.GetRegistrySettingBool("HasRunFirstRun");
+            RegistryHandler.WriteRegistrySettingBool("HasRunFirstRun", true);
+            FirstRunFlyoutOpen = false;
         }
 
         private void Flyout_Mousedown(object sender, MouseButtonEventArgs e)
@@ -549,37 +350,30 @@ namespace ME2Randomizer
 
         private void FAQ_Click(object sender, RoutedEventArgs e)
         {
-            Utilities.OpenWebPage(FaqLink);
+            MERUtilities.OpenWebPage(FaqLink);
         }
 
         private void DiscordButton_Click(object sender, RoutedEventArgs e)
         {
             //ME3Tweaks Discord
-            Utilities.OpenWebPage(App.DISCORD_INVITE_LINK);
-        }
-
-        private void Combobox_LogSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        private void LogUploaderFlyout_IsOpenChanged(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void Button_CancelLog_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void Button_SelectLog_Click(object sender, RoutedEventArgs e)
-        {
-
+            MERUtilities.OpenWebPage(App.DISCORD_INVITE_LINK);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public void OnLogUploaderFlyoutOpenChanged()
+        {
+            if (LogUploaderFlyoutOpen)
+            {
+                LogsAvailableForUpload.ReplaceAll(LogCollector.GetLogsList());
+                SelectedLogForUpload = LogsAvailableForUpload.FirstOrDefault();
+            }
+            else
+            {
+                LogsAvailableForUpload.ClearEx();
+                SelectedLogForUpload = null;
+            }
+        }
 
         private void DebugWindow_Click(object sender, RoutedEventArgs e)
         {

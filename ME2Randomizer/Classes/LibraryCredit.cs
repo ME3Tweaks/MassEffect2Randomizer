@@ -25,7 +25,7 @@ namespace ME2Randomizer.Classes
         /// <returns></returns>
         public static List<LibraryCredit> LoadLibraryCredits(string file)
         {
-            var textFile = Utilities.GetEmbeddedStaticFilesTextFile(file).Split('\n');
+            var textFile = MERUtilities.GetEmbeddedStaticFilesTextFile(file).Split('\n');
             List<LibraryCredit> credits = new List<LibraryCredit>(100);
 
             LibraryCredit currentCredit = null;

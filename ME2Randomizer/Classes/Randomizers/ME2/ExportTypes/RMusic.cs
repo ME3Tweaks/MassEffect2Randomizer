@@ -246,7 +246,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         private static void LoadMusicList()
         {
             var loadedFiles = MELoadedFiles.GetFilesLoadedInGame(MERFileSystem.Game, true, includeAFCs: true);
-            string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("musiclistme2.json");
+            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("musiclistme2.json");
             var musicList = JsonConvert.DeserializeObject<List<MusicStreamInfo>>(fileContents);
 
             AvailableMusicPool = new();

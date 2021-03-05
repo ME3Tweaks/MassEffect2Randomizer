@@ -579,11 +579,11 @@ namespace ME2Randomizer.Classes
             });
 
             // Corrected, embedded guns that required file coalescing for portability
-            var correctedGuns = Utilities.ListStaticAssets("binary.correctedloadouts.weapons");
+            var correctedGuns = MERUtilities.ListStaticAssets("binary.correctedloadouts.weapons");
             foreach (var cg in correctedGuns)
             {
-                var pData = Utilities.GetEmbeddedStaticFile(cg, true);
-                var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData), Utilities.GetFilenameFromAssetName(cg)); //just any path
+                var pData = MERUtilities.GetEmbeddedStaticFile(cg, true);
+                var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData), MERUtilities.GetFilenameFromAssetName(cg)); //just any path
                 var sfxweapons = package.Exports.Where(x => x.InheritsFrom("SFXWeapon") && x.IsClass && !x.IsDefaultObject).ToList();
                 foreach (var skm in sfxweapons)
                 {
@@ -857,11 +857,11 @@ namespace ME2Randomizer.Classes
             // STAGE 1====================
 
             // Corrected, embedded powers that required file coalescing for portability or other corrections in order to work on enemies
-            var correctedPowers = Utilities.ListStaticAssets("binary.correctedloadouts.powers");
+            var correctedPowers = MERUtilities.ListStaticAssets("binary.correctedloadouts.powers");
             foreach (var cg in correctedPowers)
             {
-                var pData = Utilities.GetEmbeddedStaticFile(cg, true);
-                var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData), Utilities.GetFilenameFromAssetName(cg)); //just any path
+                var pData = MERUtilities.GetEmbeddedStaticFile(cg, true);
+                var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData), MERUtilities.GetFilenameFromAssetName(cg)); //just any path
                 var sfxPowers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
                 foreach (var sfxPow in sfxPowers)
                 {

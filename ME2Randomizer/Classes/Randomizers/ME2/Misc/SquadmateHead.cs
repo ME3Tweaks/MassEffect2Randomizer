@@ -108,7 +108,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 if (IsCorrectedAsset)
                 {
-                    var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile($"correctedmeshes.heads.{PackageFile}")));
+                    var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile($"correctedmeshes.heads.{PackageFile}")));
                     return package.FindExport(AssetPath);
                 }
                 else
@@ -122,7 +122,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 if (IsCorrectedAsset)
                 {
-                    var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile($"correctedmeshes.heads.{PackageFile}")));
+                    var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile($"correctedmeshes.heads.{PackageFile}")));
                     return package.FindExport(HairAssetPath);
                 }
                 else
@@ -534,12 +534,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     if (parent.ObjectName == "Default__SFXPawn_Thane_02")
                     {
                         // Install DLC version of mesh
-                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc")));
+                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc")));
                     }
                     else
                     {
                         // Install basegame version of mesh
-                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelids.pcc")));
+                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.ThaneBodyNoEyelids.pcc")));
                     }
 
                     var meshExp = parent.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;

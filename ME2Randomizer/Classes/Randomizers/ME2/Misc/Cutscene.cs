@@ -126,8 +126,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                                         if (linkedNodeData.IsA("BioPawn"))
                                                         {
                                                             //We can shuffle this item.
+
+                                                            // We write the property to the node so if it's not assigned at runtime (like on gender check) it still can show something.
+                                                            // Cutscene will still be goofed up but will instead show something instead of nothing
+
+                                                            linkedNode.WriteProperty(linkedNodeType);
+
                                                             //Debug.WriteLine("Adding shuffle item: " + objRef.Value);
-                                                            pawnsToShuffleDynamicSet.Add(linkedNode); //pointer to this node
+                                                            // Original value below was 'linkedNode' which i'm pretty sure is the value that would be assigned, not the actual object that holds that value oncea assigned
+
+                                                            pawnsToShuffleDynamicSet.Add(vlNode); //pointer to this node that will be assigned
                                                             addedToShuffler = true;
                                                         }
                                                     }
@@ -418,7 +426,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         private static void LoadAsset()
         {
-            acceptableTagsForPawnShuffling = Utilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split(new[] { "\r\n", "\r", "\n" },
+            acceptableTagsForPawnShuffling = MERUtilities.GetEmbeddedStaticFilesTextFile("allowedcutscenerandomizationtags.txt").Split(new[] { "\r\n", "\r", "\n" },
                 StringSplitOptions.None).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         }
     }

@@ -8,6 +8,7 @@
                       xmlns:classes="clr-namespace:ME2Randomizer.Classes"
                       xmlns:ui="clr-namespace:ME2Randomizer.ui"
                       xmlns:global="clr-namespace:ME2Randomizer"
+                      xmlns:helpers="clr-namespace:ALOTInstallerCore.Helpers;assembly=ALOTInstallerCore"
                       x:Class="ME2Randomizer.MainWindow" 
                       IconScalingMode="ScaleDownLargerFrame" 
                       mc:Ignorable="d" 
@@ -103,9 +104,9 @@
             </StackPanel>
         </DataTemplate>
     </Window.Resources>
-    <!--<Controls:MetroWindow.Flyouts>
+    <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
-            <Controls:Flyout x:Name="LogUploaderFlyout" SnapsToDevicePixels="True" IsOpenChanged="LogUploaderFlyout_IsOpenChanged" IsOpen="{Binding LogUploaderFlyoutOpen}" TitleVisibility="Collapsed" Theme="Accent" CloseButtonVisibility="Collapsed" Position="Bottom" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualWidth}" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDown="Flyout_Mousedown" MouseDoubleClick="Flyout_Doubleclick">
+            <Controls:Flyout x:Name="LogUploaderFlyout" SnapsToDevicePixels="True" IsOpen="{Binding LogUploaderFlyoutOpen}" TitleVisibility="Collapsed" Theme="Accent" CloseButtonVisibility="Collapsed" Position="Bottom" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualWidth}" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDown="Flyout_Mousedown" MouseDoubleClick="Flyout_Doubleclick">
                 <Border>
                     <Border.Background>
                         <ImageBrush ImageSource="pack://application:,,,/ME2Randomizer;component/images/me3_bg_800x600.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
@@ -115,16 +116,16 @@
                             <fonts:OutlinedTextBlock Text="LOG UPLOADER" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="40" StrokeThickness="4" />
                         </TextBlock>
 
-                        <TextBlock x:Name="LogSelectorHeader" Width="350" HorizontalAlignment="Center" Margin="0,10,0,25" Foreground="Indigo" Text="Select a log file for upload. In most cases, you will want to use the most recent one." FontFamily="{StaticResource AeroLight}" FontSize="14" TextWrapping="Wrap" TextAlignment="Center"/>
-                        <ComboBox x:Name="Combobox_LogSelector" SelectionChanged="Combobox_LogSelector_SelectionChanged"/>
+                        <TextBlock x:Name="LogSelectorHeader" Width="350" HorizontalAlignment="Center" Margin="0,10,0,25" Foreground="Indigo" Text="Select a log file for upload. In most cases, you will want to use the most recent one." FontSize="16" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <ComboBox x:Name="Combobox_LogSelector" ItemsSource="{Binding LogsAvailableForUpload}" SelectedItem="{Binding SelectedLogForUpload}"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button Margin="5,20,6,0" Content="Cancel" Width="95" HorizontalAlignment="Center" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Controls:ControlsHelper.ContentCharacterCasing="Upper" Click="Button_CancelLog_Click"/>
-                            <Button Margin="5,20,6,0" Content="Upload log" Width="95" ToolTip="Uploads log to log parsing server" HorizontalAlignment="Center" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Controls:ControlsHelper.ContentCharacterCasing="Upper" Click="Button_SelectLog_Click"/>
+                            <Button Margin="5,20,6,0" Content="Cancel" Width="95" HorizontalAlignment="Center" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Controls:ControlsHelper.ContentCharacterCasing="Upper" Command="{Binding CloseLogUICommand}"/>
+                            <Button Margin="5,20,6,0" Content="Upload log" Width="95" ToolTip="Uploads log to log parsing server" HorizontalAlignment="Center" Style="{StaticResource MahApps.Styles.Button.Square.Accent}" Controls:ControlsHelper.ContentCharacterCasing="Upper" Command="{Binding UploadSelectedLogCommand}"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
-            </Controls:Flyout>-->
-    <!--<Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
+            </Controls:Flyout>
+            <!--<Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
                 <Border Padding="10">
                     <Border.Background>
                         <ImageBrush ImageSource="images/wards.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
@@ -161,9 +162,9 @@
                         </StackPanel.Resources>
                     </StackPanel>
                 </Border>
-            </Controls:Flyout>
+            </Controls:Flyout>-->
         </Controls:FlyoutsControl>
-    </Controls:MetroWindow.Flyouts>-->
+    </Controls:MetroWindow.Flyouts>
     <Border Padding="10">
         <Border.Background>
             <ImageBrush Opacity="0.3" ImageSource="images/me2.jpg" AlignmentY="Center" Stretch="UniformToFill" />
@@ -254,7 +255,7 @@
                     <DockPanel HorizontalAlignment="Center" IsEnabled="{Binding AllowOptionsChanging}">
                         <StackPanel Margin="5" DockPanel.Dock="Top" Width="Auto">
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" />
-                            <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" />
+                            <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" Text="{Binding GamePathString}" />
                         </StackPanel>
                         <ScrollViewer>
                             <ItemsControl ItemsSource="{Binding RandomizationGroups}" MaxWidth="1180" HorizontalContentAlignment="Center">

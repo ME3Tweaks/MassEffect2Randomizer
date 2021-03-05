@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using ALOTInstallerCore;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
@@ -91,7 +92,7 @@ namespace ME2Randomizer.Classes
         public static IMEPackage GetStartupPackage()
         {
             var startupDestName = $"Startup_DLC_MOD_{MERFileSystem.Game}Randomizer_INT.pcc";
-            return MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile(startupDestName)), startupDestName);
+            return MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile(startupDestName)), startupDestName);
         }
 
         public static void Finalize(OptionsPackage selectedOptions)
@@ -207,7 +208,7 @@ namespace ME2Randomizer.Classes
             Directory.CreateDirectory(dlcpath);
 
             MemoryStream zipMemory = new MemoryStream();
-            Utilities.ExtractInternalFileToMemory($"starterkit.{Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
+            MERUtilities.ExtractInternalFileToMemory($"starterkit.{Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
             using ZipArchive archive = new ZipArchive(zipMemory);
             archive.ExtractToDirectory(dlcpath);
         }

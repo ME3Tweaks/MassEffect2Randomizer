@@ -22,7 +22,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         public static bool RandomizeIntroText(RandomizationOption arg)
         {
-            string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("openingcrawls.xml");
+            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("openingcrawls.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var gameoverTexts = rootElement.Elements("CrawlText").Select(x => x.Value).ToList();
             // The trim calls here will remove first and last lines that are blank. The TrimForIntro() will remove whitespace per line.
@@ -45,7 +45,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         public static bool RandomizeGameOverText(RandomizationOption arg)
         {
-            string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("gameovertexts.xml");
+            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("gameovertexts.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var gameoverTexts = rootElement.Elements("gameovertext").Select(x => x.Value).ToList();
             var gameOverText = gameoverTexts[ThreadSafeRandom.Next(gameoverTexts.Count)];
@@ -99,6 +99,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         else if (currentChar == 'l' || currentChar == 'r')
                         {
                             sb.Append('w');
+                            if (ThreadSafeRandom.Next(5) == 0)
+                            {
+                                sb.Append('w'); // append another ! 50% of the time
+                                if (ThreadSafeRandom.Next(5) == 0)
+                                {
+                                    sb.Append('w'); // append another ! 50% of the time
+                                }
+                            }
                         }
                         else if (currentChar == 'N' && (previousChar == 0x00 || previousChar == ' '))
                         {
@@ -114,6 +122,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             else
                             {
                                 sb.Append(keepCasing ? sref.Data[i] : char.ToLower(sref.Data[i]));
+                            }
+                        }
+                        else if (currentChar == '!')
+                        {
+                            sb.Append(currentChar);
+                            if (ThreadSafeRandom.Next(2) == 0)
+                            {
+                                sb.Append(currentChar); // append another ! 50% of the time
                             }
                         }
                         else

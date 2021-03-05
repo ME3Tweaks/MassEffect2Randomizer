@@ -52,7 +52,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         {
             if (Powers == null)
             {
-                string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("powerlistme2.json");
+                string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("powerlistme2.json");
                 Powers = new List<PowerInfo>();
                 var powermanifest = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
                 foreach (var powerInfo in powermanifest)
@@ -284,7 +284,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         {
             if (powerInfo.IsCorrectedPackage)
             {
-                var sourceData = Utilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.powers." + powerInfo.PackageFileName);
+                var sourceData = MERUtilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.powers." + powerInfo.PackageFileName);
                 sourcePackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(sourceData));
             }
             else
@@ -433,15 +433,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
 
                 // DEBUG
-                PowerInfo randomNewPower = null;
-                if (option.SliderValue < 0)
-                {
-                    randomNewPower = Powers.RandomElement();
-                }
-                else
-                {
-                    randomNewPower = Powers[(int)option.SliderValue];
-                }
+                PowerInfo randomNewPower = Powers.RandomElement();
+                //if (option.SliderValue < 0)
+                //{
+                //    randomNewPower = Powers.RandomElement();
+                //}
+                //else
+                //{
+                //    randomNewPower = Powers[(int)option.SliderValue];
+                //}
 
                 while (export.ObjectName.Name.Contains("Krogan", StringComparison.InvariantCultureIgnoreCase) && randomNewPower.Type == EPowerCapabilityType.Death)
                 {

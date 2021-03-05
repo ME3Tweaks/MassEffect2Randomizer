@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,8 +12,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
     class RMorphTarget
     {
-        private static bool CanRandomize(ExportEntry export, out int shiftDirection)
+        public static void ResetClass()
         {
+            ShiftDirectionGroups.Clear();
+        }
+        private static bool CanRandomize(ExportEntry export, out int shiftDirection, out float min, out float max)
+        {
+            min = -7;
+            max = 7;
             shiftDirection = -1;
             if (export.IsDefaultObject || export.ClassName != "MorphTarget") return false;
 
@@ -21,29 +28,72 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             if (name.Contains("eye"))
             {
                 shiftDirection = SetupShiftDir("eye");
+                min = -1;
+                max = 5;
                 return true;
             }
             if (name.Contains("jaw"))
             {
                 shiftDirection = SetupShiftDir("jaw");
+                if (shiftDirection == 0)
+                {
+                    // in/out
+                    min = -5f;
+                    max = 20;
+                }
+                else
+                {
+                    // up down left right
+                    min = -1f;
+                    max = 20f;
+                }
                 return true;
             }
             if (name.Contains("mouth"))
             {
                 shiftDirection = SetupShiftDir("mouth");
+                if (shiftDirection == 0)
+                {
+                    // in/out
+                    min = -5f;
+                    max = 20;
+                }
+                else
+                {
+                    // up down left right
+                    min = -5f;
+                    max = 5f;
+                }
                 return true;
             }
             if (name.Contains("nose"))
             {
                 shiftDirection = SetupShiftDir("nose");
-                return true;
-            }
-            if (name.Contains("teeth"))
-            {
-                shiftDirection = SetupShiftDir("teeth");
+                if (shiftDirection == 0)
+                {
+                    // in/out
+                    min = -15f;
+                    max = 15;
+                }
+                else
+                {
+                    // up down
+                    min = -2f;
+                    max = 10f;
+                }
+
                 return true;
             }
 
+            // Leave disabled. Doesn't seem to do anything useful
+            //if (name.Contains("teeth"))
+            //{
+            //    shiftDirection = SetupShiftDir("teeth");
+            //    min = -5;
+            //    max = 5;
+            //    return true;
+            //}
+            Debug.WriteLine($"Ignored thing {name}");
             return false;
         }
 
@@ -51,7 +101,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         {
             if (!ShiftDirectionGroups.TryGetValue(groupName, out var sd))
             {
-                sd = ThreadSafeRandom.Next(3);
+                if (groupName == "nose")
+                {
+                    // X = 0 = in/out
+                    // Y = 1 = left/right
+                    // Z = 2 = up/down
+                    sd = ThreadSafeRandom.Next(2) == 0 ? 0 : 2;
+                }
+                else
+                {
+                    sd = ThreadSafeRandom.Next(3);
+                }
                 ShiftDirectionGroups[groupName] = sd;
             }
 
@@ -62,8 +122,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
         public static bool RandomizeExport(ExportEntry exp, RandomizationOption option)
         {
-            if (!CanRandomize(exp, out var shiftDirection)) return false;
-            var shiftAmt = ThreadSafeRandom.NextFloat(-10, 10);
+            if (!CanRandomize(exp, out var shiftDirection, out var min, out var max)) return false;
+            var shiftAmt = ThreadSafeRandom.NextFloat(min, max);
             var morphTarget = ObjectBinary.From<MorphTarget>(exp);
 
             foreach (var lm in morphTarget.MorphLODModels)
@@ -71,11 +131,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 foreach (var v in lm.Vertices)
                 {
                     var posDelta = v.PositionDelta;
-                    if (shiftDirection == 0)
+                    if (shiftDirection == 0) // IN OUT
+                                             //posDelta.X += shiftAmt;
                         posDelta.X *= shiftAmt;
-                    if (shiftDirection == 1)
+                    if (shiftDirection == 1) // LEFT RIGHT
+                                             //posDelta.Y += shiftAmt;
                         posDelta.Y *= shiftAmt;
-                    if (shiftDirection == 2)
+                    if (shiftDirection == 2) // UP DOWN
+                                             //posDelta.Z += shiftAmt;
                         posDelta.Z *= shiftAmt;
                     v.PositionDelta = posDelta; // Require reassignment
                 }

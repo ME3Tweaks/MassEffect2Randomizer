@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
@@ -50,6 +51,42 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             return true;
         }
 
+        public static bool RandomizePsychProfiles(RandomizationOption option)
+        {
+            //Psych Profiles
+            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("psychprofiles.xml");
+
+            XElement rootElement = XElement.Parse(fileContents);
+            var childhoods = rootElement.Descendants("childhood").Where(x => x.Value != "").Select(x => (x.Attribute("name").Value, string.Join("\n", x.Value.Split('\n').Select(s => s.Trim())))).ToList();
+            var reputations = rootElement.Descendants("reputation").Where(x => x.Value != "").Select(x => (x.Attribute("name").Value, string.Join("\n", x.Value.Split('\n').Select(s => s.Trim())))).ToList();
+
+            childhoods.Shuffle();
+            reputations.Shuffle();
+
+            var backgroundTlkPairs = new List<(int nameId, int descriptionId)>();
+            backgroundTlkPairs.Add((45477, 34931)); //Spacer
+            backgroundTlkPairs.Add((45508, 34940)); //Earthborn
+            backgroundTlkPairs.Add((45478, 34971)); //Colonist
+            foreach (var pair in backgroundTlkPairs)
+            {
+                var childHood = childhoods.PullFirstItem();
+                TLKHandler.ReplaceString(pair.nameId, childHood.Value);
+                TLKHandler.ReplaceString(pair.descriptionId, childHood.Item2.Trim());
+            }
+
+            backgroundTlkPairs.Clear();
+            backgroundTlkPairs.Add((45482, 34934)); //Sole Survivor
+            backgroundTlkPairs.Add((45483, 34936)); //War Hero
+            backgroundTlkPairs.Add((45484, 34938)); //Ruthless
+            foreach (var pair in backgroundTlkPairs)
+            {
+                var reputation = reputations.PullFirstItem();
+                TLKHandler.ReplaceString(pair.nameId, reputation.Value);
+                TLKHandler.ReplaceString(pair.descriptionId, reputation.Item2.Trim());
+            }
+            return true;
+        }
+
         public static bool RandomizeIconicMaleShep(RandomizationOption option)
         {
             var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
@@ -87,10 +124,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             var codeMapMale = CalculateCodeMap(maleFrontEndData);
             var codeMapFemale = CalculateCodeMap(femaleFrontEndData);
 
-            var bg = CoalescedHandler.GetIniFile("BIOGame.ini");
+            var bioUI = CoalescedHandler.GetIniFile("BIOUI.ini");
             var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
             var charCreatorPCS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
-            var charCreatorControllerS = bg.GetOrAddSection("SFXGame.BioSFHandler_NewCharacter");
+            var charCreatorControllerS = bioUI.GetOrAddSection("SFXGame.BioSFHandler_NewCharacter");
 
             charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
             charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
@@ -109,6 +146,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
 
             // Female: 36 chars
+            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
+            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
+            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
             charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
             charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
 
@@ -156,7 +196,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
                     foreach (var color in colors)
                     {
-                        RStructs.RandomizeColor(color, true);
+                        RStructs.RandomizeColor(color, true, .5, 1.5);
                     }
                     export.WriteProperty(colors);
                 }

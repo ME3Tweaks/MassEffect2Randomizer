@@ -21,7 +21,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
     {
         public static Gesture InstallRandomGestureAsset(IMEPackage package, float minSequenceLength = 0, MERPackageCache cache = null)
         {
-            var gestureFiles = Utilities.ListStaticAssets("binary.gestures");
+            var gestureFiles = MERUtilities.ListStaticAssets("binary.gestures");
             var randGestureFile = gestureFiles.RandomElement();
             cache ??= new MERPackageCache();
             var gPackage = cache.GetCachedPackageEmbedded(randGestureFile, isFullPath: true);
@@ -586,7 +586,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 
         public static Gesture InstallRandomFilteredGestureAsset(IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
         {
-            var gestureFiles = Utilities.ListStaticAssets("binary.gestures", includeSpecial);
+            var gestureFiles = MERUtilities.ListStaticAssets("binary.gestures", includeSpecial);
 
             // Special and package file filtering
             if (mainPackagesAllowed != null)
@@ -600,7 +600,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         continue;
                     }
 
-                    var packageName = Path.GetFileNameWithoutExtension(Utilities.GetFilenameFromAssetName(gf));
+                    var packageName = Path.GetFileNameWithoutExtension(MERUtilities.GetFilenameFromAssetName(gf));
                     if (mainPackagesAllowed.Contains(packageName))
                     {
                         newList.Add(gf);

@@ -255,7 +255,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             var pName = "BioPawn_CollectorAsari_S1.pcc";
             var afUindex = 2914;
 
-            var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedpawns." + pName)));
+            var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile("correctedpawns." + pName)));
             var af = package.GetUExport(afUindex).GetProperty<ArrayProperty<ObjectProperty>>("ActorResourceCollection");
             foreach (var v in af)
             {
@@ -286,7 +286,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 //}
                 //else
                 //{
-                var correctedPawnData = Utilities.GetEmbeddedStaticFilesBinaryFile($"correctedpawns.{pawn.PackageFilename}");
+                var correctedPawnData = MERUtilities.GetEmbeddedStaticFilesBinaryFile($"correctedpawns.{pawn.PackageFilename}");
                 pawnPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(correctedPawnData));
                 //}
             }

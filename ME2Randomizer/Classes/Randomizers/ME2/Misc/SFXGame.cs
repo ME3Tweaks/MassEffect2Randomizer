@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using ALOTInstallerCore;
 using MassEffectRandomizer.Classes;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
@@ -15,6 +16,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// <returns></returns>
         public static bool IsControllerBasedInstall()
         {
+            // Not actually used but left for utility reasons.
             var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
             if (sfxgame != null && File.Exists(sfxgame))
             {
@@ -72,8 +74,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool RemoveStormCameraShake(RandomizationOption arg)
         {
             var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("SFXGame.pcc"));
+            
+            // SFXCameraMode_CombatStorm
             var md = sfxgame.GetUExport(25096);
             md.WriteProperty(new BoolProperty(false, "bIsCameraShakeEnabled"));
+
+            //SFXCameraMode_ExporeStorm
+            md = sfxgame.GetUExport(25116);
+            md.WriteProperty(new BoolProperty(false, "bIsCameraShakeEnabled"));
+
             MERFileSystem.SavePackage(sfxgame);
             return true;
         }

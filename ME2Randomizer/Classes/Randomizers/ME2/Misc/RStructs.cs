@@ -9,11 +9,6 @@ using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
-    class CIVector
-    {
-
-    }
-
     public static class RStructs
     {
         public static StructProperty ToVectorStructProperty(this Vector3 vector, string propName = null)
@@ -34,7 +29,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             return new StructProperty("Rotator", pc, propName, true);
         }
 
-        public static void RandomizeColor(StructProperty color, bool randomizeAlpha)
+        public static void RandomizeColor(StructProperty color, bool randomizeAlpha, double alphaMinMult = 1, double alphaMaxMult = 1)
         {
             var a = color.GetProp<ByteProperty>("A");
             var r = color.GetProp<ByteProperty>("R");
@@ -60,7 +55,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             randomOrderChooser[2].Value = (byte)totalcolorValue;
             if (randomizeAlpha)
             {
-                a.Value = (byte)ThreadSafeRandom.Next(0, 256);
+                if (alphaMaxMult != 1 && alphaMaxMult != 1)
+                {
+                    a.Value = (byte)ThreadSafeRandom.Next(a.Value * (int)alphaMinMult, Math.Min(256, (int)(a.Value * alphaMaxMult)));
+                }
+                else
+                {
+                    a.Value = (byte)ThreadSafeRandom.Next(0, 256);
+                }
             }
         }
 
