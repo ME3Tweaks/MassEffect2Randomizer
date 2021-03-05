@@ -125,7 +125,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\ALOTInstaller\ALOTInstallerCore\ALOTInstallerCore.csproj" />
-    <ProjectReference Include="..\MahApps.Metro\src\MahApps.Metro\MahApps.Metro.csproj" />
+    <ProjectReference Include="..\ALOTInstaller\MahApps.Metro\src\MahApps.Metro\MahApps.Metro.csproj" />
   </ItemGroup>
   
   <ItemGroup>
