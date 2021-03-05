@@ -3,5 +3,3 @@
 Mass Effect Randomizer is a randomizer for the second Mass Effect game on PC.
 
 You can find more information about it at [ME3Tweaks](https://me3tweaks.com/masseffectrandomizer).
-
-IN DEVELOPMENT.
