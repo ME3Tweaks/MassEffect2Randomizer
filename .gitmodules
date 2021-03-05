@@ -1,3 +1,6 @@
-[submodule "ME3ExplorerLib"]
-	path = ME3ExplorerLib
-	url = https://github.com/ME3Tweaks/ME3Explorer.git
+[submodule "MahApps.Metro"]
+	path = MahApps.Metro
+	url = https://github.com/Mgamerz/MahApps.Metro.git
+[submodule "ALOTInstaller"]
+	path = ALOTInstaller
+	url = https://github.com/ME3Tweaks/ALOTInstaller.git
