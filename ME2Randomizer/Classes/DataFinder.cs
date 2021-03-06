@@ -37,7 +37,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += BuildMusicInfo;
+            dataworker.DoWork += HeadShift;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -95,7 +95,7 @@ namespace ME2Randomizer.Classes
                 if (!sf.RepresentsPackageFilePath())
                     continue; // Not a package
                 var package = MEPackageHandler.OpenMEPackage(sf);
-                foreach (var exp in package.Exports.Where(x=>!x.IsDefaultObject && x.ClassName == "WwiseStream"))
+                foreach (var exp in package.Exports.Where(x => !x.IsDefaultObject && x.ClassName == "WwiseStream"))
                 {
                     RMusic.MusicStreamInfo musInfo = new RMusic.MusicStreamInfo(exp, files);
                     if (musInfo.IsUsable)
@@ -532,6 +532,37 @@ namespace ME2Randomizer.Classes
                 }
 
             }
+        }
+        #endregion
+
+        #region Shifthead
+        private void HeadShift(object? sender, DoWorkEventArgs e)
+        {
+            var p = MEPackageHandler.OpenMEPackage(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\BioH_Leading_00-orig.pcc");
+            var mdl = p.GetUExport(5250); ;
+            var objBin = ObjectBinary.From<SkeletalMesh>(mdl);
+
+            float shiftAmt = -10;
+            // Shift head
+            //foreach (var refSkelItem in objBin.RefSkeleton)
+            //{
+            //    var pos = refSkelItem.Position;
+            //    pos.X += 20;
+            //    refSkelItem.Position = pos;
+            //}
+
+            foreach (var lod in objBin.LODModels)
+            {
+                foreach (var vertex in lod.VertexBufferGPUSkin.VertexData)
+                {
+                    var pos = vertex.Position;
+                    pos.Z += shiftAmt;
+                    vertex.Position = pos;
+                }
+            }
+
+            mdl.WriteBinary(objBin);
+            p.Save(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\BioH_Leading_00.pcc");
         }
         #endregion
 

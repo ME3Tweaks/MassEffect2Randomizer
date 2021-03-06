@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 using Serilog;
@@ -15,7 +16,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         public bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
-            Log.Information("Randomizing BioWaypointSet " + export.UIndex + " in " + Path.GetFileName(export.FileRef.FilePath));
+            MERLog.Information("Randomizing BioWaypointSet " + export.UIndex + " in " + Path.GetFileName(export.FileRef.FilePath));
             var waypointReferences = export.GetProperty<ArrayProperty<StructProperty>>("WaypointReferences");
             if (waypointReferences != null)
             {

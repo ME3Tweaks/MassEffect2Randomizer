@@ -191,7 +191,7 @@ namespace ME2Randomizer
 
         private async void Startup()
         {
-            string me2Path = MERUtilities.GetGamePath(allowMissing: true);
+            /*string me2Path = MERUtilities.GetGamePath(allowMissing: true);
 
             //int installedGames = 5;
             bool me2installed = (me2Path != null);
@@ -249,7 +249,7 @@ namespace ME2Randomizer
                     BackupRestoreText = "Backup";
                     BackupRestore_Button.ToolTip = "Click to backup game";
                 }
-            }
+            }*/
         }
 
         public string BackupRestoreText { get; set; }
@@ -384,70 +384,71 @@ namespace ME2Randomizer
             new DebugWindow(this).Show();
         }
 
-        private void CollectAndUploadLog()
+        private async void CollectAndUploadLog()
         {
-            if (Application.Current.MainWindow is MainWindow mw)
+            var pd = await this.ShowProgressAsync("Uploading log", $"Please wait while the application log is uploaded to the ME3Tweaks Log Viewing Service.");
+            pd.SetIndeterminate();
+
+            NamedBackgroundWorker nbw = new NamedBackgroundWorker("DiagnosticsWorker");
+            nbw.DoWork += (a, b) =>
             {
-                NamedBackgroundWorker nbw = new NamedBackgroundWorker("DiagnosticsWorker");
-                nbw.DoWork += (a, b) =>
+                //ProgressIndeterminate = true;
+                //GameTarget target = GameChosen != null ? Locations.GetTarget(GameChosen.Value) : null;
+                StringBuilder logUploadText = new StringBuilder();
+
+                string logText = "";
+                //if (target != null)
+                //{
+                //    logUploadText.Append("[MODE]diagnostics\n"); //do not localize
+                //    logUploadText.Append(LogCollector.PerformDiagnostic(target, FullDiagChosen,
+                //            x => DiagnosticStatusText = x,
+                //            x =>
+                //            {
+                //                ProgressIndeterminate = false;
+                //                ProgressValue = x;
+                //            },
+                //            () => ProgressIndeterminate = true));
+                //    logUploadText.Append("\n"); //do not localize
+                //}
+
+                if (SelectedLogForUpload != null)
                 {
-                    //ProgressIndeterminate = true;
-                    //GameTarget target = GameChosen != null ? Locations.GetTarget(GameChosen.Value) : null;
-                    StringBuilder logUploadText = new StringBuilder();
+                    logUploadText.Append("[MODE]logs\n"); //do not localize
+                    logUploadText.AppendLine(LogCollector.CollectLogs(SelectedLogForUpload.filepath));
+                    logUploadText.Append("\n"); //do not localize
+                }
 
-                    string logText = "";
-                    //if (target != null)
-                    //{
-                    //    logUploadText.Append("[MODE]diagnostics\n"); //do not localize
-                    //    logUploadText.Append(LogCollector.PerformDiagnostic(target, FullDiagChosen,
-                    //            x => DiagnosticStatusText = x,
-                    //            x =>
-                    //            {
-                    //                ProgressIndeterminate = false;
-                    //                ProgressValue = x;
-                    //            },
-                    //            () => ProgressIndeterminate = true));
-                    //    logUploadText.Append("\n"); //do not localize
-                    //}
-
-                    if (SelectedLogForUpload != null)
-                    {
-                        logUploadText.Append("[MODE]logs\n"); //do not localize
-                        logUploadText.AppendLine(LogCollector.CollectLogs(SelectedLogForUpload.filepath));
-                        logUploadText.Append("\n"); //do not localize
-                    }
-
-                    //DiagnosticStatusText = "Uploading to log viewing service";
-                    //ProgressIndeterminate = true;
-                    var response = LogUploader.UploadLog(logUploadText.ToString(), "https://me3tweaks.com/masseffect2randomizer/logservice/logupload");
-                    if (response.uploaded)
-                    {
-                        var DiagnosticResultText = response.result;
-                        if (response.result.StartsWith("http"))
-                        {
-                            Utilities.OpenWebPage(response.result);
-                        }
-                    }
-
-
-                    if (!response.uploaded || QuickFixHelper.IsQuickFixEnabled(QuickFixHelper.QuickFixName.ForceSavingLogLocally))
-                    {
-                        // Upload failed.
-                        var GeneratedLogPath = Path.Combine(LogCollector.LogDir, $"FailedLogUpload_{DateTime.Now.ToString("s").Replace(":", ".")}.txt");
-                        File.WriteAllText(GeneratedLogPath, logUploadText.ToString());
-                    }
-
-                    //DiagnosticComplete = true;
-                    //DiagnosticInProgress = false;
-                };
-                nbw.RunWorkerCompleted += (sender, args) =>
+                //DiagnosticStatusText = "Uploading to log viewing service";
+                //ProgressIndeterminate = true;
+                var response = LogUploader.UploadLog(logUploadText.ToString(), "https://me3tweaks.com/masseffect2randomizer/logservice/logupload");
+                if (response.uploaded)
                 {
-                    CommandManager.InvalidateRequerySuggested();
-                };
-                //DiagnosticInProgress = true;
-                nbw.RunWorkerAsync();
-            }
+                    var DiagnosticResultText = response.result;
+                    if (response.result.StartsWith("http"))
+                    {
+                        Utilities.OpenWebPage(response.result);
+                    }
+                }
 
+
+                if (!response.uploaded || QuickFixHelper.IsQuickFixEnabled(QuickFixHelper.QuickFixName.ForceSavingLogLocally))
+                {
+                    // Upload failed.
+                    var GeneratedLogPath = Path.Combine(LogCollector.LogDir, $"FailedLogUpload_{DateTime.Now.ToString("s").Replace(":", ".")}.txt");
+                    File.WriteAllText(GeneratedLogPath, logUploadText.ToString());
+                }
+
+                //DiagnosticComplete = true;
+                //DiagnosticInProgress = false;
+            };
+            nbw.RunWorkerCompleted += async (sender, args) =>
+            {
+                CommandManager.InvalidateRequerySuggested();
+                LogUploaderFlyoutOpen = false;
+                await pd.CloseAsync();
+            };
+            //DiagnosticInProgress = true;
+            nbw.RunWorkerAsync();
         }
     }
 }

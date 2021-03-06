@@ -112,13 +112,13 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             if (r2d.InstantiatedItems.TryGetValue(asset, out var instantiated))
             {
                 // It's already been instantiated. Just use this data instead
-                Log.Information($@"Writing out cached asset {asset} for {export.InstancedFullPath}");
+                MERLog.Information($@"Writing out cached asset {asset} for {export.InstancedFullPath}");
                 export.WritePropertiesAndBinary(instantiated.props, instantiated.texData);
             }
             else
             {
 
-                Log.Information($@"Installing texture asset {asset} for {export.InstancedFullPath}");
+                MERLog.Information($@"Installing texture asset {asset} for {export.InstancedFullPath}");
 
                 // 3. Asset has not been setup yet. Write out the precomputed data.
                 export.WriteBinary(GetTextureAssetBinary(asset));
@@ -198,7 +198,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                 if (item.StartsWith(prefix))
                 {
                     var iName = item.Substring(prefix.Length + 1);
-                    if (iName.Count(x=>x == '.') == 1) //Only has extension
+                    if (iName.Count(x => x == '.') == 1) //Only has extension
                     {
                         itemsL.Add(iName);
                     }

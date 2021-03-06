@@ -81,11 +81,11 @@ namespace ME2Randomizer.Classes
 
             if (SelectedOptions.UseMultiThread)
             {
-                Log.Information("-------------------------STARTING RANDOMIZER (MULTI THREAD)--------------------------");
+                MERLog.Information("-------------------------STARTING RANDOMIZER (MULTI THREAD)--------------------------");
             }
             else
             {
-                Log.Information($"------------------------STARTING RANDOMIZER WITH SEED {seed}--------------------------");
+                MERLog.Information($"------------------------STARTING RANDOMIZER WITH SEED {seed} (SINGLE THREAD)--------------------------");
             }
             randomizationWorker.RunWorkerAsync();
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Indeterminate, mainWindow);
@@ -112,15 +112,15 @@ namespace ME2Randomizer.Classes
             var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
 
             // Log randomizers
-            Log.Information("Randomizers used in this pass:");
+            MERLog.Information("Randomizers used in this pass:");
             foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers).Distinct())
             {
-                Log.Information($" - {sr.HumanName}");
+                MERLog.Information($" - {sr.HumanName}");
                 if (sr.SubOptions != null)
                 {
                     foreach (var subR in sr.SubOptions)
                     {
-                        Log.Information($"   - {subR.HumanName}");
+                        MERLog.Information($"   - {subR.HumanName}");
                     }
                 }
             }
@@ -139,7 +139,7 @@ namespace ME2Randomizer.Classes
             // Pass 1: All randomizers that are file specific
             foreach (var sr in specificRandomizers)
             {
-                Log.Information($"Running specific randomizer {sr.HumanName}");
+                MERLog.Information($"Running specific randomizer {sr.HumanName}");
                 mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
                 sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
             }
@@ -171,9 +171,9 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
                     if (true
-                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
@@ -215,7 +215,7 @@ namespace ME2Randomizer.Classes
 
 
             sw.Stop();
-            Log.Information($"Randomization time: {sw.Elapsed.ToString()}");
+            MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
 
             mainWindow.ProgressBarIndeterminate = true;
             mainWindow.CurrentOperationText = "Finishing up";
@@ -255,7 +255,7 @@ namespace ME2Randomizer.Classes
 
 #if DEBUG
             //EnemyPowerChanger.Init(null); // Load the initial list
-            EnemyWeaponChanger.Preboot(); // Load the initial list
+            //EnemyWeaponChanger.Preboot(); // Load the initial list
 #endif
             RandomizationGroups.Add(new RandomizationGroup()
             {
@@ -515,16 +515,16 @@ namespace ME2Randomizer.Classes
                         IsRecommended = true,
                         // Debug stuff.
 #if DEBUG
-                        HasSliderOption = true,
-                        Ticks = string.Join(",",Enumerable.Range(-1,EnemyWeaponChanger.AllAvailableWeapons.Count + 1)),
-                        SliderToTextConverter = x =>
-                        {
-                            if (x < 0)
-                                return "All weapons";
-                            var idx = (int) x;
-                            return EnemyWeaponChanger.AllAvailableWeapons[idx].GunName;
-                        },
-                        SliderValue = -1, // End debug stuff
+                        //HasSliderOption = true,
+                        //Ticks = string.Join(",",Enumerable.Range(-1,EnemyWeaponChanger.AllAvailableWeapons.Count + 1)),
+                        //SliderToTextConverter = x =>
+                        //{
+                        //    if (x < 0)
+                        //        return "All weapons";
+                        //    var idx = (int) x;
+                        //    return EnemyWeaponChanger.AllAvailableWeapons[idx].GunName;
+                        //},
+                        //SliderValue = -1, // End debug stuff
 #endif
 
 

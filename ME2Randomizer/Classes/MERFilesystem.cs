@@ -183,13 +183,13 @@ namespace ME2Randomizer.Classes
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
                     lock (openSavePackageSyncObj)
                     {
-                        Log.Information($"Saving package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
+                        MERLog.Information($"Saving package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
                         package.Save(packageNewPath, true);
                     }
                 }
                 else
                 {
-                    Log.Information($"Saving package {Path.GetFileName(package.FilePath)} => {package.FilePath}");
+                    MERLog.Information($"Saving package {Path.GetFileName(package.FilePath)} => {package.FilePath}");
                     lock (openSavePackageSyncObj)
                     {
                         package.Save(compress: true);

@@ -64,7 +64,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         public static bool InstallOHKO(RandomizationOption arg)
         {
-            Log.Information("Installing One-Hit KO");
+            MERLog.Information("Installing One-Hit KO");
 
             var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
             if (sfxgame != null && File.Exists(sfxgame))

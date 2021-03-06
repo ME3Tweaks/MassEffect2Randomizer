@@ -18,7 +18,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         public static bool PerformRandomization(ExportEntry export,RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
-            Log.Information($"{export.FileRef.FilePath}\t{export.FullPath}");
+            MERLog.Information($"{export.FileRef.FilePath}\t{export.FullPath}");
             var props = export.GetProperties();
             if (export.ClassName == "BioSunFlareComponent" || export.ClassName == "BioSunFlareStreakComponent")
             {

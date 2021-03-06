@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.TLK.ME1;
 using ME3ExplorerCore.TLK.ME2ME3;
 using Serilog;
@@ -222,7 +223,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool RandomizeVowels(RandomizationOption option)
         {
             // Map of what letter maps to what other letter
-            Log.Information("Randomizing vowels in words");
+            MERLog.Information("Randomizing vowels in words");
             var hardMode = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_VOWELS_HARDMODE);
 
             var vowels = GetVowelMap();

@@ -456,7 +456,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         continue; // Duplicate powers crash the game. It seems this code is not bulletproof here and needs changed a bit...
 
 
-                    Log.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "(+New Power)"} => {randomNewPower.PowerName }");
+                    MERLog.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "(+New Power)"} => {randomNewPower.PowerName }");
                     // It's a different gun.
 
                     // See if we need to port this in

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 using Serilog;
@@ -12,7 +13,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
-            Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing movement interpolations for " + export.UIndex + ": " + export.InstancedFullPath);
+            MERLog.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing movement interpolations for " + export.UIndex + ": " + export.InstancedFullPath);
             var props = export.GetProperties();
             var posTrack = props.GetProp<StructProperty>("PosTrack");
             if (posTrack != null)

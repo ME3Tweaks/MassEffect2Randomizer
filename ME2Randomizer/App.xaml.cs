@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using CommandLine;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using Serilog;
 
 namespace ME2Randomizer
@@ -101,7 +102,7 @@ namespace ME2Randomizer
             #region Update mode boot
             if (updateDestinationPath != null)
             {
-                Log.Information(" >> In update mode. Update destination: " + updateDestinationPath);
+                MERLog.Information(" >> In update mode. Update destination: " + updateDestinationPath);
                 int i = 0;
                 while (i < 8)
                 {
@@ -130,7 +131,7 @@ namespace ME2Randomizer
                     //    }
                     //}
                 }
-                Log.Information("Rebooting into normal mode to complete update");
+                MERLog.Information("Rebooting into normal mode to complete update");
                 ProcessStartInfo psi = new ProcessStartInfo(updateDestinationPath);
                 psi.WorkingDirectory = updateDestinationPath;
                 psi.Arguments = "--completing-update";

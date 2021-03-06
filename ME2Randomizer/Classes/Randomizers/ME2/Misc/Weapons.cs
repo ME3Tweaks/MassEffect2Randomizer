@@ -7,6 +7,7 @@ using System.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.gameini;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Misc;
 using Serilog;
@@ -121,7 +122,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // We must manually fetch game files cause MERFS will return the ini from the dlc mod instead.
             ME2Coalesced me2basegamecoalesced = new ME2Coalesced(MERFileSystem.GetSpecificFile(@"BioGame\Config\PC\Cooked\Coalesced.ini"));
 
-            Log.Information("Randomizing basegame weapon ini");
+            MERLog.Information("Randomizing basegame weapon ini");
             var bioweapon = me2basegamecoalesced.Inis.FirstOrDefault(x => Path.GetFileName(x.Key) == "BIOWeapon.ini").Value;
             RandomizeWeaponIni(bioweapon, me2rbioweapon);
 
@@ -130,7 +131,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 if (wi.Contains($"DLC_MOD_{MERFileSystem.Game}Randomizer"))
                     continue; // Skip randomizer folders
-                Log.Information($@"Randomizing weapon ini {wi}");
+                MERLog.Information($@"Randomizing weapon ini {wi}");
                 //Log.Information("Randomizing weapons in ini: " + wi);
                 var dlcWeapIni = DuplicatingIni.LoadIni(wi);
                 RandomizeWeaponIni(dlcWeapIni, me2rbioweapon);

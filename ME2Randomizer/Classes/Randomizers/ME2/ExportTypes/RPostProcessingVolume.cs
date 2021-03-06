@@ -19,7 +19,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             var settings = export.GetProperty<StructProperty>("Settings");
             if (settings != null)
             {
-                Log.Information($@"Randomizing PostProcessingVolume settings {export.UIndex}");
+                MERLog.Information($@"Randomizing PostProcessingVolume settings {export.UIndex}");
                 // randomize the options
                 RProperty.RandBool(settings.Properties, "bEnableDOF", ThreadSafeRandom.Next(3) == 0);
                 RProperty.RandBool(settings.Properties, "bEnableFilmic", ThreadSafeRandom.Next(3) == 0);

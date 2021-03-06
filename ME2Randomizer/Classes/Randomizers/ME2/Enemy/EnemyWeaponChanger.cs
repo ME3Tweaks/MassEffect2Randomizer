@@ -511,7 +511,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             var persistentPackages = new List<string>(new[] { "BioP_Global.pcc" }); // I think this package is always loaded in SP in ME2 so we can probably get away with just using it... i hope
             Parallel.ForEach(persistentPackages, pp =>
             {
-                Log.Information($"Installing persistent weapon animations into {pp}");
+                MERLog.Information($"Installing persistent weapon animations into {pp}");
                 var package = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(pp));
                 var originalExportCount = package.ExportCount;
                 // Install all weapon animations
@@ -562,7 +562,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     if (randomNewGun.GunName != originalGun.ObjectName)
                     {
                         var gunInfo = randomNewGun;
-                        Log.Information($@"Changing gun {export.ObjectName} => {randomNewGun.GunName}");
+                        MERLog.Information($@"Changing gun {export.ObjectName} => {randomNewGun.GunName}");
                         // It's a different gun.
 
                         // See if we need to port this in

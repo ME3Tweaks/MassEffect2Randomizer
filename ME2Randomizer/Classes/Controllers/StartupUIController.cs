@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -8,6 +10,7 @@ using System.Windows.Threading;
 using ALOTInstallerCore;
 using ALOTInstallerCore.Helpers;
 using ALOTInstallerCore.Helpers.AppSettings;
+using ALOTInstallerCore.ModManager.ME3Tweaks;
 using ALOTInstallerCore.ModManager.Objects;
 using ALOTInstallerCore.ModManager.Services;
 using ALOTInstallerCore.PlatformSpecific.Windows;
@@ -15,12 +18,16 @@ using ALOTInstallerCore.Steps;
 using ControlzEx.Theming;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME2Randomizer.Classes.Telemetry;
+using ME3ExplorerCore.Compression;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Gammtek.Extensions;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 using Serilog;
 using Utilities = ALOTInstallerCore.Utilities;
 
@@ -47,7 +54,7 @@ namespace ME2Randomizer.Classes.Controllers
 
         private static void initAppCenter()
         {
-#if !DEBUG
+#if DEBUG
             if (APIKeys.HasAppCenterKey && !telemetryStarted)
             {
                 Microsoft.AppCenter.Crashes.Crashes.GetErrorAttachments = (ErrorReport report) =>
@@ -55,7 +62,7 @@ namespace ME2Randomizer.Classes.Controllers
                     var attachments = new List<ErrorAttachmentLog>();
                     // Attach some text.
                     string errorMessage = "ALOT Installer has crashed! This is the exception that caused the crash:\n" + report.StackTrace;
-                    Log.Fatal(errorMessage);
+                    MERLog.Fatal(errorMessage);
                     Log.Error("Note that this exception may appear to occur in a follow up boot due to how appcenter works");
                     string log = LogCollector.CollectLatestLog(false);
                     if (log.Length < 1024 * 1024 * 7)
@@ -315,8 +322,7 @@ namespace ME2Randomizer.Classes.Controllers
                 }
                 catch (Exception e)
                 {
-                    Log.Error(@"[ME2R] There was an error starting up the framework!");
-                    e.WriteToLog("[ME2R] ");
+                    MERLog.Exception(e, @"There was an error starting up the framework!");
                 }
 
                 pd.SetMessage("Preparing interface");
@@ -396,11 +402,11 @@ namespace ME2Randomizer.Classes.Controllers
                     var passThroughValidationResult = gt.ValidateTarget(false);
                     if (passThroughValidationResult != null)
                     {
-                        Log.Error($@"[AIWPF] {game} path passthrough failed game target validation: {passThroughValidationResult}");
+                        MERLog.Error($@"{game} path passthrough failed game target validation: {passThroughValidationResult}");
                     }
                     else
                     {
-                        Log.Information($@"[AIWPF] Valid passthrough for game {game}. Assigning path.");
+                        MERLog.Information($@"Valid passthrough for game {game}. Assigning path.");
                         MEMIPCHandler.SetGamePath(game, path);
                     }
                 }

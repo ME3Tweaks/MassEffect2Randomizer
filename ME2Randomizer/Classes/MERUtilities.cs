@@ -16,7 +16,10 @@ using System.ComponentModel;
 using System.Management;
 using Serilog;
 using System.Numerics;
+using ALOTInstallerCore.Helpers;
 using ME2Randomizer;
+using ME2Randomizer.Classes;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
 
@@ -126,7 +129,7 @@ namespace MassEffectRandomizer.Classes
 
         private static string ExtractInternalFile(string internalResourceName, bool fullname, string destination = null, bool overwrite = false, Stream destStream = null)
         {
-            Log.Information("Extracting file: " + internalResourceName);
+            MERLog.Information("Extracting file: " + internalResourceName);
             if (destStream != null || (destination != null && (!File.Exists(destination) || overwrite)))
             {
                 // Todo: might need adjusted for ME3
@@ -141,11 +144,11 @@ namespace MassEffectRandomizer.Classes
             }
             else if (destination != null && !overwrite)
             {
-                Log.Warning("File already exists");
+                MERLog.Warning("File already exists");
             }
             else
             {
-                Log.Warning("Invalid extraction parameters!");
+                MERLog.Warning("Invalid extraction parameters!");
             }
             return destination;
         }
@@ -183,59 +186,51 @@ namespace MassEffectRandomizer.Classes
         /// </summary>
         /// <param name="allowMissing">Allow directory to be missing if registry key still exists</param>
         /// <returns></returns>
-        public static string GetGamePath(bool allowMissing = false)
-        {
-            MERUtilities.WriteDebugLog("Looking up game path for Mass Effect.");
+        //public static string GetGamePath(bool allowMissing = false)
+        //{
+        //    MERUtilities.WriteDebugLog("Looking up game path for Mass Effect.");
 
-            //does not exist in ini (or ini does not exist).
-            string softwareKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\";
-            string key64 = @"Wow6432Node\";
-            string gameKey = @"BioWare\Mass Effect 2";
-            string entry = "Path";
+        //    //does not exist in ini (or ini does not exist).
+        //    string softwareKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\";
+        //    string key64 = @"Wow6432Node\";
+        //    string gameKey = @"BioWare\Mass Effect 2";
+        //    string entry = "Path";
 
-            string path = (string)Registry.GetValue(softwareKey + gameKey, entry, null);
-            if (path == null)
-            {
-                path = (string)Registry.GetValue(softwareKey + key64 + gameKey, entry, null);
-            }
-            if (path != null)
-            {
-                WriteDebugLog("Found game path via registry: " + path);
-                path = path.TrimEnd(Path.DirectorySeparatorChar);
-                if (allowMissing) return path; //don't do the rest of the check. we don't care
+        //    string path = (string)Registry.GetValue(softwareKey + gameKey, entry, null);
+        //    if (path == null)
+        //    {
+        //        path = (string)Registry.GetValue(softwareKey + key64 + gameKey, entry, null);
+        //    }
+        //    if (path != null)
+        //    {
+        //        WriteDebugLog("Found game path via registry: " + path);
+        //        path = path.TrimEnd(Path.DirectorySeparatorChar);
+        //        if (allowMissing) return path; //don't do the rest of the check. we don't care
 
-                string GameEXEPath = Path.Combine(path, @"Binaries\MassEffect2.exe");
-                WriteDebugLog("GetGamePath Registry EXE Check Path: " + GameEXEPath);
+        //        string GameEXEPath = Path.Combine(path, @"Binaries\MassEffect2.exe");
+        //        WriteDebugLog("GetGamePath Registry EXE Check Path: " + GameEXEPath);
 
-                if (File.Exists(GameEXEPath))
-                {
-                    WriteDebugLog("EXE file exists - returning this path: " + GameEXEPath);
-                    return path; //we have path now
-                }
-            }
-            else
-            {
-                WriteDebugLog("Could not find game via registry. Game is not installed, has not yet been run, or is not legitimate.");
-            }
-            WriteDebugLog("No path found. Returning null");
-            return null;
-        }
+        //        if (File.Exists(GameEXEPath))
+        //        {
+        //            WriteDebugLog("EXE file exists - returning this path: " + GameEXEPath);
+        //            return path; //we have path now
+        //        }
+        //    }
+        //    else
+        //    {
+        //        WriteDebugLog("Could not find game via registry. Game is not installed, has not yet been run, or is not legitimate.");
+        //    }
+        //    WriteDebugLog("No path found. Returning null");
+        //    return null;
+        //}
 
-        private static void WriteDebugLog(string v)
-        {
-            if (MainWindow.DEBUG_LOGGING)
-            {
-                Log.Debug(v);
-            }
-        }
-
-        public static string GetGameEXEPath()
-        {
-            string path = GetGamePath();
-            if (path == null) { return null; }
-            WriteDebugLog("GetEXE ME2 Path: " + Path.Combine(path, @"Binaries\MassEffect2.exe"));
-            return Path.Combine(path, @"Binaries\MassEffect2.exe");
-        }
+        //public static string GetGameEXEPath()
+        //{
+        //    string path = GetGamePath();
+        //    if (path == null) { return null; }
+        //    WriteDebugLog("GetEXE ME2 Path: " + Path.Combine(path, @"Binaries\MassEffect2.exe"));
+        //    return Path.Combine(path, @"Binaries\MassEffect2.exe");
+        //}
 
         public static bool IsDirectoryEmpty(string path)
         {
@@ -346,7 +341,7 @@ namespace MassEffectRandomizer.Classes
                 }
                 catch (Exception e)
                 {
-                    Log.Error("Error reading partition type on " + partitionLetter + ": " + e.Message);
+                    MERLog.Error("Error reading partition type on " + partitionLetter + ": " + e.Message);
                     return -1;
                 }
             }
@@ -487,7 +482,7 @@ namespace MassEffectRandomizer.Classes
             }
             catch (Exception e)
             {
-                Log.Error("Exception trying to open web page from system (typically means browser default is incorrectly configured by Windows): " + e.Message + ". Try opening the URL manually: " + link);
+                MERLog.Error("Exception trying to open web page from system (typically means browser default is incorrectly configured by Windows): " + e.Message + ". Try opening the URL manually: " + link);
             }
         }
 
@@ -535,18 +530,6 @@ namespace MassEffectRandomizer.Classes
             }
             Uri folderUri = new Uri(folder);
             return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
-        }
-
-
-        internal static string GetALOTMarkerFilePath()
-        {
-            string gamePath = GetGamePath();
-            if (gamePath != null)
-            {
-                gamePath += @"BioGame\CookedPC\BIOC_Materials.pcc";
-                return gamePath;
-            }
-            return null;
         }
 
         public static string FlattenException(Exception exception)
@@ -607,7 +590,7 @@ namespace MassEffectRandomizer.Classes
         //        }
         //        catch (Exception e)
         //        {
-        //            Log.Error("Error reading marker file for Mass Effect. ALOT Info will be returned as null (nothing installed). " + e.Message);
+        //            MERLog.Error("Error reading marker file for Mass Effect. ALOT Info will be returned as null (nothing installed). " + e.Message);
         //            return null;
         //        }
         //    }
@@ -617,7 +600,7 @@ namespace MassEffectRandomizer.Classes
 
         public static int runProcess(string exe, string args, bool standAlone = false)
         {
-            Log.Information("Running process: " + exe + " " + args);
+            MERLog.Information("Running process: " + exe + " " + args);
             using (Process p = new Process())
             {
                 p.StartInfo.CreateNoWindow = true;
@@ -669,21 +652,21 @@ namespace MassEffectRandomizer.Classes
                             errorWaitHandle.WaitOne(timeout))
                         {
                             // Process completed. Check process.ExitCode here.
-                            Log.Information("Process standard output of " + exe + " " + args + ":");
+                            MERLog.Information("Process standard output of " + exe + " " + args + ":");
                             if (output.ToString().Length > 0)
                             {
-                                Log.Information("Standard:\n" + output.ToString());
+                                MERLog.Information("Standard:\n" + output.ToString());
                             }
                             if (error.ToString().Length > 0)
                             {
-                                Log.Error("Error output:\n" + error.ToString());
+                                MERLog.Error("Error output:\n" + error.ToString());
                             }
                             return p.ExitCode;
                         }
                         else
                         {
                             // Timed out.
-                            Log.Error("Process timed out: " + exe + " " + args);
+                            MERLog.Error("Process timed out: " + exe + " " + args);
                             return -1;
                         }
                     }
@@ -697,7 +680,7 @@ namespace MassEffectRandomizer.Classes
 
         public static int runProcessAsAdmin(string exe, string args, bool standAlone = false)
         {
-            Log.Information("Running process as admin: " + exe + " " + args);
+            MERLog.Information("Running process as admin: " + exe + " " + args);
             using (Process p = new Process())
             {
                 p.StartInfo.CreateNoWindow = true;
@@ -717,7 +700,7 @@ namespace MassEffectRandomizer.Classes
                         }
                         catch (Exception e)
                         {
-                            Log.Error("Error getting return code from admin process. It may have timed out.\n" + FlattenException(e));
+                            MERLog.Error("Error getting return code from admin process. It may have timed out.\n" + FlattenException(e));
                             return -1;
                         }
                     }
@@ -728,7 +711,7 @@ namespace MassEffectRandomizer.Classes
                 }
                 catch (System.ComponentModel.Win32Exception e)
                 {
-                    Log.Error("Error running elevated process: " + e.Message);
+                    MERLog.Error("Error running elevated process: " + e.Message);
                     return WIN32_EXCEPTION_ELEVATED_CODE;
                 }
             }
@@ -828,7 +811,7 @@ namespace MassEffectRandomizer.Classes
             {
                 uint errorcode = GetLastError();
                 string errorMessage = new Win32Exception(Marshal.GetLastWin32Error()).Message;
-                Log.Warning("Failed to get RAM amount. This may indicate a potential (or soon coming) hardware problem. The error message was: " + errorMessage);
+                MERLog.Warning("Failed to get RAM amount. This may indicate a potential (or soon coming) hardware problem. The error message was: " + errorMessage);
             }
             return memKb;
         }
@@ -922,7 +905,7 @@ namespace MassEffectRandomizer.Classes
                 var productState = virusChecker["productState"];
                 uint productVal = (uint)productState;
                 var bytes = BitConverter.GetBytes(productVal);
-                Log.Information("Antivirus info: " + virusCheckerName + " with state " + bytes[1].ToString("X2") + " " + bytes[2].ToString("X2") + " " + bytes[3].ToString("X2"));
+                MERLog.Information("Antivirus info: " + virusCheckerName + " with state " + bytes[1].ToString("X2") + " " + bytes[2].ToString("X2") + " " + bytes[3].ToString("X2"));
             }
         }
 
@@ -944,13 +927,19 @@ namespace MassEffectRandomizer.Classes
 
         public static bool IsSupportedLocale()
         {
-            var gamePath = GetGamePath();
-            var locintfile1 = Path.Combine(gamePath, @"BioGame\CookedPC\Startup_INT.pcc");
-            var locintfile2 = Path.Combine(gamePath, @"BioGame\CookedPC\BioD_QuaTlL_321AgriDomeTrial1_LOC_INT.pcc");
-            var locintfile3 = Path.Combine(gamePath, @"BioGame\CookedPC\ss_global_hench_geth_S_INT.afc");
-            var locintfile4 = Path.Combine(gamePath, @"BioGame\CookedPC\BioD_ProFre_500Warhouse_LOC_INT.pcc");
+            var target = Locations.GetTarget(MERFileSystem.Game);
+            if (target != null)
+            {
 
-            return File.Exists(locintfile1) && File.Exists(locintfile2) && File.Exists(locintfile3) && File.Exists(locintfile4);
+                var locintfile1 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\Startup_INT.pcc");
+                var locintfile2 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\BioD_QuaTlL_321AgriDomeTrial1_LOC_INT.pcc");
+                var locintfile3 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\ss_global_hench_geth_S_INT.afc");
+                var locintfile4 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\BioD_ProFre_500Warhouse_LOC_INT.pcc");
+
+                return File.Exists(locintfile1) && File.Exists(locintfile2) && File.Exists(locintfile3) && File.Exists(locintfile4);
+            }
+
+            return false;
         }
         internal static string GetAppCrashHandledFile()
         {

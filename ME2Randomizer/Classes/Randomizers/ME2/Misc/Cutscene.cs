@@ -400,7 +400,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 while (reshuffleAttemptsRemaining > 0)
                 {
                     reshuffleAttemptsRemaining--;
-                    Log.Information("Randomizing pawns in interp: " + export.FullPath);
+                    MERLog.Information("Randomizing pawns in interp: " + export.FullPath);
                     foreach (var refx in playerRefs)
                     {
                         refx.WriteProperty(new BoolProperty(true, "bReturnsPawns")); //Ensure the object returns pawns. It should, but maybe it doesn't.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
@@ -90,7 +91,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             var newAIImp = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile(newAi, sfxgame, exp.FileRef);
                             currentAi.Value = newAIImp.UIndex;
                             exp.WriteProperty(currentAi);
-                            Log.Information($@"AI Changing: {aiImp.FullPath} => {newAi}");
+                            MERLog.Information($@"AI Changing: {aiImp.FullPath} => {newAi}");
                             return true;
                         }
                     }

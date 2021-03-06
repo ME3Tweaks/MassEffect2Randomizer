@@ -44,7 +44,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         public static bool RandomizePawnSize(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
-            Log.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing pawn size for " + export.UIndex + ": " + export.InstancedFullPath);
+            MERLog.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing pawn size for " + export.UIndex + ": " + export.InstancedFullPath);
             var existingSize = export.GetProperty<StructProperty>("DrawScale3D");
             CFVector3 d3d = existingSize == null ? new CFVector3() { X = 1, Y = 1, Z = 1 } : CFVector3.FromStructProperty(existingSize, "X", "Y", "Z");
 

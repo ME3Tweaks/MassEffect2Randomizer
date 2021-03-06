@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.SharpDX;
@@ -61,7 +62,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var data = exp.Data;
             //RandomizeRGBA(data, 0x70C, false);
             RandomizeRGBA(data, 0x72C, false);
-            Log.Information(@"Randomized VI material");
+            MERLog.Information(@"Randomized VI material");
             exp.Data = data;
         }
 

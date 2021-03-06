@@ -98,6 +98,11 @@ namespace ME2Randomizer.Classes
         public double TickMin { get; private set; }
 
         /// <summary>
+        /// Adds a button to the randomizer, allowing you to click it and run an action to 'setup' the randomizer.
+        /// </summary>
+        public Action SetupRandomizerDelegate { get; set; }
+
+        /// <summary>
         /// The UI text to show for the selected tick option
         /// </summary>
         public string TickText { get; private set; }

@@ -4,6 +4,7 @@ using ME3ExplorerCore.Unreal;
 using Serilog;
 using System;
 using System.Linq;
+using ME2Randomizer.Classes.Randomizers.Utility;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
@@ -14,10 +15,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     class RIllusiveEyes
     {
         private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName == "HMM_HED_EYEillusiveman_MAT_1a";
-        public static bool RandomizeExport(ExportEntry exp,  RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry exp, RandomizationOption option)
         {
             if (!CanRandomize(exp)) return false;
-            Log.Information("Randomizing illusive eye color");
+            MERLog.Information($"Randomizing illusive eye color in {exp.FileRef.FilePath}");
             var props = exp.GetProperties();
 
             //eye color
@@ -38,7 +39,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     class REyes
     {
         private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ClassName == "MaterialInstanceConstant" && exp.ObjectName != "HMM_HED_EYEillusiveman_MAT_1a" && exp.ObjectName.Name.Contains("_EYE");
-        public static bool RandomizeExport(ExportEntry exp,  RandomizationOption option)
+        public static bool RandomizeExport(ExportEntry exp, RandomizationOption option)
         {
             if (!CanRandomize(exp)) return false;
             //Log.Information("Randomizing eye color");

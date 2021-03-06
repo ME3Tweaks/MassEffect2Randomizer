@@ -52,7 +52,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             new SquadMate() {ClassName = "SFXPawn_Mordin",InternalName="Professor",NamePrefix = "Mor"},
             new SquadMate() {ClassName = "SFXPawn_Samara", InternalName="Mystic",IsFemale = true,NamePrefix = "Sam"},
             new SquadMate() {ClassName = "SFXPawn_Tali", InternalName="Tali",IsSwappable = false, NamePrefix = "Ta"},
-            new SquadMate() {ClassName = "SFXPawn_Thane",InternalName="Assassin",NamePrefix = "Th"},
+            new SquadMate() {ClassName = "SFXPawn_Thane",InternalName="Assassin",NamePrefix = "Tha"},
             new SquadMate() {ClassName = "SFXPawn_Wilson",NamePrefix = "Wil"},
 
             // DLC
@@ -66,10 +66,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// <summary>
             /// Invoked after porting asset, to fix it up in the new pawn
             /// </summary>
-            public Action<ExportEntry> PostPortingFixupDelegate { get; set; }
+            public Action<SquadMate, ExportEntry> PostPortingFixupDelegate { get; set; }
             public bool IsFemaleAsset { get; set; }
             public float GenderSwapDrawScale { get; set; } = 1f;
-            public float MaleToFemaleZCorrection { get; set; } = 1f;
             /// <summary>
             /// Is this asset stored in the executable?
             /// </summary>
@@ -216,6 +215,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 AssetPath = "BIOG_TUR_HED_PROMorph_R.PROGarrus.TUR_HED_PROGarrus_Damage_MDL",
                 NameSuffix = "rus",
                 IsSquadmateHead = true,
+                PostPortingFixupDelegate = GarrusHeadZFix,
                 DisallowedPawns = new []
                 {
                     "SFXPawn_Jack",
@@ -312,7 +312,56 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
         };
 
-        private static void MakeKaidanNoLongerHulk(ExportEntry kaidanMDL)
+        private static void GarrusHeadZFix(SquadMate bodyInfo, ExportEntry newHead)
+        {
+            if (bodyInfo.InternalName != "Grunt")
+            {
+                MERLog.Information($@"Fixing garrus head Z in {newHead.FileRef.FilePath}");
+                var objBin = ObjectBinary.From<SkeletalMesh>(newHead);
+
+                float shiftAmt = -10;
+                foreach (var lod in objBin.LODModels)
+                {
+                    foreach (var vertex in lod.VertexBufferGPUSkin.VertexData)
+                    {
+                        var pos = vertex.Position;
+                        pos.Z += shiftAmt;
+                        vertex.Position = pos;
+                    }
+                }
+                newHead.WriteBinary(objBin);
+            }
+        }
+
+        /// <summary>
+        /// Fixes Z for body - like mordin and garrus who have higher heads
+        /// </summary>
+        /// <param name="bodyInfo"></param>
+        /// <param name="newHead"></param>
+        private static void BodyHeadZFix(SquadMate bodyInfo, ExportEntry newHead)
+        {
+            if (bodyInfo.InternalName == "Professor" || bodyInfo.InternalName == "Garrus")
+            {
+                MERLog.Information($@"Fixing mordin's head Z in {newHead.FileRef.FilePath}");
+                var objBin = ObjectBinary.From<SkeletalMesh>(newHead);
+
+                float shiftAmt = 7;
+                foreach (var lod in objBin.LODModels)
+                {
+                    foreach (var vertex in lod.VertexBufferGPUSkin.VertexData)
+                    {
+                        var pos = vertex.Position;
+                        pos.Z += shiftAmt;
+                        vertex.Position = pos;
+                    }
+                }
+                newHead.WriteBinary(objBin);
+            }
+        }
+
+
+        // Kaidan for some reason has green headmesh. This fixes that
+        private static void MakeKaidanNoLongerHulk(SquadMate squadMate, ExportEntry kaidanMDL)
         {
             var kaidanFacMaterial = kaidanMDL.FileRef.FindExport("BIOG_HMM_HED_PROMorph.Kaiden.HMM_HED_PROKaiden_Face_Mat_1a");
             var kaidanScalpMaterial = kaidanMDL.FileRef.FindExport("BIOG_HMM_HED_PROMorph.Kaiden.HMM_HED_PROKaiden_Scalp_Mat_1a");
@@ -442,6 +491,23 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     owningPawn.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
                 }
 
+                if (squadmateInfo.InternalName == "Mystic")
+                {
+                    var filename = Path.GetFileName(headMeshExp.FileRef.FilePath);
+                    if (filename.StartsWith("BioH_") && filename.Contains("Mystic"))
+                    {
+                        // We also need to change Morinth. It'll look weird in game but not much we can do about it
+                        // We should probably ensure we make new TLK name for them
+                        var strRefNode = headMeshExp.FileRef.FindExport("TheWorld.PersistentLevel.Main_Sequence.BioSeqVar_StrRefLiteral_0");
+                        if (strRefNode != null)
+                        {
+                            var morName = $"Morin{newAsset.NameSuffix}";
+                            var morTlk = TLKHandler.GetNewTLKID();
+                            TLKHandler.ReplaceString(morTlk, morName);
+                            strRefNode.WriteProperty(new IntProperty(morTlk, "m_srStringID"));
+                        }
+                    }
+                }
 
                 if (owningPawn.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(owningPawn.FileRef) is ExportEntry actorTypeExp)
                 {
@@ -552,7 +618,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
 
                 // Post install fixup
-                newAsset.PostPortingFixupDelegate?.Invoke(newMdl);
+                newAsset.PostPortingFixupDelegate?.Invoke(squadmateInfo, newMdl);
+
+                // body fixups (checks they can run before performing)
+                BodyHeadZFix(squadmateInfo, newMdl);
+
                 return true;
             }
 
@@ -719,7 +789,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 // Remove these pawns from BioP memory
                 // Might be able to make it lose the references
-                Log.Information("Fixing BioP_ProCer Miranda/Jacob");
+                MERLog.Information("Fixing BioP_ProCer Miranda/Jacob");
                 //package.GetUExport(1562).ObjectName = "SFXPawn_Miranda_UNUSED";
                 //package.GetUExport(1555).ObjectName = "SFXPawn_Ja_UNUSED";
                 //package.GetUExport(1556).ObjectName = "SFXPawn_Jacob_UNUSED";
@@ -736,7 +806,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             else if (packagename.Equals("BioD_ProCer_300ShuttleBay.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda shoots wilson
             {
-                Log.Information("Fixing end of ProCer Miranda");
+                MERLog.Information("Fixing end of ProCer Miranda");
 
                 var oldMirandaProps = package.GetUExport(3555).GetProperties();
                 // Bust the imports so we can port things in.
@@ -785,7 +855,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
             else if (packagename.Equals("BioD_ProCer_350BriefRoom.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda and Jacob pawns at end of stage
             {
-                Log.Information("Fixing end of ProCer Jacob/Miranda");
+                MERLog.Information("Fixing end of ProCer Jacob/Miranda");
 
                 // Bust the imports so we can port things in.
                 List<IEntry> entriesToTrash = new List<IEntry>();
