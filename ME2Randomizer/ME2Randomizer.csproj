@@ -11,42 +11,8 @@
   <ItemGroup>
     <Resource Include="images\*.png" />
     <Resource Include="images\*.jpg" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Burger\Diff.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Burger\Norm.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Burger\Spec.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs2\neonbolt.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs3_5\sonicburger.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts_2\vim.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts_3\visualstudio.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\tall\acrophobia.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\tall\corporateshifts.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\tall\rainydays.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\tall\sombra.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\tall\theamorphousprelate.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\tall\theancients.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\tall\timelapselezard.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\wide\dogsspeedpainting.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\wide\frame0748.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\wide\strandedinbeauty.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\wide\the4thsign.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\ArtGallery\wide\wolfmother.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\NormandyPaintings\burger.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\NormandyPaintings\fields.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Kasumi\NormandyPaintings\reverie.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\Overlord\satimg1.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\creepyshep.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\hungryillusiveman.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\longfaceudina.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\monkaanderson.bin" />
-    <None Remove="Classes\Randomizers\ME2\TextureAssets\PictureFrames\scarymiranda.bin" />
     <None Remove="DebugTools\DebugWindow.xaml" />
     <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
-    <None Remove="staticfiles\binary\correctedloadouts\powers\SFXHeavyWeapon_ReaperMIRV.pcc" />
-    <None Remove="staticfiles\binary\correctedpawns\SFXPawn_Garm.pcc" />
-    <None Remove="staticfiles\binary\correctedpawns\SFXPawn_GethColossus.pcc" />
-    <None Remove="staticfiles\binary\correctedpawns\SFXPawn_Praetorian.pcc" />
-    <None Remove="staticfiles\binary\correctedpawns\SFXPawn_Spider.pcc" />
-    <None Remove="staticfiles\binary\Delux2go_Edmonton_Burger.pcc" />
     <None Remove="staticfiles\PremadeSeqObjs.pcc" />
     <None Remove="staticfiles\starterkit\me2starterkit.zip" />
     <None Remove="staticfiles\text\imagecredits.txt" />
@@ -80,20 +46,9 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="staticfiles\**\*" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Classes\Randomizers\ME2\TextureAssets\**\*.bin" />
     <EmbeddedResource Include="Classes\Randomizers\ME2\TextureMovieAssets\**\*.bik" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="MainWindowUIComponents\**" />
-    <EmbeddedResource Remove="MainWindowUIComponents\**" />
-    <None Remove="MainWindowUIComponents\**" />
-    <Page Remove="MainWindowUIComponents\**" />
-  </ItemGroup>
-
 
   <ItemGroup>
     <PackageReference Include="AuthenticodeExaminer" Version="0.3.0" />
@@ -113,14 +68,6 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0-dev-00887" />
     <PackageReference Include="System.Management" Version="5.0.0" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Classes\Randomizers\ME2\TextureAssets\DatapadScreens\Datapad01_Screen\" />
-    <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_Graphs\" />
-    <Folder Include="Classes\Randomizers\ME2\TextureAssets\HoloScreens\H_texts\" />
-    <Folder Include="staticfiles\binary\correctedloadouts\powers\" />
-    <Folder Include="staticfiles\binary\squadmatefaces\" />
   </ItemGroup>
   
   <ItemGroup>
