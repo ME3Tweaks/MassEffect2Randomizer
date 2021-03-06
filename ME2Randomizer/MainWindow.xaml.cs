@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
+using ALOTInstallerCore;
+using ALOTInstallerCore.Helpers;
 using ALOTInstallerCore.ModManager.ME3Tweaks;
+using ALOTInstallerCore.ModManager.Objects;
 using ALOTInstallerCore.PlatformSpecific.Windows;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
@@ -19,7 +24,6 @@ using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.DebugTools;
 //using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
-using ME3ExplorerCore.Misc;
 using Serilog;
 
 namespace ME2Randomizer
@@ -49,9 +53,9 @@ namespace ME2Randomizer
         public bool ShowProgressPanel { get; set; }
         public RandomizationMode SelectedRandomizeMode { get; set; }
 
-        public ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new ObservableCollectionExtended<ImageCredit>();
-        public ObservableCollectionExtended<string> ContributorCredits { get; } = new ObservableCollectionExtended<string>();
-        public ObservableCollectionExtended<LibraryCredit> LibraryCredits { get; } = new ObservableCollectionExtended<LibraryCredit>();
+        public ME3ExplorerCore.Misc.ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<ImageCredit>();
+        public ME3ExplorerCore.Misc.ObservableCollectionExtended<string> ContributorCredits { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<string>();
+        public ME3ExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit> LibraryCredits { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit>();
 
         public void OnSelectedRandomizeModeChanged()
         {
@@ -61,7 +65,7 @@ namespace ME2Randomizer
         /// <summary>
         /// The list of options shown
         /// </summary>
-        public ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ObservableCollectionExtended<RandomizationGroup>();
+        public ME3ExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup>();
         public bool AllowOptionsChanging { get; set; } = true;
         public int CurrentProgressValue { get; set; }
         public string CurrentOperationText { get; set; }
@@ -69,7 +73,7 @@ namespace ME2Randomizer
         public double ProgressBar_Bottom_Max { get; set; }
         public bool ProgressBarIndeterminate { get; set; }
         public LogCollector.LogItem SelectedLogForUpload { get; set; }
-        public ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new ObservableCollectionExtended<LogCollector.LogItem>();
+        public ME3ExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem>();
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
@@ -169,7 +173,7 @@ namespace ME2Randomizer
         {
             StartRandomizationCommand = new GenericCommand(StartRandomization, CanStartRandomization);
             CloseLogUICommand = new GenericCommand(() => LogUploaderFlyoutOpen = false, () => LogUploaderFlyoutOpen);
-            UploadSelectedLogCommand = new GenericCommand(() => LogUploaderFlyoutOpen = false, () => SelectedLogForUpload != null);
+            UploadSelectedLogCommand = new GenericCommand(CollectAndUploadLog, () => SelectedLogForUpload != null);
         }
 
         #endregion
@@ -378,6 +382,72 @@ namespace ME2Randomizer
         private void DebugWindow_Click(object sender, RoutedEventArgs e)
         {
             new DebugWindow(this).Show();
+        }
+
+        private void CollectAndUploadLog()
+        {
+            if (Application.Current.MainWindow is MainWindow mw)
+            {
+                NamedBackgroundWorker nbw = new NamedBackgroundWorker("DiagnosticsWorker");
+                nbw.DoWork += (a, b) =>
+                {
+                    //ProgressIndeterminate = true;
+                    //GameTarget target = GameChosen != null ? Locations.GetTarget(GameChosen.Value) : null;
+                    StringBuilder logUploadText = new StringBuilder();
+
+                    string logText = "";
+                    //if (target != null)
+                    //{
+                    //    logUploadText.Append("[MODE]diagnostics\n"); //do not localize
+                    //    logUploadText.Append(LogCollector.PerformDiagnostic(target, FullDiagChosen,
+                    //            x => DiagnosticStatusText = x,
+                    //            x =>
+                    //            {
+                    //                ProgressIndeterminate = false;
+                    //                ProgressValue = x;
+                    //            },
+                    //            () => ProgressIndeterminate = true));
+                    //    logUploadText.Append("\n"); //do not localize
+                    //}
+
+                    if (SelectedLogForUpload != null)
+                    {
+                        logUploadText.Append("[MODE]logs\n"); //do not localize
+                        logUploadText.AppendLine(LogCollector.CollectLogs(SelectedLogForUpload.filepath));
+                        logUploadText.Append("\n"); //do not localize
+                    }
+
+                    //DiagnosticStatusText = "Uploading to log viewing service";
+                    //ProgressIndeterminate = true;
+                    var response = LogUploader.UploadLog(logUploadText.ToString(), "https://me3tweaks.com/masseffect2randomizer/logservice/logupload");
+                    if (response.uploaded)
+                    {
+                        var DiagnosticResultText = response.result;
+                        if (response.result.StartsWith("http"))
+                        {
+                            Utilities.OpenWebPage(response.result);
+                        }
+                    }
+
+
+                    if (!response.uploaded || QuickFixHelper.IsQuickFixEnabled(QuickFixHelper.QuickFixName.ForceSavingLogLocally))
+                    {
+                        // Upload failed.
+                        var GeneratedLogPath = Path.Combine(LogCollector.LogDir, $"FailedLogUpload_{DateTime.Now.ToString("s").Replace(":", ".")}.txt");
+                        File.WriteAllText(GeneratedLogPath, logUploadText.ToString());
+                    }
+
+                    //DiagnosticComplete = true;
+                    //DiagnosticInProgress = false;
+                };
+                nbw.RunWorkerCompleted += (sender, args) =>
+                {
+                    CommandManager.InvalidateRequerySuggested();
+                };
+                //DiagnosticInProgress = true;
+                nbw.RunWorkerAsync();
+            }
+
         }
     }
 }
