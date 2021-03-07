@@ -241,7 +241,6 @@ namespace ME2Randomizer.Classes
             SquadmateHead.ResetClass();
             PawnPorting.ResetClass();
             NPCHair.ResetClass();
-            SizeSixteens.ResetClass();
         }
 
 
@@ -461,8 +460,15 @@ namespace ME2Randomizer.Classes
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "SizeSixteens mode",
-                        Description = "Mass Effect Randomizer was originally designed for the streamer SizeSixteens. This option installs many SizeSixteens specific changes, and continues the story from the ME1Randomizer stream he did in 2019",
+                        Description = "Mass Effect Randomizer was originally designed for the streamer SizeSixteens. This option installs a few SizeSixteens specific changes.",
                         PerformSpecificRandomizationDelegate = SizeSixteens.InstallSSChanges,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        RequiresTLK = true
+                    },
+                    new RandomizationOption() {HumanName = "NPC names",
+                        Description = "Install a list of names into the game and rename some of hte generic NPCs to them. You can install your stream chat members, for example.",
+                        PerformSpecificRandomizationDelegate = CharacterNames.InstallNameSet,
+                        SetupRandomizerDelegate = CharacterNames.SetupRandomizer,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true
                     },

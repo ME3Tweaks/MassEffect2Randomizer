@@ -100,7 +100,7 @@ namespace ME2Randomizer.Classes
         /// <summary>
         /// Adds a button to the randomizer, allowing you to click it and run an action to 'setup' the randomizer.
         /// </summary>
-        public Action SetupRandomizerDelegate { get; set; }
+        public Action<RandomizationOption> SetupRandomizerDelegate { get; set; }
 
         /// <summary>
         /// The UI text to show for the selected tick option

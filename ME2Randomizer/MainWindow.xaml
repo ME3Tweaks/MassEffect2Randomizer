@@ -45,9 +45,22 @@
                            HorizontalAlignment="Left" FontSize="10" Margin="3,-3,0,0"
                            Foreground="{Binding Dangerousness, Converter={StaticResource DangerColorConverter}}"
                            Visibility="{Binding Description, Converter={StaticResource NullVisibilityConverter}}"/>
-                <StackPanel Visibility="{Binding SetupRandomizerDelegate, Converter={StaticResource NullVisibilityConverter}}"
+                <StackPanel  Visibility="{Binding SetupRandomizerDelegate, Converter={StaticResource NullVisibilityConverter}}"
                             Margin="20,0,0,0">
-                        <Button Content="Setup"/>
+                        <Button Content="Setup" Style="{StaticResource MahApps.Styles.Button.Dialogs.Accent}" 
+                                Command="{Binding SetupRandomizerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=global:MainWindow}}" 
+                                CommandParameter="{Binding}"
+                                Padding="20,3" HorizontalAlignment="Right" Margin="0,3"  MinHeight="0" MinWidth="0"/>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Opacity" Value="0.5"></Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding OptionIsSelected}" Value="True">
+                                        <Setter Property="Opacity" Value="1"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
                 </StackPanel>
                 <StackPanel Visibility="{Binding HasSliderOption, Converter={StaticResource BoolToVisibilityConverter}}"
                             Margin="20,0,0,0">

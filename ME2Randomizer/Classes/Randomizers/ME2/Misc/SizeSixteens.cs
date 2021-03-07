@@ -15,62 +15,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class SizeSixteens
     {
-        /// <summary>
-        /// People who survived ME1's onslaught of SizeSixteens' stream
-        /// </summary>
-        private static string[] SizeSixteenChatMembers = new[]
-        {
-            // DIED IN ME1
-            //"Red Falcon",
-            //"Rocket Boy",
-            //"John Doe",
-            //"Red Line"
-
-            // Survivors from ME1
-            "Nalie Walie",
-            "Jed Ted",
-            "Mok",
-            "Shamrock Snipes",
-            "Steeler Wayne",
-            "Castle Arrrgh",
-            "Bev",
-            "Lurxx",
-            "Chirra Kitteh",
-            "Daynan",
-
-            // New people in game
-            "Admiral Kirk",
-            "Darth Krytie",
-            "Peeress Sabine",
-            "DNC 510",
-            "Horny Heracross",
-            "Thorg",
-            "Invisible Guardian",
-            "Nox"
-        };
-
-        private static List<string> AvailableMembers;
-
-        public static void ResetClass()
-        {
-            AvailableMembers = SizeSixteenChatMembers.ToList();
-            AvailableMembers.Shuffle();
-        }
-
-        private static string GetMember()
-        {
-            return AvailableMembers.PullFirstItem();
-        }
 
         public static bool InstallSSChanges(RandomizationOption option)
         {
             // Freedoms progress
             SetVeetorFootage();
-
             return true;
         }
-
-
+        
         private static void SetVeetorFootage()
         {
             var moviedata = RTextureMovie.GetTextureMovieAssetBinary("Veetor.size_mer.bik");

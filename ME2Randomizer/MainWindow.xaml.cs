@@ -168,12 +168,27 @@ namespace ME2Randomizer
         public GenericCommand StartRandomizationCommand { get; set; }
         public GenericCommand CloseLogUICommand { get; set; }
         public GenericCommand UploadSelectedLogCommand { get; set; }
+        public RelayCommand SetupRandomizerCommand { get; set; }
 
         private void LoadCommands()
         {
             StartRandomizationCommand = new GenericCommand(StartRandomization, CanStartRandomization);
             CloseLogUICommand = new GenericCommand(() => LogUploaderFlyoutOpen = false, () => LogUploaderFlyoutOpen);
             UploadSelectedLogCommand = new GenericCommand(CollectAndUploadLog, () => SelectedLogForUpload != null);
+            SetupRandomizerCommand = new RelayCommand(SetupRandomizer, CanSetupRandomizer);
+        }
+
+        private bool CanSetupRandomizer(object obj)
+        {
+            return obj is RandomizationOption option && option.SetupRandomizerDelegate != null;
+        }
+
+        private void SetupRandomizer(object obj)
+        {
+            if (obj is RandomizationOption option)
+            {
+                option.SetupRandomizerDelegate?.Invoke(option);
+            }
         }
 
         #endregion

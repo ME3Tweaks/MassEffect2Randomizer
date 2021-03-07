@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ALOTInstallerCore.Helpers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Helpers;
@@ -13,7 +14,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class CharacterNames
     {
+        /// <summary>
+        /// Static list that is not modified beyond loading
+        /// </summary>
         private static List<string> PawnNames { get; } = new List<string>();
+        /// <summary>
+        /// List actually used to pull from
+        /// </summary>
+        private static List<string> PawnNameListInstanced { get; } = new List<string>();
 
         /// <summary>
         /// Allows loading a list of names for pawns
@@ -22,14 +30,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         {
             OpenFileDialog ofd = new OpenFileDialog()
             {
-
+                Title = "Select text file with list of names, one per line",
+                Filter = "Text files|*.txt",
             };
             var result = ofd.ShowDialog();
             if (result.HasValue && result.Value)
             {
                 try
                 {
-                    var readNames = File.ReadAllLines(ofd.FileName);
+                    PawnNames.ReplaceAll(File.ReadAllLines(ofd.FileName));
+                    option.Description = $"{PawnNames.Count} name(s) loaded for randomization";
                 }
                 catch (Exception e)
                 {
@@ -75,9 +85,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
         }
 
-        public static void InstallNameSet(RandomizationOption option)
+        public static bool InstallNameSet(RandomizationOption option)
         {
-
+            // Setup
+            PawnNameListInstanced.ReplaceAll(PawnNames);
+            
             // Archangel mission
             InstallName(236473); // Guy
             InstallName(233780); // Freelancer (captain)
@@ -101,6 +113,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             InstallName(287919); // Survivor
             InstallName(287920); // Survivor
             FixFirstSurvivorNameBchLmL();
+
+            return true;
         }
 
         private static void FixFirstSurvivorNameBchLmL()
@@ -125,9 +139,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         private static int InstallName(int stringId = 0)
         {
-            if (PawnNames.Any())
+            if (PawnNameListInstanced.Any())
             {
-                var newPawnName = PawnNames.PullFirstItem();
+                var newPawnName = PawnNameListInstanced.PullFirstItem();
                 if (stringId == 0)
                     stringId = TLKHandler.GetNewTLKID();
                 TLKHandler.ReplaceString(stringId, newPawnName);
