@@ -66,6 +66,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         /// <returns></returns>
         public static bool Init(RandomizationOption option)
         {
+            LoadGuns();
             WeaponAnimsPackage = MERFileSystem.GetStartupPackage();
             WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
             MERFileSystem.InstallStartupPackage(); // Contains weapon animations
@@ -255,15 +256,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         public static List<GunInfo> GetAllowedWeaponsForLoadout(ExportEntry export)
         {
             List<GunInfo> guns = new();
-            var objName = export.ObjectName.Name;
-            
-            // was crashing due to BioP memory being GC'd
-            //if (objName.Contains("SecurityMech"))
-            //{
-            //    // Others crash the game? AssaultRifle def does
-            //    guns.AddRange(VisibleAvailableWeapons.Where(x => x.WeaponClassification == GunInfo.EWeaponClassification.SMG));
-            //}
-            //else 
             if (LoadoutSupportsVisibleMapping.TryGetValue(export.FullPath, out var supportsVisibleWeapons))
             {
                 // We use FullPath instead of instanced as the loadout number may change across randomization
@@ -338,8 +330,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     Debug.WriteLine($"Gun ImportOnly in file {targetPackage.FilePath}");
                     if (gunInfo.RequiresStartupPackage)
                     {
-
-
                         ThreadSafeDLCStartupPackage.AddStartupPackage(Path.GetFileNameWithoutExtension(gunInfo.PackageFileName));
                     }
 
@@ -537,6 +527,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
         private static bool tried = false;
 
+
         private static bool RandomizeWeaponLoadout(ExportEntry export, RandomizationOption option)
         {
 
@@ -549,7 +540,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 if (allowedGuns.Any())
                 {
                     var randomNewGun = allowedGuns.RandomElementByWeight(x => x.Weight);
-                    if (option.SliderValue >= 0)
+                    if (option.HasSliderOption && option.SliderValue >= 0)
                     {
                         randomNewGun = AllAvailableWeapons[(int)option.SliderValue];
                     }

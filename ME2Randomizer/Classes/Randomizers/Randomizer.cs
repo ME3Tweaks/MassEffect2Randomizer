@@ -173,7 +173,7 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
@@ -262,13 +262,13 @@ namespace ME2Randomizer.Classes
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
 #if DEBUG
-                    new RandomizationOption()
-                    {
-                        Description="Runs debug code randomization",
-                        HumanName = "Debug randomizer",
-                        PerformRandomizationOnExportDelegate = DebugTools.DebugRandomizer.RandomizeExport,
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
-                    },
+                    //new RandomizationOption()
+                    //{
+                    //    Description="Runs debug code randomization",
+                    //    HumanName = "Debug randomizer",
+                    //    PerformRandomizationOnExportDelegate = DebugTools.DebugRandomizer.RandomizeExport,
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    //},
 #endif
                     new RandomizationOption()
                     {
