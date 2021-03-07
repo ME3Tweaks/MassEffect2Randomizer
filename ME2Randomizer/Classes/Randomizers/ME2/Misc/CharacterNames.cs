@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using ALOTInstallerCore.Helpers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
@@ -89,7 +90,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         {
             // Setup
             PawnNameListInstanced.ReplaceAll(PawnNames);
-            
+            PawnNameListInstanced.Shuffle();
             // Archangel mission
             InstallName(236473); // Guy
             InstallName(233780); // Freelancer (captain)
@@ -100,10 +101,28 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             // Omega Hub
             InstallName(282031); // Annoyed Human
+            InstallName(351554); // Zaeed DLC - prisoner
+            InstallName(282029); // Elcor bouncer
+            InstallName(212201); // Dancer
+
+            // Omega - Professor acquisition
+            InstallName(214818); // Sick Batarian
+            InstallName(183669); // Guard
+            InstallName(263271); // Guard
+
+            InstallName(183671); // Human Looter
+            InstallName(342063); // Human Looter
+            InstallName(184147); // Refugee
+            InstallName(184148); // Refugee
+
 
             // Omega VIP (MwL)
             InstallName(338532); // Vij (tickets guy)
             InstallName(236437); // Meln (drunk turian)
+
+            // Horizon CR1
+            InstallName(341935); // Colonist
+            InstallName(342012); // Colonist
 
             // Gernsback (Jacob Mission)
             InstallName(266999); // Survivor
@@ -114,6 +133,31 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             InstallName(287920); // Survivor
             FixFirstSurvivorNameBchLmL();
 
+            // Geth Acqusition
+            InstallName(342401); // Cerb scientist 1
+            InstallName(342402); // Cerb scientist 2
+
+            // illium twrhub
+            InstallName(263290); // Colonist
+            InstallName(262481); // Slave Broker
+            InstallName(262479); // Quarian
+
+            // Overlord
+            InstallName(360543); // Engineer 1
+            InstallName(361166); // Engineer 2
+            InstallName(361165); // Lab Tech
+
+            // Citadel
+            InstallName(345666); // Game salesman
+            InstallName(252048); // Used ships salesman
+
+            // Tuchanka
+            InstallName(234580); // Sick Krogan
+
+            // ??? - Jack mission maybe?
+            InstallName(186968); // Technician
+
+            Debug.WriteLine($"COUNT: {count}");
             return true;
         }
 
@@ -137,8 +181,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
         }
 
+        private static int count = 0;
+
         private static int InstallName(int stringId = 0)
         {
+            count++;
             if (PawnNameListInstanced.Any())
             {
                 var newPawnName = PawnNameListInstanced.PullFirstItem();
