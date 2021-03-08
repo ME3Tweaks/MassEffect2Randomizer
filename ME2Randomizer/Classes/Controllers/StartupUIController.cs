@@ -146,7 +146,7 @@ namespace ME2Randomizer.Classes.Controllers
                 {
                     ct.Cancel();
                 };
-                AppUpdater.PerformGithubAppUpdateCheck("ME3Tweaks", "MassEffect2Randomizer", "ME2Randomizer", "ME2Randomizer.exe",
+                AppUpdater.PerformGithubAppUpdateCheck("Mgamerz", "MassEffect2Randomizer", "ME2Randomizer", "ME2Randomizer.exe",
                     (title, text, updateButtonText, declineButtonText) =>
                     {
                         bool response = false;
