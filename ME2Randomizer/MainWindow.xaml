@@ -254,7 +254,17 @@
                     </Grid>
                     <StackPanel Orientation="Vertical" Grid.Column="2" VerticalAlignment="Bottom"  IsEnabled="{Binding AllowOptionsChanging}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5" HorizontalAlignment="Right">
-                            <CheckBox Content="Multi-thread randomization" IsChecked="{Binding UseMultiThreadRNG}" HorizontalAlignment="Right" Margin="0,0,10,0" ToolTip="Enables faster randomization, but cannot be used with a seed."/>
+                            <StackPanel>
+                                <CheckBox Content="Re-roll randomization" IsChecked="{Binding PerformReroll}" HorizontalAlignment="Right" Margin="0,0,10,5" ToolTip="Checking this box will re-generate the DLC componenet, as if you performed a new randomization.&#10;Unchecking this box will make randomization occur on top of the existing randomization"
+                                          Controls:CheckBoxHelper.CheckGlyphForegroundChecked="White"
+                                          Controls:CheckBoxHelper.CheckGlyphForegroundCheckedMouseOver="White"
+                                          Controls:CheckBoxHelper.CheckGlyphForegroundCheckedPressed="Gray"
+                                />
+                                <CheckBox Content="Multi-thread randomization" IsChecked="{Binding UseMultiThreadRNG}" HorizontalAlignment="Right" Margin="0,0,10,0" ToolTip="Enables faster randomization, but cannot be used with a seed."
+                                          Controls:CheckBoxHelper.CheckGlyphForegroundChecked="White"
+                                          Controls:CheckBoxHelper.CheckGlyphForegroundCheckedMouseOver="White"
+                                          Controls:CheckBoxHelper.CheckGlyphForegroundCheckedPressed="Gray"/>
+                            </StackPanel>
                             <TextBlock Text="RNG Seed: " VerticalAlignment="Center" Visibility="{Binding UseMultiThreadRNG, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter='Inverse'}"/>
                             <TextBox Name="SeedTextBox" MaxLength="11" Text="PLACEHOLDER" ToolTip="RNG seeds determine the output of the random number generator.&#xA;You can share seed values to produce the same results on another run of the program, assuming you chose the same options - however, this is not guaranteed." 
                                      Visibility="{Binding UseMultiThreadRNG, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter='Inverse'}"/>

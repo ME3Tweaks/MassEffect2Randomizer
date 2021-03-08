@@ -335,7 +335,7 @@ namespace ME2Randomizer.Classes
                         IsRecommended = true, PerformRandomizationOnExportDelegate = RIllusiveEyes.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
-                    }
+                }
             });
 
             RandomizationGroups.Add(new RandomizationGroup()
@@ -466,7 +466,7 @@ namespace ME2Randomizer.Classes
                         RequiresTLK = true
                     },
                     new RandomizationOption() {HumanName = "NPC names",
-                        Description = "Install a list of names into the game and rename some of hte generic NPCs to them. You can install your stream chat members, for example.",
+                        Description = "Install a list of names into the game and renames some of the generic NPCs to them. You can install your stream chat members, for example.",
                         PerformSpecificRandomizationDelegate = CharacterNames.InstallNameSet,
                         SetupRandomizerDelegate = CharacterNames.SetupRandomizer,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,

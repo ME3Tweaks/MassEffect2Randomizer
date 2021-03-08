@@ -236,6 +236,19 @@ namespace ME2Randomizer.Classes
                                     }
                                     else
                                     {
+                                        // try behavior lookup instead
+                                        var behavior = actorE.GetProperty<ObjectProperty>("m_oBehavior");
+                                        if (behavior?.ResolveToEntry(p) is ExportEntry behav)
+                                        {
+                                            displayNameVal = behav.GetProperty<StringRefProperty>("ActorGameNameStrRef");
+                                            if (displayNameVal != null)
+                                            {
+                                                var displayName = TLKHandler.TLKLookupByLang(displayNameVal.Value, "INT");
+                                                actorTypeNames.Add($"{atypeexp.ObjectName.Instanced}: {displayNameVal.Value} {displayName}");
+                                                continue;
+                                            }
+                                        }
+
                                         actorTypeNames.Add(atypeexp.ObjectName.Instanced);
 
                                     }

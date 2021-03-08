@@ -60,6 +60,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     // Update the anim tree to use the new animations
                     // Too lazy to properly trace to find nodes. Just take children of this node that are AnimNodeSequences
 
+                    // Add blend times to nodes so they 'blend' together a bit more, look a bit less jank
+                    SetupChildrenBlend(animTreeTemplate);
+
+
                     // If the animtree has 'DebugPostLoad' flag, it means MER already is using this for something else
                     // We need to generate a new tree so the animations work properly
                     if (animTreeTemplate.ObjectFlags.Has(UnrealFlags.EObjectFlags.DebugPostLoad))
@@ -88,6 +92,34 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 }
             }
             return false;
+        }
+
+        private static void SetupChildrenBlend(ExportEntry export)
+        {
+            // Drill to children
+            var childrenX = export.GetProperty<ArrayProperty<StructProperty>>("Children");
+            if (childrenX != null)
+            {
+                foreach (var c in childrenX)
+                {
+                    var anim = c.GetProp<ObjectProperty>("Anim").ResolveToEntry(export.FileRef) as ExportEntry;
+                    if (anim != null)
+                    {
+                        SetupChildrenBlend(anim);
+                    }
+                }
+            }
+
+            // Update blends
+            var randInfo = export.GetProperty<ArrayProperty<StructProperty>>("RandomInfo");
+            if (randInfo != null)
+            {
+                foreach (var ri in randInfo)
+                {
+                    ri.Properties.AddOrReplaceProp(new FloatProperty(3, "BlendInTime"));
+                }
+                export.WriteProperty(randInfo);
+            }
         }
 
         private static void InstallDynamicAnimSetRefForSkeletalMesh(ExportEntry export, RBioEvtSysTrackGesture.Gesture gesture)

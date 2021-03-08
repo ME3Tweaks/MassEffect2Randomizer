@@ -91,6 +91,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // Setup
             PawnNameListInstanced.ReplaceAll(PawnNames);
             PawnNameListInstanced.Shuffle();
+
             // Archangel mission
             InstallName(236473); // Guy
             InstallName(233780); // Freelancer (captain)
@@ -104,6 +105,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             InstallName(351554); // Zaeed DLC - prisoner
             InstallName(282029); // Elcor bouncer
             InstallName(212201); // Dancer
+            InstallName(193689); // Bartender
 
             // Omega - Professor acquisition
             InstallName(214818); // Sick Batarian
@@ -114,6 +116,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             InstallName(342063); // Human Looter
             InstallName(184147); // Refugee
             InstallName(184148); // Refugee
+
+            // Citadel - Thane mission?
+            InstallName(334752); // Ambassador
 
 
             // Omega VIP (MwL)
@@ -150,9 +155,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // Citadel
             InstallName(345666); // Game salesman
             InstallName(252048); // Used ships salesman
+            InstallName(229974); // Barkeep
+            InstallName(345460); // Gunnery chief
 
             // Tuchanka
             InstallName(234580); // Sick Krogan
+
+            //N7VIQ2_VI
+            InstallName(343549); // The VI name?
+
+
 
             // ??? - Jack mission maybe?
             InstallName(186968); // Technician
