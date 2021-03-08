@@ -290,3 +290,4 @@ __pycache__/
 # Google Drive
 *desktop.ini
 /ME2Randomizer/Deployment
+/ME2Randomizer/Classes/Telemetry/APIKeysPrivate.cs
