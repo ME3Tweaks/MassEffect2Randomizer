@@ -35,23 +35,23 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public static string DLCModCookedPath { get; private set; }
 
-        public static void InitMERFS(bool loadTLK)
+        public static void InitMERFS(OptionsPackage options)
         {
+            var useTlk = options.SelectedOptions.Any(x => x.RequiresTLK);
             installedStartupPackage = false;
             ReloadLoadedFiles();
 
-            var dlcmodPath = Path.Combine(MEDirectories.GetDefaultGamePath(Game), "BioGame", "DLC", $"DLC_MOD_{Game}Randomizer");
-            if (Directory.Exists(dlcmodPath)) Utilities.DeleteFilesAndFoldersRecursively(dlcmodPath); //Nukes the DLC folder
+            dlcModPath = GetDLCModPath();
+            if (options.Reroll && Directory.Exists(dlcModPath)) Utilities.DeleteFilesAndFoldersRecursively(dlcModPath); //Nukes the DLC folder
 
-
-            dlcModPath = dlcmodPath;
-            CreateRandomizerDLCMod(dlcmodPath);
+            // Re-extract even if we are on re-roll
+            CreateRandomizerDLCMod(dlcModPath);
             DLCModCookedPath = Path.Combine(dlcModPath, Game == MEGame.ME2 ? "CookedPC" : "CookedPCConsole"); // Must be changed for ME3
 
 
             ReloadLoadedFiles();
             CoalescedHandler.StartHandler();
-            if (loadTLK)
+            if (useTlk)
             {
                 TLKHandler.StartHandler();
             }
@@ -262,6 +262,15 @@ namespace ME2Randomizer.Classes
 
             // TFC that can be used safely before load
             return Path.Combine(MEDirectories.GetCookedPath(Game), @"Textures_MER_PreDLCLoad.tfc");
+        }
+
+        /// <summary>
+        /// Gets the path of the DLC mod component. Does not check if it exists.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetDLCModPath()
+        {
+            return Path.Combine(MEDirectories.GetDLCPath(Game), $"DLC_MOD_{Game}Randomizer");
         }
     }
 }

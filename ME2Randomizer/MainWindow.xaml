@@ -67,7 +67,7 @@
                     <TextBlock Text="{Binding TickText}"/>
                     <Slider Value="{Binding SliderValue}" 
                             Style="{StaticResource MahApps.Styles.Slider}"
-                            ToolTip="Amount to randomize.&#xA;Larger values result in more ridiculous faces.&#xA;Default value is 0.3." 
+                            ToolTip="{Binding SliderTooltip}" 
                             Margin="3" Ticks="{Binding Ticks}" 
                             Minimum="{Binding TickMin}"
                             Maximum="{Binding TickMax}"
@@ -255,7 +255,7 @@
                     <StackPanel Orientation="Vertical" Grid.Column="2" VerticalAlignment="Bottom"  IsEnabled="{Binding AllowOptionsChanging}">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5" HorizontalAlignment="Right">
                             <StackPanel>
-                                <CheckBox Content="Re-roll randomization" IsChecked="{Binding PerformReroll}" HorizontalAlignment="Right" Margin="0,0,10,5" ToolTip="Checking this box will re-generate the DLC componenet, as if you performed a new randomization.&#10;Unchecking this box will make randomization occur on top of the existing randomization"
+                                <CheckBox Content="Re-roll randomization" IsChecked="{Binding PerformReroll}" HorizontalAlignment="Right" Margin="0,0,10,5" ToolTip="Checking this box will regenerate the DLC component, as if you performed a new randomization.&#10;Unchecking this box will make randomization occur on top of the existing randomization, effectively stacking your changes"
                                           Controls:CheckBoxHelper.CheckGlyphForegroundChecked="White"
                                           Controls:CheckBoxHelper.CheckGlyphForegroundCheckedMouseOver="White"
                                           Controls:CheckBoxHelper.CheckGlyphForegroundCheckedPressed="Gray"

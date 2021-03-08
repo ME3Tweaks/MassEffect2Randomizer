@@ -34,7 +34,6 @@ namespace ME2Randomizer
     public partial class MainWindow : MetroWindow, INotifyPropertyChanged
     {
         private static string FaqLink = "https://me3tweaks.com/masseffect2randomizer/faq";
-        public static bool DEBUG_LOGGING { get; internal set; }
 
         public enum RandomizationMode
         {
@@ -67,6 +66,7 @@ namespace ME2Randomizer
         /// </summary>
         public ME3ExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup>();
         public bool AllowOptionsChanging { get; set; } = true;
+        public bool PerformReroll { get; set; } = true;
         public int CurrentProgressValue { get; set; }
         public string CurrentOperationText { get; set; }
         public double ProgressBar_Bottom_Min { get; set; }
@@ -282,7 +282,8 @@ namespace ME2Randomizer
                 {
                     Seed = int.Parse(SeedTextBox.Text),
                     SelectedOptions = RandomizationGroups.SelectMany(x => x.Options.Where(x => x.OptionIsSelected)).ToList(),
-                    UseMultiThread = UseMultiThreadRNG
+                    UseMultiThread = UseMultiThreadRNG,
+                    Reroll = PerformReroll
                 };
                 randomizer.Randomize(op);
             }
@@ -332,7 +333,7 @@ namespace ME2Randomizer
                 }
                 else
                 {
-
+                    RestoreController.StartRestore(this, result == MessageDialogResult.Affirmative);
                 }
             }
         }

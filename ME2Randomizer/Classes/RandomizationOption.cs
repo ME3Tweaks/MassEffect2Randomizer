@@ -149,6 +149,10 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public bool IsOptionOnly { get; set; }
         public Action<RandomizationOption> StateChangingDelegate { get; internal set; }
+        /// <summary>
+        /// Tooltip to show on the slider
+        /// </summary>
+        public string SliderTooltip { get; set; }
 
 #pragma warning disable
         public event PropertyChangedEventHandler PropertyChanged;

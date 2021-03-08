@@ -20,5 +20,9 @@ namespace ME2Randomizer.Classes.Randomizers
         /// The list of randomization options that were selected
         /// </summary>
         public List<RandomizationOption> SelectedOptions { get; set; }
+        /// <summary>
+        /// If true, remove the DLC mod component before install, which prevents stacking for most randomization. If false, the DLC component will stay, which stacks changes
+        /// </summary>
+        public bool Reroll { get; set; }
     }
 }

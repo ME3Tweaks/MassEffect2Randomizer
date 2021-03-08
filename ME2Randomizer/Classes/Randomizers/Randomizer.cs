@@ -58,7 +58,6 @@ namespace ME2Randomizer.Classes
         /// </summary>
         public OptionsPackage SelectedOptions { get; set; }
 
-
         public void Randomize(OptionsPackage op)
         {
             SelectedOptions = op;
@@ -125,7 +124,7 @@ namespace ME2Randomizer.Classes
                 }
             }
 
-            MERFileSystem.InitMERFS(SelectedOptions.SelectedOptions.Any(x => x.RequiresTLK));
+            MERFileSystem.InitMERFS(SelectedOptions);
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
@@ -283,6 +282,7 @@ namespace ME2Randomizer.Classes
                                 5 => "Total madness",
                                 _ => "Error"
                             },
+                        SliderTooltip = "Higher settings yield more extreme facial animation values. Default value is Sonic Adventure",
                         SliderValue = 3, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
@@ -309,6 +309,7 @@ namespace ME2Randomizer.Classes
                         Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7",
                         HasSliderOption = true,
                         IsRecommended = true,
+                        SliderTooltip = "Higher settings yield more ridiculous faces for characters that use the BioFaceMorph system. Default value is 0.3.",
                         SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
                         PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExportNonHench,
@@ -351,6 +352,7 @@ namespace ME2Randomizer.Classes
                         HasSliderOption = true,
                         SliderValue = 1,
                         Ticks = "1,2,3,4,5",
+                        SliderTooltip = "Higher settings yield more bone randomization. Default value basic bones only.",
                         Description = "Changes the order of animations mapped to bones. E.g. arm rotation will be swapped with eyes",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
                     },
@@ -411,6 +413,7 @@ namespace ME2Randomizer.Classes
                         Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7",
                         HasSliderOption = true,
                         IsRecommended = true,
+                        SliderTooltip = "Higher settings yield more extreme facial changes. Default value is 0.3.",
                         SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = .3, // This must come after the converter
                         PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeIconicFemShep
@@ -423,6 +426,7 @@ namespace ME2Randomizer.Classes
                         Ticks = "0.25,0.5,1.0,1.25,1.5,2.0",
                         HasSliderOption = true,
                         IsRecommended = true,
+                        SliderTooltip = "Higher settings yields further bone position shifting, which can sometimes be undesirable. Default value is 1.0.",
                         SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
                         SliderValue = 1.0, // This must come after the converter
                         PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeIconicMaleShep,
@@ -499,6 +503,7 @@ namespace ME2Randomizer.Classes
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
                         Ticks = "0.1,0.2,0.3,0.4,0.5,0.75",
                         HasSliderOption = true,
+                        SliderTooltip = "Values are added +/- to 1 to generate the range of allowed sizes. For example, 0.1 yields 90-110% size multiplier. Default value is 0.1.",
                         SliderToTextConverter = x=> $"Maximum size change: {Math.Round(x * 100)}%",
                         SliderValue = 0.1,
                     },
@@ -738,6 +743,7 @@ namespace ME2Randomizer.Classes
                             Ticks = "1,2",
                             Description="Shifts rigged bone positions",
                             IsRecommended = true,
+                            SliderTooltip = "Value determines which bones are used in the remapping. Default value is basic bones only.",
                             Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
                     },
                     new RandomizationOption()
@@ -748,6 +754,7 @@ namespace ME2Randomizer.Classes
                         PerformRandomizationOnExportDelegate = RInterpTrackMove.RandomizeExport,
                         Ticks = "0.025,0.05,0.075,0.1,0.15,0.2,0.3,0.4,0.5",
                         HasSliderOption = true,
+                        SliderTooltip = "Higher settings yield more extreme position and rotational changes to interpolations. Values above 0.05 are very likely to make the game unplayable. Default value is 0.05.",
                         SliderToTextConverter = x=> $"Maximum interp change: {Math.Round(x * 100)}%",
                         SliderValue = 0.05,
                     },
