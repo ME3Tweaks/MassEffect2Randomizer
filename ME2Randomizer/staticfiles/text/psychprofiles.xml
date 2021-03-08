@@ -30,6 +30,11 @@
 
       You spent a lot of time on your own, becoming independent and acquiring an ability to recognize the subtle non-verbal communications of others. These skills let you understand people at a glance, a skill the Alliance took notice of.
     </childhood>
+    <childhood name="Disgraced">
+      You were wrongly accused of extortion when you were 19, and spent years having to fight off a bogus charge that tarnished your family's name even after you were exonerated. You were a lone wolf through most of it, losing the support of your friends.
+
+      With nowhere else to turn, you joined the Alliance Navy. As the years have gone by, people began to remember the Shepard name for your service, not the stories the press wrote about your trial.
+    </childhood>
   </childhoods>
   <reputations>
     <reputation name="Rough Rider">
@@ -68,6 +73,31 @@
       You love having fun, but only at the expense of others. You're the background noise, making yourself known only when you make a grand entrance. You found your way into computer systems that were always touted as 'impenetrable', and technically "still are", at least according to the owners.
       
       These hacking skills have helped you evade the Alliance by hiding in plain sight, creating a perfect disguise as 'Commander Shepard'. It will be difficult to continue this cover with the Normandy-SR1 destroyed.
-    </reputation> 
+    </reputation>
+    <reputation name="Freeman">
+      Handy with a crowbar, used to wearing orange armor, you are a "scientist". At least that's what you tell everybody who doesn't know you are a badass alien killer who fights the Combine across the universe, back in your universe. But then the G-Man catapulted you here, in a universe where you can talk, and where crowbars are out of fashion.
+
+      But one thing stays the same, you still kick ass. But you dropped the "scientist" thing. Now you just are a badass as job description.
+    </reputation>
+    <reputation name="Thrill-Seeker">
+      You joined the Alliance Navy for the thrills. You've done all of it, from high altitude halo jumping to deep diving without oxygen, even good old russian roulette. But the Navy finally gave you a place where you could find thrills everyday and gett paid for it too.
+
+      Your kicking ass of the Geth didn't help your tendencies, and their latest attack only really pissed you off.
+    </reputation>
+    <reputation name="Hedonist">
+      You're not in it for the violence, the thrills, or the cause; No, you're in it for the "companionship", the boys and ladies. You like to sample the local population wherever you go, so you thought the Navy was a good way to travel. The more exotic, the better too, and you've done just that by inviting aliens of all boards on your ship.
+
+      Now that you fly under a new flag, maybe you can get even more!
+    </reputation>
+    <reputation name="Adamant">
+      You have to be right. On everything. Your ship, the fate of the galaxy, even manually calibrating your teams' weapons. If it's not done your way, it's done the wrong way. And while everyone hates you for that, they also tend to realize you're mostly always right. Do you bend the universe to your will, or are you just lucky? Nobody knows, but being right has gotten you far.
+
+      But now you've blown up. Although, if you always have to be right, can you even die before you decided you were gonna die?
+    </reputation>
+    <reputation name="Falco">
+      You're a hot shot, overconfident in your abilities, typically relying on your squad to back you up. You're flirtatious, cunning, and a wise-crack. Secretly though, you've trying to cover up the mistakes you've made, like that time something went horribly wrong with your ship's G-Diffuser system in Corneria City.
+
+      Despite your best efforts, stopping the attack on the Normandy was beyond your abilities. Guess that G-Diffuser incident didn't really matter in the end.
+    </reputation>
   </reputations>
 </backgroundstrings>
