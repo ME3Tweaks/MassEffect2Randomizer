@@ -170,36 +170,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                         }
                     },
                 }
-                    },
+            },
 
-            // Collector Human
-            // Crashes game currently
-            //new PortablePawn()
-            //{
-            //    PackageFilename = "BioPawn_Jedore_Stage1.pcc",
-            //    ChallengeTypeFullPath = "BioChar_MER.Combat.ELT_Collector_Human",
-            //    AssetToPortIn = "BioChar_MER.Combat.ELT_Collector_Human",
-            //    AssetPaths = new[] {
-            //        "BIOG_HMF_HED_PROMorph_R.Average.HMF_Blank_World_LOD0", //Head
-            //        "BIOG_HMF_ARM_MED_R.MEDa.HMF_ARM_MEDa_MDL", // Armor
-            //        "BIOG_HMF_HIR_PRO.Moto.HMF_HAT_MTR_MDL", //Headgear?
-            //        "BIOG_HMF_HIR_PRO.Classy.HMF_HIR_Cls_MDL", //Hair
-            //    },
-            //    IsCorrectedPackage = true,
-            //    //TextureUpdates = new []
-            //    //{
-            //    //    new RTexture2D
-            //    //    {
-            //    //        // Darker head with veins (that you honestly can't really see...)
-            //    //        TextureInstancedFullPath = "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROMorph_Diff",
-            //    //        AllowedTextureAssetNames = new List<string>
-            //    //        {
-            //    //            "Pawn.Collector_Batarian_HeadMorph.bin",
-            //    //        }
-            //    //    },
-            //    //}
-
-            //},
 
             // Collector Asari
             new PortablePawn()
@@ -216,25 +188,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     "BIOG_ASA_HED_PROMorph_R.PROBase.ASA_HED_PRO_Lash_Mat_1a",
                 },
                 IsCorrectedPackage = true,
-                }
-                //TextureUpdates = new []
-                //{
-                //    new RTexture2D
-                //    {
-                //        // Darker head with veins (that you honestly can't really see...)
-                //        TextureInstancedFullPath = "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROMorph_Diff",
-                //        AllowedTextureAssetNames = new List<string>
-                //        {
-                //            "Pawn.Collector_Batarian_HeadMorph.bin",
-                //        }
-                //    },
-                //}
-                
-
-
-            // Todo: Scion, Vorcha
-            // Varren are pointless for this purpose
-    };
+            }
+        };
 
         public static void ResetClass()
         {

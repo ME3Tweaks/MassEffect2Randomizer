@@ -85,10 +85,10 @@
     <Company>ME3Tweaks</Company>
     <Product>Mass Effect 2 Randomizer</Product>
     <Description>Randomizer for Mass Effect 2</Description>
-    <AssemblyVersion>0.8.0.0</AssemblyVersion>
-    <FileVersion>0.8.0.0</FileVersion>
+    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <FileVersion>0.9.0.0</FileVersion>
     <Copyright>2019-2021 ME3Tweaks</Copyright>
-    <Version>0.8</Version>
+    <Version>0.9</Version>
     <Authors>ME3Tweaks</Authors>
   </PropertyGroup>
 

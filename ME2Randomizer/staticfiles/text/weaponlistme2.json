@@ -34,17 +34,6 @@
   },
   {
     "packagename": "SFXGameContent_Inventory",
-    "packagefilename": "SFXHeavyWeapon_PraetorianParticleBeam.pcc",
-    "sourceuindex": 3,
-    "weaponclassification": 5,
-    "hasgunmesh": false,
-    "gunname": "SFXHeavyWeapon_PraetorianParticleBeam",
-    "importonly": false,
-    "requiresstartuppackage": false,
-    "iscorrectedpackage": true
-  },
-  {
-    "packagename": "SFXGameContent_Inventory",
     "packagefilename": "BioD_OmgHub_225Aria_LOC_INT.pcc",
     "sourceuindex": 101,
     "weaponclassification": 0,

@@ -169,13 +169,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
-                    if (true
-                    //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                        return;
+                    //if (true
+                    ////&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
+                    //)
+                    //    return;
                     try
                     {
                         //Log.Information($@"Opening package {file}");

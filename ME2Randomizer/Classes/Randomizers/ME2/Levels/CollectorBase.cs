@@ -135,7 +135,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             // Install names
             TLKHandler.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
             TLKHandler.ReplaceString(7892161, "Enthralled Batarian"); //Batarian Commando update
-            TLKHandler.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
+            //TLKHandler.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
         }
 
         private static void ChangeFlyersInFiles(string[] files)
@@ -241,94 +241,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
             }
         }
 
-        class FinalBattlePawn
-        {
-            /// <summary>
-            /// Source package
-            /// </summary>
-            public string PackageName { get; set; }
-            /// <summary>
-            /// The loadout UIndex for the pawn
-            /// </summary>
-            public int BioPawnChallengeScaledTypeUIndex { get; set; }
-            /// <summary>
-            /// The full path to the class of the pawn. For actor factory
-            /// </summary>
-            public string PawnClassFullName { get; set; }
-            /// <summary>
-            /// The MDL asset fullname. For actor factory
-            /// </summary>
-            public string MDLAssetFullName { get; set; }
-            /// <summary>
-            /// Function that is invoked when porting has completed
-            /// </summary>
-            public Action<IMEPackage> AdjustmentFunc { get; set; }
-        }
-
-        private static FinalBattlePawn[] FinalBattlePawnTypes = new[]
-        {
-
-            // Spawns one time
-            new FinalBattlePawn() {PackageName = "BioP_ProCer.pcc", BioPawnChallengeScaledTypeUIndex = 3417, PawnClassFullName = "SFXGamePawns.SFXPawn_HeavyMech", MDLAssetFullName = "BIOG_CBT_MHV_NKD_R.NKDa.CBT_MHV_NKDa_MDL"}, // Confirmed working
-            
-            // Have never seen spawn
-            new FinalBattlePawn() {PackageName = "BioP_RprGtA.pcc", BioPawnChallengeScaledTypeUIndex = 3073, PawnClassFullName = "SFXGamePawns.SFXPawn_Scion", MDLAssetFullName = "BIOG_SCI_ARM_NKD_R.NKDa.SCI_ARM_NKDa_MDL"}, // Might require imports. Might need to run code on import check
-            
-            // Can't be used for various reasons :l
-            //new FinalBattlePawn() {PackageName = "BioP_OmgPrA.pcc", BioPawnChallengeScaledTypeUIndex = 2060, PawnClassFullName = "SFXGamePawns.SFXPawn_Vorcha", MDLAssetFullName = "BIOG_SCI_ARM_NKD_R.NKDa.SCI_ARM_NKDa_MDL"}, // Might require imports. Might need to run code on import check
-            //new FinalBattlePawn() {PackageName = "BioH_Wilson.pcc", BioPawnChallengeScaledTypeUIndex = 5249, PawnClassFullName = "SFXGamePawns.SFXPawn_Wilson", MDLAssetFullName = "BIOG_HMM_ARM_CTH_R.CTHb.HMM_ARM_CTHb_MDL", AdjustmentFunc=AdjustWilsonAI}, // AI might need adjusted?
-        };
-
-
-        private static void RandomizeTheFinalBattle(RandomizationOption option)
-        {
-            // Port in new enemies.
-            // Change the ActorFactories to use them
-            // This will greatly change the final battle
-
-            var bossFightP = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("BioD_EndGm2_430ReaperCombat.pcc"));
-
-            List<FinalBattlePawn> fbp = new List<FinalBattlePawn>(FinalBattlePawnTypes);
-            fbp.Shuffle();
-
-            var actorFactories = bossFightP.Exports.Where(x => x.ClassName == "BioActorFactory");
-            foreach (var af in actorFactories.ToList())
-            {
-                var props = af.GetProperties();
-                //if (ThreadSafeRandom.Next(3) != 0)
-                {
-                    // Change it
-                    var pawninfo = fbp.RandomElement();
-                    // See if already ported in
-                    var existingClass = bossFightP.FindExport(pawninfo.PawnClassFullName);
-                    var existingMDL = bossFightP.FindExport(pawninfo.MDLAssetFullName);
-
-                    if (existingMDL == null || existingClass == null)
-                    {
-                        // Port in
-                        var sourceP = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(pawninfo.PackageName));
-                        var portedInItem = PackageTools.PortExportIntoPackage(bossFightP, sourceP.GetUExport(pawninfo.BioPawnChallengeScaledTypeUIndex));
-
-                        pawninfo.AdjustmentFunc?.Invoke(bossFightP);
-
-                        existingClass = bossFightP.FindExport(pawninfo.PawnClassFullName);
-                        existingMDL = bossFightP.FindExport(pawninfo.MDLAssetFullName);
-                        if (existingMDL == null || existingClass == null)
-                        {
-                            Debugger.Break();
-                        }
-                    }
-
-                    props.GetProp<ObjectProperty>("ActorType").Value = existingClass.UIndex;
-                    var resources = props.GetProp<ArrayProperty<ObjectProperty>>("ActorResourceCollection");
-                    resources.Clear();
-                    resources.Add(new ObjectProperty(existingMDL.UIndex));
-                    af.WriteProperties(props);
-                }
-            }
-            MERFileSystem.SavePackage(bossFightP);
-
-        }
 
         private static void AutomatePlatforming400(RandomizationOption option)
         {
