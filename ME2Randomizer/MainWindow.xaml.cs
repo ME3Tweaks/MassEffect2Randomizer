@@ -160,6 +160,7 @@ namespace ME2Randomizer
             contributors.Add("Jenya - 3D modeling");
             contributors.Add("Audemus - Textures");
             contributors.Add("JadeBarker - Technical assistance");
+            contributors.Add("StrifeTheHistorian - Psychological profiles");
 
             return contributors;
         }

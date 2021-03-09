@@ -120,6 +120,33 @@
                 <TextBlock Text="{Binding Path=License}"/>
             </StackPanel>
         </DataTemplate>
+        <DataTemplate x:Key="LibraryCreditTemplate" DataType="classes:LibraryCredit">
+            <StackPanel>
+                <TextBlock>           
+                    <Hyperlink NavigateUri="{Binding Link}" RequestNavigate="Hyperlink_RequestNavigate">
+                        <TextBlock FontSize="14" FontWeight="Bold" Text="{Binding Path=LibraryName}"/>
+                        <Hyperlink.Resources>
+                            <Style x:Key="{x:Type Hyperlink}" TargetType="{x:Type Hyperlink}">
+                                <Setter Property="Foreground" Value="LimeGreen"/>
+                                <Setter Property="TextDecorations" Value="Underline"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="Red"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="True">
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Hyperlink.Resources>
+                    </Hyperlink>
+                </TextBlock>
+                <TextBlock Text="{Binding Path=LibraryPurpose}"/>
+            </StackPanel>
+        </DataTemplate>
     </Window.Resources>
     <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
@@ -313,18 +340,42 @@
                         <TabItem Header="Contributors">
                             <DockPanel VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Width="1100">
                                 <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="The following people helped contribute resources to this project:" TextWrapping="Wrap" TextAlignment="Center"/>
-                                <ItemsControl ItemsSource="{Binding ContributorCredits}" DockPanel.Dock="Top"/>
-                                <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="The following libraries are used in this project:" TextWrapping="Wrap" TextAlignment="Center"/>
-                                <ItemsControl ItemsSource="{Binding LibraryCredits}" DockPanel.Dock="Top">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="classes:LibraryCredit">
-                                            <TextBlock Text="{Binding LibraryName}">
-
-                                            </TextBlock>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-
-                                </ItemsControl>
+                                <ListBox ItemsSource="{Binding ContributorCredits}" DockPanel.Dock="Top" Background="Transparent" HorizontalContentAlignment="Center">
+                                    <ListBox.Resources>
+                                        <Style TargetType="ListBox">
+                                            <Setter Property="ItemsPanel">
+                                                <Setter.Value>
+                                                    <ItemsPanelTemplate>
+                                                        <UniformGrid Columns="3"/>
+                                                    </ItemsPanelTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.Resources>
+                                    <ItemsControl.ItemContainerStyle>
+                                        <Style>
+                                            <Setter Property="Control.Background" Value="Transparent"/>
+                                        </Style>
+                                    </ItemsControl.ItemContainerStyle>
+                                </ListBox>                                <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="The following libraries are used in this project:" TextWrapping="Wrap" TextAlignment="Center"/>
+                                <ListBox ItemsSource="{Binding LibraryCredits}" DockPanel.Dock="Top" Background="Transparent" ItemTemplate="{StaticResource LibraryCreditTemplate}">
+                                    <ListBox.Resources>
+                                        <Style TargetType="ListBox">
+                                            <Setter Property="ItemsPanel">
+                                                <Setter.Value>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel/>
+                                                    </ItemsPanelTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ListBox.Resources>
+                                    <ItemsControl.ItemContainerStyle>
+                                        <Style>
+                                            <Setter Property="Control.Background" Value="Transparent"/>
+                                        </Style>
+                                    </ItemsControl.ItemContainerStyle>
+                                </ListBox>
                             </DockPanel>
                         </TabItem>
                         <TabItem Header="Images">

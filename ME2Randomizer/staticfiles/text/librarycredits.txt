@@ -1,3 +1,23 @@
 ﻿ME3ExplorerCore
 Provides modding backend for opening, modifying, and saving packages
 https://github.com/ME3Tweaks/ME3Explorer
+
+ALOTInstallerCore
+Provides ME3Tweaks backend tools
+https://github.com/ME3Tweaks/ALOTInstaller
+
+MahApps.Metro
+WPF user interface libary
+https://mahapps.com
+
+Serilog
+Logging library
+https://serilog.net
+
+Fody
+IL weaving to reduce boilerplate code
+https://github.com/Fody/Fody
+
+AppCenter
+Application crash telemetry
+https://appcenter.ms
