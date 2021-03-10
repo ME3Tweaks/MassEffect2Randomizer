@@ -12,39 +12,75 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     class SkipMiniGames
     {
 
-        private static bool CanApplySkip(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "SequenceReference" && IsMiniGameRef(export);
-
-        private static bool IsMiniGameRef(ExportEntry export)
+        private static bool CanApplySkip(ExportEntry export, out EMinigameSkipType skipType)
         {
-            var sRef = export.GetProperty<ObjectProperty>("oSequenceReference");
-            if (sRef != null && export.FileRef.TryGetUExport(sRef.Value, out var referencedItem))
+            skipType = EMinigameSkipType.Invalid;
+            return !export.IsDefaultObject && IsMiniGameRef(export, out skipType);
+        }
+
+        private static bool IsMiniGameRef(ExportEntry export, out EMinigameSkipType skipType)
+        {
+            skipType = EMinigameSkipType.Invalid;
+
+            if (export.ClassName == "BioSeqAct_SkillGame_Decryption")
             {
-                var objName = referencedItem.GetProperty<StrProperty>("ObjName");
-                if (objName != null)
-                {
-                    if (objName == "REF_SkillGame_Bypass") return true;
-                    if (objName == "REF_SkillGame_Decryption") return true;
-                    if (objName == "REF_SkillGame_Hack") return true;
-
-                }
-
+                skipType = EMinigameSkipType.SeqAct;
+                return true;
             }
+
+            if (export.ClassName == "SequenceReference")
+            {
+                var sRef = export.GetProperty<ObjectProperty>("oSequenceReference");
+                if (sRef != null && export.FileRef.TryGetUExport(sRef.Value, out var referencedItem))
+                {
+                    var objName = referencedItem.GetProperty<StrProperty>("ObjName");
+                    if (objName != null)
+                    {
+                        skipType = EMinigameSkipType.SeqRef;
+                        if (objName == "REF_SkillGame_Bypass") return true;
+                        if (objName == "REF_SkillGame_Decryption") return true;
+                        if (objName == "REF_SkillGame_Hack") return true;
+                    }
+                }
+            }
+
+
             return false;
+        }
+
+        private enum EMinigameSkipType
+        {
+            Invalid,
+            SeqRef,
+            SeqAct
         }
 
         public static bool DetectAndSkipMiniGameSeqRefs(ExportEntry exp, RandomizationOption option)
         {
-            if (!CanApplySkip(exp)) return false;
+            if (!CanApplySkip(exp, out var miniGameType)) return false;
 
-            // Update the credits
-            var minigameVarLinks = SeqTools.GetVariableLinksOfNode(exp);
-            // Update the Out: Value Remaining to something random.
-            var ovrNode = minigameVarLinks.FirstOrDefault(x => x.LinkDesc == "OUT: Value Remaining")?.LinkedNodes.FirstOrDefault();
-            if (ovrNode is ExportEntry ovr)
+            if (miniGameType == EMinigameSkipType.SeqRef)
             {
-                ovr.WriteProperty(new IntProperty(ThreadSafeRandom.Next(1, 2400), "IntValue"));
+                // Update the credits
+                var minigameVarLinks = SeqTools.GetVariableLinksOfNode(exp);
+                // Update the Out: Value Remaining to something random.
+                var ovrNode = minigameVarLinks.FirstOrDefault(x => x.LinkDesc == "OUT: Value Remaining")?.LinkedNodes.FirstOrDefault();
+                if (ovrNode is ExportEntry ovr)
+                {
+                    ovr.WriteProperty(new IntProperty(ThreadSafeRandom.Next(1, 2400), "IntValue"));
+                }
             }
-
+            else if (miniGameType == EMinigameSkipType.SeqAct)
+            {
+                // Update the credits
+                var minigameVarLinks = SeqTools.GetVariableLinksOfNode(exp);
+                // Update the Remaining Remaining to something random.
+                var ovrNode = minigameVarLinks.FirstOrDefault(x => x.LinkDesc == "Remaining Resources")?.LinkedNodes.FirstOrDefault();
+                if (ovrNode is ExportEntry ovr)
+                {
+                    ovr.WriteProperty(new IntProperty(ThreadSafeRandom.Next(1, 2400), "IntValue"));
+                }
+            }
 
             SeqTools.SkipSequenceElement(exp, 0); //Success is link 0
             return true;

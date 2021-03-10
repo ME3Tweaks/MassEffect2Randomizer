@@ -6,13 +6,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using ALOTInstallerCore;
+using ALOTInstallerCore.Helpers;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using Serilog;
 
@@ -46,6 +45,7 @@ namespace ME2Randomizer.Classes
 
             // Re-extract even if we are on re-roll
             CreateRandomizerDLCMod(dlcModPath);
+            Locations.GetTarget(Game).InstallBinkBypass();
             DLCModCookedPath = Path.Combine(dlcModPath, Game == MEGame.ME2 ? "CookedPC" : "CookedPCConsole"); // Must be changed for ME3
 
 
@@ -126,11 +126,11 @@ namespace ME2Randomizer.Classes
             GlobalCache = null;
         }
 
-        public static CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
+        public static ME3ExplorerCore.Misc.CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
         public static void ReloadLoadedFiles()
         {
             var loadedFiles = MELoadedFiles.GetAllGameFiles(MEDirectories.GetDefaultGamePath(Game), Game, true);
-            LoadedFiles = new CaseInsensitiveDictionary<string>();
+            LoadedFiles = new ME3ExplorerCore.Misc.CaseInsensitiveDictionary<string>();
             foreach (var lf in loadedFiles)
             {
                 LoadedFiles[Path.GetFileName(lf)] = lf;
@@ -149,7 +149,7 @@ namespace ME2Randomizer.Classes
                 Log.Warning("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
                 ReloadLoadedFiles();
             }
-            bool packageFile = packagename.RepresentsPackageFilePath();
+            bool packageFile = ME3ExplorerCore.Helpers.StringExtensions.RepresentsPackageFilePath(packagename);
             if (packageFile && DLCModCookedPath != null)
             {
                 // Check if the package is already in the mod folder
