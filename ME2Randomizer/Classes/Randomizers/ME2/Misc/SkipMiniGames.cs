@@ -11,7 +11,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
     class SkipMiniGames
     {
-
         private static bool CanApplySkip(ExportEntry export, out EMinigameSkipType skipType)
         {
             skipType = EMinigameSkipType.Invalid;
@@ -43,7 +42,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
                 }
             }
-
 
             return false;
         }

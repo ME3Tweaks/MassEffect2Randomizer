@@ -203,7 +203,7 @@ namespace ME2Randomizer
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             StartupUIController.BeginFlow(this);
-            
+
         }
 
         private async void Startup()
@@ -347,8 +347,7 @@ namespace ME2Randomizer
 
         private void Button_FirstTimeRunDismiss_Click(object sender, RoutedEventArgs e)
         {
-            //bool? hasShownFirstRun = RegistryHandler.GetRegistrySettingBool("HasRunFirstRun");
-            RegistryHandler.WriteRegistrySettingBool("HasRunFirstRun", true);
+            RegistryHandler.WriteRegistrySettingBool(SETTING_FIRSTRUN, true);
             FirstRunFlyoutOpen = false;
         }
 
@@ -474,8 +473,7 @@ namespace ME2Randomizer
         public const string SETTING_FIRSTRUN = "FirstRunCompleted";
         private void FirstRunShowButton_Click(object sender, RoutedEventArgs e)
         {
-            RegistryHandler.WriteRegistrySettingBool(SETTING_FIRSTRUN, true);
-            FirstRunFlyoutOpen = false;
+            FirstRunFlyoutOpen = true;
         }
 
         #endregion

@@ -185,7 +185,7 @@
                             <TextBlock FontSize="13">ME3Tweaks tools all use the same game backup, which allows quick restores. While a backup is not required to use ME2R, it will save you a lot of time, making restores and re-rolls take seconds instead of minutes or hours.</TextBlock>
                             <TextBlock Margin="0,10,0,0" FontSize="20">Does ME2R work with mods?</TextBlock>
                             <TextBlock FontSize="13">
-                                ME2R will pull whatever files the game would have used, and the game will use the randomized version of the file instead. It should work with most mods, however none were tested beyond ME2Controller. Texture mods may crash the game due to memory limits.
+                                ME2R will randomize the files the game will use at the time of randomization. It should work with most mods, however none were tested beyond ME2Controller. Texture mods may crash the game due to memory limits.
                             </TextBlock>
                         </StackPanel>
 
