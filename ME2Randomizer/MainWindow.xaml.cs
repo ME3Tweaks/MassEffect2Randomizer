@@ -14,6 +14,7 @@ using ALOTInstallerCore;
 using ALOTInstallerCore.Helpers;
 using ALOTInstallerCore.ModManager.ME3Tweaks;
 using ALOTInstallerCore.ModManager.Objects;
+using ALOTInstallerCore.ModManager.Services;
 using ALOTInstallerCore.PlatformSpecific.Windows;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
@@ -115,27 +116,11 @@ namespace ME2Randomizer
         public MainWindow()
         {
             DataContext = this;
-            Random random = new Random();
-            var preseed = random.Next();
-            ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
-            ContributorCredits.ReplaceAll(GetContributorCredits());
-            LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
             ProgressBar_Bottom_Max = 100;
             ProgressBar_Bottom_Min = 0;
             ShowProgressPanel = true;
             LoadCommands();
             InitializeComponent();
-
-#if DEBUG
-            SeedTextBox.Text = 529572808.ToString();
-#else
-            SeedTextBox.Text = preseed.ToString();
-#endif
-            Version version = Assembly.GetExecutingAssembly().GetName().Version;
-            TextBlock_AssemblyVersion.Text = $"Version {version}";
-            Title += " " + version;
-            SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
-            //PerformUpdateCheck();
         }
 
         private void optionStateChanging(RandomizationOption obj)
@@ -153,15 +138,15 @@ namespace ME2Randomizer
             }
         }
 
-        private List<string> GetContributorCredits()
+        internal List<string> GetContributorCredits()
         {
             var contributors = new List<string>();
             contributors.Add("Mellin - 3D modeling");
-            contributors.Add("Jenya - 3D modeling");
+            contributors.Add("Jenya - 3D modeling, testing");
             contributors.Add("Audemus - Textures");
             contributors.Add("JadeBarker - Technical assistance");
             contributors.Add("StrifeTheHistorian - Psychological profiles");
-
+            contributors.Sort();
             return contributors;
         }
 
@@ -320,7 +305,7 @@ namespace ME2Randomizer
 
         private async void BackupRestore_Click(object sender, RoutedEventArgs e)
         {
-            string path = MERUtilities.GetGameBackupPath();
+            string path = BackupService.GetGameBackupPath(MERFileSystem.Game, out var isVanilla, false);
             if (path != null)
             {
                 MetroDialogSettings settings = new MetroDialogSettings();

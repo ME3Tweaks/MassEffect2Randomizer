@@ -2,12 +2,16 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using ALOTInstallerCore;
+using ALOTInstallerCore.ModManager.ME3Tweaks;
 using CommandLine;
 using MassEffectRandomizer.Classes;
+using ME2Randomizer.Classes.Controllers;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using Serilog;
 
@@ -22,8 +26,7 @@ namespace ME2Randomizer
     {
         internal const string REGISTRY_KEY = @"Software\MassEffect2Randomizer";
         internal const string BACKUP_REGISTRY_KEY = @"Software\ALOTAddon"; //Shared. Do not change
-        public static string LogDir;
-        internal static string MainThemeColor = "Violet";
+
         private static bool POST_STARTUP = false;
         public const string DISCORD_INVITE_LINK = "https://discord.gg/s8HA6dc";
 
@@ -34,6 +37,25 @@ namespace ME2Randomizer
 #endif
         public static Visibility IsDebugVisibility => IsDebug ? Visibility.Visible : Visibility.Collapsed;
         public static bool BetaAvailable { get; set; }
+
+        public static string AppVersion
+        {
+            get
+            {
+                Version assemblyVersion = Assembly.GetEntryAssembly().GetName().Version;
+                string version = $@"{assemblyVersion.Major}.{assemblyVersion.Minor}";
+                if (assemblyVersion.Revision != 0 || assemblyVersion.Build != 0)
+                {
+                    version += @"." + assemblyVersion.Build;
+                    if (assemblyVersion.Revision != 0)
+                    {
+                        version += @"." + assemblyVersion.Revision;
+                    }
+                }
+
+                return version;
+            }
+        }
 
         [STAThread]
         public static void Main()
@@ -56,90 +78,10 @@ namespace ME2Randomizer
 
         public App() : base()
         {
-            string[] args = Environment.GetCommandLineArgs();
-            Parsed<Options> parsedCommandLineArgs = null;
-            string updateDestinationPath = null;
-
-            #region Update boot
-            if (args.Length > 1)
-            {
-                var result = Parser.Default.ParseArguments<Options>(args);
-                if (result.GetType() == typeof(Parsed<Options>))
-                {
-                    //Parsing succeeded - have to do update check to keep logs in order...
-                    parsedCommandLineArgs = (Parsed<Options>)result;
-                    if (parsedCommandLineArgs.Value.UpdateDest != null)
-                    {
-                        //if (File.Exists(parsedCommandLineArgs.Value.UpdateDest))
-                        //{
-                        //    updateDestinationPath = parsedCommandLineArgs.Value.UpdateDest;
-                        //}
-                        //if (parsedCommandLineArgs.Value.BootingNewUpdate)
-                        //{
-                        //    Thread.Sleep(1000); //Delay boot to ensure update executable finishes
-                        //    try
-                        //    {
-                        //        string updateFile = Path.Combine(exeFolder, "MassEffectRandomizer-Update.exe");
-                        //        if (File.Exists(updateFile))
-                        //        {
-                        //            File.Delete(updateFile);
-                        //            Log.Information("Deleted staged update");
-                        //        }
-                        //    }
-                        //    catch (Exception e)
-                        //    {
-                        //        Log.Warning("Unable to delete staged update: " + e.ToString());
-                        //    }
-                        //}
-                    }
-                }
-            }
-            #endregion
+            handleCommandLine();
 
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
             POST_STARTUP = true;
-
-            #region Update mode boot
-            if (updateDestinationPath != null)
-            {
-                MERLog.Information(" >> In update mode. Update destination: " + updateDestinationPath);
-                int i = 0;
-                while (i < 8)
-                {
-
-                    i++;
-                    //try
-                    //{
-                    //    Log.Information("Applying update");
-                    //    File.Copy(assembly.Location, updateDestinationPath, true);
-                    //    Log.Information("Update applied, restarting...");
-                    //    break;
-                    //}
-                    //catch (Exception e)
-                    //{
-                    //    Log.Error("Error applying update: " + e.Message);
-                    //    if (i < 8)
-                    //    {
-                    //        Thread.Sleep(1000);
-                    //        Log.Warning("Attempt #" + (i + 1));
-                    //    }
-                    //    else
-                    //    {
-                    //        Log.Fatal("Unable to apply update after 8 attempts. We are giving up.");
-                    //        MessageBox.Show("Update was unable to apply. See the application log for more information. If this continues to happen please come to the ME3Tweaks discord, or download a new copy from GitHub.");
-                    //        Environment.Exit(1);
-                    //    }
-                    //}
-                }
-                MERLog.Information("Rebooting into normal mode to complete update");
-                ProcessStartInfo psi = new ProcessStartInfo(updateDestinationPath);
-                psi.WorkingDirectory = updateDestinationPath;
-                psi.Arguments = "--completing-update";
-                Process.Start(psi);
-                Environment.Exit(0);
-                Current.Shutdown();
-            }
-            #endregion
         }
 
         /// <summary>
@@ -187,18 +129,125 @@ namespace ME2Randomizer
 
             return stringBuilder.ToString();
         }
-    }
+
+        private void handleCommandLine()
+        {
+
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length > 1)
+            {
+                var result = Parser.Default.ParseArguments<Options>(args);
+                if (result is Parsed<Options> parsedCommandLineArgs)
+                {
+                    //Parsing completed
+                    if (parsedCommandLineArgs.Value.UpdateBoot)
+                    {
+                        //Update unpacked and process was run.
+                        // Exit the process as we have completed the extraction process for single file .net core
+                        Application.Current.Dispatcher.Invoke(Application.Current.Shutdown);
+                        return;
+                    }
+
+                    if (parsedCommandLineArgs.Value.UpdateRebootDest != null)
+                    {
+                        Log.Logger = LogCollector.CreateLogger();
+                        Log.Information(LogCollector.SessionStartString);
+                        copyAndRebootUpdate(parsedCommandLineArgs.Value.UpdateRebootDest);
+                        return;
+                    }
 
 
-    class Options
-    {
-        [Option('u', "update-dest-path",
-          HelpText = "Indicates where this booting instance of Mass Effect 2 Randomizer should attempt to copy itself and reboot to")]
-        public string UpdateDest { get; set; }
+                    if (parsedCommandLineArgs.Value.PassthroughME1Path != null)
+                    {
+                        StartupUIController.PassthroughME1Path = parsedCommandLineArgs.Value.PassthroughME1Path;
+                    }
 
-        [Option('c', "completing-update",
-            HelpText = "Indicates that we are booting a new copy of Mass Effect 2 Randomizer that has just been upgraded")]
-        public bool BootingNewUpdate { get; set; }
+                    if (parsedCommandLineArgs.Value.PassthroughME2Path != null)
+                    {
+                        StartupUIController.PassthroughME2Path = parsedCommandLineArgs.Value.PassthroughME2Path;
+                    }
+
+                    if (parsedCommandLineArgs.Value.PassthroughME3Path != null)
+                    {
+                        StartupUIController.PassthroughME3Path = parsedCommandLineArgs.Value.PassthroughME3Path;
+                    }
+                }
+                else
+                {
+                    Log.Error("Could not parse command line arguments! Args: " + string.Join(' ', args));
+                }
+            }
+        }
+
+        #region Updates
+
+        /// <summary>
+        /// V4 update reboot and swap
+        /// </summary>
+        /// <param name="updateRebootDest"></param>
+        private void copyAndRebootUpdate(string updateRebootDest)
+        {
+            Thread.Sleep(2000); //SLEEP WHILE WE WAIT FOR PARENT PROCESS TO STOP.
+            Log.Information("In update mode. Update destination: " + updateRebootDest);
+            int i = 0;
+            while (i < 5)
+            {
+                i++;
+                try
+                {
+                    Log.Information("Applying update");
+                    if (File.Exists(updateRebootDest)) File.Delete(updateRebootDest);
+                    File.Copy(Utilities.GetExecutablePath(), updateRebootDest);
+                    ProcessStartInfo psi = new ProcessStartInfo(updateRebootDest)
+                    {
+                        WorkingDirectory = Directory.GetParent(updateRebootDest).FullName
+                    };
+                    Process.Start(psi);
+                    Environment.Exit(0);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Log.Error("Error applying update: " + e.Message);
+                    if (i < 5)
+                    {
+                        Thread.Sleep(1000);
+                        Log.Information("Attempt #" + (i + 1));
+                    }
+                    else
+                    {
+                        Log.Fatal("Unable to apply update after 5 attempts. We are giving up.");
+                        MessageBox.Show($"Update was unable to apply. The last error message was {e.Message}.\nSee the logs directory in {LogCollector.LogDir} for more information.\n\nUpdate file: {Utilities.GetExecutablePath()}\nDestination file: {updateRebootDest}\n\nIf this continues to happen please come to the ME3Tweaks discord or download a new release from GitHub.");
+                        Environment.Exit(1);
+                    }
+                }
+            }
+
+            #endregion
+        }
+
+        class Options
+        {
+            [Option("update-dest-path",
+                HelpText = "Copies this program's executable to the specified location, runs the new executable, and then exits this process.")]
+            public string UpdateRebootDest { get; private set; }
+
+            [Option("me1path",
+                HelpText = "Sets the path for Mass Effect on app boot. It must point to the game root directory.")]
+            public string PassthroughME1Path { get; private set; }
+
+            [Option("me2path",
+                HelpText = "Sets the path for Mass Effect 2 on app boot. It must point to the game root directory.")]
+            public string PassthroughME2Path { get; private set; }
+
+            [Option("me3path",
+                HelpText = "Sets the path for Mass Effect 3 on app boot. It must point to the game root directory.")]
+            public string PassthroughME3Path { get; private set; }
+
+            [Option("update-boot",
+                HelpText = "Indicates that the process should run in update mode for a single file .net core executable. The process will exit upon starting because the platform extraction process will have completed.")]
+            public bool UpdateBoot { get; private set; }
+
+        }
     }
 }
-

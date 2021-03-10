@@ -420,18 +420,7 @@ namespace MassEffectRandomizer.Classes
             }
         }
 
-        internal static Tuple<bool, string> GetRawGameSourceByHash(string hash)
-        {
-            List<KeyValuePair<string, string>> list = SUPPORTED_HASHES_ME2;
-            foreach (KeyValuePair<string, string> hashPair in list)
-            {
-                if (hashPair.Key == hash)
-                {
-                    return new Tuple<bool, string>(true, "Game source: " + hashPair.Value);
-                }
-            }
-            return new Tuple<bool, string>(false, "Unknown source - this installation is not supported.");
-        }
+
 
         public static List<KeyValuePair<string, string>> SUPPORTED_HASHES_ME2 = new List<KeyValuePair<string, string>>();
 
@@ -440,24 +429,6 @@ namespace MassEffectRandomizer.Classes
             var os = Environment.OSVersion;
             return os.Platform == PlatformID.Win32NT &&
                    (os.Version.Major >= 10);
-        }
-
-        public static string GetGameBackupPath()
-        {
-            // NEEDS CHANGED FOR ME3
-#if __ME2__
-            string entry = "ME2VanillaBackupLocation";
-#endif
-            string path = MERUtilities.GetBackupRegistrySettingString(entry);
-            if (path == null || !Directory.Exists(path))
-            {
-                return null;
-            }
-            if (!Directory.Exists(path + @"\BioGame") || !Directory.Exists(path + @"\Binaries"))
-            {
-                return null;
-            }
-            return path;
         }
 
         private static Stream GetResourceStream(string assemblyResource)

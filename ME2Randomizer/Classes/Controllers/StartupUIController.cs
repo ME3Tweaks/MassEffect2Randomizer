@@ -107,7 +107,7 @@ namespace ME2Randomizer.Classes.Controllers
             try
             {
                 // This is in a try catch because this is a critical no-crash zone that is before launch
-                window.Title = $"Mass Effect 2 Randomizer {Utilities.GetAppVersion()}";
+                window.Title = $"Mass Effect 2 Randomizer {App.AppVersion}";
             }
             catch { }
 
@@ -124,7 +124,7 @@ namespace ME2Randomizer.Classes.Controllers
             bw.DoWork += (a, b) =>
             {
 
-                ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry);
+                ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, "Mass Effect 2 Randomizer starting up");
                 // Logger is now available
 
                 // Setup telemetry handlers
@@ -132,22 +132,18 @@ namespace ME2Randomizer.Classes.Controllers
                 CoreCrashes.TrackError = TelemetryController.TrackError;
                 CoreCrashes.TrackError2 = TelemetryController.TrackError2;
                 CoreCrashes.TrackError3 = TelemetryController.TrackError3;
-                if (Settings.BetaMode)
-                {
-                    RunOnUIThread(() =>
-                    {
-                        ThemeManager.Current.ChangeTheme(App.Current, "Dark.Red");
-                    });
-                }
 
-                pd.SetMessage("Checking for application updates");
+                // Setup the InteropPackage for the update check
+                #region Update interop
                 CancellationTokenSource ct = new CancellationTokenSource();
-                pd.Canceled += (sender, args) =>
+
+                AppUpdateInteropPackage interopPackage = new AppUpdateInteropPackage()
                 {
-                    ct.Cancel();
-                };
-                AppUpdater.PerformGithubAppUpdateCheck("Mgamerz", "MassEffect2Randomizer", "ME2Randomizer", "ME2Randomizer.exe",
-                    (title, text, updateButtonText, declineButtonText) =>
+                    GithubOwner = "Mgamerz",
+                    GithubReponame = "MassEffect2Randomizer",
+                    UpdateAssetPrefix = "ME2Randomizer",
+                    UpdateFilenameInArchive = "ME2Randomizer.exe",
+                    ShowUpdatePromptCallback = (title, text, updateButtonText, declineButtonText) =>
                     {
                         bool response = false;
                         object syncObj = new object();
@@ -174,27 +170,28 @@ namespace ME2Randomizer.Classes.Controllers
                             Monitor.Wait(syncObj);
                         }
                         return response;
-                    }, (title, initialmessage, canCancel) =>
+                    },
+                    ShowUpdateProgressDialogCallback = (title, initialmessage, canCancel) =>
                     {
                         // We don't use this as we are already in a progress dialog
                         pd.SetCancelable(canCancel);
                         pd.SetMessage(initialmessage);
                         pd.SetTitle(title);
                     },
-                    s =>
+                    SetUpdateDialogTextCallback = s =>
                     {
                         pd.SetMessage(s);
                     },
-                    (done, total) =>
+                    ProgressCallback = (done, total) =>
                     {
                         pd.SetProgress(done * 1d / total);
                         pd.SetMessage($"Downloading update {FileSize.FormatSize(done)} / {FileSize.FormatSize(total)}");
                     },
-                    () =>
+                    ProgressIndeterminateCallback = () =>
                     {
                         pd.SetIndeterminate();
                     },
-                    (title, message) =>
+                    ShowMessageCallback = (title, message) =>
                     {
                         object syncObj = new object();
                         Application.Current.Dispatcher.Invoke(async () =>
@@ -213,34 +210,35 @@ namespace ME2Randomizer.Classes.Controllers
                             Monitor.Wait(syncObj);
                         }
                     },
-                    () =>
+                    NotifyBetaAvailable = () =>
                     {
                         App.BetaAvailable = true;
                     },
-                    () =>
+                    DownloadCompleted = () =>
                     {
                         pd.SetCancelable(false);
                     },
-                    ct
-                );
+                    cancellationTokenSource = ct,
+                    ApplicationName = "Mass Effect 2 Randomizer",
+                    RequestHeader = "ME2Randomizer",
+                    ForcedUpgradeMaxReleaseAge = 3
+                };
+
+                #endregion
+
+
+
+                pd.SetMessage("Checking for application updates");
+                pd.Canceled += (sender, args) =>
+                {
+                    ct.Cancel();
+                };
+                AppUpdater.PerformGithubAppUpdateCheck(interopPackage);
 
                 // If user aborts download
                 pd.SetCancelable(false);
                 pd.SetIndeterminate();
                 pd.SetTitle("Starting up");
-
-                void downloadProgressChanged(long bytes, long total)
-                {
-                    //Log.Information("Download: "+bytes);
-                    pd.SetMessage($"Updating MassEffectModderNoGui {bytes * 100 / total}%");
-                    pd.SetProgress(bytes * 1.0d / total);
-                }
-
-                void errorUpdating(Exception e)
-                {
-                    Log.Error($@"[AIWPF] Error updating MEM: {e.Message}");
-                    // ?? What do we do here.
-                }
 
                 void setStatus(string message)
                 {
@@ -251,30 +249,6 @@ namespace ME2Randomizer.Classes.Controllers
                 GameTarget target = null;
                 try
                 {
-                    /*
-                    pd.SetMessage("Loading installer manifests");
-                    var alotManifestModePackage = ManifestHandler.LoadMasterManifest(x => pd.SetMessage(x));
-
-                    b.Result = alotManifestModePackage;
-                    if (ManifestHandler.MasterManifest != null)
-                    {
-                        ManifestHandler.SetCurrentMode(ManifestHandler.GetDefaultMode());
-                        pd.SetMessage("Preparing texture library");
-                        foreach (var v in ManifestHandler.MasterManifest.ManifestModePackageMappping)
-                        {
-                            TextureLibrary.ResetAllReadyStatuses(ManifestHandler.GetManifestFilesForMode(v.Key));
-                        }
-                    }
-                    else
-                    {
-                        // This shouldn't happen...
-                    }*/
-
-                    // MOVE TO LOG COLLECTOR?
-                    //pd.SetMessage("Checking for MassEffectModderNoGui updates");
-                    //MEMUpdater.UpdateMEM(downloadProgressChanged, errorUpdating, setStatus);
-
-                    // Must come after MEM update check to help ensure we have MEM available
                     pd.SetMessage("Loading Mass Effect 2 Randomizer framework");
                     ToolTipService.ShowOnDisabledProperty.OverrideMetadata(typeof(Control), new FrameworkPropertyMetadata(true));
                     ToolTipService.ShowDurationProperty.OverrideMetadata(typeof(DependencyObject), new FrameworkPropertyMetadata(int.MaxValue));
@@ -348,48 +322,42 @@ namespace ME2Randomizer.Classes.Controllers
                         mw.BackupRestore_Button.ToolTip = backupStatus.BackedUp ? "Click to restore game/uninstall randomizer mod" : "Click to backup game";
 
                         mw.FinalizeInterfaceLoad();
-                        mw.Title = $"Mass Effect 2 Randomizer {Utilities.GetAppVersion()}";
 
-                        /*
-                        if (!hasWorkingMEM)
-                        {
-                            await mw.ShowMessageAsync("Required components are not available",
-                                "Some components for installation are not available, likely due to network issues (blocking, no internet, etc). To install these components, folow the 'How to install the Installer Support Package' directions on any of the ALOT pages on NexusMods. The installer will not work without these files installed.",
-                                ContentWidthPercent: 75);
-                        }*/
+                    /*
+                    if (!hasWorkingMEM)
+                    {
+                        await mw.ShowMessageAsync("Required components are not available",
+                            "Some components for installation are not available, likely due to network issues (blocking, no internet, etc). To install these components, folow the 'How to install the Installer Support Package' directions on any of the ALOT pages on NexusMods. The installer will not work without these files installed.",
+                            ContentWidthPercent: 75);
+                    }*/
                     }
                 });
             };
             bw.RunWorkerCompleted += async (a, b) =>
-            {
-                if (ManifestHandler.MasterManifest != null)
                 {
-                    if (ManifestHandler.MasterManifest.Source < ManifestHandler.ManifestSource.Online)
-                    {
-                        window.Title += $" - Using {ManifestHandler.MasterManifest.Source} manifest";
-                    }
-                    else if (ManifestHandler.MasterManifest.Source == ManifestHandler.ManifestSource.Failover)
-                    {
-                        window.Title += " - FAILED TO LOAD MANIFEST";
-                    }
-                }
-
-                var hasFirstRun = RegistryHandler.GetRegistrySettingBool(MainWindow.SETTING_FIRSTRUN);
-                if (hasFirstRun == null || !hasFirstRun.Value)
-                {
-                    window.FirstRunFlyoutOpen = true;
-                }
-                await pd.CloseAsync();
-
-#if !DEBUG
-                        //await window.ShowMessageAsync("This is a preview version of ALOT Installer V4",
-                        //    "This is a preview version of ALOT Installer V4. Changes this program makes to you texture library will make those files incompatible with ALOT Installer V3. Please direct all feedback to the #v4-feedback channel on the ALOT Discord. Thanks!");
+                    // Post critical startup
+                    Random random = new Random();
+                    var preseed = random.Next();
+                    window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
+                    window.ContributorCredits.ReplaceAll(window.GetContributorCredits());
+                    window.LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
+#if DEBUG
+                    window.SeedTextBox.Text = 529572808.ToString();
+#else
+                    window.SeedTextBox.Text = preseed.ToString();
 #endif
-            };
+                    window.TextBlock_AssemblyVersion.Text = $"Version {App.AppVersion}";
+                    window.SelectedRandomizeMode = MainWindow.RandomizationMode.ERandomizationMode_SelectAny;
+
+
+                    var hasFirstRun = RegistryHandler.GetRegistrySettingBool(MainWindow.SETTING_FIRSTRUN);
+                    if (hasFirstRun == null || !hasFirstRun.Value)
+                    {
+                        window.FirstRunFlyoutOpen = true;
+                    }
+                    await pd.CloseAsync();
+                };
             bw.RunWorkerAsync();
-
-
-            return;
         }
 
         private static void handleM3Passthrough()
