@@ -97,7 +97,7 @@ namespace ME2Randomizer.Classes.Controllers
             telemetryStarted = true;
         }
 
-        public static async void BeginFlow(MetroWindow window)
+        public static async void BeginFlow(MainWindow window)
         {
             // PRE LIBRARY LOAD
             RegistryHandler.RegistrySettingsPath = @"HKEY_CURRENT_USER\Software\MassEffect2Randomizer";
@@ -374,7 +374,13 @@ namespace ME2Randomizer.Classes.Controllers
                     }
                 }
 
+                var hasFirstRun = RegistryHandler.GetRegistrySettingBool(MainWindow.SETTING_FIRSTRUN);
+                if (hasFirstRun == null || !hasFirstRun.Value)
+                {
+                    window.FirstRunFlyoutOpen = true;
+                }
                 await pd.CloseAsync();
+
 #if !DEBUG
                         //await window.ShowMessageAsync("This is a preview version of ALOT Installer V4",
                         //    "This is a preview version of ALOT Installer V4. Changes this program makes to you texture library will make those files incompatible with ALOT Installer V3. Please direct all feedback to the #v4-feedback channel on the ALOT Discord. Thanks!");
@@ -407,7 +413,7 @@ namespace ME2Randomizer.Classes.Controllers
                     else
                     {
                         MERLog.Information($@"Valid passthrough for game {game}. Assigning path.");
-                        MEMIPCHandler.SetGamePath(game, path);
+                        Locations.SetTarget(gt, false);
                     }
                 }
             }

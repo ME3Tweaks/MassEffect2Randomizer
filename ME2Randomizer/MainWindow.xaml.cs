@@ -203,6 +203,7 @@ namespace ME2Randomizer
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             StartupUIController.BeginFlow(this);
+            
         }
 
         private async void Startup()
@@ -467,5 +468,16 @@ namespace ME2Randomizer
             //DiagnosticInProgress = true;
             nbw.RunWorkerAsync();
         }
+
+        #region Settings
+
+        public const string SETTING_FIRSTRUN = "FirstRunCompleted";
+        private void FirstRunShowButton_Click(object sender, RoutedEventArgs e)
+        {
+            RegistryHandler.WriteRegistrySettingBool(SETTING_FIRSTRUN, true);
+            FirstRunFlyoutOpen = false;
+        }
+
+        #endregion
     }
 }

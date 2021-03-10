@@ -169,35 +169,40 @@
                     </StackPanel>
                 </Border>
             </Controls:Flyout>
-            <!--<Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
+            <Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
                 <Border Padding="10">
                     <Border.Background>
-                        <ImageBrush ImageSource="images/wards.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
+                        <ImageBrush ImageSource="images/firstrun_bg.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
                     </Border.Background>
-                    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center" Orientation="Vertical" UseLayoutRounding="True" Margin="0,95,0,0" Width="700">
-                        <StackPanel Width="400" HorizontalAlignment="Right" Margin="0,0,-30,70">
-                            <TextBlock Text="Welcome to&#10;Mass Effect 2 Randomizer" FontSize="30" FontWeight="Light" TextAlignment="Center"/>
-                            <TextBlock TextWrapping="Wrap" Text="Mass Effect 2 Randomizer is a randomizer for the english version of Mass Effect 2." FontSize="13" TextAlignment="Center"/>
+                    <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Vertical" UseLayoutRounding="True" Margin="0,95,0,0" Width="700">
+                        <StackPanel Margin="0,0,0,40">
+                            <Image Source="masseffectrandomizer.ico" Height="128" Margin="4" ToolTip="Hello!" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="Welcome to Mass Effect 2 Randomizer" FontSize="30" FontWeight="Light" TextAlignment="Center"/>
+                            <TextBlock TextWrapping="Wrap" Text="Please read the following information to help ensure you have the best experience&#10;with Mass Effect 2 Randomizer (ME2R)." FontSize="13" TextAlignment="Center"/>
                         </StackPanel>
                         <StackPanel x:Name="FirstRun_MainContent">
-                            <TextBlock Text="Do I randomize before or after MEUITM/ALOT?" Margin="0,10,0,0" FontSize="20"/>
-                            <TextBlock FontSize="13">It is recommended that you run the randomizer before MEUITM/ALOT. You can technically run it after, but you will lose support from the ALOT team if you do so.</TextBlock>
-                            <TextBlock Margin="0,10,0,0" FontSize="20">Does this work with other mods?</TextBlock>
+                            <TextBlock Text="Why do I need a game backup?" Margin="0,10,0,0" FontSize="20"/>
+                            <TextBlock FontSize="13">ME3Tweaks tools all use the same game backup, which allows quick restores. While a backup is not required to use ME2R, it will save you a lot of time, making restores and re-rolls take seconds instead of minutes or hours.</TextBlock>
+                            <TextBlock Margin="0,10,0,0" FontSize="20">Does ME2R work with mods?</TextBlock>
                             <TextBlock FontSize="13">
-                            Mods that replace files in the game directory itself should work with this randomizer, however translation mods will not work and will not be supported. DLC mods will be mostly unaffected by this program.</TextBlock>
+                                ME2R will pull whatever files the game would have used, and the game will use the randomized version of the file instead. It should work with most mods, however none were tested beyond ME2Controller. Texture mods may crash the game due to memory limits.
+                            </TextBlock>
                         </StackPanel>
 
-                        <TextBlock Text="ME2R only works on the English version of Mass Effect 2" FontSize="20" Margin="0,10,0,0"></TextBlock>
-                        <TextBlock Text="This program has very specific code that is tied to the English version of the game. It will not work with others and the program may crash if attempted to be used on those versions." FontSize="13"/>
+                        <TextBlock Text="What versions of Mass Effect 2 are supported?" FontSize="20" Margin="0,10,0,0"></TextBlock>
+                        <TextBlock Text="ME2R is tested and designed to work with the English Origin, Steam, and DVD release versions of Mass Effect 2, updated to their latest patch versions. Unofficial copies of the game, as well as games running in non-english, are not supported." FontSize="13"/>
 
-                        <TextBlock  Text="Be sure to read the directions" FontSize="20" Margin="0,10,0,0"></TextBlock>
-                        <TextBlock  Text="Failure to read the directions may lead you to have a bad experience. Read the directions on ME3Tweaks or NexusMods." FontSize="13"/>
-                        <Button ToolTip="Acknowledges you read this message" HorizontalAlignment="Left" Margin="48,10,0,0" Click="Button_FirstTimeRunDismiss_Click">
+                        <TextBlock Text="Can I stream this?" FontSize="20" Margin="0,10,0,0"></TextBlock>
+                        <TextBlock Text="Absolutely. The original Mass Effect Randomizer was actually created for the streamer SizeSixteens." FontSize="13"/>
+
+
+                        <TextBlock  Text="Be sure to read the FAQ" FontSize="20" Margin="0,10,0,0"></TextBlock>
+                        <TextBlock  Text="Failure to read the FAQ may lead you to have a bad experience. Read the FAQ by clicking the FAQ button at the bottom of the main window. You can also hover your mouse over items to get more information about them." FontSize="13"/>
+                        <Button HorizontalAlignment="Left" Margin="48,10,0,0" Click="Button_FirstTimeRunDismiss_Click">
                             <fonts:OutlinedTextBlock Text="Continue" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                         </Button>
                         <StackPanel.Resources>
                             <Style TargetType="{x:Type TextBlock}">
-                                <Setter Property="FontFamily" Value="{StaticResource AeroLight}"/>
                                 <Setter Property="Foreground" Value="White"/>
                                 <Setter Property="TextWrapping" Value="Wrap"/>
                                 <Setter Property="MaxWidth" Value="600"/>
@@ -206,7 +211,7 @@
                         </StackPanel.Resources>
                     </StackPanel>
                 </Border>
-            </Controls:Flyout>-->
+            </Controls:Flyout>
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
     <Border Padding="10">
@@ -237,6 +242,9 @@
                             </Button>
                             <Button Name="Discord_Button" Click="DiscordButton_Click" Margin="5,0,0,0" MinWidth="40" ToolTip="Join the ME3Tweaks Discord server">
                                 <Image Source="/images/discord.png" Height="16" Width="16"/>
+                            </Button>
+                            <Button Name="FirstRunShow_Button" Click="FirstRunShowButton_Click" Margin="5,0,0,0" MinWidth="40" ToolTip="Show first run flyout">
+                                <fonts:OutlinedTextBlock Text="Show first run" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                             </Button>
                         </StackPanel>
                         <Button DockPanel.Dock="Right" Command="{Binding StartRandomizationCommand}"  Padding="20,0,20,0">

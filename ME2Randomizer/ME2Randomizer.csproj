@@ -13,6 +13,7 @@
     <Resource Include="images\*.jpg" />
     <None Remove="DebugTools\DebugWindow.xaml" />
     <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
+    <None Remove="images\firstrun_bg.jpg" />
     <None Remove="staticfiles\PremadeSeqObjs.pcc" />
     <None Remove="staticfiles\starterkit\me2starterkit.zip" />
     <None Remove="staticfiles\text\imagecredits.txt" />
