@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
@@ -94,6 +95,7 @@ namespace ME2Randomizer.Classes
 
         private void Randomization_Completed(object sender, RunWorkerCompletedEventArgs e)
         {
+            CommandManager.InvalidateRequerySuggested();
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress, mainWindow);
             mainWindow.CurrentOperationText = "Randomization complete";
             mainWindow.AllowOptionsChanging = true;
@@ -218,6 +220,7 @@ namespace ME2Randomizer.Classes
 
             mainWindow.ProgressBarIndeterminate = true;
             mainWindow.CurrentOperationText = "Finishing up";
+            mainWindow.DLCComponentInstalled = true;
 
             // Close out files and free memory
             TFCBuilder.EndTFCs();
@@ -228,7 +231,6 @@ namespace ME2Randomizer.Classes
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
             NonSharedPackageCache.Cache.ReleasePackages();
-
         }
 
         /// <summary>
@@ -464,13 +466,13 @@ namespace ME2Randomizer.Classes
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "SizeSixteens mode",
-                        Description = "Mass Effect Randomizer was originally designed for the streamer SizeSixteens. This option installs a few SizeSixteens specific changes.",
+                        Description = "This option installs a change specific for the streamer SizeSixteens. If you watched his ME1 Randomizer streams, you'll understand the change.",
                         PerformSpecificRandomizationDelegate = SizeSixteens.InstallSSChanges,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true
                     },
                     new RandomizationOption() {HumanName = "NPC names",
-                        Description = "Install a list of names into the game and renames some of the generic NPCs to them. You can install your stream chat members, for example.",
+                        Description = "Install a list of names into the game and renames some of the generic NPCs to them. You can install your stream chat members, for example. There are 48 name slots.",
                         PerformSpecificRandomizationDelegate = CharacterNames.InstallNameSet,
                         SetupRandomizerDelegate = CharacterNames.SetupRandomizer,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,

@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -25,6 +27,7 @@ using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.DebugTools;
 //using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
+using ME3ExplorerCore.Helpers;
 using Serilog;
 
 namespace ME2Randomizer
@@ -73,6 +76,21 @@ namespace ME2Randomizer
         public double ProgressBar_Bottom_Min { get; set; }
         public double ProgressBar_Bottom_Max { get; set; }
         public bool ProgressBarIndeterminate { get; set; }
+        public bool ShowUninstallButton { get; set; }
+        public bool DLCComponentInstalled { get; set; }
+
+        public void OnDLCComponentInstalledChanged()
+        {
+            if (!DLCComponentInstalled)
+            {
+                ShowUninstallButton = false;
+            }
+            else
+            {
+                // Refresh the bindings
+                CommandManager.InvalidateRequerySuggested();
+            }
+        }
         public LogCollector.LogItem SelectedLogForUpload { get; set; }
         public ME3ExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem>();
 
@@ -155,6 +173,7 @@ namespace ME2Randomizer
         public GenericCommand CloseLogUICommand { get; set; }
         public GenericCommand UploadSelectedLogCommand { get; set; }
         public RelayCommand SetupRandomizerCommand { get; set; }
+        public GenericCommand UninstallDLCCommand { get; set; }
 
         private void LoadCommands()
         {
@@ -162,6 +181,36 @@ namespace ME2Randomizer
             CloseLogUICommand = new GenericCommand(() => LogUploaderFlyoutOpen = false, () => LogUploaderFlyoutOpen);
             UploadSelectedLogCommand = new GenericCommand(CollectAndUploadLog, () => SelectedLogForUpload != null);
             SetupRandomizerCommand = new RelayCommand(SetupRandomizer, CanSetupRandomizer);
+            UninstallDLCCommand = new GenericCommand(UninstallDLCComponent, CanUninstallDLCComponent);
+        }
+
+        private async void UninstallDLCComponent()
+        {
+            var dlcModPath = MERFileSystem.GetDLCModPath();
+            if (Directory.Exists(dlcModPath))
+            {
+                var pd = await this.ShowProgressAsync("Deleting DLC component", "Please wait while the DLC mod component of your current randomization is deleted.");
+                pd.SetIndeterminate();
+                Task.Run(() =>
+                    {
+                        Utilities.DeleteFilesAndFoldersRecursively(dlcModPath);
+                        DLCComponentInstalled = false;
+                        Thread.Sleep(2000);
+                    })
+                    .ContinueWithOnUIThread(async x =>
+                    {
+                        await pd.CloseAsync();
+                        await this.ShowMessageAsync("DLC component uninstalled", "The DLC component of the randomization has been uninstalled. A few files that cannot be placed into DLC may remain, you will need to repair your game to remove them.\n\nFor faster restores in the future, make a backup with an ME3Tweaks program. Mass Effect 2 Randomization uninstallation only takes a few seconds when an ME3Tweaks backup is available.");
+                        CommandManager.InvalidateRequerySuggested();
+                    });
+            }
+        }
+
+        private bool CanUninstallDLCComponent()
+        {
+            var status = BackupService.GetBackupStatus(MERFileSystem.Game);
+            var canUninstall = ShowUninstallButton = status != null && !status.BackedUp && DLCComponentInstalled;
+            return canUninstall;
         }
 
         private bool CanSetupRandomizer(object obj)
@@ -180,15 +229,9 @@ namespace ME2Randomizer
         #endregion
 
 
-
-
-
-
-
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             StartupUIController.BeginFlow(this);
-
         }
 
         private async void Startup()
@@ -255,7 +298,8 @@ namespace ME2Randomizer
         }
 
         public string BackupRestoreText { get; set; }
-        private bool CanStartRandomization() => SeedTextBox != null && int.TryParse(SeedTextBox.Text, out var value) && value != 0;
+
+        private bool CanStartRandomization() => SeedTextBox != null && int.TryParse(SeedTextBox.Text, out var value) && value != 0 && Locations.GetTarget(MERFileSystem.Game) != null;
         private async void StartRandomization()
         {
             if (!MERUtilities.IsGameRunning(MERFileSystem.Game))
@@ -313,7 +357,7 @@ namespace ME2Randomizer
                 settings.FirstAuxiliaryButtonText = "Cancel";
                 settings.AffirmativeButtonText = "Quick";
                 settings.DefaultButtonFocus = MessageDialogResult.Affirmative;
-                MessageDialogResult result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores files only modified Mass Effect 2 Randomizer, delete DLC mod component\n\nFull: Deletes entire game installation and restores the backup in it's place. Fully resets the game to the backup state?", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                MessageDialogResult result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores basegame files modified Mass Effect 2 Randomizer, deletes the DLC mod component\n\nFull: Deletes entire game installation and restores the backup in it's place. Fully resets the game to the backup state.", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
                 if (result == MessageDialogResult.FirstAuxiliary)
                 {
                     // Do nothing. User canceled

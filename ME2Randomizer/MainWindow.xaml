@@ -237,13 +237,16 @@
                             <Button Name="BackupRestore_Button" Click="BackupRestore_Click" Margin="5,0,0,0" MinWidth="20">
                                 <fonts:OutlinedTextBlock Text="{Binding BackupRestoreText, FallbackValue=Backup}" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                             </Button>
+                            <Button Visibility="{Binding ShowUninstallButton, Converter={StaticResource BoolToVisibilityConverter}}"  Margin="5,0,0,0" MinWidth="40" ToolTip="Uninstall the DLC mod component of the randomization. You must repair your game to complete the restore." Command="{Binding UninstallDLCCommand}">
+                                <fonts:OutlinedTextBlock Text="Remove randomization" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
+                            </Button>
                             <Button Name="FAQ_Button" Click="FAQ_Click" Margin="5,0,0,0" MinWidth="20" ToolTip="View the Mass Effect Randomizer FAQ">
                                 <fonts:OutlinedTextBlock Text="FAQ" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                             </Button>
                             <Button Name="Discord_Button" Click="DiscordButton_Click" Margin="5,0,0,0" MinWidth="40" ToolTip="Join the ME3Tweaks Discord server">
                                 <Image Source="/images/discord.png" Height="16" Width="16"/>
                             </Button>
-                            <Button Name="FirstRunShow_Button" Click="FirstRunShowButton_Click" Margin="5,0,0,0" MinWidth="40" ToolTip="Show first run flyout">
+                            <Button Name="FirstRunShow_Button" Click="FirstRunShowButton_Click" Margin="5,0,0,0" MinWidth="40" ToolTip="Show first run flyout" Visibility="{x:Static global:App.IsDebugVisibility}">
                                 <fonts:OutlinedTextBlock Text="Show first run" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                             </Button>
                         </StackPanel>
@@ -300,8 +303,8 @@
                                           Controls:CheckBoxHelper.CheckGlyphForegroundCheckedMouseOver="White"
                                           Controls:CheckBoxHelper.CheckGlyphForegroundCheckedPressed="Gray"/>
                             </StackPanel>
-                            <TextBlock Text="RNG Seed: " VerticalAlignment="Center" Visibility="{Binding UseMultiThreadRNG, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter='Inverse'}"/>
-                            <TextBox Name="SeedTextBox" MaxLength="11" Text="PLACEHOLDER" ToolTip="RNG seeds determine the output of the random number generator.&#xA;You can share seed values to produce the same results on another run of the program, assuming you chose the same options - however, this is not guaranteed." 
+                            <TextBlock Text="RNG Seed: " VerticalAlignment="Bottom" Visibility="{Binding UseMultiThreadRNG, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter='Inverse'}"/>
+                            <TextBox Name="SeedTextBox" MaxLength="11" Text="PLACEHOLDER" ToolTip="RNG seeds determine the output of the random number generator.&#xA;You can share seed values to produce the same results on another run of the program, assuming you chose the same options - however, this is not guaranteed." VerticalAlignment="Bottom"
                                      Visibility="{Binding UseMultiThreadRNG, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter='Inverse'}"/>
                         </StackPanel>
                     </StackPanel>

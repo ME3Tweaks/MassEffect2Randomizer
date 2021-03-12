@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -20,6 +21,7 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME2Randomizer.Classes.Telemetry;
+using ME3ExplorerCore;
 using ME3ExplorerCore.Compression;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Gammtek.Extensions;
@@ -54,7 +56,7 @@ namespace ME2Randomizer.Classes.Controllers
 
         private static void initAppCenter()
         {
-#if DEBUG
+#if !DEBUG
             if (APIKeys.HasAppCenterKey && !telemetryStarted)
             {
                 Microsoft.AppCenter.Crashes.Crashes.GetErrorAttachments = (ErrorReport report) =>
@@ -102,7 +104,7 @@ namespace ME2Randomizer.Classes.Controllers
             // PRE LIBRARY LOAD
             RegistryHandler.RegistrySettingsPath = @"HKEY_CURRENT_USER\Software\MassEffect2Randomizer";
             RegistryHandler.CurrentUserRegistrySubpath = @"Software\MassEffect2Randomizer";
-
+            ME3ExplorerCoreLib.SetSynchronizationContext(TaskScheduler.FromCurrentSynchronizationContext());
 
             try
             {
@@ -267,14 +269,41 @@ namespace ME2Randomizer.Classes.Controllers
                             var validationFailedReason = target.ValidateTarget();
                             if (validationFailedReason == null)
                             {
-                                Locations.SetTarget(target, false);
+                                // CHECK NOT TEXTURE MODIFIED
+                                if (target.TextureModded)
+                                {
+                                    MERLog.Error($@"Game target is texture modded: {target.TargetPath}. This game target is not targetable by ME2R");
+                                    object o = new object();
+                                    Application.Current.Dispatcher.Invoke(async () =>
+                                    {
+                                        if (Application.Current.MainWindow is MainWindow mw)
+                                        {
+                                            await mw.ShowMessageAsync("Mass Effect 2 target is texture modded", $"The game located at {target.TargetPath} has had textures modified. Mass Effect 2 Randomizer cannot randomize texture modified games, as it adds package files. If you want to texture mod your game, it must be done after randomization.", ContentWidthPercent: 75);
+                                            lock (o)
+                                            {
+                                                Monitor.Pulse(o);
+                                            }
+                                        }
+                                    });
+                                    lock (o)
+                                    {
+                                        Monitor.Wait(o);
+                                    }
+
+                                    return;
+                                }
+                                else
+                                {
+                                    // OK
+                                    Locations.SetTarget(target, false);
+                                }
                             }
                         }
                     }
 
 
                     pd.SetMessage("Performing startup checks");
-                    StartupCheck.PerformStartupCheck((title, message) =>
+                    MERStartupCheck.PerformStartupCheck((title, message) =>
                     {
                         object o = new object();
                         Application.Current.Dispatcher.Invoke(async () =>
@@ -293,6 +322,9 @@ namespace ME2Randomizer.Classes.Controllers
                             Monitor.Wait(o);
                         }
                     }, x => pd.SetMessage(x));
+
+                    // force initial refresh
+                    MERPeriodicRefresh(null, null);
                 }
                 catch (Exception e)
                 {
@@ -309,7 +341,7 @@ namespace ME2Randomizer.Classes.Controllers
                     {
                         if (target == null)
                         {
-                            mw.GamePathString = $"{MERFileSystem.Game.ToGameName()} not detected";
+                            mw.GamePathString = $"{MERFileSystem.Game.ToGameName()} not detected. Repair and run your game to fix detection.";
                         }
                         else
                         {
@@ -323,13 +355,15 @@ namespace ME2Randomizer.Classes.Controllers
 
                         mw.FinalizeInterfaceLoad();
 
-                    /*
-                    if (!hasWorkingMEM)
-                    {
-                        await mw.ShowMessageAsync("Required components are not available",
-                            "Some components for installation are not available, likely due to network issues (blocking, no internet, etc). To install these components, folow the 'How to install the Installer Support Package' directions on any of the ALOT pages on NexusMods. The installer will not work without these files installed.",
-                            ContentWidthPercent: 75);
-                    }*/
+                        /*
+                        if (!hasWorkingMEM)
+                        {
+                            await mw.ShowMessageAsync("Required components are not available",
+                                "Some components for installation are not available, likely due to network issues (blocking, no internet, etc). To install these components, folow the 'How to install the Installer Support Package' directions on any of the ALOT pages on NexusMods. The installer will not work without these files installed.",
+                                ContentWidthPercent: 75);
+                        }*/
+
+                        PeriodicRefresh.OnPeriodicRefresh += MERPeriodicRefresh;
                     }
                 });
             };
@@ -358,6 +392,19 @@ namespace ME2Randomizer.Classes.Controllers
                     await pd.CloseAsync();
                 };
             bw.RunWorkerAsync();
+        }
+
+        private static void MERPeriodicRefresh(object? sender, EventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (Application.Current.MainWindow is MainWindow mw)
+                {
+                    // Is DLC component installed?
+                    var dlcModPath = MERFileSystem.GetDLCModPath();
+                    mw.DLCComponentInstalled = Directory.Exists(dlcModPath);
+                }
+            });
         }
 
         private static void handleM3Passthrough()

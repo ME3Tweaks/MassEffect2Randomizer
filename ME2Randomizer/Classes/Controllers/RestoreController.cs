@@ -21,7 +21,7 @@ namespace ME2Randomizer.Classes.Controllers
         {
             var pd = await mw.ShowProgressAsync("Restoring game", "Preparing to restore game");
             pd.SetIndeterminate();
-            Task.Run(() =>
+            await Task.Run(() =>
             {
 
                 if (isQuick)
@@ -35,14 +35,26 @@ namespace ME2Randomizer.Classes.Controllers
                         Utilities.DeleteFilesAndFoldersRecursively(dlcModPath);
                     }
 
+                    mw.DLCComponentInstalled = false;
+
+
                     // Restore basegame only files
                     pd.SetMessage("Restoring randomized basegame files");
                     var backupPath = BackupService.GetGameBackupPath(MERFileSystem.Game, out _, false);
+                    var gameCookedPath = M3Directories.GetCookedPath(Locations.GetTarget(MERFileSystem.Game));
+                    var backupCookedPath = MEDirectories.GetCookedPath(MERFileSystem.Game, backupPath);
                     foreach (var bgf in MERFileSystem.alwaysBasegameFiles)
                     {
-                        var srcPath = Path.Combine(MEDirectories.GetCookedPath(MERFileSystem.Game, backupPath), bgf);
-                        var destPath = Path.Combine(M3Directories.GetCookedPath(Locations.GetTarget(MERFileSystem.Game)), bgf);
+                        var srcPath = Path.Combine(backupCookedPath, bgf);
+                        var destPath = Path.Combine(gameCookedPath, bgf);
                         File.Copy(srcPath, destPath, true);
+                    }
+
+                    // Delete basegame TFC
+                    var baseTFC = MERFileSystem.GetTFCPath(false);
+                    if (File.Exists(baseTFC))
+                    {
+                        File.Delete(baseTFC);
                     }
 
                     // Done!
@@ -118,7 +130,7 @@ namespace ME2Randomizer.Classes.Controllers
                         }
                     };
                     gr.PerformRestore(Locations.GetTarget(MERFileSystem.Game).TargetPath);
-
+                    mw.DLCComponentInstalled = false;
                 }
             }).ContinueWith(async x => { await pd.CloseAsync(); });
         }
