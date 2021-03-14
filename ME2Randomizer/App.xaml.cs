@@ -17,8 +17,6 @@ using Serilog;
 
 namespace ME2Randomizer
 {
-
-
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -156,7 +154,7 @@ namespace ME2Randomizer
                         return;
                     }
 
-
+                    // Set passthroughs
                     if (parsedCommandLineArgs.Value.PassthroughME1Path != null)
                     {
                         StartupUIController.PassthroughME1Path = parsedCommandLineArgs.Value.PassthroughME1Path;

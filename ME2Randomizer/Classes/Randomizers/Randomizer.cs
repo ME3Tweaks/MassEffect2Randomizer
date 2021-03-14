@@ -174,7 +174,7 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("Pro", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;

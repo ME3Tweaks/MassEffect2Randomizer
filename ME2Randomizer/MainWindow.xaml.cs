@@ -27,6 +27,7 @@ using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.DebugTools;
 //using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
+using ME3ExplorerCore.Gammtek.Extensions;
 using ME3ExplorerCore.Helpers;
 using Serilog;
 
@@ -350,7 +351,8 @@ namespace ME2Randomizer
         private async void BackupRestore_Click(object sender, RoutedEventArgs e)
         {
             string path = BackupService.GetGameBackupPath(MERFileSystem.Game, out var isVanilla, false);
-            if (path != null)
+            var gameTarget = Locations.GetTarget(MERFileSystem.Game);
+            if (path != null && gameTarget != null)
             {
                 MetroDialogSettings settings = new MetroDialogSettings();
                 settings.NegativeButtonText = "Full";
@@ -366,6 +368,10 @@ namespace ME2Randomizer
                 {
                     RestoreController.StartRestore(this, result == MessageDialogResult.Affirmative);
                 }
+            }
+            else if (gameTarget == null)
+            {
+                await this.ShowMessageAsync($"{MERFileSystem.Game.ToGameName()} not found", $"{MERFileSystem.Game.ToGameName()} was not found, and as such, cannot be restored by {MERFileSystem.Game.ToGameName()} Randomizer. Repair your game using Steam, Origin, or your DVD, or restore your backup using ME3Tweaks Mod Manager.");
             }
         }
 

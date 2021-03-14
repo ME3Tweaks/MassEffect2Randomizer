@@ -332,7 +332,6 @@ namespace ME2Randomizer.Classes.Controllers
                 }
 
                 pd.SetMessage("Preparing interface");
-                //var hasWorkingMEM = MEMIPCHandler.TestWorkingMEM();
                 Thread.Sleep(250); // This will allow this message to show up for moment so user can see it.
 
                 Application.Current.Dispatcher.Invoke(async () =>
