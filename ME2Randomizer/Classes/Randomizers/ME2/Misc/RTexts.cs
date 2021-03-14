@@ -226,19 +226,42 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             MERLog.Information("Randomizing vowels in words");
             var hardMode = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_VOWELS_HARDMODE);
 
-            var vowels = GetVowelMap();
-            var vowelValues = vowels.Values.ToList();
-            foreach (var sourceVowel in vowels.Keys)
+            Dictionary<char, char> vowels = null;
+            List<char> vowelValues = null;
+
+            bool retryMapping = true;
+            while (retryMapping)
             {
-                var value = vowelValues.RandomElement();
-                while (hardMode && value == sourceVowel)
+                bool failed = false;
+                vowels = GetVowelMap();
+                vowelValues = vowels.Values.ToList();
+
+                int numAttemptsRemaining = 10;
+
+                foreach (var sourceVowel in vowels.Keys)
                 {
-                    value = vowelValues.RandomElement();
+                    var value = vowelValues.RandomElement();
+                    while (hardMode && value == sourceVowel && numAttemptsRemaining > 0)
+                    {
+                        value = vowelValues.RandomElement();
+                        numAttemptsRemaining--;
+                    }
+
+                    if (numAttemptsRemaining == 0 && hardMode && value == sourceVowel)
+                    {
+                        // This attempt has failed
+                        MERLog.Warning(@"Hard mode vowel randomization failed, retrying");
+                        failed = true;
+                        break;
+                    }
+
+                    vowelValues.Remove(value); // Do not allow reassignment of same vowel
+                    Debug.WriteLine($"Vowel Randomizer: {sourceVowel} -> {value}");
+                    vowels[sourceVowel] = value;
                 }
 
-                vowelValues.Remove(value); // Do not allow reassignment of same vowel
-                Debug.WriteLine($"Vowel Randomizer: {sourceVowel} -> {value}");
-                vowels[sourceVowel] = value;
+                if (!failed)
+                    retryMapping = false;
             }
 
             var consonants = GetConsonantMap();

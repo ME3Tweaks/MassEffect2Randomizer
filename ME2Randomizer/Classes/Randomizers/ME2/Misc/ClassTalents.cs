@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using ME2Randomizer.Classes;
+using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.Utility;
@@ -351,9 +354,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // Too lazy to figure out what it is
             var biogame = CoalescedHandler.GetIniFile("BIOGame.ini");
             int kitIndex = 0;
-            foreach (var loadout in assets)
+
+
+            Parallel.ForEach(assets, loadout =>
             {
+                //foreach (var loadout in assets)
+                //{
+                // We must load a new copy of the package file into memory, one for reading, one for modifying,
+                // otherwise it will be concurrent modification
+                loadout = MEPackageHandler.OpenMEPackage(loadout.FileRef.FilePath).FindExport(loadout.InstancedFullPath);
                 var kit = loadout.ObjectName.Name.Substring(4);
+
+                MERLog.Information($"Randomizing class powers for {kit}");
                 List<MappedPower> configuredPowers = new List<MappedPower>();
 
                 // Clear mapping
@@ -404,6 +416,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         // Projectile powers are subclassed for player
                         ranksSource = (basePower.BasePower.SuperClass as ExportEntry).GetDefaults().GetProperty<ArrayProperty<StructProperty>>("Ranks");
                     }
+
                     var evolveRank = ranksSource[3];
                     var descriptionProp = evolveRank.Properties.GetProp<StringRefProperty>("Description");
                     var description = TLKHandler.TLKLookupByLang(descriptionProp.Value, "INT");
@@ -428,11 +441,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     Debugger.Break();
                 }
+
                 loadoutProps.AddOrReplaceProp(powersList);
 
                 // Build the autoranks
                 loadoutProps.AddOrReplaceProp(BuildAutoRankList(loadout, configuredPowers));
-                
+
                 // Finalize loadout export
                 loadout.WriteProperties(loadoutProps);
 
@@ -467,6 +481,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath)));
                         properties.Add(dependencies);
                     }
+
                     defaults.WriteProperties(properties);
                 }
 
@@ -510,7 +525,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
 
                 MERFileSystem.SavePackage(loadout.FileRef);
-            }
+            });
 
             return true;
         }

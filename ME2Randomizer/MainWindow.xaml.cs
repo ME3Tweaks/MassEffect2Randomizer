@@ -359,7 +359,7 @@ namespace ME2Randomizer
                 settings.FirstAuxiliaryButtonText = "Cancel";
                 settings.AffirmativeButtonText = "Quick";
                 settings.DefaultButtonFocus = MessageDialogResult.Affirmative;
-                MessageDialogResult result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores basegame files modified Mass Effect 2 Randomizer, deletes the DLC mod component\n\nFull: Deletes entire game installation and restores the backup in it's place. Fully resets the game to the backup state.", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                MessageDialogResult result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores basegame files modifiable by Mass Effect 2 Randomizer, deletes the DLC mod component\n\nFull: Deletes entire game installation and restores the backup in its place. Fully resets the game to the backup state", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
                 if (result == MessageDialogResult.FirstAuxiliary)
                 {
                     // Do nothing. User canceled

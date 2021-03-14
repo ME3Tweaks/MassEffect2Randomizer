@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
-using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
@@ -53,7 +51,13 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// <returns></returns>
         public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false, bool useMemorySafeImport = false, PackageCache cache = null)
         {
-            Debug.WriteLine($"Porting {sourceExport.InstancedFullPath} from {sourceExport.FileRef.FilePath} into {targetPackage.FilePath}");
+#if DEBUG
+            // in preprocessor to prevent this from running in release mode
+            if (sourceExport.FileRef.FilePath != null && targetPackage.FilePath != null)
+            {
+                Debug.WriteLine($"Porting {sourceExport.InstancedFullPath} from {Path.GetFileName(sourceExport.FileRef.FilePath)} into {Path.GetFileName(targetPackage.FilePath)}");
+            }
+#endif
             var existing = targetPackage.FindExport(sourceExport.InstancedFullPath);
             if (existing != null)
                 return existing;

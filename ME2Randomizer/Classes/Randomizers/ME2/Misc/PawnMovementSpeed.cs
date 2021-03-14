@@ -28,7 +28,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             var biogame = CoalescedHandler.GetIniFile("BIOGame.ini");
             var sfxgame = biogame.GetOrAddSection("SFXGame.SFXGame");
-            sfxgame.SetSingleEntry("StormStamina", ThreadSafeRandom.NextFloat(1.5f, 8));
+            sfxgame.SetSingleEntry("StormStamina", ThreadSafeRandom.NextFloat(1.5f, 12));
             sfxgame.SetSingleEntry("StormRegen", ThreadSafeRandom.NextFloat(0.3f, 1.5f));
             sfxgame.SetSingleEntry("StormStaminaNonCombat", ThreadSafeRandom.NextFloat(1.5f, 8));
             sfxgame.SetSingleEntry("StormRegenNonCombat", ThreadSafeRandom.NextFloat(0.1f, 0.8f));
@@ -42,7 +42,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 if (prop is FloatProperty fp)
                 {
-                    fp.Value = ThreadSafeRandom.NextFloat(fp.Value - (fp * .75), fp.Value + (fp * .75));
+                    // We try to make sure it weights more towards faster not slower
+                    fp.Value = ThreadSafeRandom.NextFloat(fp.Value - (fp * .35), fp.Value + (fp * .75));
                 }
 
             }
