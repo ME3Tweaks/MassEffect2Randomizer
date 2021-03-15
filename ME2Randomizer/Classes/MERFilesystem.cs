@@ -142,7 +142,7 @@ namespace ME2Randomizer.Classes
         /// </summary>
         /// <param name="packagename"></param>
         /// <returns></returns>
-        public static string GetPackageFile(string packagename)
+        public static string GetPackageFile(string packagename, bool logIfNotFound = true)
         {
             if (LoadedFiles == null)
             {
@@ -162,7 +162,7 @@ namespace ME2Randomizer.Classes
             }
 
             var retFile = LoadedFiles.TryGetValue(packagename, out var result);
-            if (!retFile)
+            if (!retFile && logIfNotFound)
             {
                 Log.Warning($"Could not find package file: {packagename}! Loaded files count: {LoadedFiles.Count}");
             }

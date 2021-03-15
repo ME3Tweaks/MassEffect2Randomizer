@@ -71,10 +71,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                 // Update the materials
                 var materials = hairMeshExport.GetProperty<ArrayProperty<ObjectProperty>>("Materials");
-                if (materials != null)
+                if (materials != null && materials.Any())
                 {
-                    if (materials.Count() != 1)
-                        Debugger.Break();
+                    //if (materials.Count() != 1)
+                    //    Debugger.Break();
                     var mat = materials[0].ResolveToEntry(hairMeshExport.FileRef) as ExportEntry;
                     if (mat != null)
                     {
@@ -88,22 +88,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                             // Need to match child to parent params that start with HAIR
                             var matTextureParms = mat.GetProperty<ArrayProperty<StructProperty>>("TextureParameterValues");
-                            var matHairParms = matTextureParms.Where(x => x.Properties.GetProp<NameProperty>("ParameterName").Value.Name.StartsWith("HAIR_")).ToList();
-
-                            // Map them
-                            foreach (var matHairParm in matHairParms)
+                            if (matTextureParms != null)
                             {
-                                var locName = matHairParm.Properties.GetProp<NameProperty>("ParameterName");
-                                var matchingParent = parentMatHairParms.FirstOrDefault(x => x.Properties.GetProp<NameProperty>("ParameterName").Value == locName.Value);
+                                var matHairParms = matTextureParms.Where(x => x.Properties.GetProp<NameProperty>("ParameterName").Value.Name.StartsWith("HAIR_")).ToList();
 
-                                // Assign it
-                                if (matchingParent != null)
+                                // Map them
+                                foreach (var matHairParm in matHairParms)
                                 {
-                                    matHairParm.Properties.AddOrReplaceProp(matchingParent.GetProp<ObjectProperty>("ParameterValue"));
-                                }
-                            }
+                                    var locName = matHairParm.Properties.GetProp<NameProperty>("ParameterName");
+                                    var matchingParent = parentMatHairParms.FirstOrDefault(x => x.Properties.GetProp<NameProperty>("ParameterName").Value == locName.Value);
 
-                            mat.WriteProperty(matTextureParms);
+                                    // Assign it
+                                    if (matchingParent != null)
+                                    {
+                                        matHairParm.Properties.AddOrReplaceProp(matchingParent.GetProp<ObjectProperty>("ParameterValue"));
+                                    }
+                                }
+                                mat.WriteProperty(matTextureParms);
+                            }
                         }
                         else
                         {

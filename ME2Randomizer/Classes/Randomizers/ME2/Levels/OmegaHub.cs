@@ -199,8 +199,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         {
             // Install new head and body assets
             var newInfo = IlliumHub.DancerOptions.RandomElement();
-            while (newInfo.Location != null || newInfo.Rotation != null)
+            while (newInfo.Location != null || newInfo.Rotation != null || (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable()) || (newInfo.HeadAsset != null && !newInfo.HeadAsset.IsAssetFileAvailable()))
             {
+                // Make sure assets are available, if not, repick
                 // I don't want anything that requires specific positioning data
                 newInfo = IlliumHub.DancerOptions.RandomElement();
             }

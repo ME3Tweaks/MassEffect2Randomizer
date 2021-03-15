@@ -210,7 +210,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
             public virtual bool IsAssetFileAvailable()
             {
-                return MERFileSystem.GetPackageFile(AssetPath) != null;
+                return MERFileSystem.GetPackageFile(PackageFile, false) != null;
             }
         }
 
@@ -240,6 +240,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 while (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable())
                 {
                     // Find another asset that is available
+                    MERLog.Information($@"Asset {newInfo.BodyAsset.AssetPath} in {newInfo.BodyAsset.PackageFile} not available, repicking...");
                     newInfo = DancerOptions.RandomElement();
                 }
                 var newBody = PackageTools.PortExportIntoPackage(package, newInfo.BodyAsset.GetAsset());

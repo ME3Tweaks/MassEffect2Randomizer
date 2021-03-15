@@ -408,17 +408,6 @@
   },
   {
     "packagename": "SFXGameContent_Inventory",
-    "packagefilename": "SFXHeavyWeapon_PraetorianParticleBeam.pcc",
-    "sourceuindex": 2,
-    "weaponclassification": 5,
-    "hasgunmesh": true,
-    "gunname": "SFXHeavyWeapon_ParticleBeam",
-    "importonly": false,
-    "requiresstartuppackage": false,
-    "iscorrectedpackage": true
-  },
-  {
-    "packagename": "SFXGameContent_Inventory",
     "packagefilename": "SFXWeapon_Shotguns.pcc",
     "sourceuindex": 68,
     "weaponclassification": 3,
