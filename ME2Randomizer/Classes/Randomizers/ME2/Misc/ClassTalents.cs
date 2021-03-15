@@ -355,8 +355,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var biogame = CoalescedHandler.GetIniFile("BIOGame.ini");
             int kitIndex = 0;
 
-
-            Parallel.ForEach(assets, loadout =>
+            // SINGLE THREAD FOR NOW!! Ini handler is not thread safe
+            Parallel.ForEach(assets, new ParallelOptions(){MaxDegreeOfParallelism = 1},loadout =>
             {
                 //foreach (var loadout in assets)
                 //{

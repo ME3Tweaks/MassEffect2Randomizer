@@ -265,12 +265,17 @@ namespace ME2Randomizer.Classes
         }
 
         /// <summary>
-        /// Gets the path of the DLC mod component. Does not check if it exists.
+        /// Gets the path of the DLC mod component. Does not check if it exists. Returns null if the game cannot be found.
         /// </summary>
         /// <returns></returns>
         public static string GetDLCModPath()
         {
-            return Path.Combine(MEDirectories.GetDLCPath(Game), $"DLC_MOD_{Game}Randomizer");
+            var dlcPath = MEDirectories.GetDLCPath(Game);
+            if (dlcPath != null)
+            {
+                return Path.Combine(dlcPath, $"DLC_MOD_{Game}Randomizer");
+            }
+            return null;
         }
     }
 }

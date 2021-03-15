@@ -95,9 +95,17 @@ namespace ME2Randomizer.Classes
 
         private void Randomization_Completed(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (e.Error != null)
+            {
+                MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
+                mainWindow.CurrentOperationText = $"Randomizer failed with error: {e.Error.Message}, please report to Mgamerz";
+            }
+            else
+            {
+                mainWindow.CurrentOperationText = "Randomization complete";
+            }
             CommandManager.InvalidateRequerySuggested();
             TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress, mainWindow);
-            mainWindow.CurrentOperationText = "Randomization complete";
             mainWindow.AllowOptionsChanging = true;
             mainWindow.ShowProgressPanel = false;
         }

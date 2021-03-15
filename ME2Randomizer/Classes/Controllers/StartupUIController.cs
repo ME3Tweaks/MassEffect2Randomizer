@@ -401,7 +401,7 @@ namespace ME2Randomizer.Classes.Controllers
                 {
                     // Is DLC component installed?
                     var dlcModPath = MERFileSystem.GetDLCModPath();
-                    mw.DLCComponentInstalled = Directory.Exists(dlcModPath);
+                    mw.DLCComponentInstalled = dlcModPath != null ? Directory.Exists(dlcModPath) : false;
                 }
             });
         }
