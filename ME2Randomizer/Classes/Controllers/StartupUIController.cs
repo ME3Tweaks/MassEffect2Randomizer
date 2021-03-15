@@ -126,7 +126,7 @@ namespace ME2Randomizer.Classes.Controllers
             bw.DoWork += (a, b) =>
             {
 
-                ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, "Mass Effect 2 Randomizer starting up");
+                ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, "Mass Effect 2 Randomizer starting up", false);
                 // Logger is now available
 
                 // Setup telemetry handlers
