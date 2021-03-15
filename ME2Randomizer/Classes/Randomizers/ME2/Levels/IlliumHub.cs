@@ -207,6 +207,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 return package?.FindExport(AssetPath);
             }
+
+            public virtual bool IsAssetFileAvailable()
+            {
+                return MERFileSystem.GetPackageFile(AssetPath) != null;
+            }
         }
 
         public class DancerSource
@@ -232,6 +237,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 // Install new head and body assets
                 var newInfo = DancerOptions.RandomElement();
+                while (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable())
+                {
+                    // Find another asset that is available
+                    newInfo = DancerOptions.RandomElement();
+                }
                 var newBody = PackageTools.PortExportIntoPackage(package, newInfo.BodyAsset.GetAsset());
                 bodySM.WriteProperty(new ObjectProperty(newBody.UIndex, "SkeletalMesh"));
 
