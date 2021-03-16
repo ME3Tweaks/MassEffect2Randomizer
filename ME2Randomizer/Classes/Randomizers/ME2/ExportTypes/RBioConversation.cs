@@ -5,6 +5,7 @@ using System.Linq;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Dialogue;
+using ME3ExplorerCore.Kismet;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3ExplorerCore.Unreal;
@@ -93,6 +94,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 List<SeqTools.VarLinkInfo> applicableLinks = new();
                 ExportEntry ownerEntry = null;
                 ExportEntry playerEntry = null;
+                var sequenceObjects = SeqTools.GetAllSequenceElements(convStart).OfType<ExportEntry>().ToList();
                 foreach (var varilink in seqLinks)
                 {
                     if (CanLinkBeRandomized(varilink, out _))
@@ -100,6 +102,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                         var connectedItem = varilink.LinkedNodes[0] as ExportEntry;
                         if (!shufflableNodes.Contains(connectedItem))
                         {
+                            // Check to make sure node has a value
+                            if (connectedItem.ClassName == "SeqVar_Object")
+                            {
+                                var objValue = connectedItem.GetProperty<ObjectProperty>("ObjValue");
+                                if (objValue == null && !SeqTools.IsAssignedBioPawn(convStart, connectedItem, sequenceObjects))
+                                {
+                                    continue; // This is not a shufflable node, it is never assigned anything
+                                }
+                            }
+
                             shufflableNodes.Add(connectedItem);
                         }
 
@@ -192,7 +204,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 // Update the localizations
                 foreach (var loc in Localizations)
                 {
-                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERFileSystem.GetGlobalCache(),localCache, loc);
+                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERFileSystem.GetGlobalCache(), localCache, loc);
                     var conv = new ConversationExtended(bioConversation);
                     conv.LoadConversation(null, true);
 
