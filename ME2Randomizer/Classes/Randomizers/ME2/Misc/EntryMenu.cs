@@ -17,7 +17,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             if (!skipElem.ObjectFlags.HasFlag(UnrealFlags.EObjectFlags.DebugPostLoad))
             {
                 skipElem.ObjectFlags |= UnrealFlags.EObjectFlags.DebugPostLoad; // mark as modified so subsequent passes don't operate on this
-                SeqTools.SkipSequenceElement(skipElem, 1);
+                SeqTools.SkipSequenceElement(skipElem, outboundLinkIdx: 1);
                 MERFileSystem.SavePackage(entrymenuP);
             }
 

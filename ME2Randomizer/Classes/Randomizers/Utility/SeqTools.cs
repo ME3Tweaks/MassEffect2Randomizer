@@ -77,8 +77,18 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// </summary>
         /// <param name="elementToSkip">Th sequence object to skip</param>
         /// <param name="outboundLinkIdx">The 0-indexed outbound link that should be attached the preceding entry element, as if this one had fired that link.</param>
-        public static void SkipSequenceElement(ExportEntry elementToSkip, int outboundLinkIdx)
+        public static void SkipSequenceElement(ExportEntry elementToSkip, string outboundLinkName = null, int outboundLinkIdx = -1)
         {
+            if (outboundLinkIdx == -1 && outboundLinkName == null)
+                throw new Exception(@"SkipSequenceElement() must have an outboundLinkName or an outboundLinkIdx!");
+
+            if (outboundLinkIdx == -1)
+            {
+                var outboundLinkNames = KismetHelper.GetOutboundLinkNames(elementToSkip);
+                outboundLinkIdx = outboundLinkNames.IndexOf(outboundLinkName);
+            }
+
+
             // List of outbound link elements on the specified item we want to skip. These will be placed into the inbound item
             Debug.WriteLine($@"Attempting to skip {elementToSkip.UIndex} in {elementToSkip.FileRef.FilePath}");
             var outboundLinkLists = SeqTools.GetOutboundLinksOfNode(elementToSkip);
@@ -390,6 +400,73 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                     Debug.WriteLine($"   {linkedNode.UIndex} {linkedNode.ObjectName.Instanced} {findTag?.Value} {objValue?.ResolveToEntry(linkedNode.FileRef).ObjectName.Instanced}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Is the specified node assigned to a BioPawn or subclass of? 
+        /// </summary>
+        /// <param name="sequenceObj">The object that we are checking that should be ignored for references (like conversation start)</param>
+        /// <param name="vlNode">The node to check</param>
+        /// <param name="sequenceElements">List of nodes in the sequence</param>
+        /// <returns></returns>
+        public static bool IsAssignedBioPawn(ExportEntry sequenceObj, ExportEntry vlNode, List<ExportEntry> sequenceElements)
+        {
+            var inboundConnections = SeqTools.FindVariableConnectionsToNode(vlNode, sequenceElements);
+            foreach (var sequenceObject in inboundConnections)
+            {
+                if (sequenceObject == sequenceObj)
+                    continue; // Obviously we reference this node
+
+                // Is this a 'SetObject' that is assigning the value?
+                if (sequenceObject.InheritsFrom("SequenceAction") && sequenceObject.ClassName == "SeqAct_SetObject" && sequenceObject != sequenceObj)
+                {
+                    //check if target is my node
+                    var referencingVarLinks = SeqTools.GetVariableLinksOfNode(sequenceObject);
+                    var targetLink = referencingVarLinks.FirstOrDefault(x => x.LinkDesc == "Target"); // What is the target node?
+                    if (targetLink != null)
+                    {
+                        //see if target is node we are investigating for setting.
+                        foreach (var potentialTarget in targetLink.LinkedNodes.OfType<ExportEntry>())
+                        {
+                            if (potentialTarget == vlNode)
+                            {
+                                // There's a 'SetObject' with Target of the attached variable to our interp cutscene
+                                // That means something is 'setting' the value of this
+                                // We need to inspect what it is to see if we can shuffle it
+
+                                //Debug.WriteLine("Found a setobject to variable linked item on a sequence");
+
+                                //See what value this is set to. If it inherits from BioPawn we can use it in the shuffling.
+                                var pointedAtValueLink = referencingVarLinks.FirstOrDefault(x => x.LinkDesc == "Value");
+                                if (pointedAtValueLink != null && pointedAtValueLink.LinkedNodes.Count == 1) // Only 1 item being set. More is too complicated
+                                {
+                                    var linkedNode = pointedAtValueLink.LinkedNodes[0] as ExportEntry;
+                                    var linkedNodeType = linkedNode.GetProperty<ObjectProperty>("ObjValue");
+                                    if (linkedNodeType != null)
+                                    {
+                                        var linkedNodeData = sequenceObj.FileRef.GetUExport(linkedNodeType.Value);
+                                        if (linkedNodeData.IsA("BioPawn"))
+                                        {
+                                            //We can shuffle this item.
+
+                                            // We write the property to the node so if it's not assigned at runtime (like on gender check) it still can show something.
+                                            // Cutscene will still be goofed up but will instead show something instead of nothing
+
+                                            linkedNode.WriteProperty(linkedNodeType);
+
+                                            //Debug.WriteLine("Adding shuffle item: " + objRef.Value);
+                                            // Original value below was 'linkedNode' which i'm pretty sure is the value that would be assigned, not the actual object that holds that value oncea assigned
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -66,10 +66,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     // Some ObjectFindByTag have an attached ObjValue for some reason.
                     // It's findobjectbytag but in same file
                     // some leftover development thing
-                    foreach (var vlNode in vl.LinkedNodes.OfType<ExportEntry>())
+                    foreach (var variableLinkNode in vl.LinkedNodes.OfType<ExportEntry>())
                     {
                         bool addedToShuffler = false;
-                        if (vlNode.GetProperty<ObjectProperty>("ObjValue")?.ResolveToEntry(export.FileRef) is ExportEntry linkedObjectEntry)
+                        if (variableLinkNode.GetProperty<ObjectProperty>("ObjValue")?.ResolveToEntry(export.FileRef) is ExportEntry linkedObjectEntry)
                         {
                             // It's a SeqVar_Object with a linked param
                             if (linkedObjectEntry.IsA("BioPawn"))
@@ -78,7 +78,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                 var flyingpawn = linkedObjectEntry.GetProperty<BoolProperty>("bCanFly")?.Value;
                                 if (flyingpawn == null || flyingpawn == false)
                                 {
-                                    pawnsToShuffleDirectAttached.Add(vlNode); //can be shuffled. This is a var link so it must be added
+                                    pawnsToShuffleDirectAttached.Add(variableLinkNode); //can be shuffled. This is a var link so it must be added
                                     addedToShuffler = true;
                                 }
                             }
@@ -87,63 +87,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         // WORK ON CODE BELOW
                         else if (vl.ExpectedTypeName == "SeqVar_Object" && !addedToShuffler)
                         {
-                            //We might be assigned to. We need to look at the parent sequence
-                            //and find what assigns me
-                            var inboundConnections = SeqTools.FindVariableConnectionsToNode(vlNode, sequenceElements);
-                            foreach (var sequenceObject in inboundConnections)
+                            // Find what assigns
+                            if (SeqTools.IsAssignedBioPawn(export, variableLinkNode, sequenceElements))
                             {
-                                if (sequenceObject == export)
-                                    continue; // Obviously we reference this node
-
-                                // Is this a 'SetObject' that is assigning the value?
-                                if (sequenceObject.InheritsFrom("SequenceAction") && sequenceObject.ClassName == "SeqAct_SetObject" && sequenceObject != export)
-                                {
-                                    //check if target is my node
-                                    var referencingVarLinks = SeqTools.GetVariableLinksOfNode(sequenceObject);
-                                    var targetLink = referencingVarLinks.FirstOrDefault(x => x.LinkDesc == "Target"); // What is the target node?
-                                    if (targetLink != null)
-                                    {
-                                        //see if target is node we are investigating for setting.
-                                        foreach (var potentialTarget in targetLink.LinkedNodes.OfType<ExportEntry>())
-                                        {
-                                            if (potentialTarget == vlNode)
-                                            {
-                                                // There's a 'SetObject' with Target of the attached variable to our interp cutscene
-                                                // That means something is 'setting' the value of this
-                                                // We need to inspect what it is to see if we can shuffle it
-
-                                                //Debug.WriteLine("Found a setobject to variable linked item on a sequence");
-
-                                                //See what value this is set to. If it inherits from BioPawn we can use it in the shuffling.
-                                                var pointedAtValueLink = referencingVarLinks.FirstOrDefault(x => x.LinkDesc == "Value");
-                                                if (pointedAtValueLink != null && pointedAtValueLink.LinkedNodes.Count == 1) // Only 1 item being set. More is too complicated
-                                                {
-                                                    var linkedNode = pointedAtValueLink.LinkedNodes[0] as ExportEntry;
-                                                    var linkedNodeType = linkedNode.GetProperty<ObjectProperty>("ObjValue");
-                                                    if (linkedNodeType != null)
-                                                    {
-                                                        var linkedNodeData = export.FileRef.GetUExport(linkedNodeType.Value);
-                                                        if (linkedNodeData.IsA("BioPawn"))
-                                                        {
-                                                            //We can shuffle this item.
-
-                                                            // We write the property to the node so if it's not assigned at runtime (like on gender check) it still can show something.
-                                                            // Cutscene will still be goofed up but will instead show something instead of nothing
-
-                                                            linkedNode.WriteProperty(linkedNodeType);
-
-                                                            //Debug.WriteLine("Adding shuffle item: " + objRef.Value);
-                                                            // Original value below was 'linkedNode' which i'm pretty sure is the value that would be assigned, not the actual object that holds that value oncea assigned
-
-                                                            pawnsToShuffleDynamicSet.Add(vlNode); //pointer to this node that will be assigned
-                                                            addedToShuffler = true;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                pawnsToShuffleDirectAttached.Add(variableLinkNode);
+                                addedToShuffler = true;
                             }
                         }
 
@@ -152,20 +100,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         if (!addedToShuffler)
                         {
                             // Check if is SeqVar_Player. We can always shuffle this one
-                            string className = vlNode.ClassName;
+                            string className = variableLinkNode.ClassName;
                             if (className == "SeqVar_Player")
                             {
-                                vlNode.WriteProperty(new BoolProperty(true, "bReturnsPawns")); // This is in ME1R, not sure it's needed, but let's just make sure it's true
-                                pawnsToShuffleDirectAttached.Add(vlNode); //pointer to this node
+                                variableLinkNode.WriteProperty(new BoolProperty(true, "bReturnsPawns")); // This is in ME1R, not sure it's needed, but let's just make sure it's true
+                                pawnsToShuffleDirectAttached.Add(variableLinkNode); //pointer to this node
                             }
                             else if (className == "BioSeqVar_ObjectFindByTag")
                             {
-                                var tagToFind = vlNode.GetProperty<StrProperty>("m_sObjectTagToFind")?.Value;
+                                var tagToFind = variableLinkNode.GetProperty<StrProperty>("m_sObjectTagToFind")?.Value;
                                 //if (tagToFind == "hench_pilot")
                                 //    Debugger.Break();
                                 if (tagToFind != null && acceptableTagsForPawnShuffling.Contains(tagToFind))
                                 {
-                                    pawnsToShuffleDynamicSet.Add(vlNode); //pointer to this node
+                                    pawnsToShuffleDynamicSet.Add(variableLinkNode); //pointer to this node
                                 }
                                 else
                                 {

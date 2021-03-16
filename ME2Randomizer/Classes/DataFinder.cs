@@ -37,7 +37,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindActorTypes;
+            dataworker.DoWork += FindUnreferencedObjects;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -1314,6 +1314,35 @@ namespace ME2Randomizer.Classes
 
                 return package?.FindExport(entryFullPath);
             }
+        }
+
+        public static void FindUnreferencedObjects(object? sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            var package = MEPackageHandler.OpenMEPackage(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\BioP_EndGm3_LOC_INT.pcc");
+            var objReferencer = package.Exports.FirstOrDefault(x => x.idxLink == 0 && x.ObjectName == "ObjectReferencer");
+            if (objReferencer != null)
+            {
+                var allObjects = package.Exports.ToList();
+                var refs = objReferencer.GetProperty<ArrayProperty<ObjectProperty>>("ReferencedObjects");
+                foreach (var refX in refs)
+                {
+                    var eRef = refX.ResolveToEntry(package) as ExportEntry;
+                    if (allObjects.Contains(eRef))
+                    {
+                        // Find references
+                        allObjects = allObjects.Except(EntryImporter.GetAllReferencesOfExport(eRef, false).OfType<ExportEntry>()).ToList();
+                        allObjects.Remove(eRef);
+                    }
+                }
+                Debug.WriteLine("Objects with no reference:");
+                foreach (var obj in allObjects)
+                {
+                    Debug.WriteLine($"  {obj.UIndex} {obj.InstancedFullPath}");
+                }
+            }
+
+
+
         }
         #endregion
 

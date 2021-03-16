@@ -80,7 +80,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
             }
 
-            SeqTools.SkipSequenceElement(exp, 0); //Success is link 0
+            SeqTools.SkipSequenceElement(exp, "Success"); //Success is link 0
             return true;
         }
     }
