@@ -86,11 +86,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             PropertyCollection props = new PropertyCollection();
-            props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(50, 210) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "WalkSpeed"));
+            props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(70, 210) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "WalkSpeed"));
             props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(200, 700) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "GroundSpeed"));
             props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(50, 900) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "TurnSpeed"));
-            props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(50, 300) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "CombatWalkSpeed"));
-            props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(55, 450) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "CombatGroundSpeed"));
+            props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(100, 320) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "CombatWalkSpeed"));
+            props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(10, 470) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "CombatGroundSpeed"));
             props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(100, 380) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "CoverGroundSpeed"));
             props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(60, 180) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "CoverCrouchGroundSpeed"));
             props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(300, 900) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "StormSpeed"));
