@@ -445,7 +445,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
                 while (export.ObjectName.Name.Contains("Krogan", StringComparison.InvariantCultureIgnoreCase) && randomNewPower.Type == EPowerCapabilityType.Death)
                 {
-                    Debug.WriteLine(@"Re-roll no-death-power on krogan");
+                    MERLog.Information(@"Re-roll no-death-power on krogan");
+                    // Reroll. Krogan AI has something weird about it
+                    randomNewPower = Powers.RandomElement();
+                }
+
+                while (randomNewPower.Type == EPowerCapabilityType.Buff &&
+                       (export.ObjectName.Name.Contains("HeavyWeaponMech", StringComparison.InvariantCultureIgnoreCase) 
+                        || export.ObjectName.Name.Contains("Praetorian", StringComparison.InvariantCultureIgnoreCase)
+                        || export.ObjectName.Name.Contains("ShadowBroker", StringComparison.InvariantCultureIgnoreCase))
+                       )
+                {
+                    MERLog.Information(@"Re-roll no-buffs for powerful enemy");
                     // Reroll. Krogan AI has something weird about it
                     randomNewPower = Powers.RandomElement();
                 }
