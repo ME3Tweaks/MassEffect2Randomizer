@@ -159,7 +159,8 @@ namespace ME2Randomizer.Classes
                 mainWindow.CurrentOperationText = "Getting list of files...";
                 mainWindow.ProgressBarIndeterminate = true;
 
-                var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false, false).Values.ToList();
+                // we only want pcc files (me2/me3). no upks
+                var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false, false).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
 
                 mainWindow.ProgressBarIndeterminate = false;
                 mainWindow.ProgressBar_Bottom_Max = files.Count();

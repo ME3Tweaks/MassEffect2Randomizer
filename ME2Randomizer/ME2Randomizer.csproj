@@ -79,6 +79,10 @@
   <ItemGroup>
     <Resource Include="masseffectrandomizer.ico" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Classes\Restore\" />
+  </ItemGroup>
 
   <PropertyGroup>
     <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>

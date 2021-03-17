@@ -8,6 +8,7 @@ using ALOTInstallerCore.ModManager;
 using ALOTInstallerCore.ModManager.ME3Tweaks;
 using ALOTInstallerCore.ModManager.Services;
 using MahApps.Metro.Controls.Dialogs;
+using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.GameFilesystem;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -27,11 +28,12 @@ namespace ME2Randomizer.Classes.Controllers
                 if (isQuick)
                 {
                     // Nuke the DLC
-
+                    MERLog.Information(@"Quick restore started");
                     pd.SetMessage("Removing randomize DLC component");
                     var dlcModPath = MERFileSystem.GetDLCModPath();
                     if (Directory.Exists(dlcModPath))
                     {
+                        MERLog.Information($@"Deleting {dlcModPath}");
                         Utilities.DeleteFilesAndFoldersRecursively(dlcModPath);
                     }
 
@@ -40,6 +42,8 @@ namespace ME2Randomizer.Classes.Controllers
 
                     // Restore basegame only files
                     pd.SetMessage("Restoring randomized basegame files");
+                    var isControllerModInstalled = SFXGame.IsControllerBasedInstall();
+
                     var backupPath = BackupService.GetGameBackupPath(MERFileSystem.Game, out _, false);
                     var gameCookedPath = M3Directories.GetCookedPath(Locations.GetTarget(MERFileSystem.Game));
                     var backupCookedPath = MEDirectories.GetCookedPath(MERFileSystem.Game, backupPath);
@@ -47,7 +51,15 @@ namespace ME2Randomizer.Classes.Controllers
                     {
                         var srcPath = Path.Combine(backupCookedPath, bgf);
                         var destPath = Path.Combine(gameCookedPath, bgf);
+                        MERLog.Information($@"Restoring {bgf}");
                         File.Copy(srcPath, destPath, true);
+                    }
+
+                    if (isControllerModInstalled)
+                    {
+                        // We must also restore Coalesced.ini or it will reference a UI that is no longer available and game will not boot
+                        MERLog.Information(@"Controller based install detected, also restoring Coalesced.ini to prevent startup crash");
+                        File.Copy(Path.Combine(backupPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), Path.Combine(Locations.GetTarget(MERFileSystem.Game).TargetPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), true);
                     }
 
                     // Delete basegame TFC

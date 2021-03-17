@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using ALOTInstallerCore;
+using ALOTInstallerCore.Helpers;
 using MassEffectRandomizer.Classes;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
@@ -16,9 +17,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// <returns></returns>
         public static bool IsControllerBasedInstall()
         {
-            // Not actually used but left for utility reasons.
-            var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
-            if (sfxgame != null && File.Exists(sfxgame))
+#if __ME2__
+            var target = Locations.GetTarget(MERFileSystem.Game);
+            if (target == null) return false;
+
+            var sfxgame = Path.Combine(target.TargetPath, "BioGame", "CookedPC", "SFXGame.pcc");
+            if (File.Exists(sfxgame))
             {
                 var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
                 var upa = sfxgameP.GetUExport(29126); //UpdatePlayerAccuracy
@@ -27,6 +31,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             return false;
+#endif
         }
 
         public static bool MakeShepardRagdollable(RandomizationOption option)
@@ -74,7 +79,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool RemoveStormCameraShake(RandomizationOption arg)
         {
             var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("SFXGame.pcc"));
-            
+
             // SFXCameraMode_CombatStorm
             var md = sfxgame.GetUExport(25096);
             md.WriteProperty(new BoolProperty(false, "bIsCameraShakeEnabled"));
