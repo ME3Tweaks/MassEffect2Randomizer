@@ -319,7 +319,7 @@
                 <TabItem Header="Options">
                     <DockPanel HorizontalAlignment="Center">
                         <StackPanel Margin="5" DockPanel.Dock="Top" Width="Auto">
-                            <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" />
+                            <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" Visibility="{Binding DirectionsTextVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" Text="{Binding GamePathString}" />
                         </StackPanel>
                         <ScrollViewer>

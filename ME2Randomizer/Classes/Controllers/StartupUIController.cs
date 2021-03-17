@@ -289,14 +289,10 @@ namespace ME2Randomizer.Classes.Controllers
                                     {
                                         Monitor.Wait(o);
                                     }
+                                }
 
-                                    return;
-                                }
-                                else
-                                {
-                                    // OK
-                                    Locations.SetTarget(target, false);
-                                }
+                                // We still set target so we can restore game if necessary
+                                Locations.SetTarget(target, false);
                             }
                         }
                     }
@@ -338,14 +334,7 @@ namespace ME2Randomizer.Classes.Controllers
                 {
                     if (Application.Current.MainWindow is MainWindow mw)
                     {
-                        if (target == null)
-                        {
-                            mw.GamePathString = $"{MERFileSystem.Game.ToGameName()} not detected. Repair and run your game to fix detection.";
-                        }
-                        else
-                        {
-                            mw.GamePathString = $"Randomization target: {target.TargetPath}";
-                        }
+                        mw.SetupTargetDescriptionText();
 
 
                         var backupStatus = BackupService.GetBackupStatus(MERFileSystem.Game);

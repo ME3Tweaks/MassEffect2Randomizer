@@ -235,72 +235,22 @@ namespace ME2Randomizer
             StartupUIController.BeginFlow(this);
         }
 
-        private async void Startup()
-        {
-            /*string me2Path = MERUtilities.GetGamePath(allowMissing: true);
-
-            //int installedGames = 5;
-            bool me2installed = (me2Path != null);
-
-            if (!me2installed)
-            {
-                Log.Error("Mass Effect 2 couldn't be found. Application will now exit.");
-                await this.ShowMessageAsync("Mass Effect 2 is not installed", "Mass Effect 2 couldn't be found on this system. Mass Effect 2 Randomizer only works with legitimate, official copies of Mass Effect 2. Ensure you have run the game at least once. If you need assistance, please come to the ME3Tweaks Discord.");
-                Log.Error("Exiting due to game not being found");
-                Environment.Exit(1);
-            }
-
-            GameLocationTextbox.Text = $"Game Path: {me2Path}";
-            Log.Information("Game is installed at " + me2Path);
-
-            Log.Information("Detecting locale...");
-            if (!MERUtilities.IsSupportedLocale())
-            {
-                Log.Error("Unable to detect INT locale.");
-                await this.ShowMessageAsync("Mass Effect 2 unsupported locale", "Mass Effect 2 Randomizer only works with INT(english) locales of the game. Your current installation locale is unsupported or could not determined (could not detect loc_int files). Mass Effect 2 Randomizer is written against the INT locale and will not work with other localizations of the game. The application will now exit. If you need assistance, please come to the ME3Tweaks Discord.");
-                Log.Error("Exiting due to unsupported locale");
-                Environment.Exit(1);
-            }
-
-            string path = MERUtilities.GetGameBackupPath();
-            if (path != null)
-            {
-                BackupRestoreText = "Restore";
-                BackupRestore_Button.ToolTip = "Click to restore game from " + Environment.NewLine + path;
-
-                string testME2Installed = MERUtilities.GetGamePath();
-                if (testME2Installed == null)
-                {
-                    Log.Error("Mass Effect detected as installed, but files are missing");
-                    MetroDialogSettings settings = new MetroDialogSettings();
-                    settings.NegativeButtonText = "Cancel";
-                    settings.AffirmativeButtonText = "Restore";
-                    MessageDialogResult result = await this.ShowMessageAsync("Mass Effect detected, but files are missing", "Mass Effect's location was successfully detected, but the game files were not found. This may be due to a failed restore. Would you like to restore your game to the original location?", MessageDialogStyle.AffirmativeAndNegative, settings);
-                    if (result == MessageDialogResult.Affirmative)
-                    {
-                        Log.Error("Mass Effect being restored by user");
-                        //RestoreGame();
-                    }
-                    else
-                    {
-                        Log.Error("Exiting due to game not being found");
-                        Environment.Exit(1);
-                    }
-                }
-            }
-            else
-            {
-                if (me2installed)
-                {
-                    BackupRestoreText = "Backup";
-                    BackupRestore_Button.ToolTip = "Click to backup game";
-                }
-            }*/
-        }
-
         public string BackupRestoreText { get; set; }
 
-        private bool CanStartRandomization() => SeedTextBox != null && int.TryParse(SeedTextBox.Text, out var value) && value != 0 && Locations.GetTarget(MERFileSystem.Game) != null;
+        public bool DirectionsTextVisible { get; set; }
+
+        private bool CanStartRandomization()
+        {
+            if (SeedTextBox == null || !int.TryParse(SeedTextBox.Text, out var value) || value == 0)
+                return false;
+            var target = Locations.GetTarget(MERFileSystem.Game);
+
+            // Target not found or texture modded
+            if (target == null || target.TextureModded)
+                return false;
+            return true;
+        }
+
         private async void StartRandomization()
         {
             if (!MERUtilities.IsGameRunning(MERFileSystem.Game))
@@ -354,20 +304,30 @@ namespace ME2Randomizer
             var gameTarget = Locations.GetTarget(MERFileSystem.Game);
             if (path != null && gameTarget != null)
             {
-                MetroDialogSettings settings = new MetroDialogSettings();
-                settings.NegativeButtonText = "Full";
-                settings.FirstAuxiliaryButtonText = "Cancel";
-                settings.AffirmativeButtonText = "Quick";
-                settings.DefaultButtonFocus = MessageDialogResult.Affirmative;
-                MessageDialogResult result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores basegame files modifiable by Mass Effect 2 Randomizer, deletes the DLC mod component\n\nFull: Deletes entire game installation and restores the backup in its place. Fully resets the game to the backup state", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
-                if (result == MessageDialogResult.FirstAuxiliary)
+
+                if (gameTarget.TextureModded)
                 {
-                    // Do nothing. User canceled
+                    RestoreController.StartRestore(this, false);
                 }
                 else
                 {
-                    RestoreController.StartRestore(this, result == MessageDialogResult.Affirmative);
+                    MetroDialogSettings settings = new MetroDialogSettings();
+                    settings.NegativeButtonText = "Full";
+                    settings.FirstAuxiliaryButtonText = "Cancel";
+                    settings.AffirmativeButtonText = "Quick";
+                    settings.DefaultButtonFocus = MessageDialogResult.Affirmative;
+                    var result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores basegame files modifiable by Mass Effect 2 Randomizer, deletes the DLC mod component\n\nFull: Deletes entire game installation and restores the backup in its place. Fully resets the game to the backup state", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                    if (result == MessageDialogResult.FirstAuxiliary)
+                    {
+                        // Do nothing. User canceled
+                    }
+                    else
+                    {
+                        RestoreController.StartRestore(this, result == MessageDialogResult.Affirmative);
+                    }
                 }
+
+
             }
             else if (gameTarget == null)
             {
@@ -512,5 +472,23 @@ namespace ME2Randomizer
         }
 
         #endregion
+
+        public void SetupTargetDescriptionText()
+        {
+            var target = Locations.GetTarget(MERFileSystem.Game);
+            if (target == null)
+            {
+                GamePathString = $"{MERFileSystem.Game.ToGameName()} not detected. Repair and run your game to fix detection.";
+            }
+            else if (target.TextureModded)
+            {
+                GamePathString = "Cannot randomize, game is texture modded";
+            }
+            else
+            {
+                DirectionsTextVisible = true;
+                GamePathString = $"Randomization target: {target.TargetPath}";
+            }
+        }
     }
 }

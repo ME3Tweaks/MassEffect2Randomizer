@@ -75,6 +75,9 @@ namespace ME2Randomizer.Classes.Controllers
                 {
 
                     // Full restore
+                    var target = Locations.GetTarget(MERFileSystem.Game);
+                    MERLog.Information($@"Performing full game restore on {target.TargetPath} target after restore");
+
                     object syncObj = new object();
                     BackupHandler.GameRestore gr = new BackupHandler.GameRestore(MERFileSystem.Game)
                     {
@@ -141,10 +144,18 @@ namespace ME2Randomizer.Classes.Controllers
                             return selectedPath;
                         }
                     };
-                    gr.PerformRestore(Locations.GetTarget(MERFileSystem.Game).TargetPath);
+                    gr.PerformRestore(target.TargetPath);
                     mw.DLCComponentInstalled = false;
+                    MERLog.Information(@"Reloading target after restore");
+                    target.ReloadGameTarget(false,false);
+                    mw.SetupTargetDescriptionText();
                 }
-            }).ContinueWith(async x => { await pd.CloseAsync(); });
+            }).ContinueWith(async x =>
+            {
+
+                await pd.CloseAsync();
+
+            });
         }
     }
 }
