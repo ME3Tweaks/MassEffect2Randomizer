@@ -146,7 +146,7 @@ namespace ME2Randomizer.Classes
         {
             if (LoadedFiles == null)
             {
-                Log.Warning("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
+                MERLog.Warning("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
                 ReloadLoadedFiles();
             }
             bool packageFile = ME3ExplorerCore.Helpers.StringExtensions.RepresentsPackageFilePath(packagename);
@@ -164,7 +164,7 @@ namespace ME2Randomizer.Classes
             var retFile = LoadedFiles.TryGetValue(packagename, out var result);
             if (!retFile && logIfNotFound)
             {
-                Log.Warning($"Could not find package file: {packagename}! Loaded files count: {LoadedFiles.Count}");
+                MERLog.Warning($"Could not find package file: {packagename}! Loaded files count: {LoadedFiles.Count}");
             }
             return result; // can return null
         }
