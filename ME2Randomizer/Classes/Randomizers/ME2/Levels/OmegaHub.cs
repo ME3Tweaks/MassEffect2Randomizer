@@ -183,7 +183,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 // shep sits at dancer. it uses different pawn.
                 var entertainerBPSKM = denDanceP.GetUExport(4322);
                 var newInfo = IlliumHub.DancerOptions.RandomElement();
-                while (newInfo.Location != null || newInfo.Rotation != null || newInfo.KeepHead == false)
+                while (newInfo.Location != null || newInfo.Rotation != null || newInfo.KeepHead == false || (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable()) || (newInfo.HeadAsset != null && !newInfo.HeadAsset.IsAssetFileAvailable()))
                 {
                     // I don't want anything that requires specific positioning data, and I want to keep the head.
                     newInfo = IlliumHub.DancerOptions.RandomElement();
