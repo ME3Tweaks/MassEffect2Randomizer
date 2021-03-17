@@ -425,7 +425,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
             }
 
-            int count = 0;
             var originalPowerUIndexes = powers.Where(x => x.Value > 0).Select(x => x.Value).ToList();
 
             foreach (var power in powers.ToList())
@@ -458,15 +457,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 //{
                 //    randomNewPower = Powers[(int)option.SliderValue];
                 //}
-                if (count == 1)
-                {
-                    randomNewPower = Powers.FirstOrDefault(x => x.PowerName == "SFXPower_SpiderDeathExplosion");
-                    count++;
-                }
-                else
-                {
-                    count++;
-                }
+
 
                 // Prevent krogan from getting a death power
                 while (export.ObjectName.Name.Contains("Krogan", StringComparison.InvariantCultureIgnoreCase) && randomNewPower.Type == EPowerCapabilityType.Death)
