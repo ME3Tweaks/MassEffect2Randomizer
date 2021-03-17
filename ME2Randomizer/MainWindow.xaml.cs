@@ -24,6 +24,7 @@ using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes;
 using ME2Randomizer.Classes.Controllers;
 using ME2Randomizer.Classes.Randomizers;
+using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.DebugTools;
 //using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
@@ -201,7 +202,7 @@ namespace ME2Randomizer
                     .ContinueWithOnUIThread(async x =>
                     {
                         await pd.CloseAsync();
-                        await this.ShowMessageAsync("DLC component uninstalled", "The DLC component of the randomization has been uninstalled. A few files that cannot be placed into DLC may remain, you will need to repair your game to remove them.\n\nFor faster restores in the future, make a backup with an ME3Tweaks program. Mass Effect 2 Randomization uninstallation only takes a few seconds when an ME3Tweaks backup is available.");
+                        await this.ShowMessageAsync("DLC component uninstalled", "The DLC component of the randomization has been uninstalled. A few files that cannot be placed into DLC may remain, you will need to repair your game to remove them.\n\nFor faster restores in the future, make a backup with an ME3Tweaks program. Mass Effect 2 randomization uninstallation only takes a few seconds when an ME3Tweaks backup is available.");
                         CommandManager.InvalidateRequerySuggested();
                     });
             }
@@ -252,6 +253,76 @@ namespace ME2Randomizer
         }
 
         private async void StartRandomization()
+        {
+            var modPath = MERFileSystem.GetDLCModPath();
+            var backupStatus = BackupService.GetBackupStatus(MERFileSystem.Game);
+            if (!backupStatus.BackedUp && !Directory.Exists(modPath))
+            {
+                var settings = new MetroDialogSettings()
+                {
+                    AffirmativeButtonText = "Continue anyways",
+                    NegativeButtonText = "Cancel"
+                };
+                var result = await this.ShowMessageAsync("No ME3Tweaks-based backup availbale", "It is recommended that you create an ME3Tweaks-based backup before randomization, as this allows much faster re-rolls. You can take a backup using the button on the bottom left of the interface.", MessageDialogStyle.AffirmativeAndNegative, settings);
+                if (result == MessageDialogResult.Negative)
+                {
+                    // Do nothing. User canceled
+                    return;
+                }
+            }
+
+
+            if (Directory.Exists(modPath) && PerformReroll)
+            {
+                var isControllerInstalled = SFXGame.IsControllerBasedInstall();
+                if (!isControllerInstalled)
+                {
+                    if (backupStatus.BackedUp)
+                    {
+                        var settings = new MetroDialogSettings()
+                        {
+                            AffirmativeButtonText = "Quick restore",
+                            NegativeButtonText = "No restore",
+                            FirstAuxiliaryButtonText = "Cancel",
+                            DefaultButtonFocus = MessageDialogResult.Affirmative
+                        };
+                        var result = await this.ShowMessageAsync("Existing randomization already installed", "An existing randomization is already installed. It is highly recommended that you perform a quick restore before re-rolling so that basegame changes do not stack or are left installed if your new options do not include these changes.\n\nPerform a quick restore before randomization?", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                        if (result == MessageDialogResult.FirstAuxiliary)
+                        {
+                            // Do nothing. User canceled
+                            return;
+                        }
+
+                        if (result == MessageDialogResult.Affirmative)
+                        {
+                            // Perform quick restore first
+                            RestoreController.StartRestore(this, true, InternalStartRandomization);
+                            return; // Return, we will run randomization after this
+                        }
+
+                        // User did not want to restore, just run 
+                    }
+                    else
+                    {
+                        var settings = new MetroDialogSettings()
+                        {
+                            AffirmativeButtonText = "Continue anyways",
+                            NegativeButtonText = "Cancel",
+                        };
+                        var result = await this.ShowMessageAsync("Existing randomization already installed", "An existing randomization is already installed. Some basegame only randomized files may remain after the DLC component is removed, and if options that modify these files are selected, the effects will stack. It is recommended you 'Remove Randomization' in the bottom left window, then repair your game to ensure you have a fresh installation for a re-roll.\n\nAn ME3Tweaks-based backup is recommended to avoid this procedure, which can be created in the bottom left of the application. It enables the quick restore feature, which only takes a few seconds.", MessageDialogStyle.AffirmativeAndNegative, settings);
+                        if (result == MessageDialogResult.Negative)
+                        {
+                            // Do nothing. User canceled
+                            return;
+                        }
+                    }
+                }
+            }
+
+            InternalStartRandomization();
+        }
+
+        private async void InternalStartRandomization()
         {
             if (!MERUtilities.IsGameRunning(MERFileSystem.Game))
             {

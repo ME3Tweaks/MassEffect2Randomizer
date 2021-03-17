@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,6 +12,7 @@ using MahApps.Metro.Controls.Dialogs;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.GameFilesystem;
+using ME3ExplorerCore.Helpers;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Microsoft.WindowsAPICodePack.Taskbar;
 
@@ -18,7 +20,7 @@ namespace ME2Randomizer.Classes.Controllers
 {
     class RestoreController
     {
-        public static async void StartRestore(MainWindow mw, bool isQuick)
+        public static async void StartRestore(MainWindow mw, bool isQuick, Action postRestoreDelegate = null)
         {
             var pd = await mw.ShowProgressAsync("Restoring game", "Preparing to restore game");
             pd.SetIndeterminate();
@@ -150,11 +152,10 @@ namespace ME2Randomizer.Classes.Controllers
                     target.ReloadGameTarget(false,false);
                     mw.SetupTargetDescriptionText();
                 }
-            }).ContinueWith(async x =>
+            }).ContinueWithOnUIThread(async x =>
             {
-
                 await pd.CloseAsync();
-
+                postRestoreDelegate?.Invoke();
             });
         }
     }
