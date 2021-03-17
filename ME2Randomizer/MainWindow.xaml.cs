@@ -317,6 +317,55 @@ namespace ME2Randomizer
                         }
                     }
                 }
+                else
+                {
+                    if (backupStatus.BackedUp)
+                    {
+                        var settings = new MetroDialogSettings()
+                        {
+                            AffirmativeButtonText = "Perform quick restore + randomize",
+                            NegativeButtonText = "Perform only quick restore",
+                            FirstAuxiliaryButtonText = "Cancel",
+                            DefaultButtonFocus = MessageDialogResult.Affirmative
+                        };
+                        var result = await this.ShowMessageAsync("Controller mod detected", "Performing a quick restore will undo changes made by the ME2Controller mod. After performing a quick restore, but before randomization, you should reinstall ME2Controller.", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                        if (result == MessageDialogResult.FirstAuxiliary)
+                        {
+                            // Do nothing. User canceled
+                            return;
+                        }
+
+                        if (result == MessageDialogResult.Affirmative)
+                        {
+                            // Perform quick restore first
+                            RestoreController.StartRestore(this, true, InternalStartRandomization);
+                            return; // Return, we will run randomization after this
+                        }
+
+                        if (result == MessageDialogResult.Negative)
+                        {
+                            RestoreController.StartRestore(this, true);
+                            return; // Return, we will run randomization after this
+
+                        }
+                        // User did not want to restore, just run 
+                    }
+                    else
+                    {
+                        // no backup, can't quick restore
+                        var settings = new MetroDialogSettings()
+                        {
+                            AffirmativeButtonText = "Continue anyways",
+                            NegativeButtonText = "Cancel",
+                        };
+                        var result = await this.ShowMessageAsync("Existing randomization already installed", "An existing randomization is already installed. Some basegame only randomized files may remain after the DLC component is removed, and if options that modify these files are selected, the effects will stack. It is recommended you 'Remove Randomization' in the bottom left window, then repair your game to ensure you have a fresh installation for a re-roll.\n\nAn ME3Tweaks-based backup is recommended to avoid this procedure, which can be created in the bottom left of the application. It enables the quick restore feature, which only takes a few seconds.", MessageDialogStyle.AffirmativeAndNegative, settings);
+                        if (result == MessageDialogResult.Negative)
+                        {
+                            // Do nothing. User canceled
+                            return;
+                        }
+                    }
+                }
             }
 
             InternalStartRandomization();
