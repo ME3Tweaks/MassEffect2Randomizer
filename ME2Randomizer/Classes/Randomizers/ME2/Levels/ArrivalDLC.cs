@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Unreal;
@@ -12,7 +13,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         private static void RandomizeAsteroidRelayColor()
         {
             // Relay at the end of the DLC
-            var shuttleFile = MERFileSystem.GetPackageFile(@"BioD_ArvLvl5_110_Asteroid.pcc");
+            var shuttleFile = MERFileSystem.GetPackageFile(@"BioD_ArvLvl5_110_Asteroid.pcc", false);
             if (shuttleFile != null && File.Exists(shuttleFile))
             {
                 var shuttleP = MEPackageHandler.OpenMEPackage(shuttleFile);
@@ -77,9 +78,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 MERFileSystem.SavePackage(shuttleP);
             }
+            else
+            {
+                MERLog.Information(@"BioD_ArvLvl5_110_Asteroid not found, skipping...");
+            }
 
             // Relay shown in the shuttle at the end of act 1
-            var asteroidf = MERFileSystem.GetPackageFile(@"BioD_ArvLvl1_710Shuttle.pcc");
+            var asteroidf = MERFileSystem.GetPackageFile(@"BioD_ArvLvl1_710Shuttle.pcc", false);
             if (asteroidf != null && File.Exists(asteroidf))
             {
                 var skhuttleP = MEPackageHandler.OpenMEPackage(asteroidf);
@@ -143,6 +148,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 pe.WriteProperties(props);
 
                 MERFileSystem.SavePackage(skhuttleP);
+            }
+            else
+            {
+                MERLog.Information(@"BioD_ArvLvl1_710Shuttle not found, skipping...");
             }
         }
 

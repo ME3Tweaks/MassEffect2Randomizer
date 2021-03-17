@@ -317,13 +317,13 @@
                     </Style>
                 </TabControl.Resources>
                 <TabItem Header="Options">
-                    <DockPanel HorizontalAlignment="Center" IsEnabled="{Binding AllowOptionsChanging}">
+                    <DockPanel HorizontalAlignment="Center">
                         <StackPanel Margin="5" DockPanel.Dock="Top" Width="Auto">
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" />
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" Text="{Binding GamePathString}" />
                         </StackPanel>
                         <ScrollViewer>
-                            <ItemsControl ItemsSource="{Binding RandomizationGroups}" MaxWidth="1180" HorizontalContentAlignment="Center">
+                            <ItemsControl ItemsSource="{Binding RandomizationGroups}" MaxWidth="1180" HorizontalContentAlignment="Center" IsEnabled="{Binding AllowOptionsChanging}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <WrapPanel Orientation="Horizontal"/>

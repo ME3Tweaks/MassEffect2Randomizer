@@ -42,14 +42,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 VisibleAvailableWeapons = new List<GunInfo>();
                 foreach (var g in allGuns)
                 {
-                    var gf = MERFileSystem.GetPackageFile(g.PackageFileName);
+                    var gf = MERFileSystem.GetPackageFile(g.PackageFileName, false);
                     if (g.IsCorrectedPackage || (gf != null && File.Exists(gf)))
                     {
+                        MERLog.Information($@"Adding {g.GunName} to weapon selection pools");
                         AllAvailableWeapons.Add(g);
                         if (g.HasGunMesh)
                         {
                             VisibleAvailableWeapons.Add(g);
                         }
+                    }
+
+                    if (!g.IsCorrectedPackage && gf == null)
+                    {
+                        MERLog.Information($@"{g.GunName} package file not found ({g.PackageFileName}), weapon not added to weapon pools");
                     }
                 }
                 Debug.WriteLine($"Number of available weapons for randomization: {AllAvailableWeapons.Count}");
@@ -66,9 +72,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         /// <returns></returns>
         public static bool Init(RandomizationOption option)
         {
+            MERLog.Information(@"Preloading weapon data");
             LoadGuns();
             WeaponAnimsPackage = MERFileSystem.GetStartupPackage();
             WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
+
+            MERLog.Information(@"Installing weapon animations startup package");
             MERFileSystem.InstallStartupPackage(); // Contains weapon animations
             return true;
         }

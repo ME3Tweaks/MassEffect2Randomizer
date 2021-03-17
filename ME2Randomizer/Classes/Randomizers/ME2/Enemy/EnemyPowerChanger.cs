@@ -57,13 +57,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 var powermanifest = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
                 foreach (var powerInfo in powermanifest)
                 {
-                    var powerFilePath = MERFileSystem.GetPackageFile(powerInfo.PackageFileName);
+                    var powerFilePath = MERFileSystem.GetPackageFile(powerInfo.PackageFileName, false);
                     if (powerInfo.IsCorrectedPackage || (powerFilePath != null && File.Exists(powerFilePath)))
                     {
-                        if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(powerInfo.FileDependency) == null)
+                        if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(powerInfo.FileDependency, false) == null)
+                        {
+                            MERLog.Information($@"Dependency file {powerInfo.FileDependency} not found, not adding {powerInfo.PowerName} to power selection pool");
                             continue; // Dependency not met
-
+                        }
+                        MERLog.Information($@"Adding {powerInfo.PowerName} to power selection pool");
                         Powers.Add(powerInfo);
+                    }
+
+                    if (!powerInfo.IsCorrectedPackage && powerFilePath == null)
+                    {
+                        MERLog.Information($@"{powerInfo.PowerName} package file not found ({powerInfo.PackageFileName}), weapon not added to weapon pools");
                     }
                 }
             }
@@ -76,6 +84,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         /// <returns></returns>
         public static bool Init(RandomizationOption option)
         {
+            MERLog.Information(@"Preloading power data");
             LoadPowers();
             return true;
         }
@@ -389,6 +398,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         internal static bool RandomizeExport(ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
+#if DEBUG
+            if (!export.ObjectName.Name.Contains("HeavyWeaponMech"))
+                return false;
+#endif
+
             var powers = export.GetProperty<ArrayProperty<ObjectProperty>>("Powers");
 
             if (powers == null)
@@ -411,6 +425,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
             }
 
+            int count = 0;
             var originalPowerUIndexes = powers.Where(x => x.Value > 0).Select(x => x.Value).ToList();
 
             foreach (var power in powers.ToList())
@@ -443,7 +458,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 //{
                 //    randomNewPower = Powers[(int)option.SliderValue];
                 //}
+                if (count == 1)
+                {
+                    randomNewPower = Powers.FirstOrDefault(x => x.PowerName == "SFXPower_SpiderDeathExplosion");
+                    count++;
+                }
+                else
+                {
+                    count++;
+                }
 
+                // Prevent krogan from getting a death power
                 while (export.ObjectName.Name.Contains("Krogan", StringComparison.InvariantCultureIgnoreCase) && randomNewPower.Type == EPowerCapabilityType.Death)
                 {
                     MERLog.Information(@"Re-roll no-death-power on krogan");
@@ -451,17 +476,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     randomNewPower = Powers.RandomElement();
                 }
 
-                while (randomNewPower.Type == EPowerCapabilityType.Buff &&
-                       (export.ObjectName.Name.Contains("HeavyWeaponMech", StringComparison.InvariantCultureIgnoreCase) 
-                        || export.ObjectName.Name.Contains("Praetorian", StringComparison.InvariantCultureIgnoreCase)
-                        || export.ObjectName.Name.Contains("ShadowBroker", StringComparison.InvariantCultureIgnoreCase))
-                       )
+                // Prevent powerful enemies from getting super stat boosters
+                while (randomNewPower.Type == EPowerCapabilityType.Buff && (
+                        export.ObjectName.Name.Contains("Praetorian", StringComparison.InvariantCultureIgnoreCase)
+                        || export.ObjectName.Name.Contains("ShadowBroker", StringComparison.InvariantCultureIgnoreCase)))
                 {
                     MERLog.Information(@"Re-roll no-buffs for powerful enemy");
-                    // Reroll. Krogan AI has something weird about it
                     randomNewPower = Powers.RandomElement();
                 }
 
+                #region YMIR MECH fixes
+                if (export.ObjectName.Name.Contains("HeavyWeaponMech"))
+                {
+                    // Heavy weapon mech chooses named death powers so we cannot change these
+                    // HeavyMechDeathExplosion is checked for existence. NormalExplosion for some reason isn't
+                    if ((existingPowerEntry.ObjectName.Name == "SFXPower_HeavyMechNormalExplosion"))
+                    {
+                        MERLog.Information($@"YMIR mech power HeavyMechNormalExplosion cannot be randomized, skipping");
+                        continue;
+                    }
+
+                    // Do not add buff powers to YMIR
+                    while (randomNewPower.Type == EPowerCapabilityType.Buff)
+                    {
+                        MERLog.Information($@"Re-roll YMIR mech power to prevent potential enemy too difficult to kill softlock. Incompatible power: {randomNewPower.PowerName}");
+                        randomNewPower = Powers.RandomElement();
+                    }
+                }
+                #endregion
+
+                // CHANGE THE POWER
                 if (existingPowerEntry == null || randomNewPower.PowerName != existingPowerEntry.ObjectName)
                 {
                     if (powers.Any(x => power.Value != int.MinValue && power.ResolveToEntry(export.FileRef).ObjectName == randomNewPower.PowerName))
@@ -469,7 +513,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
 
                     MERLog.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "(+New Power)"} => {randomNewPower.PowerName }");
-                    // It's a different gun.
+                    // It's a different power.
 
                     // See if we need to port this in
                     var fullName = randomNewPower.PackageName + "." + randomNewPower.PowerName; // SFXGameContent_Powers.SFXPower_Hoops
