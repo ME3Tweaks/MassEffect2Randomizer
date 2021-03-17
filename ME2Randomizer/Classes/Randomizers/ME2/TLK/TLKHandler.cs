@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
     {
         #region Static Access
         private static List<TalkFile> LoadedOfficialTalkFiles { get; set; }
-        private static List<TalkFile> DLCTLKFiles { get; set; }
+        private static List<TalkFile> MERTalkFiles { get; set; }
         private static TLKHandler CurrentHandler { get; set; }
 
 
@@ -106,16 +107,31 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
             CurrentHandler.InternalReplaceStringByRepoint(oldTlkId, newTlkId);
         }
 
+        /// <summary>
+        /// Gets the talk file
+        /// </summary>
+        /// <returns></returns>
+        public static TalkFile GetBuildingTLK()
+        {
+            return CurrentHandler.InternalGetBuildingTLK();
+        }
+
+        private TalkFile InternalGetBuildingTLK()
+        {
+            return MERTalkFile;
+        }
+
         #endregion
 
         #region Private members
 
         private SortedSet<string> loadedLanguages = new SortedSet<string>();
         private int NextDynamicID = 7421320;
+        private TalkFile MERTalkFile;
         private void Start()
         {
             LoadedOfficialTalkFiles = new List<TalkFile>();
-            DLCTLKFiles = new List<TalkFile>();
+            MERTalkFiles = new List<TalkFile>();
             // Load the basegame TLKs
             var bgPath = MEDirectories.GetBioGamePath(MERFileSystem.Game);
             // ME2 specific - ignore ME2Randomizer TLKs, we do not want to modify those
@@ -126,7 +142,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
                 {
                     TalkFile tf = new TalkFile();
                     tf.LoadTlkData(tlkFile);
-                    DLCTLKFiles.Add(tf);
+                    MERTalkFiles.Add(tf);
+                    if (tlkFile.Contains("_INT"))
+                        MERTalkFile = tf;
                     var fname = Path.GetFileNameWithoutExtension(tlkFile);
                     loadedLanguages.Add(fname.Substring(fname.LastIndexOf("_") + 1));
                 }
@@ -144,7 +162,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         private void Commit()
         {
             // Write out the TLKs
-            Parallel.ForEach(DLCTLKFiles, tf =>
+            Parallel.ForEach(MERTalkFiles, tf =>
             {
                 if (tf.IsModified)
                 {
@@ -154,9 +172,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
                 }
             });
 
-
             // Free memory
-            DLCTLKFiles = null;
+            MERTalkFile = null;
+            MERTalkFiles = null;
             LoadedOfficialTalkFiles = null;
         }
 
@@ -167,13 +185,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
 
         private void InternalReplaceString(int stringid, string newText, string langCode = null)
         {
-            foreach (var tf in DLCTLKFiles)
+            foreach (var tf in MERTalkFiles)
             {
                 // Check if this string should be replaced in this language
                 if (langCode != null && !Path.GetFileNameWithoutExtension(tf.path).EndsWith($@"_{langCode}")) continue;
                 //Debug.WriteLine($"TLK installing {stringid}: {newText}");
                 lock (syncObj)
                 {
+                    //Debug.WriteLine($"ReplaceStr {stringid} to {newText}");
                     tf.ReplaceString(stringid, newText, true);
                 }
             }
@@ -200,5 +219,26 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         }
         #endregion
 
+        public static List<TalkFile> GetMERTLKs()
+        {
+            return CurrentHandler.InternalGetMERTLKs();
+        }
+
+        private List<TalkFile> InternalGetMERTLKs()
+        {
+            return MERTalkFiles;
+        }
+
+        public static List<TalkFile> GetAllTLKs()
+        {
+            return CurrentHandler.InternalGetAllTLKs();
+        }
+
+        private List<TalkFile> InternalGetAllTLKs()
+        {
+            var items = LoadedOfficialTalkFiles.ToList();
+            items.AddRange(MERTalkFiles);
+            return items;
+        }
     }
 }

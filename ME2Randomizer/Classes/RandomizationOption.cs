@@ -153,6 +153,10 @@ namespace ME2Randomizer.Classes
         /// Tooltip to show on the slider
         /// </summary>
         public string SliderTooltip { get; set; }
+        /// <summary>
+        /// If the randomizer runs post-export/files
+        /// </summary>
+        public bool IsPostRun { get; set; }
 
 #pragma warning disable
         public event PropertyChangedEventHandler PropertyChanged;

@@ -57,7 +57,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool UwuifyText(RandomizationOption option)
         {
             bool keepCasing = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_UWU_KEEPCASING);
-            foreach (TalkFile tf in TLKHandler.GetOfficialTLKs())
+
+            var existingTLK = TLKHandler.GetBuildingTLK();
+            var skipIDs = existingTLK.StringRefs.Select(x => x.StringID).ToList();
+            var MERTlks = TLKHandler.GetMERTLKs();
+            foreach (TalkFile tf in TLKHandler.GetAllTLKs())
             {
                 var tfName = Path.GetFileNameWithoutExtension(tf.path);
                 var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
@@ -67,6 +71,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
                 {
                     if (sref.Data.Contains("DLC_")) continue; // Don't modify
+                    if (!MERTlks.Contains(tf) && skipIDs.Contains(sref.StringID))
+                    {
+                        continue; // Do not randomize this version of the string as it's in the DLC version specifically
+                    }
 
                     //if (sref.StringID != 325648)
                     //    continue;
@@ -226,6 +234,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             MERLog.Information("Randomizing vowels in words");
             var hardMode = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_VOWELS_HARDMODE);
 
+
+            var existingTLK = TLKHandler.GetBuildingTLK();
+            var skipIDs = existingTLK.StringRefs.Select(x => x.StringID).ToList();
+            var MERTLKs = TLKHandler.GetMERTLKs();
             Dictionary<char, char> vowels = null;
             List<char> vowelValues = null;
 
@@ -298,15 +310,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var translationMap = new[] { translationMapUC, lowerCaseMap }.SelectMany(dict => dict)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-            Parallel.ForEach(TLKHandler.GetOfficialTLKs(), tf =>
+            Parallel.ForEach(TLKHandler.GetAllTLKs(), tf =>
             {
                 var tfName = Path.GetFileNameWithoutExtension(tf.path);
                 var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
 
-                foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
+                foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)).ToList())
                 {
                     if (sref.Data.Contains("DLC_")) continue; // Don't modify
-
+                    if (!MERTLKs.Contains(tf) && skipIDs.Contains(sref.StringID))
+                    {
+                        continue; // Do not randomize this version of the string as it's in the DLC version specifically
+                    }
                     // See if strref has CUSTOMTOKEN or a control symbol
                     List<int> skipRanges = new List<int>();
                     FindSkipRanges(sref, skipRanges);

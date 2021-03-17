@@ -145,8 +145,8 @@ namespace ME2Randomizer.Classes
             ME3Textures.SetupME3Textures();
 #endif
 
-            // Pass 1: All randomizers that are file specific
-            foreach (var sr in specificRandomizers)
+            // Pass 1: All randomizers that are file specific and are not post-run
+            foreach (var sr in specificRandomizers.Where(x => !x.IsPostRun))
             {
                 MERLog.Information($"Running specific randomizer {sr.HumanName}");
                 mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
@@ -180,13 +180,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
 #if DEBUG
-                    //if (true
-                    ////&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("OmgGrA_1", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
-                    //)
-                    //    return;
+                    if (true
+                    //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("EndGm3", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
+                    )
+                        return;
 #endif
                     try
                     {
@@ -224,6 +224,15 @@ namespace ME2Randomizer.Classes
 
             }
 
+
+            // Pass 3: All randomizers that are file specific and are not post-run
+            foreach (var sr in specificRandomizers.Where(x => x.IsPostRun))
+            {
+                mainWindow.ProgressBarIndeterminate = true;
+                MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
+                mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
+                sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+            }
 
             sw.Stop();
             MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
@@ -305,6 +314,7 @@ namespace ME2Randomizer.Classes
                         PerformFileSpecificRandomization = SquadmateHead.FilePrerun,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true,
+                        StateChangingDelegate=optionChangingDelegate,
                         MutualExclusiveSet = "SquadHead",
                         IsRecommended = true
                     },
@@ -312,7 +322,8 @@ namespace ME2Randomizer.Classes
                         Description = "Only works on Wilson and Jacob, unfortunately. Other squadmates are fully modeled",
                         PerformSpecificRandomizationDelegate = RBioMorphFace.RandomizeSquadmateFaces,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        MutualExclusiveSet = "SquadHead"
+                        MutualExclusiveSet = "SquadHead",
+                        StateChangingDelegate=optionChangingDelegate,
                     },
 
                     new RandomizationOption()
@@ -703,7 +714,14 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption()
                     {
-                        HumanName = "Vowels", Description="Changes vowels in text in a consistent manner, making a 'new' language", PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, MutualExclusiveSet="AllText", StateChangingDelegate=optionChangingDelegate,
+                        HumanName = "Vowels",
+                        IsPostRun = true,
+                        Description="Changes vowels in text in a consistent manner, making a 'new' language",
+                        PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels,
+                        RequiresTLK = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        MutualExclusiveSet="AllText",
+                        StateChangingDelegate=optionChangingDelegate,
                         SubOptions = new ObservableCollectionExtended<RandomizationOption>()
                         {
                             new RandomizationOption()
@@ -720,6 +738,7 @@ namespace ME2Randomizer.Classes
                         Description="UwUifies all text in the game, often hilarious. Based on Jade's OwO mod", PerformSpecificRandomizationDelegate = RTexts.UwuifyText,
                         RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText",
                         StateChangingDelegate=optionChangingDelegate,
+                        IsPostRun = true,
                         SubOptions = new ObservableCollectionExtended<RandomizationOption>()
                         {
                             new RandomizationOption()
