@@ -164,7 +164,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             char openingChar = (char)0x00;
             for (int i = 0; i < sref.Data.Length; i++)
             {
-                if (startPos < 0 && (sref.Data[i] == '[' || sref.Data[i] == '<'))
+                if (startPos < 0 && (sref.Data[i] == '[' || sref.Data[i] == '<' || sref.Data[i] == '{'))
                 {
                     startPos = i;
                     openingChar = sref.Data[i];
@@ -195,6 +195,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
                     //else
                     //Debug.WriteLine(insideStr);
+
+                    startPos = -1;
+                    openingChar = (char)0x00;
+                }
+                else if (startPos >= 0 && openingChar == '{' && sref.Data[i] == '}') // token for powers (?)
+                {
+                    //var insideStr = sref.Data.Substring(startPos + 1, i - startPos - 1);
+                    //Debug.WriteLine(insideStr);
+                    // { } brackets are for ui tokens in powers, saves, I think.
+                    skipRanges.Add(startPos);
+                    skipRanges.Add(i + 1);
 
                     startPos = -1;
                     openingChar = (char)0x00;
