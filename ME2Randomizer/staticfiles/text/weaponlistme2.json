@@ -209,17 +209,6 @@
     "iscorrectedpackage": false
   },
   {
-    "packagename": "SFXGameContent_Inventory",
-    "packagefilename": "SFXHeavyWeapon_ReaperMIRV.pcc",
-    "sourceuindex": 3,
-    "weaponclassification": 5,
-    "hasgunmesh": false,
-    "gunname": "SFXHeavyWeapon_ReaperMIRV",
-    "importonly": false,
-    "requiresstartuppackage": false,
-    "iscorrectedpackage": true
-  },
-  {
     "packagename": "SFXGameContentDLC_PRE_Cerberus",
     "packagefilename": "SFXWeapon_CerberusShotgun.pcc",
     "sourceuindex": 53,
@@ -309,14 +298,14 @@
   },
   {
     "packagename": "SFXGameContent_Inventory",
-    "packagefilename": "SFXHeavyWeapon_ReaperMIRV.pcc",
-    "sourceuindex": 206,
+    "packagefilename": "SFXHeavyWeapon_MissileLauncher.pcc",
+    "sourceuindex": 9,
     "weaponclassification": 5,
     "hasgunmesh": true,
     "gunname": "SFXHeavyWeapon_MissileLauncher",
     "importonly": false,
     "requiresstartuppackage": false,
-    "iscorrectedpackage": true
+    "iscorrectedpackage": false
   },
   {
     "packagename": "SFXGameContentDLC_Pistol",
