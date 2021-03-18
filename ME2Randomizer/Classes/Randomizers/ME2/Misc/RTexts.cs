@@ -61,100 +61,115 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var existingTLK = TLKHandler.GetBuildingTLK();
             var skipIDs = existingTLK.StringRefs.Select(x => x.StringID).ToList();
             var MERTlks = TLKHandler.GetMERTLKs();
-            foreach (TalkFile tf in TLKHandler.GetAllTLKs())
+
+            // UwUify MER TLK first
+            foreach (TalkFile tf in MERTlks)
             {
-                var tfName = Path.GetFileNameWithoutExtension(tf.path);
-                var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
-                int max = tf.StringRefs.Count();
-                if (langCode != "INT")
-                    continue;
-                foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
+                UwuifyTalkFile(tf, keepCasing, skipIDs, true);
+            }
+
+            // UwUify non MER TLK
+            foreach (TalkFile tf in TLKHandler.GetAllTLKs().Where(x => !MERTlks.Contains(x)))
+            {
+                UwuifyTalkFile(tf, keepCasing, skipIDs, false);
+            }
+            return true;
+        }
+
+        private static void UwuifyTalkFile(TalkFile tf, bool keepCasing, List<int> skipIDs, bool isMERTlk)
+        {
+            var tfName = Path.GetFileNameWithoutExtension(tf.path);
+            var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
+            if (langCode != "INT")
+                return;
+            foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
+            {
+                var strData = sref.Data;
+
+                //strData = "New Game";
+                if (strData.Contains("DLC_")) continue; // Don't modify
+                if (!isMERTlk && skipIDs.Contains(sref.StringID))
                 {
-                    if (sref.Data.Contains("DLC_")) continue; // Don't modify
-                    if (!MERTlks.Contains(tf) && skipIDs.Contains(sref.StringID))
+                    continue; // Do not randomize this version of the string as it's in the DLC version specifically
+                }
+
+                //if (sref.StringID != 325648)
+                //    continue;
+                // See if strref has CUSTOMTOKEN or a control symbol
+                List<int> skipRanges = new List<int>();
+                FindSkipRanges(sref, skipRanges);
+                // uwuify it
+                StringBuilder sb = new StringBuilder();
+                char previousChar = (char)0x00;
+                char currentChar;
+                for (int i = 0; i < strData.Length; i++)
+                {
+                    if (skipRanges.Any() && skipRanges[0] == i)
                     {
-                        continue; // Do not randomize this version of the string as it's in the DLC version specifically
+                        sb.Append(strData.Substring(skipRanges[0], skipRanges[1] - skipRanges[0]));
+                        previousChar = (char)0x00;
+                        i = skipRanges[1] - 1; // We subtract one as the next iteration of the loop will +1 it again, which then will make it read the 'next' character
+                        skipRanges.RemoveAt(0); // remove first 2
+                        skipRanges.RemoveAt(0); // remove first 2
+
+                        if (i >= strData.Length - 1)
+                            break;
+                        continue;
                     }
 
-                    //if (sref.StringID != 325648)
-                    //    continue;
-                    // See if strref has CUSTOMTOKEN or a control symbol
-                    List<int> skipRanges = new List<int>();
-                    FindSkipRanges(sref, skipRanges);
-                    // uwuify it
-                    StringBuilder sb = new StringBuilder();
-                    char previousChar = (char)0x00;
-                    char currentChar;
-                    for (int i = 0; i < sref.Data.Length; i++)
+                    currentChar = strData[i];
+                    if (currentChar == 'L' || currentChar == 'R')
                     {
-                        if (skipRanges.Any() && skipRanges[0] == i)
+                        sb.Append(keepCasing ? 'W' : 'w');
+                    }
+                    else if (currentChar == 'l' || currentChar == 'r')
+                    {
+                        sb.Append('w');
+                        if (ThreadSafeRandom.Next(5) == 0)
                         {
-                            sb.Append(sref.Data.Substring(skipRanges[0], skipRanges[1] - skipRanges[0]));
-                            previousChar = (char)0x00;
-                            i = skipRanges[1] - 1; // We subtract one as the next iteration of the loop will +1 it again, which then will make it read the 'next' character
-                            skipRanges.RemoveAt(0); // remove first 2
-                            skipRanges.RemoveAt(0); // remove first 2
-
-                            if (i >= sref.Data.Length - 1)
-                                break;
-                            continue;
-                        }
-
-                        currentChar = sref.Data[i];
-                        if (currentChar == 'L' || currentChar == 'R')
-                        {
-                            sb.Append(keepCasing ? 'W' : 'w');
-                        }
-                        else if (currentChar == 'l' || currentChar == 'r')
-                        {
-                            sb.Append('w');
-                            if (ThreadSafeRandom.Next(5) == 0)
+                            sb.Append('w'); // append another w 20% of the time
+                            if (ThreadSafeRandom.Next(8) == 0)
                             {
-                                sb.Append('w'); // append another ! 50% of the time
-                                if (ThreadSafeRandom.Next(5) == 0)
-                                {
-                                    sb.Append('w'); // append another ! 50% of the time
-                                }
+                                sb.Append('w'); // append another w 20% of the time
                             }
                         }
-                        else if (currentChar == 'N' && (previousChar == 0x00 || previousChar == ' '))
+                    }
+                    else if (currentChar == 'N' && (previousChar == 0x00 || previousChar == ' '))
+                    {
+                        sb.Append(keepCasing ? "Nyaa" : "nyaa");
+                    }
+                    else if (currentChar == 'O' || currentChar == 'o')
+                    {
+                        if (previousChar == 'N' || previousChar == 'n' ||
+                            previousChar == 'M' || previousChar == 'm')
                         {
-                            sb.Append(keepCasing ? "Nyaa" : "nyaa");
-                        }
-                        else if (currentChar == 'O' || currentChar == 'o')
-                        {
-                            if (previousChar == 'N' || previousChar == 'n' ||
-                                previousChar == 'M' || previousChar == 'm')
-                            {
-                                sb.Append("yo");
-                            }
-                            else
-                            {
-                                sb.Append(keepCasing ? sref.Data[i] : char.ToLower(sref.Data[i]));
-                            }
-                        }
-                        else if (currentChar == '!')
-                        {
-                            sb.Append(currentChar);
-                            if (ThreadSafeRandom.Next(2) == 0)
-                            {
-                                sb.Append(currentChar); // append another ! 50% of the time
-                            }
+                            sb.Append("yo");
                         }
                         else
                         {
-                            sb.Append(keepCasing ? sref.Data[i] : char.ToLower(sref.Data[i]));
+                            sb.Append(keepCasing ? strData[i] : char.ToLower(strData[i]));
                         }
-
-                        previousChar = currentChar;
+                    }
+                    else if (currentChar == '!')
+                    {
+                        sb.Append(currentChar);
+                        if (ThreadSafeRandom.Next(2) == 0)
+                        {
+                            sb.Append(currentChar); // append another ! 50% of the time
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(keepCasing ? strData[i] : char.ToLower(strData[i]));
                     }
 
-                    var str = sb.ToString();
-                    str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
-                    TLKHandler.ReplaceString(sref.StringID, str, langCode);
+                    previousChar = currentChar;
                 }
+
+                var str = sb.ToString();
+                str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
+                TLKHandler.ReplaceString(sref.StringID, str, langCode);
             }
-            return true;
         }
 
         private static void FindSkipRanges(ME1TalkFile.TLKStringRef sref, List<int> skipRanges)
