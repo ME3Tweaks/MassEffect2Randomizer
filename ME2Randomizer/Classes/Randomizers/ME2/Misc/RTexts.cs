@@ -336,52 +336,64 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var translationMap = new[] { translationMapUC, lowerCaseMap }.SelectMany(dict => dict)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-            Parallel.ForEach(TLKHandler.GetAllTLKs(), tf =>
+            // MER
+            foreach (var merTLK in MERTLKs)
             {
-                var tfName = Path.GetFileNameWithoutExtension(tf.path);
-                var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
+                RandomizeVowelsInternal(merTLK, skipIDs, translationMap, true);
+            }
 
-                foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)).ToList())
-                {
-                    if (sref.Data.Contains("DLC_")) continue; // Don't modify
-                    if (!MERTLKs.Contains(tf) && skipIDs.Contains(sref.StringID))
-                    {
-                        continue; // Do not randomize this version of the string as it's in the DLC version specifically
-                    }
-                    // See if strref has CUSTOMTOKEN or a control symbol
-                    List<int> skipRanges = new List<int>();
-                    FindSkipRanges(sref, skipRanges);
-
-                    var newStr = sref.Data.ToArray();
-                    for (int i = 0; i < sref.Data.Length; i++) // For every letter
-                    {
-                        // Skip any items we should not skip.
-                        if (skipRanges.Any() && skipRanges[0] == i)
-                        {
-                            i = skipRanges[1] - 1; // We subtract one as the next iteration of the loop will +1 it again, which then will make it read the 'next' character
-                            skipRanges.RemoveAt(0); // remove first 2
-                            skipRanges.RemoveAt(0); // remove first 2
-
-                            if (i >= sref.Data.Length - 1)
-                                break;
-                            continue;
-                        }
-
-                        if (translationMap.ContainsKey(newStr[i]))
-                        {
-                            // Remap the letter
-                            newStr[i] = translationMap[newStr[i]];
-                        }
-                        else
-                        {
-                            // Do not change the letter. It might be something like <.
-                        }
-
-                        TLKHandler.ReplaceString(sref.StringID, new string(newStr), langCode);
-                    }
-                }
-            });
+            // Non MER
+            Parallel.ForEach(TLKHandler.GetAllTLKs().Where(x => !MERTLKs.Contains(x)), tf =>
+              {
+                  RandomizeVowelsInternal(tf, skipIDs, translationMap, false);
+              });
             return true;
+        }
+
+        private static void RandomizeVowelsInternal(TalkFile tf, List<int> skipIDs, Dictionary<char, char> translationMap, bool isMERTlk)
+        {
+            var tfName = Path.GetFileNameWithoutExtension(tf.path);
+            var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
+
+            foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)).ToList())
+            {
+                if (sref.Data.Contains("DLC_")) continue; // Don't modify
+                if (!isMERTlk && skipIDs.Contains(sref.StringID))
+                {
+                    continue; // Do not randomize this version of the string as it's in the DLC version specifically
+                }
+                // See if strref has CUSTOMTOKEN or a control symbol
+                List<int> skipRanges = new List<int>();
+                FindSkipRanges(sref, skipRanges);
+
+                var newStr = sref.Data.ToArray();
+                for (int i = 0; i < sref.Data.Length; i++) // For every letter
+                {
+                    // Skip any items we should not skip.
+                    if (skipRanges.Any() && skipRanges[0] == i)
+                    {
+                        i = skipRanges[1] - 1; // We subtract one as the next iteration of the loop will +1 it again, which then will make it read the 'next' character
+                        skipRanges.RemoveAt(0); // remove first 2
+                        skipRanges.RemoveAt(0); // remove first 2
+
+                        if (i >= sref.Data.Length - 1)
+                            break;
+                        continue;
+                    }
+
+                    if (translationMap.ContainsKey(newStr[i]))
+                    {
+                        // Remap the letter
+                        newStr[i] = translationMap[newStr[i]];
+                    }
+                    else
+                    {
+                        // Do not change the letter. It might be something like <.
+                    }
+
+                    TLKHandler.ReplaceString(sref.StringID, new string(newStr), langCode);
+                }
+            }
         }
     }
 }

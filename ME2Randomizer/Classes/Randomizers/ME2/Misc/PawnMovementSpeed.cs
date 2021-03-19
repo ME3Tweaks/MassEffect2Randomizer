@@ -51,16 +51,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         }
 
 
-        private static bool CanRandomizePawnSpeed(ExportEntry export)
+        private static bool CanRandomizeNPCSpeed(ExportEntry export)
         {
-            // No defaults, non appr, or player files (BIOG_)
-            if (export.IsDefaultObject || export.ClassName != "Bio_Appr_Character" || Path.GetFileName(export.FileRef.FilePath).StartsWith("BIOG_")) return false;
+            // No defaults, must be appr character class
+            if (export.IsDefaultObject || export.ClassName != "Bio_Appr_Character") return false;
+
+            // Do not randomize joker as this may lead to softlock in NorCR3
+            if (export.ObjectName.Name == "JKR_Movement2DA") return false;
+
+            // Cannot randomize files in BIOG and cannot randomize ProNor (which has player speed)
+            var filename = Path.GetFileName(export.FileRef.FilePath);
+            if (filename.StartsWith("BIOG_") || filename == "BioD_ProNor.pcc") return false;
+
             return true;
         }
 
         public static bool RandomizeMovementSpeed(ExportEntry export, RandomizationOption option)
         {
-            if (!CanRandomizePawnSpeed(export)) return false;
+            if (!CanRandomizeNPCSpeed(export)) return false;
             var movementInfo = export.GetProperty<ObjectProperty>("MovementInfo");
             if (movementInfo != null)
             {
