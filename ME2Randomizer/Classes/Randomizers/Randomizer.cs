@@ -37,8 +37,8 @@ namespace ME2Randomizer.Classes
         private static List<string> SpecializedFiles { get; } = new List<string>()
         {
             "BioP_Char",
-            // Validate this is correct
-            "BioD_Nor_103aGalaxyMap"
+            "BioD_Nor_103aGalaxyMap",
+            "BioG_UIWorld" // Char creator lighting
         };
 #elif __ME3__
 
