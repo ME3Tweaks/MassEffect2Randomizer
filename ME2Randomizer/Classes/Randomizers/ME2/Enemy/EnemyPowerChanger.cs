@@ -36,6 +36,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             "SFXPower_Geth_Supercharge", // Used by SFXAI_GethTrooper Combat_Geth_Berserk
             "SFXPower_KroganCharge", // Krogan charge, used by it's AI
             "SFXPower_CombatDrone_Death", // Used by combat drone
+
+            "SFXPower_PraetorianDeathChoir", // Used by Praetorian, otherwise softlocks on HorCR1
         };
 
         /// <summary>
@@ -399,8 +401,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         {
             if (!CanRandomize(export)) return false;
 #if DEBUG
-            if (!export.ObjectName.Name.Contains("HeavyWeaponMech"))
-                return false;
+            //if (!export.ObjectName.Name.Contains("HeavyWeaponMech"))
+            //    return false;
 #endif
 
             var powers = export.GetProperty<ArrayProperty<ObjectProperty>>("Powers");
@@ -438,11 +440,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     existingPowerEntry = power.ResolveToEntry(export.FileRef);
                     if (existingPowerEntry.ObjectName.Name.Contains("Melee", StringComparison.InvariantCultureIgnoreCase) && ThreadSafeRandom.Next(2) == 0)
                     {
+                        MERLog.Information($"Not changing melee power {existingPowerEntry.ObjectName.Name}");
                         continue; // Don't randomize power
                     }
                     if (PowersToNotSwap.Contains(existingPowerEntry.ObjectName.Name))
                     {
-                        Debug.WriteLine($"Not changing power {existingPowerEntry.ObjectName.Name}");
+                        MERLog.Information($"Not changing power {existingPowerEntry.ObjectName.Name}");
                         continue; // Do not change this power
                     }
                 }

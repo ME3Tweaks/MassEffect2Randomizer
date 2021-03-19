@@ -184,13 +184,14 @@ namespace ME2Randomizer.Classes
                     if (true
                     //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("CR3", StringComparison.InvariantCultureIgnoreCase)
+                    && !file.Contains("HorCr1", StringComparison.InvariantCultureIgnoreCase)
                     //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
                     )
                         return;
 #endif
                     try
                     {
+                        Debug.WriteLine($"Opening package {file}");
                         //Log.Information($@"Opening package {file}");
                         var package = MERFileSystem.OpenMEPackage(file);
                         //Debug.WriteLine(file);
