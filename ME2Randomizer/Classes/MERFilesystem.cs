@@ -149,7 +149,8 @@ namespace ME2Randomizer.Classes
                 MERLog.Warning("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
                 ReloadLoadedFiles();
             }
-            bool packageFile = ME3ExplorerCore.Helpers.StringExtensions.RepresentsPackageFilePath(packagename);
+
+            bool packageFile = packagename.RepresentsPackageFilePath();
             if (packageFile && DLCModCookedPath != null)
             {
                 // Check if the package is already in the mod folder

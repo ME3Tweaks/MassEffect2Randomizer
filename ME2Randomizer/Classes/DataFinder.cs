@@ -14,6 +14,7 @@ using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.Utility;
+using ME2Randomizer.DebugTools;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Helpers;
@@ -37,7 +38,7 @@ namespace ME2Randomizer.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += FindUnreferencedObjects;
+            dataworker.DoWork += DebugPorting2;
             dataworker.RunWorkerCompleted += ResetUI;
 
             mainWindow.ShowProgressPanel = true;
@@ -1351,13 +1352,13 @@ namespace ME2Randomizer.Classes
         private void DebugPorting(object sender, DoWorkEventArgs doWorkEventArgs)
         {
             //var testName = "BioD_KroPrL_100Ruins.pcc";
-            var testName = "BioD_OmgGrA_420CDGarrusIntro.pcc";
+            var testName = "BioD_SunTlA_202BaseCamp.pcc";
             var sourceP = MEPackageHandler.OpenMEPackage($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\{testName}");
 
             // Port in powers. Do not use them.
             EnemyPowerChanger.LoadPowers();
             List<EnemyPowerChanger.PowerInfo> powersToPort = new();
-            powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Shockwave"));
+            powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Carnage"));
             //powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Pull"));
             //powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Reave"));
             //powersToPort.Add(EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Fortification_Vorcha"));
@@ -1368,7 +1369,7 @@ namespace ME2Randomizer.Classes
                 Debug.WriteLine($"Porting power: {power.PowerName}");
 
                 // Test single pull in
-                var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("SFXCharacterClass_Adept.pcc");
+                //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("SFXCharacterClass_Adept.pcc");
                 //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(power.PackageFileName);
                 //var sourceExport = sourcePackage.FindExport("BioVFX_B_Powers.08_Pull.Pull_VFX_Appearance");
                 //EntryExporter.ExportExportToPackage(sourceExport, sourceP, out _);
@@ -1387,7 +1388,7 @@ namespace ME2Randomizer.Classes
                 //sourcePackage.FindExport("BioVFX_B_Lift.PostProcess.FB_MotionBlur_Distorting").RemoveProperty("Effects"); // Fixes the issue.
                 //sourcePackage.FindExport("BioVFX_B_Lift.PostProcess.FB_MotionBlur_Distorting.BioMaterialInstanceEffect_0").RemoveProperty("Material");
 
-                var sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPower_Shockwave");
+                //var sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPower_Shockwave");
                 //var defaults = sourceExport.GetDefaults();
                 //defaults.WriteProperty(new ObjectProperty(0, "VFX")); // Setting this to zero doesn't change anything if you port in the upper stuff afterwards
                 //defaults.RemoveProperty("EvolvedPowerClass1");
@@ -1404,12 +1405,158 @@ namespace ME2Randomizer.Classes
 
 
                 // Way power does it
-                power.PackageFileName = "SFXCharacterClass_Adept.pcc";
-                power.SourceUIndex = sourceExport.UIndex;
+                //power.PackageFileName = "SFXCharacterClass_Adept.pcc";
+                //power.SourceUIndex = sourceExport.UIndex;
                 EnemyPowerChanger.PortPowerIntoPackage(sourceP, power, out _);
             }
 
             sourceP.Save($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\{testName}");
+            ME2Debug.TestAllImportsInMERFS();
+        }
+
+        private void DebugPorting2(object sender, DoWorkEventArgs doWorkEventArgs)
+        {
+            EnemyPowerChanger.LoadPowers();
+            var power = EnemyPowerChanger.Powers.FirstOrDefault(x => x.PowerName == "SFXPower_Carnage");
+
+            // PORTING INTO NEW PACKAGE FOR COMPARISON
+
+            var biodF = $@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\BioD_TEST.pcc";
+            var biopF = $@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\BioP_TEST.pcc";
+
+            MEPackageHandler.CreateAndSavePackage(biodF, MERFileSystem.Game);
+            MEPackageHandler.CreateAndSavePackage(biopF, MERFileSystem.Game);
+
+            var bioD = MEPackageHandler.OpenMEPackage(biodF);
+            var bioP = MEPackageHandler.OpenMEPackage(biopF);
+
+            Debug.WriteLine($"Porting power BioP: {power.PowerName}");
+            EnemyPowerChanger.PortPowerIntoPackage(bioP, power, out _);
+            bioP.Save();
+
+            power.PackageFileName = "BioD_JnkKgA_140Rescue.pcc";
+            power.SourceUIndex = 402;
+            Debug.WriteLine($"Porting power BioD: {power.PowerName}");
+            EnemyPowerChanger.PortPowerIntoPackage(bioD, power, out _);
+            bioD.Save();
+
+            // Test differences
+            void printStats(IMEPackage p)
+            {
+                Debug.WriteLine($"Names: {p.NameCount}");
+                Debug.WriteLine($"Imports: {p.ImportCount}");
+                Debug.WriteLine($"Exports: {p.ExportCount}");
+            }
+
+            Debug.WriteLine("BioP Info------");
+            printStats(bioP);
+            Debug.WriteLine("");
+            Debug.WriteLine("BioD Info------");
+            printStats(bioD);
+            Debug.WriteLine("");
+            Debug.WriteLine("Differences:");
+
+            // Names
+            Debug.WriteLine("Names in BioD but not BioP:");
+            foreach (var name in bioD.Names.Except(bioP.Names))
+            {
+                Debug.WriteLine($" - {name}");
+            }
+
+            Debug.WriteLine("Names in BioP but not BioD:");
+            foreach (var name in bioP.Names.Except(bioD.Names))
+            {
+                Debug.WriteLine($" - {name}");
+            }
+
+            // Imports
+            var bioDImports = bioD.Imports.Select(x => x.InstancedFullPath).ToList();
+            var bioPImports = bioP.Imports.Select(x => x.InstancedFullPath).ToList();
+            Debug.WriteLine("Imports in BioD but not BioP:");
+            foreach (var imp in bioPImports.Except(bioPImports))
+            {
+                Debug.WriteLine($" - {imp}");
+            }
+
+            Debug.WriteLine("Imports in BioP but not BioD:");
+            foreach (var imp in bioPImports.Except(bioDImports))
+            {
+                Debug.WriteLine($" - {imp}");
+            }
+
+            // Exports
+            var bioDExports = bioD.Exports.Select(x => x.InstancedFullPath).ToList();
+            var bioPExports = bioP.Exports.Select(x => x.InstancedFullPath).ToList();
+            Debug.WriteLine("Exports in BioD but not BioP:");
+            foreach (var exp in bioDExports.Except(bioPExports))
+            {
+                Debug.WriteLine($" - {exp}");
+            }
+
+            Debug.WriteLine("Exports in BioP but not BioD:");
+            foreach (var exp in bioPExports.Except(bioDExports))
+            {
+                Debug.WriteLine($" - {exp}");
+            }
+            // PORTING INTO TARGET PACKAGE
+            /*
+            var testName = "BioD_SunTlA_202BaseCamp.pcc";
+
+            // Port in powers. Do not use them.
+            var sourcePP = MEPackageHandler.OpenMEPackage($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\{testName}");
+            Debug.WriteLine($"Porting power BioP: {power.PowerName}");
+            EnemyPowerChanger.PortPowerIntoPackage(sourcePP, power, out _);
+            sourcePP.Save($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\P-{testName}");
+
+            power.PackageFileName = "BioD_JnkKgA_140Rescue.pcc";
+            power.SourceUIndex = 402;
+            Debug.WriteLine($"Porting power BioD: {power.PowerName}");
+            var sourcePD = MEPackageHandler.OpenMEPackage($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\{testName}");
+            EnemyPowerChanger.PortPowerIntoPackage(sourcePD, power, out _);
+            sourcePD.Save($@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\D-{testName}");
+
+            */
+
+            // Test single pull in
+            //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("SFXCharacterClass_Adept.pcc");
+            //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(power.PackageFileName);
+            //var sourceExport = sourcePackage.FindExport("BioVFX_B_Powers.08_Pull.Pull_VFX_Appearance");
+            //EntryExporter.ExportExportToPackage(sourceExport, sourceP, out _);
+
+            // Test pulling in SFXPower_Pull without VFX prop
+            //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("BioP_ProCer.pcc");
+            //var sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPower_Pull");
+            //var defaults = sourceExport.GetDefaults();
+            ////defaults.WriteProperty(new ObjectProperty(0,"VFX")); // Setting this to zero makes it work. But porting the item this references in also doesn't break it.
+            //EntryExporter.ExportExportToPackage(sourceExport, sourceP, out _);
+
+            // Pull in VFX then pull in power
+            //var sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage("BioP_ProCer.pcc");
+            //var
+
+            //sourcePackage.FindExport("BioVFX_B_Lift.PostProcess.FB_MotionBlur_Distorting").RemoveProperty("Effects"); // Fixes the issue.
+            //sourcePackage.FindExport("BioVFX_B_Lift.PostProcess.FB_MotionBlur_Distorting.BioMaterialInstanceEffect_0").RemoveProperty("Material");
+
+            //var sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPower_Shockwave");
+            //var defaults = sourceExport.GetDefaults();
+            //defaults.WriteProperty(new ObjectProperty(0, "VFX")); // Setting this to zero doesn't change anything if you port in the upper stuff afterwards
+            //defaults.RemoveProperty("EvolvedPowerClass1");
+            //defaults.RemoveProperty("EvolvedPowerClass2");
+            //defaults.RemoveProperty("PowerScriptClass");
+            //sourceExport = sourcePackage.FindExport("SFXGameContent_Powers.SFXPowerScript_PullProjectile");
+            //defaults = sourceExport.GetDefaults();
+            //defaults.RemoveProperty("m_oCrustEffect");
+
+            //sourceP = NonSharedPackageCache.Cache.GetCachedPackage("/c.pcc");
+            //EntryExporter.ExportExportToPackage(sourceExport, sourceP, out _);
+            //sourceP.Save();
+
+
+
+            // Way power does it
+            //power.PackageFileName = "SFXCharacterClass_Adept.pcc";
+            //power.SourceUIndex = sourceExport.UIndex;
+            //ME2Debug.TestAllImportsInMERFS();
         }
 
         private void FindSerialSizeMismatches(object? sender, DoWorkEventArgs doWorkEventArgs)

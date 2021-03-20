@@ -37,12 +37,15 @@ namespace ME2Randomizer.Classes
         public static string ToLocalizedFilename(this string origName)
         {
             var fname = Path.GetFileNameWithoutExtension(origName);
-            var parent = Directory.GetParent(origName);
-            if (parent == null)
+            if (!fname.Contains(Path.DirectorySeparatorChar))
             {
-                return $"{fname}_INT.{Path.GetExtension(origName)}";
+                // localized filename
+                return $"{fname}_INT{Path.GetExtension(origName)}";
             }
-            return Path.Combine(parent.FullName, $"{fname}_INT.{Path.GetExtension(origName)}");
+
+            // Full path
+            var parent = Directory.GetParent(origName);
+            return Path.Combine(parent.FullName, $"{fname}_INT{Path.GetExtension(origName)}");
 
 
 

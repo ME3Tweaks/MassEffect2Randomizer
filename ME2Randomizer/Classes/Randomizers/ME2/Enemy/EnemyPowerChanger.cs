@@ -346,12 +346,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                 }
                 else
                 {
-
+#if DEBUG
                     // DEBUG ONLY-----------------------------------
                     //var defaults = sourceExport.GetDefaults();
-                    ////defaults.RemoveProperty("VFX");
+                    //defaults.RemoveProperty("VFX");
                     //var vfx = defaults.GetProperty<ObjectProperty>("VFX").ResolveToEntry(sourcePackage) as ExportEntry;
-                    //vfx.RemoveProperty("PlayerCrust");
+                    //vxx.RemoveProperty("PlayerCrust");
                     //vfx.FileRef.GetUExport(1544).RemoveProperty("oPrefab");
 
                     ////vfx = defaults.FileRef.GetUExport(6211); // Prefab
@@ -364,7 +364,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
 
                     // END DEBUG ONLY--------------------------------
-
+#endif
                     List<EntryStringPair> relinkResults = null;
                     if (powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(powerInfo.PackageFileName.ToLocalizedFilename()) == null))
                     {
@@ -395,6 +395,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "SFXLoadoutData"
                                                                                         && !export.ObjectName.Name.Contains("Drone") // We don't modify drone powers
                                                                                         && !export.ObjectName.Name.Contains("NonCombat") // Non combat enemies won't use powers so this is just a waste of time
+                                                                                        && export.ObjectName.Name != "Loadout_None" // Loadout_None has nothing, don't bother giving it anything
                                                                 && Path.GetFileName(export.FileRef.FilePath).StartsWith("Bio");
 
         internal static bool RandomizeExport(ExportEntry export, RandomizationOption option)
