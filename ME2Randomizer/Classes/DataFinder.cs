@@ -1414,6 +1414,11 @@ namespace ME2Randomizer.Classes
             ME2Debug.TestAllImportsInMERFS();
         }
 
+        private void Debug3(object sender, DoWorkEventArgs dweb)
+        {
+
+        }
+
         private void DebugPorting2(object sender, DoWorkEventArgs doWorkEventArgs)
         {
             EnemyPowerChanger.LoadPowers();
@@ -1473,7 +1478,7 @@ namespace ME2Randomizer.Classes
             var bioDImports = bioD.Imports.Select(x => x.InstancedFullPath).ToList();
             var bioPImports = bioP.Imports.Select(x => x.InstancedFullPath).ToList();
             Debug.WriteLine("Imports in BioD but not BioP:");
-            foreach (var imp in bioPImports.Except(bioPImports))
+            foreach (var imp in bioDImports.Except(bioPImports))
             {
                 Debug.WriteLine($" - {imp}");
             }
