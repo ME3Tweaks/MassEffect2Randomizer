@@ -366,7 +366,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
                     // END DEBUG ONLY--------------------------------
 #endif
                     List<EntryStringPair> relinkResults = null;
-                    if (powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(powerInfo.PackageFileName.ToLocalizedFilename()) == null))
+                    if (false && (powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
                     {
                         // Faster this way, without having to check imports
                         Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
