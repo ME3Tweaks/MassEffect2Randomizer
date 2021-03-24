@@ -38,6 +38,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
             "SFXPower_CombatDrone_Death", // Used by combat drone
 
             "SFXPower_PraetorianDeathChoir", // Used by Praetorian, otherwise softlocks on HorCR1
+
+            // Vasir in LOTSB
+            "SFXPower_BioticCharge_NPC",
+            "SFXPower_BioticChargeLong_NPC",
+            "SFXPower_BioticChargeLong_AsariSpectre",
         };
 
         /// <summary>
