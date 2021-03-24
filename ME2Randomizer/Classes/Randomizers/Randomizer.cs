@@ -24,6 +24,7 @@ using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Memory;
 using ME3ExplorerCore.SharpDX;
+using Microsoft.AppCenter.Crashes;
 
 namespace ME2Randomizer.Classes
 {
@@ -99,6 +100,7 @@ namespace ME2Randomizer.Classes
             {
                 MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
                 mainWindow.CurrentOperationText = $"Randomizer failed with error: {e.Error.Message}, please report to Mgamerz";
+                Crashes.TrackError(e.Error, );
             }
             else
             {
@@ -218,22 +220,28 @@ namespace ME2Randomizer.Classes
                     }
                     catch (Exception e)
                     {
-                        Log.Error($@"Exception randomizing: {e.Message}");
+                        Log.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
+                        Crashes.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
                         Debugger.Break();
                     }
                 });
-
-
             }
 
 
             // Pass 3: All randomizers that are file specific and are not post-run
             foreach (var sr in specificRandomizers.Where(x => x.IsPostRun))
             {
-                mainWindow.ProgressBarIndeterminate = true;
-                MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
-                mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
-                sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+                try
+                {
+                    mainWindow.ProgressBarIndeterminate = true;
+                    MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
+                    mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
+                    sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+                }
+                catch (Exception ex)
+                {
+                    Crashes.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
+                }
             }
 
             sw.Stop();
