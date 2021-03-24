@@ -24,6 +24,7 @@ using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Memory;
 using ME3ExplorerCore.SharpDX;
+using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 
 namespace ME2Randomizer.Classes
@@ -100,10 +101,11 @@ namespace ME2Randomizer.Classes
             {
                 MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
                 mainWindow.CurrentOperationText = $"Randomizer failed with error: {e.Error.Message}, please report to Mgamerz";
-                Crashes.TrackError(e.Error, );
+                Crashes.TrackError(new Exception("Randomizer thread exited with exception", e.Error));
             }
             else
             {
+                Analytics.TrackEvent("Randomization completed");
                 mainWindow.CurrentOperationText = "Randomization complete";
             }
             CommandManager.InvalidateRequerySuggested();
