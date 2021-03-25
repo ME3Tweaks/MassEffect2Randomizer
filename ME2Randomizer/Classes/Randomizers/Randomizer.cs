@@ -185,13 +185,13 @@ namespace ME2Randomizer.Classes
                     mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
 
 #if DEBUG
-                    if (true
-                    //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    && !file.Contains("HorCr1", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
-                    )
-                        return;
+                    //if (true
+                    ////&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                    //&& !file.Contains("Hub", StringComparison.InvariantCultureIgnoreCase)
+                    ////&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
+                    //)
+                    //    return;
 #endif
                     try
                     {

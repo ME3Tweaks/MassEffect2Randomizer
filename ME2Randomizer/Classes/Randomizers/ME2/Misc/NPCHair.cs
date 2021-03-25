@@ -63,7 +63,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 var newHair = isfemaleHair ? HairListFemale.RandomElement() : HairListMale.RandomElement();
                 if (newHair.ObjectName.Name == entry.ObjectName.Name)
                     return false; // We are not changing this
-                Debug.WriteLine($"Changing hair mesh: {entry.ObjectName} -> {newHair.ObjectName}, object {hairMeshExport.FullPath}, class {entry.ClassName}");
+                MERLog.Information($"{Path.GetFileName(hairMeshExport.FileRef.FilePath)} Changing hair mesh: {entry.ObjectName} -> {newHair.ObjectName}, object {hairMeshExport.FullPath}, class {entry.ClassName}");
                 var newHairMdl = PackageTools.PortExportIntoPackage(hairMeshExport.FileRef, newHair);
                 var mdlBin = ObjectBinary.From<SkeletalMesh>(newHairMdl);
                 obj.Value = newHairMdl.UIndex;

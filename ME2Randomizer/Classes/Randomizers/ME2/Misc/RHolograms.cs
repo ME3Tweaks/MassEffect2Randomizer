@@ -62,7 +62,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var data = exp.Data;
             //RandomizeRGBA(data, 0x70C, false);
             RandomizeRGBA(data, 0x72C, false);
-            MERLog.Information(@"Randomized VI material");
+            MERLog.Information($@"Randomized VI material {exp.InstancedFullPath} in {exp.FileRef.FilePath}");
             exp.Data = data;
         }
 

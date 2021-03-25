@@ -32,12 +32,19 @@ namespace ME2Randomizer.DebugTools
 
             var sameExports = subExports.Intersect(newExports).ToList();
 
-            foreach(var v in sameExports)
+            foreach (var v in sameExports)
             {
                 Debug.WriteLine(v);
             }
         }
 
+        public static void TestPropertiesInMERFS()
+        {
+            var dlcModPath = Path.Combine(MEDirectories.GetDefaultGamePath(MERFileSystem.Game), "BioGame", "DLC", $"DLC_MOD_{MERFileSystem.Game}Randomizer", "CookedPC");
+            ReferenceCheckPackage rcp = new ReferenceCheckPackage();
+            bool checkCanceled = false;
+            EntryChecker.CheckReferences(rcp, dlcModPath, ref checkCanceled, EntryChecker.NonLocalizedStringConveter, x => Debug.WriteLine(x));
+        }
 
         public static void TestAllImportsInMERFS()
         {

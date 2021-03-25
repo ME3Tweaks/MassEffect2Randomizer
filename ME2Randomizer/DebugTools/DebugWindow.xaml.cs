@@ -39,6 +39,11 @@ namespace ME2Randomizer.DebugTools
             DataFinder df = new DataFinder(mw);
         }
 
+        private void CheckProperties_Click(object sender, RoutedEventArgs e)
+        {
+            ME2Debug.TestPropertiesInMERFS();
+        }
+
         private void CheckImports_Click(object sender, RoutedEventArgs e)
         {
             ME2Debug.TestAllImportsInMERFS();
