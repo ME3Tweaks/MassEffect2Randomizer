@@ -138,120 +138,129 @@ namespace ME2Randomizer.Classes
                 }
             }
 
-            MERFileSystem.InitMERFS(SelectedOptions);
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            Exception rethrowException = null;
+            try
+            {
+                MERFileSystem.InitMERFS(SelectedOptions);
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
 
-            // Prepare the TLK
+                // Prepare the TLK
 #if __ME2__
-            ME2Textures.SetupME2Textures();
+                ME2Textures.SetupME2Textures();
 #elif __ME3__
             ME3Textures.SetupME3Textures();
 #endif
 
-            // Pass 1: All randomizers that are file specific and are not post-run
-            foreach (var sr in specificRandomizers.Where(x => !x.IsPostRun))
-            {
-                MERLog.Information($"Running specific randomizer {sr.HumanName}");
-                mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
-                sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
-            }
-
-            // Pass 2: All exports
-            if (perExportRandomizers.Any() || perFileRandomizers.Any())
-            {
-                mainWindow.CurrentOperationText = "Getting list of files...";
-                mainWindow.ProgressBarIndeterminate = true;
-
-                // we only want pcc files (me2/me3). no upks
-                var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false, false).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
-
-                mainWindow.ProgressBarIndeterminate = false;
-                mainWindow.ProgressBar_Bottom_Max = files.Count();
-                mainWindow.ProgressBar_Bottom_Min = 0;
-                int currentFileNumber = 0;
-
-#if DEBUG
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
-#else
-                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
-#endif
+                // Pass 1: All randomizers that are file specific and are not post-run
+                foreach (var sr in specificRandomizers.Where(x => !x.IsPostRun))
                 {
-
-                    var name = Path.GetFileNameWithoutExtension(file);
-                    if (SpecializedFiles.Contains(name)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
-
-                    mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
-                    mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
-
-#if DEBUG
-                    //if (true
-                    ////&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                    //&& !file.Contains("Hub", StringComparison.InvariantCultureIgnoreCase)
-                    ////&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
-                    //)
-                    //    return;
-#endif
-                    try
-                    {
-                        Debug.WriteLine($"Opening package {file}");
-                        //Log.Information($@"Opening package {file}");
-                        var package = MERFileSystem.OpenMEPackage(file);
-                        //Debug.WriteLine(file);
-                        foreach (var rp in perFileRandomizers)
-                        {
-                            // Specific randomization pass before the exports are processed
-                            rp.PerformFileSpecificRandomization(package, rp);
-                        }
-
-                        if (perExportRandomizers.Any())
-                        {
-                            for (int i = 0; i < package.ExportCount; i++)
-                            //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
-                            {
-                                var exp = package.Exports[i];
-                                foreach (var r in perExportRandomizers)
-                                {
-                                    r.PerformRandomizationOnExportDelegate(exp, r);
-                                }
-                            }
-                        }
-
-                        MERFileSystem.SavePackage(package);
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
-                        Crashes.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
-                        Debugger.Break();
-                    }
-                });
-            }
-
-
-            // Pass 3: All randomizers that are file specific and are not post-run
-            foreach (var sr in specificRandomizers.Where(x => x.IsPostRun))
-            {
-                try
-                {
-                    mainWindow.ProgressBarIndeterminate = true;
-                    MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
+                    MERLog.Information($"Running specific randomizer {sr.HumanName}");
                     mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
                     sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
                 }
-                catch (Exception ex)
+
+                // Pass 2: All exports
+                if (perExportRandomizers.Any() || perFileRandomizers.Any())
                 {
-                    Crashes.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
+                    mainWindow.CurrentOperationText = "Getting list of files...";
+                    mainWindow.ProgressBarIndeterminate = true;
+
+                    // we only want pcc files (me2/me3). no upks
+                    var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false, false).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
+
+                    mainWindow.ProgressBarIndeterminate = false;
+                    mainWindow.ProgressBar_Bottom_Max = files.Count();
+                    mainWindow.ProgressBar_Bottom_Min = 0;
+                    int currentFileNumber = 0;
+
+#if DEBUG
+                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
+#else
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
+#endif
+                    {
+
+                        var name = Path.GetFileNameWithoutExtension(file);
+                        if (SpecializedFiles.Contains(name, StringComparer.InvariantCultureIgnoreCase)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
+
+                        mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
+                        mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
+
+#if DEBUG
+                        if (true
+                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("BioP_", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("ProFre", StringComparison.InvariantCultureIgnoreCase)
+                        )
+                            return;
+#endif
+                        try
+                        {
+                            Debug.WriteLine($"Opening package {file}");
+                            //Log.Information($@"Opening package {file}");
+                            var package = MERFileSystem.OpenMEPackage(file);
+                            //Debug.WriteLine(file);
+                            foreach (var rp in perFileRandomizers)
+                            {
+                                // Specific randomization pass before the exports are processed
+                                rp.PerformFileSpecificRandomization(package, rp);
+                            }
+
+                            if (perExportRandomizers.Any())
+                            {
+                                for (int i = 0; i < package.ExportCount; i++)
+                                //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
+                                {
+                                    var exp = package.Exports[i];
+                                    foreach (var r in perExportRandomizers)
+                                    {
+                                        r.PerformRandomizationOnExportDelegate(exp, r);
+                                    }
+                                }
+                            }
+
+                            MERFileSystem.SavePackage(package);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
+                            Crashes.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
+                            Debugger.Break();
+                        }
+                    });
                 }
+
+
+                // Pass 3: All randomizers that are file specific and are not post-run
+                foreach (var sr in specificRandomizers.Where(x => x.IsPostRun))
+                {
+                    try
+                    {
+                        mainWindow.ProgressBarIndeterminate = true;
+                        MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
+                        mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
+                        sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+                    }
+                    catch (Exception ex)
+                    {
+                        Crashes.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
+                    }
+                }
+
+                sw.Stop();
+                MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
+
+                mainWindow.ProgressBarIndeterminate = true;
+                mainWindow.CurrentOperationText = "Finishing up";
+                mainWindow.DLCComponentInstalled = true;
             }
-
-            sw.Stop();
-            MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
-
-            mainWindow.ProgressBarIndeterminate = true;
-            mainWindow.CurrentOperationText = "Finishing up";
-            mainWindow.DLCComponentInstalled = true;
+            catch (Exception exception)
+            {
+                MERLog.Exception(exception, "Unhandled Exception in randomization thread:");
+                rethrowException = exception;
+            }
 
             // Close out files and free memory
             TFCBuilder.EndTFCs();
@@ -262,6 +271,10 @@ namespace ME2Randomizer.Classes
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
             NonSharedPackageCache.Cache.ReleasePackages();
+
+            // Re-throw the unhandled exception after MERFS has closed
+            if (rethrowException != null)
+                throw rethrowException;
         }
 
         /// <summary>
