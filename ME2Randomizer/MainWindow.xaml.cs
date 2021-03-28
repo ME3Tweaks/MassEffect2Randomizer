@@ -325,11 +325,13 @@ namespace ME2Randomizer
                         {
                             AffirmativeButtonText = "Perform quick restore + randomize",
                             NegativeButtonText = "Perform only quick restore",
-                            FirstAuxiliaryButtonText = "Cancel",
-                            DefaultButtonFocus = MessageDialogResult.Affirmative
+                            FirstAuxiliaryButtonText = "Install anyways",
+                            SecondAuxiliaryButtonText = "Cancel",
+
+                            DefaultButtonFocus = MessageDialogResult.Negative
                         };
-                        var result = await this.ShowMessageAsync("Controller mod detected", "Performing a quick restore will undo changes made by the ME2Controller mod. After performing a quick restore, but before randomization, you should reinstall ME2Controller.", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
-                        if (result == MessageDialogResult.FirstAuxiliary)
+                        var result = await this.ShowMessageAsync("Controller mod detected", "Performing a quick restore will undo changes made by the ME2Controller mod. After performing a quick restore, but before randomization, you should reinstall ME2Controller.", MessageDialogStyle.AffirmativeAndNegativeAndDoubleAuxiliary, settings);
+                        if (result == MessageDialogResult.SecondAuxiliary)
                         {
                             // Do nothing. User canceled
                             return;
@@ -346,7 +348,6 @@ namespace ME2Randomizer
                         {
                             RestoreController.StartRestore(this, true);
                             return; // Return, we will run randomization after this
-
                         }
                         // User did not want to restore, just run 
                     }
