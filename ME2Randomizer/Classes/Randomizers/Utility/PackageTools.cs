@@ -118,6 +118,9 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                     Debugger.Break();
                 }
             }
+#if DEBUG
+            //(sourceExport.FileRef as MEPackage).CompareToPackageDetailed(targetPackage);
+#endif
 
             // Helps ensure we don't have memory duplicates
             if (ensureMemoryUniqueness)
