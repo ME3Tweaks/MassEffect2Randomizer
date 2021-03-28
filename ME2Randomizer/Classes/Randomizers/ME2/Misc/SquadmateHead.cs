@@ -802,6 +802,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 entriesToTrash.Add(package.GetUExport(1562)); // def miranda
                 entriesToTrash.Add(package.GetUExport(1563)); // def miranda
                 EntryPruner.TrashEntriesAndDescendants(entriesToTrash);
+
+                var bwi = package.FindExport("TheWorld.PersistentLevel.BioWorldInfo_0");
+                var refObjs = bwi.GetProperty<ArrayProperty<ObjectProperty>>("m_AutoPersistentObjects");
+                refObjs.Remove(new ObjectProperty(1562));
+                refObjs.Remove(new ObjectProperty(1555));
+                bwi.WriteProperty(refObjs);
             }
 
             else if (packagename.Equals("BioD_ProCer_300ShuttleBay.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda shoots wilson
