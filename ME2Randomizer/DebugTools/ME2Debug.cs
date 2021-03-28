@@ -38,12 +38,76 @@ namespace ME2Randomizer.DebugTools
             }
         }
 
+        public static void TestPropertiesInBinaryAssets()
+        {
+            var dlcModPath = @"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary";
+            ReferenceCheckPackage rcp = new ReferenceCheckPackage();
+            bool checkCanceled = false;
+            EntryChecker.CheckReferences(rcp, dlcModPath, ref checkCanceled, EntryChecker.NonLocalizedStringConveter, x => Debug.WriteLine(x));
+
+            var cookedPC = ME2Directory.CookedPCPath;
+            var sourcePackages = Directory.GetFiles(cookedPC, "SFX*.pcc", SearchOption.TopDirectoryOnly).Select(x => MEPackageHandler.OpenMEPackage(x)).ToList();
+            sourcePackages.AddRange(Directory.GetFiles(cookedPC, "Bio*.pcc", SearchOption.TopDirectoryOnly).Select(x => MEPackageHandler.OpenMEPackage(x)));
+
+
+            foreach (var s in rcp.GetInfoWarnings())
+            {
+                Debug.WriteLine($"INFO: {s.Message}");
+            }
+
+            foreach (var s in rcp.GetSignificantIssues())
+            {
+                Debug.WriteLine($"SIGNIFICANT: {s.Message}");
+                if (s.Entry is ExportEntry exp)
+                {
+                    ExportEntry sourceToPull = null;
+                    foreach (var sp in sourcePackages)
+                    {
+                        sourceToPull = sp.FindExport(exp.InstancedFullPath);
+                        if (sourceToPull != null)
+                            break;
+                    }
+                    if (sourceToPull != null)
+                    {
+                        EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, sourceToPull, exp.FileRef, exp, true, out _);
+                        Debug.WriteLine(" > REPLACED");
+                    }
+                }
+            }
+
+            foreach (var s in rcp.GetBlockingErrors())
+            {
+                Debug.WriteLine($"BLOCKING: {s.Message}");
+            }
+
+            var packagesToSave = rcp.GetSignificantIssues().Where(x => x.Entry != null && x.Entry.FileRef.IsModified).Select(x => x.Entry.FileRef).Distinct().ToList();
+            foreach (var p in packagesToSave)
+            {
+                p.Save();
+            }
+        }
+
         public static void TestPropertiesInMERFS()
         {
             var dlcModPath = Path.Combine(MEDirectories.GetDefaultGamePath(MERFileSystem.Game), "BioGame", "DLC", $"DLC_MOD_{MERFileSystem.Game}Randomizer", "CookedPC");
             ReferenceCheckPackage rcp = new ReferenceCheckPackage();
             bool checkCanceled = false;
             EntryChecker.CheckReferences(rcp, dlcModPath, ref checkCanceled, EntryChecker.NonLocalizedStringConveter, x => Debug.WriteLine(x));
+
+            foreach (var s in rcp.GetInfoWarnings())
+            {
+                Debug.WriteLine($"INFO: {s}");
+            }
+
+            foreach (var s in rcp.GetSignificantIssues())
+            {
+                Debug.WriteLine($"SIGNIFICANT: {s}");
+            }
+
+            foreach (var s in rcp.GetBlockingErrors())
+            {
+                Debug.WriteLine($"BLOCKING: {s}");
+            }
         }
 
         public static void TestAllImportsInMERFS()

@@ -44,6 +44,11 @@ namespace ME2Randomizer.DebugTools
             ME2Debug.TestPropertiesInMERFS();
         }
 
+        private void CheckPropertiesMER_Click(object sender, RoutedEventArgs e)
+        {
+            ME2Debug.TestPropertiesInBinaryAssets();
+        }
+
         private void CheckImports_Click(object sender, RoutedEventArgs e)
         {
             ME2Debug.TestAllImportsInMERFS();
