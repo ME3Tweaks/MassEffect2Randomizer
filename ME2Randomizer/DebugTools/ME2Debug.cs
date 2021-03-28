@@ -43,7 +43,7 @@ namespace ME2Randomizer.DebugTools
             var dlcModPath = @"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary";
             ReferenceCheckPackage rcp = new ReferenceCheckPackage();
             bool checkCanceled = false;
-            EntryChecker.CheckReferences(rcp, dlcModPath, ref checkCanceled, EntryChecker.NonLocalizedStringConveter, x => Debug.WriteLine(x));
+            EntryChecker.CheckReferences(rcp, dlcModPath, EntryChecker.NonLocalizedStringConveter, x => Debug.WriteLine(x));
 
             var cookedPC = ME2Directory.CookedPCPath;
             var sourcePackages = Directory.GetFiles(cookedPC, "SFX*.pcc", SearchOption.TopDirectoryOnly).Select(x => MEPackageHandler.OpenMEPackage(x)).ToList();
@@ -92,7 +92,7 @@ namespace ME2Randomizer.DebugTools
             var dlcModPath = Path.Combine(MEDirectories.GetDefaultGamePath(MERFileSystem.Game), "BioGame", "DLC", $"DLC_MOD_{MERFileSystem.Game}Randomizer", "CookedPC");
             ReferenceCheckPackage rcp = new ReferenceCheckPackage();
             bool checkCanceled = false;
-            EntryChecker.CheckReferences(rcp, dlcModPath, ref checkCanceled, EntryChecker.NonLocalizedStringConveter, x => Debug.WriteLine(x));
+            EntryChecker.CheckReferences(rcp, dlcModPath, EntryChecker.NonLocalizedStringConveter, x => Debug.WriteLine(x));
 
             foreach (var s in rcp.GetInfoWarnings())
             {
