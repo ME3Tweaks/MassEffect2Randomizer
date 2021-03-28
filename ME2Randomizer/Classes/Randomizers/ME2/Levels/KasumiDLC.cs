@@ -41,7 +41,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 new KasumiArtGalleryFile()
                 {
                     PackageName = "BioA_PtyMtl_110Bedroom.pcc",
-                    TallTextureUIndexes = new List<int>(new[] {4671, 2240}),
+                    TallTextureUIndexes = new List<int>(new[] {4671, 4672}),
                     RenameMemoryInstances = true
                 },
                 new KasumiArtGalleryFile()
@@ -54,7 +54,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 new KasumiArtGalleryFile()
                 {
                     PackageName = "BioA_PtyMtl_130BedroomHall.pcc",
-                    TallTextureUIndexes = new List<int>(new[] {4910, 2240}),
+                    TallTextureUIndexes = new List<int>(new[] {4910, 4911}),
                     RenameMemoryInstances = true
                 },
             };
@@ -122,6 +122,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         {
                             foreach (var uindex in kagf.TallTextureUIndexes)
                             {
+                                if (!artGalleryP.GetUExport(uindex).IsTexture())
+                                {
+                                    Debugger.Break();
+                                }
                                 artGalleryP.GetUExport(uindex).ObjectName = $"ME2R_T_KASUMIPAINTING{ThreadSafeRandom.Next(15000)}";
                             }
                         }
@@ -131,6 +135,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         {
                             foreach (var uindex in kagf.WideTextureUIndexes)
                             {
+                                if (!artGalleryP.GetUExport(uindex).IsTexture())
+                                {
+                                    Debugger.Break();
+                                }
                                 artGalleryP.GetUExport(uindex).ObjectName = $"ME2R_W_KASUMIPAINTING{ThreadSafeRandom.Next(15000)}";
                             }
                         }
@@ -139,6 +147,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         {
                             foreach (var uindex in kagf.MaterialUIndexes)
                             {
+                                var exp = artGalleryP.GetUExport(uindex);
+                                if (!exp.ClassName.Contains("Material"))
+                                {
+                                    Debugger.Break();
+                                }
                                 artGalleryP.GetUExport(uindex).ObjectName = $"ME2R_PAINTMAT_KASUMI{ThreadSafeRandom.Next(15000)}";
                             }
                         }
