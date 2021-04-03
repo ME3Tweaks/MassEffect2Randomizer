@@ -68,7 +68,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// </summary>
             public Action<SquadMate, ExportEntry> PostPortingFixupDelegate { get; set; }
             public bool IsFemaleAsset { get; set; }
-            public float GenderSwapDrawScale { get; set; } = 1f;
             /// <summary>
             /// Is this asset stored in the executable?
             /// </summary>
@@ -159,7 +158,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 PackageFile = "ThaneNoChest.pcc",
                 AssetPath = "BIOG_DRL_HED_PROThane_R.Thane.DRL_HED_PROTHANE_NOCOLLAR_MDL",
-                GenderSwapDrawScale = 0.961f, //Male -> Female. Might need more for miranda. This is tuned for samara
                 NameSuffix="ne",
                 IsSquadmateHead = true,
                 IsCorrectedAsset = true,
@@ -171,9 +169,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // Thane LOOKUP INFO ONLY
             new HeadAssetSource()
             {
-                PackageFile = "BioH_Assassin.pcc",
+                PackageFile = "BioH_Assassin_00.pcc", // Why is this path wrong?
                 AssetPath = "BIOG_DRL_HED_PROThane_R.Thane.DRL_HED_PROTHANE_MDL",
-                GenderSwapDrawScale = 0.961f, //Male -> Female. Might need more for miranda. This is tuned for samara
+                NameSuffix="ne",
+                IsSquadmateHead = true,
+                IsUsable = false,
+            },
+            // DLC pack thane
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Assassin_02.pcc",
+                AssetPath = "BIOG_DRL_HED_PROThane_ALT_R.Thane.DRL_HED_THANE_ALT_MDL",
                 NameSuffix="ne",
                 IsSquadmateHead = true,
                 IsUsable = false,
@@ -229,7 +235,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 PackageFile = "BioH_Leading_00.pcc",
                 AssetPath = "BIOG_HMM_HED_PROMorph.Jacob.HMM_HED_PROJacob_MDL",
-                GenderSwapDrawScale = 0.961f, //Male -> Female
                 NameSuffix = "cob",
                 IsSquadmateHead = true,
                 DisallowedPawns = new[]
@@ -288,7 +293,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 PackageFile = "IllusiveNoChest.pcc",
                 AssetPath = "BIOG_HMM_HED_PROMorph.IllusiveMan_MER.HMM_HED_PROIllusiveMan_MDL",
-                GenderSwapDrawScale = 0.961f, //Male -> Female
                 IsCorrectedAsset = true,
                 NameSuffix = "per",
             },
@@ -297,7 +301,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 PackageFile = "BIOG_HMM_HED_PROMorph.pcc",
                 AssetPath = "Kaiden.HMM_HED_PROKaiden_MDL",
                 UseMemorySafe = true,
-                GenderSwapDrawScale = 0.95f, //Male -> Female. Might need more for miranda. This is tuned for samara
                 PostPortingFixupDelegate = MakeKaidanNoLongerHulk,
                 NameSuffix = "dan",
             },
@@ -342,7 +345,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         {
             if (bodyInfo.InternalName == "Professor" || bodyInfo.InternalName == "Garrus")
             {
-                MERLog.Information($@"Fixing mordin's head Z in {newHead.FileRef.FilePath}");
+                MERLog.Information($@"Fixing Mordin's head Z in {newHead.FileRef.FilePath}");
                 var objBin = ObjectBinary.From<SkeletalMesh>(newHead);
 
                 float shiftAmt = 7;
@@ -389,8 +392,33 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             if (smp == null || smp.Value == 0) return false;
             var entry = smp.ResolveToEntry(export.FileRef) as IEntry;
             var fpath = entry.InstancedFullPath;
-            if (HeadAssetSources.Any(x => x.IsSquadmateHead && x.AssetPath == fpath)) // is this an existing squadmate head asset?
+            if (export.Parent != null && HeadAssetSources.Any(x => x.IsSquadmateHead && x.AssetPath == fpath)) // is this an existing squadmate head asset?
+            {
+                var fName = Path.GetFileNameWithoutExtension(export.FileRef.FilePath);
+                if (fName != null && fName.StartsWith("BioH_"))
+                {
+                    // Get version
+                    var lastIndex = fName.LastIndexOf("_");
+                    if (lastIndex > 0)
+                    {
+                        var sqmVersion = int.Parse(fName.Substring(lastIndex + 1));
+                        int num = export.Parent.ObjectName.Instanced.LastIndexOf("_");
+                        if (int.TryParse(export.Parent.ObjectName.Instanced.Substring(num + 1), out var localVersion))
+                        {
+                            return localVersion == sqmVersion;
+                        }
+                        else if (sqmVersion > 0)
+                        {
+                            // 0 != sqmVersion check
+                            MERLog.Information($@"SQMHEAD: Not randomizing unused superclass asset {export.InstancedFullPath}");
+                            return false;
+                        }
+                    }
+                }
+
                 return true; // It's a model
+
+            }
 
             var parentObj = export.Parent as ExportEntry;
             if (parentObj != null)
@@ -474,7 +502,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 headMeshExp.ObjectFlags |= UnrealFlags.EObjectFlags.DebugPostLoad; // Mark as modified so we do not re-randomize it
 
                 // update the bone positions... dunno if this is a good idea or not
-                UpdateBonePositionsForHead(existingAsset, newMdl);
+                //UpdateBonePositionsForHead(existingAsset, newMdl);
                 newMdl.ObjectName = newMdl.ObjectName.Name + $"_{squadmateInfo.ClassName}ified";
 
                 // Get parent object
@@ -490,6 +518,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     owningPawn.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
                 }
+
+
 
                 if (squadmateInfo.InternalName == "Mystic")
                 {
@@ -529,27 +559,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Only look for children of TheWorld so we can do integer check
                 var persistentLevel = owningPawn.ClassName == "BioPawn" ? null : owningPawn.FileRef.FindExport("TheWorld.PersistentLevel");
                 var instance = owningPawn.ClassName == "BioPawn" ? headMeshExp : owningPawn.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex && x.IsA(owningPawn.ClassName));
-                if (instance != null)
-                {
-                    if (instance.ClassName == "SkeletalMeshComponent")
-                    {
-                        instance.RemoveProperty("Materials");
-                        if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset && instance.GetProperty<ObjectProperty>("SkeletalMesh") is ObjectProperty obj && obj.Value != 0)
-                        {
-                            // We need to size it
-                            instance.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));
-                        }
-                    }
-                    else if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(owningPawn.FileRef) is ExportEntry instHeadMesh)
-                    {
-                        instHeadMesh.RemoveProperty("Materials");
-                        if (squadmateInfo.IsFemale != newAsset.IsFemaleAsset)
-                        {
-                            // We need to size it
-                            instHeadMesh.WriteProperty(new FloatProperty(newAsset.GenderSwapDrawScale, "Scale"));
-                        }
-                    }
-                }
+                StripHeadMaterials(instance, owningPawn);
+
 
                 // Remove morph head from the biopawn, if any, as this will corrupt the head
                 owningPawn.RemoveProperty("MorphHead");
@@ -627,6 +638,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             return false;
+        }
+
+        private static void StripHeadMaterials(ExportEntry instance, IEntry owningPawn)
+        {
+            if (instance.ClassName == "SkeletalMeshComponent")
+            {
+                instance.RemoveProperty("Materials");
+            }
+            else if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(instance.FileRef) is ExportEntry instHeadMesh)
+            {
+                Work instHeadMesh.RemoveProperty("Materials");
+                // Strip parent materials as well
+                if (instHeadMesh.Archetype is ExportEntry archetype)
+                {
+                    archetype.RemoveProperty("Materials"); // Nuke the archetype ones as well
+                }
+            }
+
+
+            //while (owningPawn is ExportEntry opExp)
+            //{
+            //    if (opExp.IsDefaultObject)
+            //    {
+            //        //Default__SFXPawn__BeepBoop
+            //        opExp.GetProperty<ObjectProperty>()
+            //    }
+                
+
+            //    owningPawn = opExp.SuperClass;
+            //}
         }
 
         private static void UpdateBonePositionsForHead(IEntry existingAsset, ExportEntry newMdl)

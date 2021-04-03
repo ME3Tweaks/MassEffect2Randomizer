@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
@@ -79,6 +80,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             {
                 //if (convStart.UIndex < 13638)
                 //    continue;
+                if (!CanRandomizeConversationStart(convStart))
+                    continue;
                 var bioConvImportProp = convStart.GetProperty<ObjectProperty>("Conv");
                 if (bioConvImportProp == null)
                     continue; // Some conversation starts are just filler stubs and are missing data like Nor_340a/bZaeed
@@ -366,6 +369,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             //    }
             //}
 
+
+            return true;
+        }
+
+        private static bool CanRandomizeConversationStart(ExportEntry convStart)
+        {
+            var fname = Path.GetFileName(convStart.FileRef.FilePath);
+            if (fname == "BioD_CitHub_220AsL.pcc" && convStart.UIndex == 803) // seems to be able to softlock thane's interrogation as some of the inputs appear to have been disabled. If they're randomized around, it could cause softlock on convo start which kills loyalty mission
+                return false;
 
             return true;
         }
