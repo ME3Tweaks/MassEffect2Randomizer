@@ -648,11 +648,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
             else if (instance.GetProperty<ObjectProperty>("HeadMesh")?.ResolveToEntry(instance.FileRef) is ExportEntry instHeadMesh)
             {
-                Work instHeadMesh.RemoveProperty("Materials");
+                instHeadMesh.RemoveProperty("Materials");
                 // Strip parent materials as well
-                if (instHeadMesh.Archetype is ExportEntry archetype)
+                if (instHeadMesh != null && instHeadMesh.Archetype is ExportEntry archetype)
                 {
                     archetype.RemoveProperty("Materials"); // Nuke the archetype ones as well
+                    instHeadMesh = archetype;
                 }
             }
 
