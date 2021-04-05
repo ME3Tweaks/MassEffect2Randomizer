@@ -79,6 +79,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             // Pick guns
             var totalGuns = ThreadSafeRandom.Next(3) + 2;
+            if (!isPlayer)
+                totalGuns = 2;
             List<string> guns = new List<string>();
             while (guns.Count < totalGuns)
             {
