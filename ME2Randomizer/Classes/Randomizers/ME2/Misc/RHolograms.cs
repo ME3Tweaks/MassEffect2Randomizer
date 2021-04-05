@@ -72,7 +72,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// <param name="data"></param>
         /// <param name="p1"></param>
         /// <param name="p2"></param>
-        private static Vector4 RandomizeRGBA(byte[] data, int startingOffset, bool randomizeAlpha)
+        public static Vector4 RandomizeRGBA(byte[] data, int startingOffset, bool randomizeAlpha)
         {
             float totalColor = 0;
             totalColor += BitConverter.ToSingle(data, startingOffset);

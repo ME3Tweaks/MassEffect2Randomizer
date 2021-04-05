@@ -192,6 +192,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 NameSuffix = "ck",
                 IsSquadmateHead = true
             },
+
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Convict_02.pcc",
+                AssetPath = "BIOG_HMF_HED_PROJack_ALT_R.Jack.HMF_HED_PROJack_ALT_MDL",
+                IsFemaleAsset = true,
+                NameSuffix = "ck",
+                IsSquadmateHead = true,
+                IsUsable = false
+            },
             new HeadAssetSource()
             {
                 PackageFile = "BioH_Professor_00.pcc",
@@ -231,6 +241,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     "SFXPawn_Morinth",
                 }
             },
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Garrus_02.pcc",
+                AssetPath = "BIOG_TUR_HED_PROGarrus_ALT_R.Garrus.TUR_HED_Garrus_ALT_MDL",
+                NameSuffix = "rus",
+                IsSquadmateHead = true,
+                PostPortingFixupDelegate = GarrusHeadZFixDLC,
+                DisallowedPawns = new []
+                {
+                    "SFXPawn_Jack",
+                    "SFXPawn_Miranda",
+                    "SFXPawn_Samara",
+                    "SFXPawn_Kasumi",
+                    "SFXPawn_Morinth",
+                }
+            },
+            
+
             new HeadAssetSource()
             {
                 PackageFile = "BioH_Leading_00.pcc",
@@ -274,7 +302,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 IsSquadmateHead = true,
                 IsUsable = false
             },
+            new HeadAssetSource()
+            {
+                PackageFile = "BioH_Grunt_02.pcc",
+                AssetPath = "BIOG_KRO_HED_PROGrunt_ALT_R.Grunt.KRO_HED_Grunt_ALT_MDL",
+                NameSuffix = "unt",
+                IsSquadmateHead = true,
+                IsUsable = false
+            },
 
+            
 
             // Non squadmates
             new HeadAssetSource()
@@ -333,6 +370,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
                 }
                 newHead.WriteBinary(objBin);
+            }
+        }
+
+        private static void GarrusHeadZFixDLC(SquadMate bodyInfo, ExportEntry newHead)
+        {
+            GarrusHeadZFix(bodyInfo, newHead);
+
+            var newHolo = newHead.FileRef.FindExport("BIOG_TUR_HED_PROGarrus_ALT_R.Garrus.Visor_Alt_Hologram");
+            if (newHolo != null)
+            {
+                var data = newHolo.Data;
+                //RandomizeRGBA(data, 0x70C, false);
+                RHolograms.RandomizeRGBA(data, 0x54E, false);
+                MERLog.Information($@"Randomized Garrus DLC head material {newHolo.InstancedFullPath} in {newHolo.FileRef.FilePath}");
+                newHolo.Data = data;
             }
         }
 
