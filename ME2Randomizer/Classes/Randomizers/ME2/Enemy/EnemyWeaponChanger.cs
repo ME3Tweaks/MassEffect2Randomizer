@@ -539,6 +539,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Enemy
 
         private static bool RandomizeWeaponLoadout(ExportEntry export, RandomizationOption option)
         {
+            // Check for blacklisted changes
+            if (export.ObjectName.Name.Contains("HammerHead", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return false; // Do not randomize hammerhead
+            }
+
 
             var guns = export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons");
             if (guns.Count == 1) //Randomizing multiple guns could be difficult and I'm not sure enemies ever change their weapons.
