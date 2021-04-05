@@ -255,7 +255,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     "SFXPawn_Samara",
                     "SFXPawn_Kasumi",
                     "SFXPawn_Morinth",
-                }
+                },
+                IsUsable = false
             },
 
 
