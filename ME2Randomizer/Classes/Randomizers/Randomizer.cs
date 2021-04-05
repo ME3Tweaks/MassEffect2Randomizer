@@ -196,8 +196,8 @@ namespace ME2Randomizer.Classes
                         )
                             return;
 #endif
-                        try
-                        {
+                        //try
+                        //{
                             Debug.WriteLine($"Opening package {file}");
                             //Log.Information($@"Opening package {file}");
                             var package = MERFileSystem.OpenMEPackage(file);
@@ -222,13 +222,13 @@ namespace ME2Randomizer.Classes
                             }
 
                             MERFileSystem.SavePackage(package);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
-                            Crashes.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
-                            Debugger.Break();
-                        }
+                        //}
+                        //catch (Exception e)
+                        //{
+                        //    Log.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
+                        //    Crashes.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
+                        //    Debugger.Break();
+                        //}
                     });
                 }
 

@@ -257,7 +257,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     "SFXPawn_Morinth",
                 }
             },
-            
+
 
             new HeadAssetSource()
             {
@@ -435,41 +435,59 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             VectorParameter.WriteVectorParameters(kaidanScalpMaterial, vectorsSC);
         }
 
-        private static bool CanRandomize2(ExportEntry export)
+        private static bool CanRandomize2(ExportEntry export, out ObjectProperty skelMesh)
         {
+            skelMesh = null;
             if (export.IsDefaultObject || export.ClassName != "SkeletalMeshComponent" || export.ObjectFlags.Has(UnrealFlags.EObjectFlags.DebugPostLoad)) return false;
             //if (export.UIndex == 5373)
             //    Debugger.Break();
-            var smp = export.GetProperty<ObjectProperty>("SkeletalMesh");
-            if (smp == null || smp.Value == 0) return false;
-            var entry = smp.ResolveToEntry(export.FileRef) as IEntry;
+            var fName = Path.GetFileNameWithoutExtension(export.FileRef.FilePath);
+            var isHenchFile = fName != null && fName.StartsWith("BioH_") && fName != "BioH_SelectGUI";
+            int henchVersion = -1;
+
+            // Get version
+            var lastIndex = isHenchFile ? fName.LastIndexOf("_") : 0;
+            if (lastIndex > 0) 
+            {
+                int.TryParse(fName.Substring(lastIndex + 1), out henchVersion);
+            }
+
+
+
+            skelMesh = export.GetProperty<ObjectProperty>("SkeletalMesh");
+            if (skelMesh == null || skelMesh.Value == 0)
+            {
+                var par = export.Archetype as ExportEntry;
+                if (par != null)
+                {
+                    skelMesh = par.GetProperty<ObjectProperty>("SkeletalMesh");
+                }
+            }
+
+            if (skelMesh == null || skelMesh.Value == 0) return false;
+
+
+            var entry = skelMesh.ResolveToEntry(export.FileRef);
             var fpath = entry.InstancedFullPath;
             if (export.Parent != null && HeadAssetSources.Any(x => x.IsSquadmateHead && x.AssetPath == fpath)) // is this an existing squadmate head asset?
             {
-                var fName = Path.GetFileNameWithoutExtension(export.FileRef.FilePath);
-                if (fName != null && fName.StartsWith("BioH_"))
+                if (henchVersion >= 0)
                 {
-                    // Get version
-                    var lastIndex = fName.LastIndexOf("_");
-                    if (lastIndex > 0)
+                    var sqmVersion = int.Parse(fName.Substring(lastIndex + 1));
+                    int num = export.Parent.ObjectName.Instanced.LastIndexOf("_");
+                    if (int.TryParse(export.Parent.ObjectName.Instanced.Substring(num + 1), out var localVersion))
                     {
-                        var sqmVersion = int.Parse(fName.Substring(lastIndex + 1));
-                        int num = export.Parent.ObjectName.Instanced.LastIndexOf("_");
-                        if (int.TryParse(export.Parent.ObjectName.Instanced.Substring(num + 1), out var localVersion))
-                        {
-                            return localVersion == sqmVersion;
-                        }
-                        else if (sqmVersion > 0)
-                        {
-                            // 0 != sqmVersion check
-                            MERLog.Information($@"SQMHEAD: Not randomizing unused superclass asset {export.InstancedFullPath}");
-                            return false;
-                        }
+                        return localVersion == sqmVersion;
+                    }
+                    else if (sqmVersion > 0)
+                    {
+                        // 0 != sqmVersion check
+                        MERLog.Information($@"SQMHEAD: Not randomizing unused superclass asset {export.InstancedFullPath}");
+                        return false;
                     }
                 }
 
                 return true; // It's a model
-
             }
 
             var parentObj = export.Parent as ExportEntry;
@@ -507,10 +525,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         public static bool RandomizeExport2(ExportEntry headMeshExp, RandomizationOption option)
         {
-            if (!CanRandomize2(headMeshExp)) return false;
+            if (!CanRandomize2(headMeshExp, out var skelMesh)) return false;
             var fname = Path.GetFileName(headMeshExp.FileRef.FilePath);
             Debug.WriteLine($"Can randomize SQM HED {headMeshExp.InstancedFullPath} in {fname}");
-            var skelMesh = headMeshExp.GetProperty<ObjectProperty>("SkeletalMesh");
             if (skelMesh != null)
             {
                 // Select a new asset.
@@ -672,7 +689,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
 
                     var meshExp = parent.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
-                    var targetMesh = meshExp.GetProperty<ObjectProperty>("SkeletalMesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
+                    var targetMesh = (meshExp.GetProperty<ObjectProperty>("SkeletalMesh") ?? ((ExportEntry)meshExp.Archetype).GetProperty<ObjectProperty>("SkeletalMesh")).ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
                     var newMDL = newMeshP.FindExport(targetMesh.InstancedFullPath);
 
                     // Technically this should work
