@@ -63,5 +63,10 @@ namespace ME2Randomizer.DebugTools
         {
             ME2Debug.GetExportsInPersistentThatAreAlsoInSub();
         }
+
+        private void CheckDroppedExports_Click(object sender, RoutedEventArgs e)
+        {
+            ME2Debug.CheckImportsWithPersistence();
+        }
     }
 }

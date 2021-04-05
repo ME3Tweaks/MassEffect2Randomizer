@@ -29,5 +29,8 @@
         <Button DockPanel.Dock="Right" Click="CheckExports_Click" Padding="20,0,20,0" Visibility="Visible">
             <fonts:OutlinedTextBlock Text="Check persistent &lt;-&gt; sub exports" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
         </Button>
+        <Button DockPanel.Dock="Right" Click="CheckDroppedExports_Click" Padding="20,0,20,0" Visibility="Visible">
+            <fonts:OutlinedTextBlock Text="Check for dropped exports in memory" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
+        </Button>
     </StackPanel>
 </mah:MetroWindow>

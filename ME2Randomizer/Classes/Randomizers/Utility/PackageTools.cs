@@ -6,11 +6,12 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
+using ME3ExplorerCore.Unreal;
 using ME3ExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
-    class PackageTools
+    public static class PackageTools
     {
         private static Regex isLevelPersistentPackage = new Regex("Bio([ADPS]|Snd)_[A-Za-z0-9]+.pcc", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static Regex isSublevelPackage = new Regex("Bio([ADPS]|Snd)_[A-Za-z0-9]+_[A-Za-z0-9]+.pcc", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -38,6 +39,28 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         public static bool IsLevelSubfile(string pName)
         {
             return isSublevelPackage.IsMatch(pName);
+        }
+
+        public static List<IEntry> ReadObjectReferencer(this IMEPackage package)
+        {
+            var objReferencer = package.Exports.FirstOrDefault(x => x.idxLink == 0 && x.ObjectName == "ObjectReferencer");
+            if (objReferencer != null)
+            {
+                var results = new List<IEntry>();
+                var refs = objReferencer.GetProperty<ArrayProperty<ObjectProperty>>("ReferencedObjects");
+                foreach (var refX in refs)
+                {
+                    var eRef = refX.ResolveToEntry(package);
+                    if (eRef != null)
+                    {
+                        results.Add(eRef);
+                    }
+                }
+
+                return results;
+            }
+
+            return null;
         }
 
         /// <summary>

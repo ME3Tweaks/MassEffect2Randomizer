@@ -175,12 +175,17 @@ namespace ME2Randomizer.DebugTools
         /// </summary>
         public static void CheckImportsWithPersistence()
         {
-            var file = @"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\BioP_JnkKgA.pcc";
+            var file = @"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\DLC\DLC_MOD_ME2Randomizer\CookedPC\BioD_CitHub_300UpperWing_LOC_INT.pcc";
             //var file = @"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\BioP_JnkKgA.pcc";
             var persistP = MEPackageHandler.OpenMEPackage(file);
-            var importableObjects = EntryImporter.GetAllReferencesOfExport(persistP.FindExport("TheWorld.PersistentLevel"), true);
-            Debug.WriteLine($"Persistent referenced objects: {importableObjects.Count}. {importableObjects.Count(x => x is ImportEntry)} imports, {importableObjects.Count(x => x is ExportEntry)} exports");
-            Debug.WriteLine($"Persistent package does not reference: {(persistP.ImportCount + persistP.ExportCount) - importableObjects.Count}. {persistP.ImportCount - importableObjects.Count(x => x is ImportEntry)} imports, {persistP.ExportCount - importableObjects.Count(x => x is ExportEntry)} exports:");
+            var persistentLevel = persistP.FindExport("TheWorld.PersistentLevel");
+            var objectReferencer = persistP.Exports.FirstOrDefault(x => x.idxLink == 0 && x.ClassName == "ObjectReferencer");
+
+            if (persistentLevel == null && objectReferencer == null)
+                Debugger.Break();
+            var importableObjects = EntryImporter.GetAllReferencesOfExport(persistentLevel ?? objectReferencer, true);
+            Debug.WriteLine($"Referenced objects: {importableObjects.Count}. {importableObjects.Count(x => x is ImportEntry)} imports, {importableObjects.Count(x => x is ExportEntry)} exports");
+            Debug.WriteLine($"Unreferenced objects: {(persistP.ImportCount + persistP.ExportCount) - importableObjects.Count}. {persistP.ImportCount - importableObjects.Count(x => x is ImportEntry)} imports, {persistP.ExportCount - importableObjects.Count(x => x is ExportEntry)} exports:");
 
             var droppedImports = persistP.Imports.Except(importableObjects);
             var droppedExports = persistP.Exports.Except(importableObjects);
