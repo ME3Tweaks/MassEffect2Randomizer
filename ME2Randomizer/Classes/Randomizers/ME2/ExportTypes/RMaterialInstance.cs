@@ -200,6 +200,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
         public static void RandomizeSubMatInst(ExportEntry childMat, Dictionary<string, CFVector4> vectorValues, Dictionary<string, float> scalarValues)
         {
             // VECTOR PARAMETERS
+            //Debug.WriteLine($"Randomizing matinst {childMat.InstancedFullPath}");
             var vectorParameterValues = VectorParameter.GetVectorParameters(childMat);
             if (vectorParameterValues != null)
             {
@@ -243,57 +244,5 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                 ScalarParameter.WriteScalarParameters(childMat, scalarParameterValues);
             }
         }
-
-        //public static bool RandomizeNPCExport(ExportEntry export, RandomizationOption randOption)
-        //{
-        //    if (!CanRandomizeNPCExport(export)) return false;
-        //    //Don't know if this works
-        //    //if (export.UIndex != 118) return false;
-        //    var props = export.GetProperties();
-
-        //    var isIconic = props.GetProp<BoolProperty>("bIconicAppearance");
-
-        //    // debuggin
-        //    if (isIconic != null && isIconic)
-        //    {
-        //        return false; // Don't modify an iconic look as it has a bunch fo stuff in it that can totally break it like scalp seams.
-        //        Debug.WriteLine($"ICONIC PAWN: {export.UIndex} {export.FullPath} in {export.FileRef.FilePath}");
-        //    }
-
-        //    // 1. Get list of all SMC
-        //    List<ExportEntry> allSkelMeshes = new List<ExportEntry>();
-        //    foreach (var prop in props.OfType<ObjectProperty>())
-        //    {
-        //        if (prop.ResolveToEntry(export.FileRef) is ExportEntry re && re.ClassName == "SkeletalMeshComponent")
-        //        {
-        //            allSkelMeshes.Add(re);
-        //        }
-        //    }
-
-        //    allSkelMeshes = allSkelMeshes.Distinct().ToList();
-        //    StructProperty sc = null;
-        //    foreach (var sm in allSkelMeshes)
-        //    {
-        //        var materials = sm.GetProperty<ArrayProperty<ObjectProperty>>("Materials");
-        //        if (materials != null)
-        //        {
-        //            foreach (var materialObj in materials.Where(x => x.Value > 0))
-        //            {
-        //                //MaterialInstanceConstant
-        //                ExportEntry material = export.FileRef.GetUExport(materialObj.Value);
-        //                RMaterialInstance.RandomizeExportSkin(material, null, ref sc);
-        //            }
-        //        }
-        //    }
-
-
-        //    //var hairMeshObj = props.GetProp<ObjectProperty>("m_oHairMesh");
-        //    //if (hairMeshObj != null && export.FileRef.IsUExport(hairMeshObj.Value))
-        //    //{
-        //    //    Log.Information(@"Randomizing BioPawn m_oHairMesh")
-        //    //    return RandomizeSMComponent(hairMeshObj.ResolveToEntry(export.FileRef) as ExportEntry, props);
-        //    //}
-        //    return true;
-        //}
     }
 }

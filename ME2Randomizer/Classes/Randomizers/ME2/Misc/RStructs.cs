@@ -38,30 +38,33 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             int totalcolorValue = r.Value + g.Value + b.Value;
 
-            //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
-            //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
-            var randomOrderChooser = new List<ByteProperty>();
-            randomOrderChooser.Add(r);
-            randomOrderChooser.Add(g);
-            randomOrderChooser.Add(b);
-            randomOrderChooser.Shuffle();
-
-            randomOrderChooser[0].Value = (byte)ThreadSafeRandom.Next(0, Math.Min(totalcolorValue, 256));
-            totalcolorValue -= randomOrderChooser[0].Value;
-
-            randomOrderChooser[1].Value = (byte)ThreadSafeRandom.Next(0, Math.Min(totalcolorValue, 256));
-            totalcolorValue -= randomOrderChooser[1].Value;
-
-            randomOrderChooser[2].Value = (byte)totalcolorValue;
-            if (randomizeAlpha)
+            if (totalcolorValue > 0)
             {
-                if (alphaMaxMult != 1 && alphaMaxMult != 1)
+                //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
+                //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
+                var randomOrderChooser = new List<ByteProperty>();
+                randomOrderChooser.Add(r);
+                randomOrderChooser.Add(g);
+                randomOrderChooser.Add(b);
+                randomOrderChooser.Shuffle();
+
+                randomOrderChooser[0].Value = (byte)ThreadSafeRandom.Next(0, Math.Min(totalcolorValue, 256));
+                totalcolorValue -= randomOrderChooser[0].Value;
+
+                randomOrderChooser[1].Value = (byte)ThreadSafeRandom.Next(0, Math.Min(totalcolorValue, 256));
+                totalcolorValue -= randomOrderChooser[1].Value;
+
+                randomOrderChooser[2].Value = (byte)totalcolorValue;
+                if (randomizeAlpha)
                 {
-                    a.Value = (byte)ThreadSafeRandom.Next(a.Value * (int)alphaMinMult, Math.Min(256, (int)(a.Value * alphaMaxMult)));
-                }
-                else
-                {
-                    a.Value = (byte)ThreadSafeRandom.Next(0, 256);
+                    if (alphaMaxMult != 1 && alphaMaxMult != 1)
+                    {
+                        a.Value = (byte)ThreadSafeRandom.Next(a.Value * (int)alphaMinMult, Math.Min(256, (int)(a.Value * alphaMaxMult)));
+                    }
+                    else
+                    {
+                        a.Value = (byte)ThreadSafeRandom.Next(0, 256);
+                    }
                 }
             }
         }
@@ -71,7 +74,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// </summary>
         /// <param name="tint">A LinearColor struct (floatproperty values)</param>
         /// <param name="randomizeAlpha"></param>
-        public static void RandomizeTint(StructProperty tint, bool randomizeAlpha)
+        public static void RandomizeTint(StructProperty tint, bool randomizeAlpha, bool randomizeZeroValues = true)
         {
             var a = tint.GetProp<FloatProperty>("A");
             var r = tint.GetProp<FloatProperty>("R");
@@ -79,6 +82,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var b = tint.GetProp<FloatProperty>("B");
 
             float totalTintValue = r + g + b;
+            if (!randomizeZeroValues && totalTintValue == 0)
+                return; // Don't randomize
 
             //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
             //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
@@ -142,28 +147,31 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
             //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
             List<float> randomOrderChooser = new List<float>(3);
+            randomOrderChooser.Add(linearColor.W);
             randomOrderChooser.Add(linearColor.X);
             randomOrderChooser.Add(linearColor.Y);
-            randomOrderChooser.Add(linearColor.Z);
 
             float totalTintValue = randomOrderChooser.Sum();
-            randomOrderChooser.Shuffle();
-
-            randomOrderChooser[0] = ThreadSafeRandom.NextFloat(0, totalTintValue);
-            totalTintValue -= randomOrderChooser[0];
-
-            randomOrderChooser[1] = ThreadSafeRandom.NextFloat(0, totalTintValue);
-            totalTintValue -= randomOrderChooser[1];
-
-            randomOrderChooser[2] = totalTintValue;
-
-            linearColor.W = randomOrderChooser.PullFirstItem();
-            linearColor.X = randomOrderChooser.PullFirstItem();
-            linearColor.Y = randomOrderChooser.PullFirstItem();
-
-            if (randomizeAlpha)
+            if (totalTintValue > 0)
             {
-                linearColor.Z = ThreadSafeRandom.NextFloat(0, 1);
+                randomOrderChooser.Shuffle();
+
+                randomOrderChooser[0] = ThreadSafeRandom.NextFloat(0, totalTintValue);
+                totalTintValue -= randomOrderChooser[0];
+
+                randomOrderChooser[1] = ThreadSafeRandom.NextFloat(0, totalTintValue);
+                totalTintValue -= randomOrderChooser[1];
+
+                randomOrderChooser[2] = totalTintValue;
+
+                linearColor.W = randomOrderChooser.PullFirstItem();
+                linearColor.X = randomOrderChooser.PullFirstItem();
+                linearColor.Y = randomOrderChooser.PullFirstItem();
+
+                if (randomizeAlpha)
+                {
+                    linearColor.Z = ThreadSafeRandom.NextFloat(0, 1);
+                }
             }
         }
     }

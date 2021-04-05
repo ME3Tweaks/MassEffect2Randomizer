@@ -191,8 +191,8 @@ namespace ME2Randomizer.Classes
                         if (true
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("JnkKga_300", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
