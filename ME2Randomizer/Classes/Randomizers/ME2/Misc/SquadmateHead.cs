@@ -620,12 +620,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
 
                     var meshExp = parent.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
-                    var meshVal = meshExp.GetProperty<ObjectProperty>("SkeletalMesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
-                    var newMDL = newMeshP.FindExport(meshVal.InstancedFullPath);
+                    var targetMesh = meshExp.GetProperty<ObjectProperty>("SkeletalMesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
+                    var newMDL = newMeshP.FindExport(targetMesh.InstancedFullPath);
 
                     // Technically this should work
-                    EntryImporter.ReplaceExportDataWithAnother(newMDL, meshVal);
-
+                    //EntryImporter.ReplaceExportDataWithAnother(newMDL, targetMesh);
+                    var relinkFailures = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, newMDL, targetMesh.FileRef, targetMesh, true, out _, errorOccuredCallback: x => Debugger.Break());
+                    if (relinkFailures.Any())
+                    {
+                        MERLog.Fatal(@"FAILURE RELINKING THANE'S NO-EYELID MESH");
+                        Debugger.Break();
+                    }
                 }
 
                 // Post install fixup
@@ -665,7 +670,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             //        //Default__SFXPawn__BeepBoop
             //        opExp.GetProperty<ObjectProperty>()
             //    }
-                
+
 
             //    owningPawn = opExp.SuperClass;
             //}
