@@ -21,7 +21,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         {
             skipType = EMinigameSkipType.Invalid;
 
-            if (export.ClassName == "BioSeqAct_SkillGame_Decryption")
+            if (export.ClassName == "BioSeqAct_SkillGame_Decryption" || export.ClassName == "BioSeqAct_SkillGame_Bypass")
             {
                 skipType = EMinigameSkipType.SeqAct;
                 return true;
