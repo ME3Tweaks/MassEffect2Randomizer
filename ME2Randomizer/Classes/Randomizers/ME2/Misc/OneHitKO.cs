@@ -228,7 +228,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// <param name="funcData"></param>
         /// <param name="startOffset"></param>
         /// <param name="nopLen"></param>
-        private static void NopRange(byte[] funcData, int startOffset, int nopLen)
+        public static void NopRange(byte[] funcData, int startOffset, int nopLen)
         {
             for (int i = 0; i < nopLen; i++)
             {

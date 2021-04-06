@@ -192,7 +192,7 @@ namespace ME2Randomizer.Classes
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -787,7 +787,7 @@ namespace ME2Randomizer.Classes
                         HumanName = "Actors in cutscenes",
                         Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
                         PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns2,
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true
                     },
                     new RandomizationOption() {

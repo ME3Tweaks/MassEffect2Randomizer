@@ -37,10 +37,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool MakeShepardRagdollable(RandomizationOption option)
         {
             var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("SFXGame.pcc"));
+
+            // Add ragdoll power to shep
             var sfxplayercontrollerDefaults = sfxgame.GetUExport(30777);
             var cac = sfxplayercontrollerDefaults.GetProperty<ArrayProperty<ObjectProperty>>("CustomActionClasses");
             cac[5].Value = 25988; //SFXCustomActionRagdoll
             sfxplayercontrollerDefaults.WriteProperty(cac);
+
+            // Update power script design and patch out player physics level
+            var sd = sfxgame.GetUExport(14353).Data;
+            OneHitKO.NopRange(sd, 0x62, 0x27);
+            sfxgame.GetUExport(14353).Data = sd;
+
             MERFileSystem.SavePackage(sfxgame);
             return true;
         }
