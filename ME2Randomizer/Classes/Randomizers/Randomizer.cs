@@ -152,12 +152,28 @@ namespace ME2Randomizer.Classes
             ME3Textures.SetupME3Textures();
 #endif
 
+                void srUpdate(object? o, EventArgs eventArgs)
+                {
+                    if (o is RandomizationOption option)
+                    {
+                        mainWindow.ProgressBarIndeterminate = option.ProgressIndeterminate;
+                        mainWindow.CurrentProgressValue = option.ProgressValue;
+                        mainWindow.ProgressBar_Bottom_Max = option.ProgressMax;
+                        if (option.CurrentOperation != null)
+                        {
+                            mainWindow.CurrentOperationText = option.CurrentOperation;
+                        }
+                    }
+                }
+
                 // Pass 1: All randomizers that are file specific and are not post-run
                 foreach (var sr in specificRandomizers.Where(x => !x.IsPostRun))
                 {
+                    sr.OnOperationUpdate += srUpdate;
                     MERLog.Information($"Running specific randomizer {sr.HumanName}");
                     mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
                     sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+                    sr.OnOperationUpdate -= srUpdate;
                 }
 
                 // Pass 2: All exports
@@ -192,7 +208,7 @@ namespace ME2Randomizer.Classes
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase) // Only modify JnkKgA files
                         )
                             return;
 #endif
@@ -632,12 +648,23 @@ namespace ME2Randomizer.Classes
                     new RandomizationOption()
                     {
                         HumanName = "Class powers",
-                        Description="Shuffles the powers of all player classes. Weapon classes are unchanged. Loading an existing save after running this will cause you to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        Description="Shuffles the powers of all player classes. Loading an existing save after running this will cause you to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
                         RequiresTLK = true
                     },
+#if DEBUG
+                    new RandomizationOption()
+                    {
+                        HumanName = "Henchmen powers",
+                        Description="Shuffles the powers of squadmates. Loading an existing save after running this will cause them to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true,
+                        PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilities,
+                        RequiresTLK = true
+                    },
+#endif
                     new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption()
                     {

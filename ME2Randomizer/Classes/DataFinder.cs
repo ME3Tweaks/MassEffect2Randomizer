@@ -82,7 +82,7 @@ namespace ME2Randomizer.Classes
 
             mainWindow.ProgressBarIndeterminate = false;
             mainWindow.ProgressBar_Bottom_Max = files.Count(x => x.RepresentsPackageFilePath());
-            mainWindow.ProgressBar_Bottom_Min = 0;
+            mainWindow.CurrentProgressValue = 0;
 
             // PREP WORK
             //var startupFileCache = GetGlobalCache();
@@ -666,7 +666,7 @@ namespace ME2Randomizer.Classes
 
             mainWindow.ProgressBarIndeterminate = false;
             mainWindow.ProgressBar_Bottom_Max = files.Count();
-            mainWindow.ProgressBar_Bottom_Min = 0;
+            mainWindow.CurrentProgressValue = 0;
 
             var startupFileCache = MERFileSystem.GetGlobalCache();
 
@@ -781,7 +781,7 @@ namespace ME2Randomizer.Classes
 
             mainWindow.ProgressBarIndeterminate = false;
             mainWindow.ProgressBar_Bottom_Max = files.Count();
-            mainWindow.ProgressBar_Bottom_Min = 0;
+            mainWindow.CurrentProgressValue = 0;
 
             var startupFileCache = MERFileSystem.GetGlobalCache();
 
@@ -954,7 +954,7 @@ namespace ME2Randomizer.Classes
 
             mainWindow.ProgressBarIndeterminate = false;
             mainWindow.ProgressBar_Bottom_Max = files.Count();
-            mainWindow.ProgressBar_Bottom_Min = 0;
+            mainWindow.CurrentProgressValue = 0;
 
             // PREP WORK
             var startupFileCache = MERFileSystem.GetGlobalCache();
@@ -1030,7 +1030,7 @@ namespace ME2Randomizer.Classes
 
             mainWindow.ProgressBarIndeterminate = false;
             mainWindow.ProgressBar_Bottom_Max = files.Count();
-            mainWindow.ProgressBar_Bottom_Min = 0;
+            mainWindow.CurrentProgressValue = 0;
 
             Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
             {

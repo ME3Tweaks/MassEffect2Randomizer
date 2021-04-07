@@ -17,6 +17,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         private static List<TalkFile> LoadedOfficialTalkFiles { get; set; }
         private static List<TalkFile> MERTalkFiles { get; set; }
         private static TLKHandler CurrentHandler { get; set; }
+        public const int FirstDynamicID = 7421320;
 
 
         /// <summary>
@@ -126,7 +127,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
         #region Private members
 
         private SortedSet<string> loadedLanguages = new SortedSet<string>();
-        private int NextDynamicID = 7421320;
+        private int NextDynamicID = FirstDynamicID;
         private TalkFile MERTalkFile;
         private void Start()
         {
@@ -239,6 +240,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
             var items = LoadedOfficialTalkFiles.ToList();
             items.AddRange(MERTalkFiles);
             return items;
+        }
+
+        public static bool IsAssignedMERString(int descriptionPropValue)
+        {
+            return descriptionPropValue >= FirstDynamicID && descriptionPropValue <= CurrentHandler.NextDynamicID;
         }
     }
 }

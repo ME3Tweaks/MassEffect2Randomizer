@@ -15,6 +15,20 @@ namespace ME2Randomizer.Classes
         /// Used for forcing binding updates when the binded object is this object
         /// </summary>
         public RandomizationOption Self { get; set; }
+
+        #region EventHandling
+        public string CurrentOperation { get; set; }
+        public int ProgressValue { get; set; }
+        public int ProgressMax { get; set; }
+        public bool ProgressIndeterminate { get; set; } = true;
+        public void OnCurrentOperationChanged() { OnOperationUpdate?.Invoke(this, null); }
+        public void OnProgressValueChanged() { OnOperationUpdate?.Invoke(this, null); }
+        public void OnProgressMaxChanged() { OnOperationUpdate?.Invoke(this, null); }
+        public void OnProgressIndeterminateChanged() { OnOperationUpdate?.Invoke(this, null); }
+
+        public event EventHandler OnOperationUpdate;
+        #endregion
+
         public enum EOptionDangerousness
         {
             /// <summary>
