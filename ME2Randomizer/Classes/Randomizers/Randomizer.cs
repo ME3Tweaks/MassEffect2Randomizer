@@ -208,7 +208,7 @@ namespace ME2Randomizer.Classes
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase) // Only modify JnkKgA files
+                        && !file.Contains("Arv", StringComparison.InvariantCultureIgnoreCase) // Only modify JnkKgA files
                         )
                             return;
 #endif

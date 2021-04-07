@@ -39,6 +39,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 return (PowerExport != null ? PowerExport.GetHashCode() : 0);
             }
+            /// <summary>
+            /// If power is shown in the Character Record (squad) screen
+            /// </summary>
+            public bool ShowInCR { get; set; } = true;
 
             public PropertyCollection CondensedProperties { get; private set; }
             /// <summary>
@@ -76,6 +80,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     PowerName = TLKHandler.TLKLookupByLang(displayName.Value, "INT");
                 }
+
+                ShowInCR = CondensedProperties.GetProp<BoolProperty>("DisplayInCharacterRecord")?.Value ?? true;
 
                 if (isFixedPower)
                 {
@@ -189,11 +195,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             public IEnumerable<HTalent> GetEvolutions()
             {
                 var baseProps = BasePower.GetDefaults().GetProperties();
-
                 HTalent evo1 = new HTalent(baseProps.GetProp<ObjectProperty>("EvolvedPowerClass1").ResolveToEntry(BasePower.FileRef) as ExportEntry, true);
                 HTalent evo2 = new HTalent(baseProps.GetProp<ObjectProperty>("EvolvedPowerClass2").ResolveToEntry(BasePower.FileRef) as ExportEntry, true);
-                if (evo1 == null || evo2 == null)
-                    Debugger.Break();
                 return new[] { evo1, evo2 };
             }
         }
@@ -212,7 +215,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 int numPassives = 0;
 
-                int numPowersToAssign = 4 - hpi.FixedPowers.Count;
+                int numPowersToAssign = hpi.NumPowersToAssign;
                 for (int i = 0; i < numPowersToAssign; i++)
                 {
                     var talent = allPowers.PullFirstItem();
@@ -356,6 +359,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 return HenchTalentSet.SetEvolutions(this, evolvedTalentPool);
             }
 
+            /// <summary>
+            /// Puts base powers in order, with HUD powers first and non-HUD powers at the bottom. This ensure the unlock requirements are done properly
+            /// </summary>
+            public void OrderBasePowers()
+            {
+                var powers = HenchTalentSet.Powers.ToList();
+                HenchTalentSet.Powers.Clear();
+
+                HenchTalentSet.Powers.AddRange(powers.Where(x => x.ShowInCR));
+                HenchTalentSet.Powers.AddRange(powers.Where(x => !x.ShowInCR));
+            }
 
             /// <summary>
             /// Commits the HenchTalentSet to the packages in the Packages list and sets up the loyalty requirement for the final power.
@@ -581,7 +595,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             // Step 4. Assign and map powers
-
+            foreach (var pow in squadmatePackageMap.Values)
+            {
+                pow.OrderBasePowers();
+            }
             int kitIndex = 0;
 
             // SINGLE THREAD FOR NOW!! Ini handler is not thread safe
@@ -590,17 +607,19 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             option.ProgressValue = 0;
             option.ProgressMax = squadmatePackageMap.Values.Sum(x => x.Packages.Count);
             numDone = 0;
-            foreach (var hpi in squadmatePackageMap.Values.OrderByDescending(x=>x.HenchTalentSet.Powers.Count))
+            foreach (var hpi in squadmatePackageMap.Values)
             {
                 object tlkSync = new object();
-                MERLog.Information($"Assigning talent set for {hpi.HenchInternalName}");
+                MERLog.Information($"Installing talent set for {hpi.HenchInternalName}");
 
-                Parallel.ForEach(hpi.Packages, new ParallelOptions() { MaxDegreeOfParallelism = 3 }, package =>
+                Parallel.ForEach(hpi.Packages, new ParallelOptions() { MaxDegreeOfParallelism = 1 }, package =>
                   {
                       //foreach (var loadout in assets)
                       //{
                       // We must load a new copy of the package file into memory, one for reading, one for modifying,
                       // otherwise it will be concurrent modification
+                      //if (!package.FilePath.Contains("Thief"))
+                      //      return;
                       var loadout = package.FindExport(hpi.LoadoutIFP);
 
                       List<MappedPower> configuredPowers = new List<MappedPower>();
@@ -618,16 +637,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                       // Assign base powers
                       int powIndex = 0;
                       // Lists for updating the class description in the character creator
-                      List<string> combatPowers = new List<string>();
-                      List<string> ammoPowers = new List<string>();
                       foreach (var basePower in talentSet.Powers)
                       {
                           if (hpi.FixedPowers.Contains(basePower))
                               continue; // Do not modify this
-                          if (basePower.IsAmmoPower)
-                              ammoPowers.Add(basePower.PowerName);
-                          else if (basePower.IsCombatPower)
-                              combatPowers.Add(basePower.PowerName);
                           var portedPower = PackageTools.PortExportIntoPackage(loadout.FileRef, basePower.PowerExport);
                           powersList.Add(new ObjectProperty(portedPower.UIndex));
 
@@ -672,8 +685,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                       }
 
                       // Add passives back
-                      powersList.AddRange(powersToKeep);
+                      List<ObjectProperty> appendAtEndItems = new List<ObjectProperty>();
+                      foreach (var ptk in powersToKeep)
+                      {
+                          var export = ptk.ResolveToEntry(package) as ExportEntry;
+                          var talent = new HTalent(export, false, isFixedPower: true);
+                          if (talent.ShowInCR)
+                          {
+                              powersList.Add(ptk);
+                          }
+                          else
+                          {
+                              appendAtEndItems.Add(ptk);
+                          }
+                      }
 
+                      powersList.AddRange(appendAtEndItems);
+
+                      // Order the powers
                       // Write loadout data
                       if (powersList.Count != originalCount)
                       {
@@ -683,6 +712,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                       loadoutProps.AddOrReplaceProp(powersList);
 
                       // Build the autoranks
+                      foreach (var fixedPower in hpi.FixedPowers.Where(x => x.ShowInCR))
+                      {
+                          // Add fixed powers evo information
+                          var mp = new MappedPower() { BaseTalent = fixedPower };
+                          var evo1c = fixedPower.CondensedProperties.GetProp<ObjectProperty>("EvolvedPowerClass1").ResolveToEntry(fixedPower.PowerExport.FileRef) as ExportEntry;
+                          var evo2c = fixedPower.CondensedProperties.GetProp<ObjectProperty>("EvolvedPowerClass2").ResolveToEntry(fixedPower.PowerExport.FileRef) as ExportEntry;
+                          mp.EvolvedTalent1 = new HTalent(evo1c, true);
+                          mp.EvolvedTalent2 = new HTalent(evo2c, true);
+                          configuredPowers.Add(mp);
+                      }
                       loadoutProps.AddOrReplaceProp(BuildAutoRankList(loadout, configuredPowers));
 
                       // Finalize loadout export
@@ -701,73 +740,77 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                           // Power 5: Depends on Power 4 Rank 2
                           // Power 6: No requirements, but no points assigned
 
-                          var power = loadout.FileRef.FindExport(talentSet.Powers[i].PowerExport.InstancedFullPath);
-                          var defaults = power.GetDefaults();
+                          var talent = talentSet.Powers[i];
+                          var powerExport = loadout.FileRef.FindExport(talentSet.Powers[i].PowerExport.InstancedFullPath);
+                          var defaults = powerExport.GetDefaults();
 
                           var properties = defaults.GetProperties();
                           properties.RemoveNamedProperty("Rank");
                           properties.RemoveNamedProperty("UnlockRequirements");
 
-                          if (i == 0 || i == 2)
+                          // All squadmates have a piont in Slot 0 by default.
+                          // Miranda and Jacob have a point in slot 1
+                          if (i == 0 || (i == 1 && hpi.HenchInternalName == "vixen" || hpi.HenchInternalName == "leading"))
                           {
                               properties.Add(new FloatProperty(1, "Rank"));
                           }
-                          else if (i == 1 || i == 3 || i == 4)
+                          else if (i == 1)
                           {
-                              // Has dependency
+                              // Has unlock dependency on the prior slotted item
                               var dependencies = new ArrayProperty<StructProperty>("UnlockRequirements");
-                              dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath)));
+                              dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath), false));
+                              properties.Add(dependencies);
+                          }
+                          else if (i == 3)
+                          {
+                              // Has unlock dependency on loyalty power
+                              // Has unlock dependency on the prior slotted item
+                              var dependencies = new ArrayProperty<StructProperty>("UnlockRequirements");
+                              dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath), true));
                               properties.Add(dependencies);
                           }
 
                           defaults.WriteProperties(properties);
                       }
 
-                      // Update the string ref for the class description
-                      //var tlkStrRef = ClasStrRefMap[kit];
-                      //var existingStr = TLKHandler.TLKLookupByLang(tlkStrRef, "INT");
-                      //var existingLines = existingStr.Split('\n').ToList();
-                      //var powersLineIdx = existingLines.FindIndex(x => x.StartsWith("Power Training:"));
-                      //var weaponsLineIdx = existingLines.FindIndex(x => x.StartsWith("Weapon Training:"));
-                      //var ammoLineIdx = existingLines.FindIndex(x => x.StartsWith("Ammo Training:"));
-
-                      //existingLines[powersLineIdx] = $"Power Training: {string.Join(", ", combatPowers)}";
-                      //var ammoText = $"Ammo Training: {string.Join(", ", ammoPowers)}";
-
-                      //if (ammoLineIdx >= 0 && !ammoPowers.Any())
-                      //{
-                      //    existingLines.RemoveAt(ammoLineIdx); // no ammo powers. Remove the line
-                      //}
-                      //else if (ammoLineIdx == -1 && ammoPowers.Any())
-                      //{
-                      //    existingLines.Insert(weaponsLineIdx + 1, ammoText); // Adding ammo powers. Add the line
-                      //}
-                      //else if (ammoLineIdx >= 0 && ammoText.Any())
-                      //{
-                      //    // Replace existing line
-                      //    existingLines[ammoLineIdx] = ammoText;
-                      //}
-                      //else if (ammoLineIdx == -1 && !ammoPowers.Any())
-                      //{
-                      //    // Do nothing. There's no ammo line and there's no ammo powers.
-                      //}
-                      //else
-                      //{
-                      //    // Should not occur!
-                      //    Debugger.Break();
-                      //}
-
-                      //TLKHandler.ReplaceString(tlkStrRef, string.Join('\n', existingLines), "INT");
-
-                      // Update the autolevel up s t ruct
-
-
-                      MERFileSystem.SavePackage(loadout.FileRef);
                       Interlocked.Increment(ref numDone);
                       option.ProgressValue = numDone;
                   });
+
+
+
             }
 
+            numDone = 0;
+            option.CurrentOperation = "Saving squadmate packages";
+            option.ProgressValue = 0;
+            GC.Collect();
+            foreach (var hpi in squadmatePackageMap.Values)
+            {
+                foreach (var package in hpi.Packages)
+                {
+                    var loadout = package.FindExport(hpi.LoadoutIFP);
+                    var powersList = loadout.GetProperty<ArrayProperty<ObjectProperty>>("Powers");
+                    foreach (var powO in powersList)
+                    {
+                        // Memory-unique powers so squadmates with same powers don't conflict. This has to be done after all the other changes are done or it will not be able to use FindExport()
+                        var entry = powO.ResolveToEntry(package);
+                        if (CanBeShuffled(entry as ExportEntry, out _))
+                        {
+                            entry = package.FindExport(entry.InstancedFullPath);
+                            entry.ObjectName = entry.ObjectName.Name + $"_MER{hpi.HenchInternalName}";
+                            var defaults = (entry as ExportEntry).GetDefaults();
+                            defaults.ObjectName = defaults.ObjectName.Name + $"_MER{hpi.HenchInternalName}";
+                        }
+                    }
+
+                    MERFileSystem.SavePackage(loadout.FileRef);
+                    Interlocked.Increment(ref numDone);
+                    option.ProgressValue = numDone;
+                }
+            }
+
+            GC.Collect(); // Dump lots of memory out
             return true;
         }
 
@@ -787,7 +830,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             new UnshuffleablePower() {PowerName = "SFXPower_KasumiUnique", Pawn="thief"},
             new UnshuffleablePower() {PowerName = "SFXPower_KasumiAssassinate", Pawn="thief", CountsTowardsTalentCount = false},
             new UnshuffleablePower() {PowerName = "SFXPower_ZaeedUnique", Pawn="veteran"},
-
         };
 
         /// <summary>
@@ -826,20 +868,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// </summary>
         /// <param name="powerClass">The kit-power to depend on.</param>
         /// <returns></returns>
-        private static List<StructProperty> GetUnlockRequirementsForPower(ExportEntry powerClass)
+        private static List<StructProperty> GetUnlockRequirementsForPower(ExportEntry powerClass, bool isLoyaltyRequirement)
         {
             void PopulateProps(PropertyCollection props, ExportEntry export, float rank)
             {
                 props.Add(new ObjectProperty(export.UIndex, "PowerClass")); // The power that will be checked
                 props.Add(new FloatProperty(rank, "Rank")); // Required rank. 1 means at least one point in it and is used for evolved powers which area always at 4.
-                props.Add(new StringRefProperty(0, "CustomUnlockText")); // Unused
+                props.Add(new StringRefProperty(isLoyaltyRequirement ? 339163 : 0, "CustomUnlockText")); // "Locked: squad member is not loyal"
             }
 
             List<StructProperty> powerRequirements = new();
 
             // Unevolved power
             PropertyCollection props = new PropertyCollection();
-            PopulateProps(props, powerClass, 2);
+            PopulateProps(props, powerClass, isLoyaltyRequirement ? 1 : 2); // Loyalty is rank 1. Others are rank 2
             powerRequirements.Add(new StructProperty("UnlockRequirement", props));
 
             // EVOLVED POWER
@@ -867,14 +909,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             powerRequirements.Add(new StructProperty("UnlockRequirement", props));
 
             return powerRequirements;
-        }
-
-        private static bool CanShufflePower(ExportEntry power)
-        {
-            //if (power.ObjectName.Name.Contains("Passive")) return false; // Passives are actually visible and upgradable
-            if (power.ObjectName.Name.Contains("SFXPower_Player")) return false;
-            if (power.ObjectName.Name.Contains("FirstAid")) return false;
-            return true;
         }
 
         private static ArrayProperty<StructProperty> BuildAutoRankList(ExportEntry loadout, List<MappedPower> mappedPowers)
@@ -909,12 +943,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 rankMap[mp] = newRank;
             }
 
-
-            int i = 0;
-            while (i < 17)
-            {
-                i++;
-            }
             return alui;
         }
     }
