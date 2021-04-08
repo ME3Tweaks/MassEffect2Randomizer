@@ -383,7 +383,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// <summary>
             /// The internal name for this henchman
             /// </summary>
-            public string HenchInternalName { get; }
+            public string HenchInternalName { get; set; }
             /// <summary>
             /// The list of packages that contain this henchmen
             /// </summary>
@@ -393,8 +393,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// Loadout InstancedFullPaths. Samara has multiple loadouts
             /// </summary>
             public List<HenchLoadoutInfo> PackageLoadouts { get; } = new List<HenchLoadoutInfo>();
+            /// <summary>
+            /// Hint for loadout inventory to only match on object named this. If null it'll pull in all loadouts in the package file that start with hench_.
+            /// </summary>
+            public string LoadoutHint { get; set; }
 
-            public HenchInfo(string internalName)
+            public HenchInfo(string internalName = null)
             {
                 HenchInternalName = internalName;
             }
@@ -416,6 +420,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
         }
 
+        private static string[] NonBioHHenchmenFiles = new[]
+        {
+            "BioD_ArvLvl1.pcc" // Kenson
+        };
+
         public static bool ShuffleSquadmateAbilities(RandomizationOption option)
         {
             PatchOutTutorials();
@@ -426,8 +435,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var squadmatePackageMap = new CaseInsensitiveConcurrentDictionary<HenchInfo>();
 
             #region Build squadmate sets
-            var henchFiles = MERFileSystem.LoadedFiles.Keys.Where(x => x.StartsWith("BioH_") && !x.Contains("_LOC_") && !x.Contains("END") && x != "BioH_SelectGUI" && (x.Contains("00")) || x.Contains("BioH_Wilson")).ToList();
             option.CurrentOperation = "Inventorying henchmen powers";
+            var henchFiles = MERFileSystem.LoadedFiles.Keys.Where(x => x.StartsWith("BioH_") && !x.Contains("_LOC_") && !x.Contains("END") && x != "BioH_SelectGUI" && (x.Contains("00")) || x.Contains("BioH_Wilson") || NonBioHHenchmenFiles.Contains(x)).ToList();
+
+            
             int numDone = 0;
             option.ProgressMax = henchFiles.Count;
             Parallel.ForEach(henchFiles, h =>
@@ -435,18 +446,51 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 //foreach (var h in henchFiles)
                 //{
 
-                string internalName = null;
+                // Debug only
+#if DEBUG
+                if (true
+                    && !h.Contains("leading", StringComparison.InvariantCultureIgnoreCase)
+                    && !h.Contains("vixen", StringComparison.InvariantCultureIgnoreCase)
+                    &&!h.Contains("arvlvl", StringComparison.InvariantCultureIgnoreCase))
+                {
+                            return;
+                }
+#endif
+
+                HenchInfo hpi = new HenchInfo();
+
+                string internalName;
                 if (h == "BioH_Wilson.pcc")
                 {
-                    internalName = "wilson";
+                    hpi.HenchInternalName = "wilson";
                 }
-                else
+                else if (h == "BioD_ArvLvl1.pcc")
+                {
+                    hpi.LoadoutHint = "hench_Kenson";
+                    hpi.HenchInternalName = "kenson";
+                }
+                else if (h.StartsWith("BioH_"))
                 {
                     internalName = h.Substring(5); // Remove BioH_
                     internalName = internalName.Substring(0, internalName.IndexOf("_", StringComparison.InvariantCultureIgnoreCase)); // "Assassin"
+                    hpi.HenchInternalName = internalName;
+
+                    // These pawns appear embedded in existing files
+                    if (h.Contains("leading", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        hpi.LoadoutHint = "hench_Jacob";
+                    }
+                    else if (h.Contains("leading", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        hpi.LoadoutHint = "hench_Miranda";
+                    }
                 }
-                HenchInfo hpi = new HenchInfo(internalName);
-                InventorySquadmate(hpi, h, squadmatePackageMap, henchCache);
+                else
+                {
+                    // Custom other
+                }
+
+                LoadSquadmatePackages(hpi, h, squadmatePackageMap, henchCache);
 
                 Interlocked.Increment(ref numDone);
                 option.ProgressValue = numDone;
@@ -466,12 +510,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     //foreach (var henchInfo in squadmatePackageMap)
                     //{
-                    
+
 
                     var henchP = henchInfo.Value.Packages[0];
-                    var loadouts = henchP.Exports.Where(x => x.ClassName == "SFXPlayerSquadLoadoutData" && x.ObjectName.Name.StartsWith("hench_")).ToList();
+                    var loadouts = henchP.Exports.Where(x => x.ClassName == "SFXPlayerSquadLoadoutData").ToList();
                     foreach (var loadout in loadouts)
                     {
+                        if (henchInfo.Value.LoadoutHint != null)
+                        {
+                            // HenchInfo has hint to indicate only select this named loadout
+                            if (loadout.ObjectName != henchInfo.Value.LoadoutHint)
+                                return; // Don't operate on this one
+                        }
+
+
                         HenchLoadoutInfo hli = new HenchLoadoutInfo() { LoadoutIFP = loadout.InstancedFullPath };
                         henchInfo.Value.PackageLoadouts.Add(hli);
                         if (henchInfo.Key == "wilson")
@@ -648,6 +700,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                       // otherwise it will be concurrent modification
                       //if (!package.FilePath.Contains("Thief"))
                       //      return;
+                      if (package == null)
+                          Debugger.Break();
                       foreach (var loadoutInfo in hpi.PackageLoadouts)
                       {
                           var loadout = package.FindExport(loadoutInfo.LoadoutIFP);
@@ -919,7 +973,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
         }
 
-        private static void InventorySquadmate(HenchInfo hpi, string vanillaPackagePath, CaseInsensitiveConcurrentDictionary<HenchInfo> squadmatePackageMap, MERPackageCache henchCache)
+        private static void LoadSquadmatePackages(HenchInfo hpi, string vanillaPackagePath, CaseInsensitiveConcurrentDictionary<HenchInfo> squadmatePackageMap, MERPackageCache henchCache)
         {
             Debug.WriteLine($"Opening packages for {hpi.HenchInternalName}");
 
@@ -958,12 +1012,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 case "leading": // Jacob
                     hpi.Packages.Add(henchCache.GetCachedPackage("BioP_ProCer.pcc", true));
-                    hpi.Packages.Add(henchCache.GetCachedPackage("BioD_ProCer_350DebriefRoom.pcc", true));
+                    hpi.Packages.Add(henchCache.GetCachedPackage("BioD_ProCer_350BriefRoom.pcc", true));
                     break;
                 case "vixen": // Miranda
                     hpi.Packages.Add(henchCache.GetCachedPackage("BioP_ProCer.pcc", true));
                     hpi.Packages.Add(henchCache.GetCachedPackage("BioD_ProCer_300ShuttleBay.pcc", true));
-                    hpi.Packages.Add(henchCache.GetCachedPackage("BioD_ProCer_350DebriefRoom.pcc", true));
+                    hpi.Packages.Add(henchCache.GetCachedPackage("BioD_ProCer_350BriefRoom.pcc", true));
+                    hpi.Packages.Add(henchCache.GetCachedPackage("BioA_ZyaVtl_100.pcc", true));
+                    break;
+                case "kenson":
+                    hpi.Packages.Add(henchCache.GetCachedPackage("BioD_ArvLvl1_710Shuttle.pcc", true));
                     break;
             }
         }

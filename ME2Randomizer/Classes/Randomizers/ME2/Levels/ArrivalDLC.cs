@@ -158,7 +158,37 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
         internal static bool PerformRandomization(RandomizationOption notUsed)
         {
             RandomizeAsteroidRelayColor();
+            MakeKensonCool();
             return true;
+        }
+
+        private static void MakeKensonCool()
+        {
+            string[] files = new[]
+            {
+                "BioD_ArvLvl1.pcc",
+                "BioD_ArvLvl4_300Entrance.pcc",
+            };
+            foreach (var f in files)
+            {
+                var kensonFile = MERFileSystem.GetPackageFile(f, false);
+                if (kensonFile != null && File.Exists(kensonFile))
+                {
+                    var kensonP = MEPackageHandler.OpenMEPackage(kensonFile);
+                    var ifp = kensonP.FindExport("SFXGameContentKenson.Default__SFXPawn_Kenson_01.BioPawnSkeletalMeshComponent");
+                    ifp.RemoveProperty("Materials");
+                    ifp.RemoveProperty("SkeletalMesh");
+
+                    // Remove materials used in base as they're wrong
+                    kensonP.FindExport("SFXGameContentKenson.Default__SFXPawn_Kenson.BioPawnSkeletalMeshComponent").RemoveProperty("Materials");
+                    
+                    MERFileSystem.SavePackage(kensonP);
+                }
+                else
+                {
+                    MERLog.Information($"Kenson file not found: {f}, skipping...");
+                }
+            }
         }
     }
 }
