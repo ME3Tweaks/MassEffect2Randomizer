@@ -662,7 +662,17 @@ namespace ME2Randomizer.Classes
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilities,
-                        RequiresTLK = true
+                        RequiresTLK = true,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                SubOptionKey = HenchTalents.SUBOPTION_HENCHPOWERS_REMOVEGATING,
+                                HumanName = "Remove rank-up gating",
+                                Description = "Removes the unlock requirement for the second power slot. The final power slot will still be gated by loyalty."
+                            }
+                        }
                     },
 #endif
                     new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},

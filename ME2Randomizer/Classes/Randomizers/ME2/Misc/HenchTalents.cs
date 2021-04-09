@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -14,13 +15,16 @@ using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Kismet;
 using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
+using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
-    class HenchTalents
+    public class HenchTalents
     {
+        public const string SUBOPTION_HENCHPOWERS_REMOVEGATING = "SUBOPTION_HENCHPOWERS_REMOVEGATING";
+
+
         [DebuggerDisplay("HTalent - {PowerExport.ObjectName}, Base {BasePower.ObjectName}, IsPassive: {IsPassive}")]
         class HTalent
         {
@@ -71,11 +75,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             }
 
+            #region Passive Strings
+            public string PassiveDescriptionString { get; set; }
+            public string PassiveRankDescriptionString { get; set; }
+            public string PassiveTalentDescriptionString { get; set; }
 
+            #endregion
             public HTalent(ExportEntry powerClass, bool isEvolution = false, bool isFixedPower = false)
             {
                 PowerExport = powerClass;
                 IsEvolution = isEvolution;
+
                 CondenseTalentProperties(powerClass);
                 var displayName = CondensedProperties.GetProp<StringRefProperty>("DisplayName");
                 if (displayName != null)
@@ -145,6 +155,24 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                 IsAmmoPower = PowerName.Contains("Ammo");
                 IsCombatPower = !IsAmmoPower && !IsPassive;
+
+                if (IsPassive)
+                {
+
+                    // We have to pull in strings so when we change genders on who we assign this power to, it is accurate.
+                    var talentStrId = CondensedProperties.GetProp<StringRefProperty>("TalentDescription").Value;
+                    if (talentStrId == 389424)
+                    {
+                        // This string is not defined in vanilla but we need a value for this to work
+                        PassiveTalentDescriptionString = "Kenson's technological prowess refines her combat skills, boosting her health, weapon damage and shields.";
+                    }
+                    else
+                    {
+                        PassiveTalentDescriptionString = TLKHandler.TLKLookupByLang(talentStrId, "INT");
+                    }
+                    PassiveDescriptionString = TLKHandler.TLKLookupByLang(CondensedProperties.GetProp<StringRefProperty>("Description").Value, "INT");
+                    PassiveRankDescriptionString = TLKHandler.TLKLookupByLang(CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks")[0].GetProp<StringRefProperty>("Description").Value, "INT");
+                }
             }
 
 
@@ -307,7 +335,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             public HTalent EvolvedTalent2 { get; set; }
         }
 
-        class HenchLoadoutInfo
+        [DebuggerDisplay("HenchLoadoutInfo for {HenchUIName}")]
+        class HenchLoadoutInfo : INotifyPropertyChanged
         {
             /// <summary>
             /// The list of talents that will be installed to this henchman
@@ -327,6 +356,82 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// </summary>
             public string LoadoutIFP { get; set; }
 
+            /// <summary>
+            /// Called when LoadoutIFP changes.
+            /// </summary>
+            public void OnLoadoutIFPChanged()
+            {
+                var lastIndex = LoadoutIFP.LastIndexOf("_");
+                HenchUIName = LoadoutIFP.Substring(lastIndex + 1).UpperFirst();
+
+                switch (HenchUIName)
+                {
+                    case "Miranda":
+                    case "Samara":
+                    case "Morinth":
+                    case "Kasumi":
+                    case "Liara":
+                    case "Kenson":
+                    case "Jack":
+                    case "Tali":
+                        HenchIsFemale = true;
+                        break;
+                }
+            }
+
+            /// <summary>
+            /// The UI name of the henchman that this loadout is for
+            /// </summary>
+            public string HenchUIName { get; private set; }
+
+            public bool HenchIsFemale { get; private set; }
+
+            private static string[] maleGenderWords = new[] { "him", "his" };
+            private static string[] femaleGenderWords = new[] { "her", "her" };
+            private static string[] squadmateNames = new[]
+            {
+                "Kasumi",
+                "Grunt",
+                "Thane",
+                "Jack",
+                "Miranda",
+                "Legion",
+                "Zaeed",
+                "Tali",
+                "Samara",
+                "Mordin",
+                "Jacob",
+                "Garrus",
+                "Liara",
+                "Kenson",
+                "Wilson",
+            };
+
+            /// <summary>
+            /// Converts the input string to the gender of this loadout, including the name.
+            /// </summary>
+            /// <param name="str"></param>
+            /// <returns></returns>
+            public string GenderizeString(string str)
+            {
+                var sourceGenderWords = HenchIsFemale ? maleGenderWords : femaleGenderWords;
+                var targetGenderWords = HenchIsFemale ? femaleGenderWords : maleGenderWords;
+                var otherSquadmateNames = squadmateNames.Where(x => x != HenchUIName).ToList();
+
+                for (int i = 0; i < sourceGenderWords.Length; i++)
+                {
+                    str = str.Replace(sourceGenderWords[i], targetGenderWords[i]);
+                }
+
+                foreach (var osn in otherSquadmateNames)
+                {
+                    str = str.Replace(osn, HenchUIName);
+                }
+
+                str = str.Replace("Garrus's", "Garrus'"); // Fix plural possessive for s
+
+                return str;
+            }
 
             /// <summary>
             /// Builds a valid base talentset for this henchman from the list of available base talents. If none can be built this method returns false
@@ -376,6 +481,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 HenchTalentSet?.EvolvedPowers.Clear();
             }
+#pragma warning disable
+            public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore
         }
 
         class HenchInfo
@@ -427,6 +535,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         public static bool ShuffleSquadmateAbilities(RandomizationOption option)
         {
+            bool removeRank2Gating = option.HasSubOptionSelected(SUBOPTION_HENCHPOWERS_REMOVEGATING);
+
             PatchOutTutorials();
 
             var henchCache = new MERPackageCache();
@@ -438,7 +548,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             option.CurrentOperation = "Inventorying henchmen powers";
             var henchFiles = MERFileSystem.LoadedFiles.Keys.Where(x => x.StartsWith("BioH_") && !x.Contains("_LOC_") && !x.Contains("END") && x != "BioH_SelectGUI" && (x.Contains("00")) || x.Contains("BioH_Wilson") || NonBioHHenchmenFiles.Contains(x)).ToList();
 
-            
+
             int numDone = 0;
             option.ProgressMax = henchFiles.Count;
             Parallel.ForEach(henchFiles, h =>
@@ -449,11 +559,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Debug only
 #if DEBUG
                 if (true
-                    && !h.Contains("leading", StringComparison.InvariantCultureIgnoreCase)
-                    && !h.Contains("vixen", StringComparison.InvariantCultureIgnoreCase)
-                    &&!h.Contains("arvlvl", StringComparison.InvariantCultureIgnoreCase))
+                && !h.Contains("leading", StringComparison.InvariantCultureIgnoreCase)
+                && !h.Contains("vixen", StringComparison.InvariantCultureIgnoreCase)
+                && !h.Contains("arvlvl", StringComparison.InvariantCultureIgnoreCase))
                 {
-                            return;
+                    return;
                 }
 #endif
 
@@ -722,11 +832,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                               // Assign base powers
                               int powIndex = 0;
                               // Lists for updating the class description in the character creator
-                              foreach (var basePower in talentSet.Powers)
+                              foreach (var talentSetBasePower in talentSet.Powers)
                               {
-                                  if (loadoutInfo.FixedPowers.Contains(basePower))
+                                  if (loadoutInfo.FixedPowers.Contains(talentSetBasePower))
                                       continue; // Do not modify this
-                                  var portedPower = PackageTools.PortExportIntoPackage(loadout.FileRef, basePower.PowerExport);
+                                  var portedPower = PackageTools.PortExportIntoPackage(loadout.FileRef, talentSetBasePower.PowerExport);
                                   powersList.Add(new ObjectProperty(portedPower.UIndex));
 
                                   // For each power, change the evolutions
@@ -734,12 +844,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                   var props = defaults.GetProperties();
                                   var evolution1 = talentSet.EvolvedPowers[powIndex * 2];
                                   var evolution2 = talentSet.EvolvedPowers[(powIndex * 2) + 1];
-                                  configuredPowers.Add(new MappedPower() { BaseTalent = basePower, EvolvedTalent1 = evolution1, EvolvedTalent2 = evolution2 });
+                                  configuredPowers.Add(new MappedPower() { BaseTalent = talentSetBasePower, EvolvedTalent1 = evolution1, EvolvedTalent2 = evolution2 });
                                   props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution1.PowerExport), "EvolvedPowerClass1"));
                                   props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution2.PowerExport), "EvolvedPowerClass2"));
 
                                   // Update the evolution text via override
-                                  var ranksSource = basePower.CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks");
+                                  var ranksSource = talentSetBasePower.CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks");
                                   if (ranksSource == null)
                                   {
                                       Debugger.Break();
@@ -747,23 +857,53 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                       //ranksSource = (basePower.BasePower.SuperClass as ExportEntry).GetDefaults().GetProperty<ArrayProperty<StructProperty>>("Ranks");
                                   }
 
+                                  #region Ranks text change
                                   lock (tlkSync)
                                   {
-                                      var evolveRank = ranksSource[3];
-                                      var descriptionProp = evolveRank.Properties.GetProp<StringRefProperty>("Description");
-                                      if (!TLKHandler.IsAssignedMERString(descriptionProp.Value))
+                                      // Update passive strings for ranks 1/2/3
+                                      if (talentSetBasePower.IsPassive)
                                       {
-                                          var description = TLKHandler.TLKLookupByLang(descriptionProp.Value, "INT");
-                                          var descriptionLines = description.Split('\n');
-                                          descriptionLines[2] = $"1) {evolution1.EvolvedBlurb}";
-                                          descriptionLines[4] = $"2) {evolution2.EvolvedBlurb}";
+                                          int i = 0;
                                           var newStringID = TLKHandler.GetNewTLKID();
-                                          TLKHandler.ReplaceString(newStringID, string.Join('\n', descriptionLines));
-                                          descriptionProp.Value = newStringID;
+                                          string rankDescription = null;
+                                          while (i < 2)
+                                          {
+                                              var rankDescriptionProp = ranksSource[i].Properties.GetProp<StringRefProperty>("Description");
+                                              if (rankDescription == null)
+                                              {
+                                                  rankDescription = loadoutInfo.GenderizeString(talentSetBasePower.PassiveRankDescriptionString);
+                                                  TLKHandler.ReplaceString(newStringID, rankDescription);
+                                              }
+                                              rankDescriptionProp.Value = newStringID; // written below by addreplaceRanksSource
+                                              i++;
+                                          }
+                                      }
+
+                                      // Update Rank 4 unevolved text
+                                      {
+                                          var evolveRank = ranksSource[3];
+                                          var descriptionProp = evolveRank.Properties.GetProp<StringRefProperty>("Description");
+                                          if (!TLKHandler.IsAssignedMERString(descriptionProp.Value))
+                                          {
+                                              var description = TLKHandler.TLKLookupByLang(descriptionProp.Value, "INT");
+                                              var descriptionLines = description.Split('\n');
+                                              descriptionLines[2] = $"1) {evolution1.EvolvedBlurb}";
+                                              descriptionLines[4] = $"2) {evolution2.EvolvedBlurb}";
+                                              var newStringID = TLKHandler.GetNewTLKID();
+                                              TLKHandler.ReplaceString(newStringID, string.Join('\n', descriptionLines));
+                                              descriptionProp.Value = newStringID; // written below by addreplaceRanksSource
+                                          }
                                       }
                                   }
-
                                   props.AddOrReplaceProp(ranksSource); // copy the source rank info into our power with the modification
+                                  #endregion
+
+                                  #region Passives text changes (non-ranks)
+                                  if (talentSetBasePower.IsPassive)
+                                  {
+
+                                  }
+                                  #endregion
 
                                   defaults.WriteProperties(props);
                                   powIndex++;
@@ -813,18 +953,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                               // Finalize loadout export
                               loadout.WriteProperties(loadoutProps);
 
-                              // Correct the unlock criteria to ensure every power can be unlocked.
+                              // Correct the unlock criteria to ensure every power can be unlocked. Special stuff for Kenson and Liara. Don't care about Wilson, sorry dude.
                               for (int i = 0; i < talentSet.Powers.Count; i++)
                               {
                                   // i = Power Index (0 indexed)
 
                                   // Power dependency map:
                                   // Power 1: Rank 1
-                                  // Power 2: Depends on Power 1 Rank 2
-                                  // Power 3: Rank 1
-                                  // Power 4: Depends on Power 3 Rank 2
-                                  // Power 5: Depends on Power 4 Rank 2
-                                  // Power 6: No requirements, but no points assigned
+                                  // Power 2: Depends on Power 1 Rank 1 UNLESS Miranda or Jacob who have this power at rank 1 already
+                                  // Power 3: Rank 0
+                                  // Power 4: Locked by Loyalty
 
                                   var talent = talentSet.Powers[i];
                                   var powerExport = loadout.FileRef.FindExport(talentSet.Powers[i].PowerExport.InstancedFullPath);
@@ -836,18 +974,32 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                                   // All squadmates have a piont in Slot 0 by default.
                                   // Miranda and Jacob have a point in slot 1
-                                  if (i == 0 || (i == 1 && hpi.HenchInternalName == "vixen" || hpi.HenchInternalName == "leading"))
+                                  if (hpi.HenchInternalName != "kenson")
+                                  {
+                                      // Since you can't power up kenson we'll just give her points in all her powers
+                                      properties.Add(new FloatProperty(ThreadSafeRandom.Next(2) + 1, "Rank"));
+                                  }
+                                  // VANILLA HENCH CODE
+                                  else if (i == 0 || (i == 1 && hpi.HenchInternalName == "vixen" || hpi.HenchInternalName == "leading"))
                                   {
                                       properties.Add(new FloatProperty(1, "Rank"));
                                   }
                                   else if (i == 1)
                                   {
-                                      // Has unlock dependency on the prior slotted item
-                                      var dependencies = new ArrayProperty<StructProperty>("UnlockRequirements");
-                                      dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath), false));
-                                      properties.Add(dependencies);
+                                      if (removeRank2Gating)
+                                      {
+                                          // Rank 0
+                                          properties.Add(new FloatProperty(0, "Rank"));
+                                      }
+                                      else
+                                      {
+                                          // Has unlock dependency on the prior slotted item
+                                          var dependencies = new ArrayProperty<StructProperty>("UnlockRequirements");
+                                          dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath), false));
+                                          properties.Add(dependencies);
+                                      }
                                   }
-                                  else if (i == 3)
+                                  else if (i == 3 && hpi.HenchInternalName != "liara")
                                   {
                                       // Has unlock dependency on loyalty power
                                       // Has unlock dependency on the prior slotted item
