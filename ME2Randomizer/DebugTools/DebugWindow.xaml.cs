@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using ME2Randomizer.Classes.Controllers;
 
 namespace ME2Randomizer.DebugTools
 {
@@ -67,6 +68,11 @@ namespace ME2Randomizer.DebugTools
         private void CheckDroppedExports_Click(object sender, RoutedEventArgs e)
         {
             ME2Debug.CheckImportsWithPersistence();
+        }
+
+        private void TestSaveWipe_Click(object sender, RoutedEventArgs e)
+        {
+            TalentReset.GetSaveFiles();
         }
     }
 }

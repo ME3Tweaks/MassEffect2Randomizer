@@ -74,6 +74,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ALOTInstaller\ALOTInstallerCore\ALOTInstallerCore.csproj" />
     <ProjectReference Include="..\ALOTInstaller\MahApps.Metro\src\MahApps.Metro\MahApps.Metro.csproj" />
+    <ProjectReference Include="..\ALOTInstaller\ME3ExplorerLib\ME3ExplorerCore\ME3ExplorerCore.csproj" />
   </ItemGroup>
   
   <ItemGroup>

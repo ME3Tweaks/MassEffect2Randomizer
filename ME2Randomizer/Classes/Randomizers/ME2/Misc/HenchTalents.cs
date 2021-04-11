@@ -432,6 +432,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // SPECIAL CASES
                 // it/its him/his dont' line up with female's only having 'her'
 
+                // KROGAN BERSERKER ON MALE NEEDS TO STAY GIVES HIM KROGAN HEALTH REGEN, RANKS
+
                 var targetGenderWord = HenchGender == Gender.Male ? " his" : HenchGender == Gender.Female ? " her" : " its";
                 if (HenchGender != Gender.Female)
                 {
