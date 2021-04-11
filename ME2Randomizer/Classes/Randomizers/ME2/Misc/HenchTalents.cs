@@ -17,6 +17,7 @@ using ME3ExplorerCore.Misc;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Unreal;
+using System.Runtime;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
@@ -164,13 +165,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     if (talentStrId == 389424)
                     {
                         // This string is not defined in vanilla but we need a value for this to work
-                        PassiveTalentDescriptionString = "Kenson's technological prowess refines her combat skills, boosting her health, weapon damage and shields.";
+                        PassiveTalentDescriptionString = "Kenson's technological prowess refines her combat skills, boosting her health, weapon damage, and shields.";
+                        PassiveDescriptionString = "Kenson's technological prowess refines her combat skills, boosting her health, weapon damage, and shields.";
                     }
                     else
                     {
                         PassiveTalentDescriptionString = TLKHandler.TLKLookupByLang(talentStrId, "INT");
                     }
-                    PassiveDescriptionString = TLKHandler.TLKLookupByLang(CondensedProperties.GetProp<StringRefProperty>("Description").Value, "INT");
+                    PassiveDescriptionString ??= TLKHandler.TLKLookupByLang(CondensedProperties.GetProp<StringRefProperty>("Description").Value, "INT");
                     PassiveRankDescriptionString = TLKHandler.TLKLookupByLang(CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks")[0].GetProp<StringRefProperty>("Description").Value, "INT");
                 }
             }
@@ -338,6 +340,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         [DebuggerDisplay("HenchLoadoutInfo for {HenchUIName}")]
         class HenchLoadoutInfo : INotifyPropertyChanged
         {
+            internal enum Gender
+            {
+                Male,
+                Female,
+                Robot
+            }
+
             /// <summary>
             /// The list of talents that will be installed to this henchman
             /// </summary>
@@ -362,7 +371,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             public void OnLoadoutIFPChanged()
             {
                 var lastIndex = LoadoutIFP.LastIndexOf("_");
-                HenchUIName = LoadoutIFP.Substring(lastIndex + 1).UpperFirst();
+                //HenchUIName = LoadoutIFP.Substring(lastIndex + 1).UpperFirst();
+                var henchName = LoadoutIFP.Substring(lastIndex + 1);
+                HenchUIName = char.ToUpper(henchName[0]) + henchName.Substring(1);
 
                 switch (HenchUIName)
                 {
@@ -374,7 +385,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     case "Kenson":
                     case "Jack":
                     case "Tali":
-                        HenchIsFemale = true;
+                        HenchGender = Gender.Female;
+                        break;
+                    case "Legion":
+                        HenchGender = Gender.Robot;
                         break;
                 }
             }
@@ -384,7 +398,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// </summary>
             public string HenchUIName { get; private set; }
 
-            public bool HenchIsFemale { get; private set; }
+            public Gender HenchGender { get; private set; } = Gender.Male;
 
             private static string[] maleGenderWords = new[] { "his", "him" };
             private static string[] femaleGenderWords = new[] { "her", "her" };
@@ -399,6 +413,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 "Zaeed",
                 "Tali",
                 "Samara",
+                "Morinth",
                 "Mordin",
                 "Jacob",
                 "Garrus",
@@ -414,22 +429,45 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             /// <returns></returns>
             public string GenderizeString(string str)
             {
-                var sourceGenderWords = HenchIsFemale ? maleGenderWords : femaleGenderWords;
-                var targetGenderWords = HenchIsFemale ? femaleGenderWords : maleGenderWords;
-                var otherSquadmateNames = squadmateNames.Where(x => x != HenchUIName).ToList();
+                // SPECIAL CASES
+                // it/its him/his dont' line up with female's only having 'her'
 
-                if (str.Contains("her"))
+                var targetGenderWord = HenchGender == Gender.Male ? " his" : HenchGender == Gender.Female ? " her" : " its";
+                if (HenchGender != Gender.Female)
                 {
-                    Debug.WriteLine("-----" + str);
+                    // MORINTH FIX
+                    var targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} unnatural";
+                    str = str.Replace("her unnatural", targetStr);
+
+                    // SUBJECT ZERO 'will to live make her harder to kill'
+                    targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} even harder to kill";
+                    str = str.Replace("her even harder to kill", targetStr);
+
                 }
+
+                if (HenchGender != Gender.Male)
+                {
+                    // DRELL ASSASSIN FIX (uses 'his')
+                    var targetStr = $"wounds increases {(HenchGender == Gender.Female ? "her" : "its")} effective health.";
+                    str = str.Replace("wounds increases his effective health.", targetStr);
+
+                }
+
+
+                // GENERAL GENDER CASES
+
+                var sourceGenderWords = new[] { " him", " her", " its" };
 
                 for (int i = 0; i < sourceGenderWords.Length; i++)
                 {
-                    str = str.Replace(sourceGenderWords[i], targetGenderWords[i]);
+                    str = str.Replace(sourceGenderWords[i], targetGenderWord);
                 }
 
+                // Change squadmate name
+                var otherSquadmateNames = squadmateNames.Where(x => x != HenchUIName).ToList();
                 foreach (var osn in otherSquadmateNames)
                 {
+                    str = str.Replace($"{osn}' ", $"{osn}'s "); // Converts "Garrus' " to "Garrus's ", which we will properly adapt below
                     str = str.Replace(osn, HenchUIName);
                 }
 
@@ -565,7 +603,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Debug only
 #if DEBUG
                 if (true
-                    && false
+                && false
                 && !h.Contains("leading", StringComparison.InvariantCultureIgnoreCase)
                 && !h.Contains("vixen", StringComparison.InvariantCultureIgnoreCase)
                 && !h.Contains("arvlvl", StringComparison.InvariantCultureIgnoreCase))
@@ -656,7 +694,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         {
                             if (CanBeShuffled(p, out var usi))
                             {
+                                if (hli.LoadoutIFP == "BioChar_Loadouts.Henchmen.hench_Morinth")
+                                {
+                                    p.CondenseArchetypes(); // makes porting work better by removing
+                                }
+
                                 var htalent = new HTalent(p);
+
                                 talentPoolMaster.Add(htalent);
 
                                 var evolutions = htalent.GetEvolutions();
@@ -808,8 +852,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             {
                 object tlkSync = new object();
                 MERLog.Information($"Installing talent set for {hpi.HenchInternalName}");
+                option.CurrentOperation = $"Installing randomized powers for {hpi.PackageLoadouts[0].HenchUIName}";
+                // We force a large GC here cause this loop can make like 7GB, I'll take the timing hit 
+                // to reduce memory usage
+                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect();
 
-                Parallel.ForEach(hpi.Packages, new ParallelOptions() { MaxDegreeOfParallelism = 1 }, package =>
+                Parallel.ForEach(hpi.Packages, new ParallelOptions() { MaxDegreeOfParallelism = 3 }, package =>
                   {
                       //foreach (var loadout in assets)
                       //{
@@ -873,7 +922,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                           int i = 0;
                                           var newStringID = TLKHandler.GetNewTLKID();
                                           string rankDescription = null;
-                                          while (i < 2)
+                                          while (i <= 2)
                                           {
                                               var rankDescriptionProp = ranksSource[i].Properties.GetProp<StringRefProperty>("Description");
                                               if (rankDescription == null)
@@ -894,8 +943,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                           {
                                               var description = TLKHandler.TLKLookupByLang(descriptionProp.Value, "INT");
                                               var descriptionLines = description.Split('\n');
-                                              descriptionLines[2] = $"1) {evolution1.EvolvedBlurb}";
-                                              descriptionLines[4] = $"2) {evolution2.EvolvedBlurb}";
+                                              descriptionLines[2] = $"1) {loadoutInfo.GenderizeString(evolution1.EvolvedBlurb)}";
+                                              descriptionLines[4] = $"2) {loadoutInfo.GenderizeString(evolution2.EvolvedBlurb)}";
                                               var newStringID = TLKHandler.GetNewTLKID();
                                               TLKHandler.ReplaceString(newStringID, string.Join('\n', descriptionLines));
                                               descriptionProp.Value = newStringID; // written below by addreplaceRanksSource
@@ -908,7 +957,27 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                   #region Passives text changes (non-ranks)
                                   if (talentSetBasePower.IsPassive)
                                   {
+                                      lock (tlkSync)
+                                      {
+                                          // Talent Description
+                                          var talentDescriptionProp = talentSetBasePower.CondensedProperties.GetProp<StringRefProperty>("TalentDescription");
+                                          if (!TLKHandler.IsAssignedMERString(talentDescriptionProp.Value))
+                                          {
+                                              var newStringID = TLKHandler.GetNewTLKID();
+                                              TLKHandler.ReplaceString(newStringID, loadoutInfo.GenderizeString(talentSetBasePower.PassiveTalentDescriptionString));
+                                              talentDescriptionProp.Value = newStringID;
+                                          }
+                                          props.AddOrReplaceProp(talentDescriptionProp);
 
+                                          var descriptionProp = talentSetBasePower.CondensedProperties.GetProp<StringRefProperty>("Description");
+                                          if (!TLKHandler.IsAssignedMERString(descriptionProp.Value))
+                                          {
+                                              var newStringID = TLKHandler.GetNewTLKID();
+                                              TLKHandler.ReplaceString(newStringID, loadoutInfo.GenderizeString(talentSetBasePower.PassiveDescriptionString));
+                                              descriptionProp.Value = newStringID;
+                                          }
+                                          props.AddOrReplaceProp(descriptionProp);
+                                      }
                                   }
                                   #endregion
 
