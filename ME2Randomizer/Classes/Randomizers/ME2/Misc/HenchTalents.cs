@@ -386,7 +386,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             public bool HenchIsFemale { get; private set; }
 
-            private static string[] maleGenderWords = new[] { "him", "his" };
+            private static string[] maleGenderWords = new[] { "his", "him" };
             private static string[] femaleGenderWords = new[] { "her", "her" };
             private static string[] squadmateNames = new[]
             {
@@ -418,6 +418,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 var targetGenderWords = HenchIsFemale ? femaleGenderWords : maleGenderWords;
                 var otherSquadmateNames = squadmateNames.Where(x => x != HenchUIName).ToList();
 
+                if (str.Contains("her"))
+                {
+                    Debug.WriteLine("-----" + str);
+                }
+
                 for (int i = 0; i < sourceGenderWords.Length; i++)
                 {
                     str = str.Replace(sourceGenderWords[i], targetGenderWords[i]);
@@ -430,6 +435,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                 str = str.Replace("Garrus's", "Garrus'"); // Fix plural possessive for s
 
+                Debug.WriteLine(str);
                 return str;
             }
 
@@ -559,6 +565,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Debug only
 #if DEBUG
                 if (true
+                    && false
                 && !h.Contains("leading", StringComparison.InvariantCultureIgnoreCase)
                 && !h.Contains("vixen", StringComparison.InvariantCultureIgnoreCase)
                 && !h.Contains("arvlvl", StringComparison.InvariantCultureIgnoreCase))
