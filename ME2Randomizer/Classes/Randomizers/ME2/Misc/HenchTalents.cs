@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using ME2Randomizer.Classes;
-using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
-using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
 using ME3ExplorerCore.Kismet;
@@ -18,6 +14,7 @@ using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Unreal;
 using System.Runtime;
+using System.Collections.Concurrent;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
@@ -400,8 +397,6 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             public Gender HenchGender { get; private set; } = Gender.Male;
 
-            private static string[] maleGenderWords = new[] { "his", "him" };
-            private static string[] femaleGenderWords = new[] { "her", "her" };
             private static string[] squadmateNames = new[]
             {
                 "Kasumi",
@@ -432,33 +427,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // SPECIAL CASES
                 // it/its him/his dont' line up with female's only having 'her'
 
-                // KROGAN BERSERKER ON MALE NEEDS TO STAY GIVES HIM KROGAN HEALTH REGEN, RANKS
 
                 var targetGenderWord = HenchGender == Gender.Male ? " his" : HenchGender == Gender.Female ? " her" : " its";
-                if (HenchGender != Gender.Female)
-                {
-                    // MORINTH FIX
-                    var targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} unnatural";
-                    str = str.Replace("her unnatural", targetStr);
 
-                    // SUBJECT ZERO 'will to live make her harder to kill'
-                    targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} even harder to kill";
-                    str = str.Replace("her even harder to kill", targetStr);
+                // GENERAL GENDER CASES - WILL RESULT IN SOME WEIRD HIM/HIS ISSUES
 
-                }
-
-                if (HenchGender != Gender.Male)
-                {
-                    // DRELL ASSASSIN FIX (uses 'his')
-                    var targetStr = $"wounds increases {(HenchGender == Gender.Female ? "her" : "its")} effective health.";
-                    str = str.Replace("wounds increases his effective health.", targetStr);
-
-                }
-
-
-                // GENERAL GENDER CASES
-
-                var sourceGenderWords = new[] { " him", " her", " its" };
+                var sourceGenderWords = new[] { " him ", " his ", " her ", " its " };
 
                 for (int i = 0; i < sourceGenderWords.Length; i++)
                 {
@@ -474,6 +448,29 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
 
                 str = str.Replace("Garrus's", "Garrus'"); // Fix plural possessive for s
+
+                // Correct weird him/his
+                // KROGAN BERSERKER ON MALE NEEDS TO STAY GIVES HIM KROGAN HEALTH REGEN, RANKS
+                if (HenchGender != Gender.Female)
+                {
+                    // MORINTH FIX
+                    var targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} unnatural";
+                    str = str.Replace("him unnatural", targetStr);
+
+                    // SUBJECT ZERO 'will to live make her harder to kill'
+                    targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} even harder to kill";
+                    str = str.Replace($"{(HenchGender == Gender.Male ? "him" : "it")} even harder to kill", targetStr);
+
+                }
+
+                if (HenchGender != Gender.Male)
+                {
+                    // DRELL ASSASSIN FIX (uses 'his')
+                    var targetStr = $"wounds increases {(HenchGender == Gender.Female ? "her" : "its")} effective health.";
+                    str = str.Replace("wounds increases his effective health.", targetStr);
+
+                }
+
 
                 Debug.WriteLine(str);
                 return str;
@@ -663,12 +660,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             numDone = 0;
             option.ProgressValue = 0;
             option.CurrentOperation = "Building henchmen power sets";
+            ConcurrentBag<string> passiveStrs = new ConcurrentBag<string>();
             Parallel.ForEach(squadmatePackageMap, new ParallelOptions() { MaxDegreeOfParallelism = 1 }, henchInfo =>
                 {
-                    //foreach (var henchInfo in squadmatePackageMap)
-                    //{
-
-
                     var henchP = henchInfo.Value.Packages[0];
                     var loadouts = henchP.Exports.Where(x => x.ClassName == "SFXPlayerSquadLoadoutData").ToList();
                     foreach (var loadout in loadouts)
@@ -698,10 +692,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             {
                                 if (hli.LoadoutIFP == "BioChar_Loadouts.Henchmen.hench_Morinth")
                                 {
-                                    p.CondenseArchetypes(); // makes porting work better by removing
+                                    p.CondenseArchetypes(); // makes porting work better by removing Samara's parent power which can be used
                                 }
 
                                 var htalent = new HTalent(p);
+                                if (htalent.IsPassive)
+                                {
+                                    passiveStrs.Add(htalent.PassiveDescriptionString);
+                                }
 
                                 talentPoolMaster.Add(htalent);
 
@@ -727,6 +725,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
                 });
             #endregion
+
+            var allPS = passiveStrs.Distinct().ToList();
+            foreach(var s in allPS)
+            {
+                Debug.WriteLine(s);
+            }
 
             // Step 3. Precalculate talent sets that will be assigned
             #region Find compatible power sets
@@ -1291,22 +1295,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             return unshuffablePower == null;
         }
 
-        private static ExportEntry GetEvolution(IMEPackage package, List<ExportEntry> kitPowers, List<ExportEntry> evolvedPowersInKit, List<ExportEntry> powerEvolutions)
-        {
-            var power = powerEvolutions.PullFirstItem();
-            int ix = 20;
-            while (ix > 0 && evolvedPowersInKit.Any(x => x.ClassName == power.ClassName || x.InheritsFrom(power.ClassName)) && kitPowers.Any(x => power.InheritsFrom(x.ClassName)))
-            {
-                powerEvolutions.Add(power);
-                power = powerEvolutions.PullFirstItem();
-                ix--; //give up if we have to
-            }
-
-            return PackageTools.PortExportIntoPackage(package, power);
-        }
-
         /// <summary>
-        /// Generates the structs for UnlockRequirements that are used to setup a dependenc on this power
+        /// Generates the structs for UnlockRequirements that are used to setup a dependency on this power
         /// </summary>
         /// <param name="powerClass">The kit-power to depend on.</param>
         /// <returns></returns>

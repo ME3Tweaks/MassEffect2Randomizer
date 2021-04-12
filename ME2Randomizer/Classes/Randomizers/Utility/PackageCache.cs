@@ -33,7 +33,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
             if (openIfNotInCache)
             {
-                var file = MERFileSystem.GetPackageFile(packageName);
+                var file = MERFileSystem.GetPackageFile(packageName, false);
                 if (file != null && File.Exists(file))
                 {
                     int i = 3;
