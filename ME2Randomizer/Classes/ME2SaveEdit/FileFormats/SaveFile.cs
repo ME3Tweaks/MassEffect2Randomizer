@@ -18,6 +18,7 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
         public string BindableBaseLevelName => BaseLevelName;
         public Save.DifficultyOptions BindableDifficulty => Difficulty;
         public DateTime BindableTimestamp => TimeStamp.ToDate();
+        public TimeSpan BindableTimePlayed => TimeSpan.FromSeconds(SecondsPlayed);
 
         // Metadata
         public string FileName { get; set; }

@@ -78,6 +78,7 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.UI
             var csi = "";
             if (SelectedSaveFile == null)
             {
+                SelectedLevelText = "Select a save file";
                 csi = MERUtilities.ListStaticAssets("saveimages", includemerPrefix: true).FirstOrDefault(x => x.EndsWith("nosave.png"));
             }
             else
@@ -86,10 +87,18 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.UI
                 var path = MERUtilities.ListStaticAssets("saveimages", includemerPrefix: true).FirstOrDefault(x => x.EndsWith(sfname));
                 path ??= MERUtilities.ListStaticAssets("saveimages", includemerPrefix: true).FirstOrDefault(x => x.EndsWith("unknown.png")); // could not find asset
                 csi = path;
+                SelectedLevelText = LevelNameStringConverter.StaticConvert(SelectedSaveFile.BaseLevelName);
+
             }
 
             CurrentSaveImage = MERUtilities.LoadImage(MERUtilities.GetEmbeddedStaticFilesBinaryFile(csi, true));
+
         }
+
+        /// <summary>
+        /// The text at the top of the save area
+        /// </summary>
+        public string SelectedLevelText { get; set; }
 
         public static string[] GetResourceNames()
         {
@@ -109,6 +118,7 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.UI
             LoadingSaves = true;
             LoadCommands();
             InitializeComponent();
+            OnSelectedSaveFileChanged();
         }
 
 

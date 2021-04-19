@@ -217,7 +217,7 @@ namespace ME2Randomizer
 
         private bool CanSetupRandomizer(object obj)
         {
-            return obj is RandomizationOption option && option.SetupRandomizerDelegate != null;
+            return obj is RandomizationOption option && option.OptionIsSelected && option.SetupRandomizerDelegate != null;
         }
 
         private void SetupRandomizer(object obj)
