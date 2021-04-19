@@ -171,6 +171,14 @@ namespace ME2Randomizer.Classes
         /// If the randomizer runs post-export/files
         /// </summary>
         public bool IsPostRun { get; set; }
+        /// <summary>
+        /// The text to display on the button that is shown when the SetupDelegate is set.
+        /// </summary>
+        public string SetupRandomizerButtonText { get; set; }
+        /// <summary>
+        /// The tooltip to display on the setup randomizer button
+        /// </summary>
+        public string SetupRandomizerButtonToolTip { get; set; }
 
 #pragma warning disable
         public event PropertyChangedEventHandler PropertyChanged;
@@ -183,6 +191,17 @@ namespace ME2Randomizer.Classes
         public bool HasSubOptionSelected(string optionName)
         {
             return SubOptions != null && SubOptions.Any(x => x.SubOptionKey == optionName && x.OptionIsSelected);
+        }
+
+        /// <summary>
+        /// Thread-safe progressvalue increment
+        /// </summary>
+        public void IncrementProgressValue()
+        {
+            lock (Self)
+            {
+                ProgressValue++;
+            }
         }
     }
 }

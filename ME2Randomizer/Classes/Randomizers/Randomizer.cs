@@ -15,7 +15,6 @@ using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME3ExplorerCore.GameFilesystem;
 using ME3ExplorerCore.Packages;
 using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Unreal;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Serilog;
 using ME3ExplorerCore.Misc;
@@ -23,7 +22,6 @@ using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME3ExplorerCore.Memory;
-using ME3ExplorerCore.SharpDX;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 
@@ -254,10 +252,12 @@ namespace ME2Randomizer.Classes
                 {
                     try
                     {
+                        sr.OnOperationUpdate += srUpdate;
                         mainWindow.ProgressBarIndeterminate = true;
                         MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
                         mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
                         sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+                        sr.OnOperationUpdate -= srUpdate;
                     }
                     catch (Exception ex)
                     {
@@ -537,6 +537,7 @@ namespace ME2Randomizer.Classes
                         Description = "Install a list of names into the game and renames some of the generic NPCs to them. You can install your stream chat members, for example. There are 48 name slots.",
                         PerformSpecificRandomizationDelegate = CharacterNames.InstallNameSet,
                         SetupRandomizerDelegate = CharacterNames.SetupRandomizer,
+                        SetupRandomizerButtonText = "Setup",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true
                     },
@@ -662,6 +663,9 @@ namespace ME2Randomizer.Classes
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilities,
+                        SetupRandomizerDelegate = HenchTalents.ResetTalents,
+                        SetupRandomizerButtonToolTip = "Allows you to select a save file to remove henchman records from.\nThis will wipe all henchman powers and refund the correct amount of talent points to spend.\nThis will ALSO reset the weapon they are using the default weapon they use.",
+                        SetupRandomizerButtonText = "Refund points",
                         RequiresTLK = true,
                         SubOptions = new ObservableCollectionExtended<RandomizationOption>()
                         {

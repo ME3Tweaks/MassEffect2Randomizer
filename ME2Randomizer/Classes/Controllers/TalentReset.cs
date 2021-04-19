@@ -5,41 +5,28 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
+using ME2Randomizer.Classes.ME2SaveEdit.UI;
 using ME3ExplorerCore.Misc;
 
 namespace ME2Randomizer.Classes.Controllers
 {
-    class Career
-    {
-        public ObservableCollectionExtended<SaveFile> SaveFiles { get; } = new ObservableCollectionExtended<SaveFile>();
-    }
+
 
     class TalentReset
     {
         public static void GetSaveFiles()
         {
-            var savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "BioWare", "Mass Effect 2", "Save");
+            
 
-            var saveDirs = Directory.GetDirectories(savePath);
-            Dictionary<string, List<SaveFile>> charNameCareers = new Dictionary<string, List<SaveFile>>();
-            foreach (var saveDir in saveDirs)
-            {
-                foreach (var sf in Directory.GetFiles(saveDir, "*.pcsav"))
-                {
-                    using var saveFileS = File.OpenRead(sf);
-                    var saveFile = SaveFile.Load(saveFileS);
-                    if (!charNameCareers.TryGetValue(saveFile.PlayerRecord.FirstName, out var list))
-                    {
-                        list = new List<SaveFile>();
-                        charNameCareers[saveFile.PlayerRecord.FirstName] = list;
-                    }
 
-                    list.Add(saveFile);
-                }
-            }
-
-            Debug.WriteLine("OK");
+            //var testSave = charNameCareers["John"][0];
+            //testSave.HenchmanRecords.Clear();
+            //using var outS = File.OpenWrite(Path.Combine(savePath, @"Jane_11_Engineer_280420", "AutoSave.pcsav"));
+            //testSave.Save(outS);
+            //outS.Close();
+            //Debug.WriteLine("OK");
             //                saveFile.HenchmanRecords.Clear(); // Get rid of henchmen records... will this affect their loadout?
             /*            var playerLevel = saveFile.PlayerRecord.Level;
 
@@ -66,7 +53,7 @@ namespace ME2Randomizer.Classes.Controllers
         /// <param name="playerLevel"></param>
         /// <param name="isPlayer"></param>
         /// <returns></returns>
-        private static int GetNumTalentPoints(int playerLevel, bool isPlayer, bool asIfWiped, bool isBoostedSquadmate = false)
+        public static int GetNumTalentPoints(int playerLevel, bool isPlayer, bool asIfWiped, bool isBoostedSquadmate = false)
         {
             // Level 30:
             // Player: 48 (+2 assigned at game start, +1 for bonus power)
@@ -91,7 +78,7 @@ namespace ME2Randomizer.Classes.Controllers
                 }
             }
 
-            for (int i = 1; i < 30; i++) // i = 1 at start. This way it lines up with level up which only starts at 2
+            for (int i = 1; i < playerLevel; i++) // i = 1 at start. This way it lines up with level up which only starts at 2
             {
                 if (isPlayer)
                 {
@@ -124,6 +111,16 @@ namespace ME2Randomizer.Classes.Controllers
                 }
             }
             return numPoints;
+        }
+
+        public static void ResetTalents(bool fromHenchmanOption)
+        {
+            var trui = new SaveSelectorUI();
+            if (Application.Current.MainWindow is MainWindow mw)
+            {
+                trui.Owner = mw;
+            }
+            trui.ShowDialog();
         }
     }
 }

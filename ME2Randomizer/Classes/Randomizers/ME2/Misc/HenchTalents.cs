@@ -15,6 +15,7 @@ using ME3ExplorerCore.Helpers;
 using ME3ExplorerCore.Unreal;
 using System.Runtime;
 using System.Collections.Concurrent;
+using ME2Randomizer.Classes.Controllers;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
@@ -417,6 +418,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 "Wilson",
             };
 
+            private static string[] maleKeywords = new[] { "him", "his" };
+            private static string[] femaleKeywords = new[] { "her" };
+            private static string[] robotKeywords = new[] { "its" };
+            private static string[] allKeywords = new[] { " him ", " his ", " her ", " its " };
+
+
             /// <summary>
             /// Converts the input string to the gender of this loadout, including the name.
             /// </summary>
@@ -427,14 +434,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // SPECIAL CASES
                 // it/its him/his dont' line up with female's only having 'her'
 
-
                 var targetGenderWord = HenchGender == Gender.Male ? " his" : HenchGender == Gender.Female ? " her" : " its";
 
                 // GENERAL GENDER CASES - WILL RESULT IN SOME WEIRD HIM/HIS ISSUES
 
-                var sourceGenderWords = new[] { " him ", " his ", " her ", " its " };
-
-                for (int i = 0; i < sourceGenderWords.Length; i++)
+                var keywords = HenchGender == Gender.Male ? maleKeywords : HenchGender == Gender.Female ? femaleKeywords : robotKeywords;
+                var sourceGenderWords = allKeywords.Except(keywords).ToList();
+                for (int i = 0; i < sourceGenderWords.Count; i++)
                 {
                     str = str.Replace(sourceGenderWords[i], targetGenderWord);
                 }
@@ -455,20 +461,17 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     // MORINTH FIX
                     var targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} unnatural";
-                    str = str.Replace("him unnatural", targetStr);
+                    str = str.Replace($"{(HenchGender == Gender.Male ? "his" : "its")} unnatural", targetStr);
 
                     // SUBJECT ZERO 'will to live make her harder to kill'
                     targetStr = $"{(HenchGender == Gender.Male ? "him" : "it")} even harder to kill";
-                    str = str.Replace($"{(HenchGender == Gender.Male ? "him" : "it")} even harder to kill", targetStr);
-
+                    str = str.Replace($"{(HenchGender == Gender.Male ? "his" : "its")} even harder to kill", targetStr);
                 }
-
-                if (HenchGender != Gender.Male)
+                else if (HenchGender != Gender.Male)
                 {
                     // DRELL ASSASSIN FIX (uses 'his')
                     var targetStr = $"wounds increases {(HenchGender == Gender.Female ? "her" : "its")} effective health.";
                     str = str.Replace("wounds increases his effective health.", targetStr);
-
                 }
 
 
@@ -699,6 +702,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                 if (htalent.IsPassive)
                                 {
                                     passiveStrs.Add(htalent.PassiveDescriptionString);
+                                    passiveStrs.Add(htalent.PassiveTalentDescriptionString);
+                                    passiveStrs.Add(htalent.PassiveRankDescriptionString);
                                 }
 
                                 talentPoolMaster.Add(htalent);
@@ -727,7 +732,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             #endregion
 
             var allPS = passiveStrs.Distinct().ToList();
-            foreach(var s in allPS)
+            foreach (var s in allPS)
             {
                 Debug.WriteLine(s);
             }
@@ -1056,7 +1061,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
                                   // All squadmates have a piont in Slot 0 by default.
                                   // Miranda and Jacob have a point in slot 1
-                                  if (hpi.HenchInternalName != "kenson")
+                                  if (hpi.HenchInternalName == "kenson")
                                   {
                                       // Since you can't power up kenson we'll just give her points in all her powers
                                       properties.Add(new FloatProperty(ThreadSafeRandom.Next(2) + 1, "Rank"));
@@ -1376,6 +1381,11 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             return alui;
+        }
+
+        public static void ResetTalents(RandomizationOption obj)
+        {
+            TalentReset.ResetTalents(true);
         }
     }
 }

@@ -44,10 +44,12 @@
                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="200" 
                            HorizontalAlignment="Left" FontSize="10" Margin="3,-3,0,0"
                            Foreground="{Binding Dangerousness, Converter={StaticResource DangerColorConverter}}"
-                           Visibility="{Binding Description, Converter={StaticResource NullVisibilityConverter}}"/>
+                           Visibility="{Binding Description, Converter={StaticResource NullVisibilityConverter}}"
+                           PreviewMouseUp="ROClickHACK_Click"/>
                 <StackPanel  Visibility="{Binding SetupRandomizerDelegate, Converter={StaticResource NullVisibilityConverter}}"
                             Margin="20,0,0,0">
-                        <Button Content="Setup" Style="{StaticResource MahApps.Styles.Button.Dialogs.Accent}" 
+                        <Button Content="{Binding SetupRandomizerButtonText}" 
+                                ToolTip="{Binding SetupRandomizerButtonToolTip}" Style="{StaticResource MahApps.Styles.Button.Dialogs.Accent}" 
                                 Command="{Binding SetupRandomizerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=global:MainWindow}}" 
                                 CommandParameter="{Binding}"
                                 Padding="20,3" HorizontalAlignment="Right" Margin="0,3"  MinHeight="0" MinWidth="0"/>

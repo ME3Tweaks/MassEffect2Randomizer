@@ -611,5 +611,14 @@ namespace ME2Randomizer
                 GamePathString = $"Randomization target: {target.TargetPath}";
             }
         }
+
+        private void ROClickHACK_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (AllowOptionsChanging && sender is FrameworkElement fe && fe.DataContext is RandomizationOption option)
+            {
+                // Toggle
+                option.OptionIsSelected = !option.OptionIsSelected;
+            }
+        }
     }
 }

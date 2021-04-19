@@ -34,7 +34,14 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats.Save
                 this.Year,
                 (int)Math.Round((this.SecondsSinceMidnight / 60.0) / 60.0),
                 (int)Math.Round(this.SecondsSinceMidnight / 60.0) % 60);
-                
+
+        }
+
+        public DateTime ToDate()
+        {
+            var hour = (int)Math.Floor((this.SecondsSinceMidnight / 60.0) / 60.0);
+            var minutes = (int)Math.Round(this.SecondsSinceMidnight / 60.0) % 60;
+            return new DateTime(Year, Month, Day, hour, minutes, 0);
         }
     }
 }

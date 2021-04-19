@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using MassEffectRandomizer.Classes;
@@ -256,6 +257,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         /// <param name="Tlks"></param>
         public static bool RandomizeVowels(RandomizationOption option)
         {
+
+
             // Map of what letter maps to what other letter
             MERLog.Information("Randomizing vowels in words");
             var hardMode = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_VOWELS_HARDMODE);
@@ -336,27 +339,36 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var translationMap = new[] { translationMapUC, lowerCaseMap }.SelectMany(dict => dict)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
+            var nonMERTLKs = TLKHandler.GetAllTLKs().Where(x => !MERTLKs.Contains(x)).ToList();
             // MER
+
+            option.ProgressValue = 0;
+            option.ProgressMax = nonMERTLKs.Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressMax += MERTLKs.Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressIndeterminate = false;
+
             foreach (var merTLK in MERTLKs)
             {
-                RandomizeVowelsInternal(merTLK, skipIDs, translationMap, true);
+                RandomizeVowelsInternal(merTLK, skipIDs, translationMap, true, option);
             }
 
             // Non MER
-            Parallel.ForEach(TLKHandler.GetAllTLKs().Where(x => !MERTLKs.Contains(x)), tf =>
+            Parallel.ForEach(nonMERTLKs, tf =>
               {
-                  RandomizeVowelsInternal(tf, skipIDs, translationMap, false);
+                  RandomizeVowelsInternal(tf, skipIDs, translationMap, false, option);
               });
             return true;
         }
 
-        private static void RandomizeVowelsInternal(TalkFile tf, List<int> skipIDs, Dictionary<char, char> translationMap, bool isMERTlk)
+        private static void RandomizeVowelsInternal(TalkFile tf, List<int> skipIDs, Dictionary<char, char> translationMap, bool isMERTlk, RandomizationOption option)
         {
             var tfName = Path.GetFileNameWithoutExtension(tf.path);
             var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
 
             foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)).ToList())
             {
+                option.IncrementProgressValue();
+
                 if (sref.Data.Contains("DLC_")) continue; // Don't modify
                 if (!isMERTlk && skipIDs.Contains(sref.StringID))
                 {

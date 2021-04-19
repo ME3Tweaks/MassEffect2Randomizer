@@ -16,6 +16,7 @@ using System.ComponentModel;
 using System.Management;
 using Serilog;
 using System.Numerics;
+using System.Windows.Media.Imaging;
 using ALOTInstallerCore.Helpers;
 using ME2Randomizer;
 using ME2Randomizer.Classes;
@@ -277,10 +278,10 @@ namespace MassEffectRandomizer.Classes
         /// </summary>
         /// <param name="assetPath"></param>
         /// <returns></returns>
-        public static List<string> ListStaticAssets(string assetRootPath, bool includeSubitems = false)
+        public static List<string> ListStaticAssets(string assetRootPath, bool includeSubitems = false, bool includemerPrefix = true)
         {
             var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
-            var prefix = $"ME2Randomizer.staticfiles.{assetRootPath}";
+            string prefix = $"ME2Randomizer.staticfiles.{assetRootPath}";
             List<string> itemsL = new List<string>();
             foreach (var item in items)
             {
@@ -293,6 +294,8 @@ namespace MassEffectRandomizer.Classes
                     }
                 }
             }
+
+            prefix = includemerPrefix ? prefix : $"staticfiles.{assetRootPath}";
             return itemsL.Select(x => prefix + '.' + x).ToList();
         }
         public static string GetRegistrySettingString(string name)
@@ -931,6 +934,29 @@ namespace MassEffectRandomizer.Classes
         {
             var parts = assetName.Split('.');
             return string.Join('.', parts[^2], parts[^1]);
+        }
+
+        /// <summary>
+        /// Loads an image from the specified data array
+        /// </summary>
+        /// <param name="imageData"></param>
+        /// <returns></returns>
+        public static BitmapImage LoadImage(byte[] imageData)
+        {
+            if (imageData == null || imageData.Length == 0) return null;
+            var image = new BitmapImage();
+            using (var mem = new MemoryStream(imageData))
+            {
+                mem.Position = 0;
+                image.BeginInit();
+                image.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.UriSource = null;
+                image.StreamSource = mem;
+                image.EndInit();
+            }
+            image.Freeze();
+            return image;
         }
     }
 }

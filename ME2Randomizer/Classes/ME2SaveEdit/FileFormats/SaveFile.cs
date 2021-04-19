@@ -3,12 +3,35 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using ALOTInstallerCore.Helpers;
+using ME3ExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
 {
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public partial class SaveFile
+    public partial class SaveFile : INotifyPropertyChanged
     {
+
+        // ME2R CHANGES
+        // PROPERTIES (GET ONLY) for BINDING
+
+        // I only care about some props. Could implement others with proper INotifyPropertyChanged later...
+        public string BindableBaseLevelName => BaseLevelName;
+        public Save.DifficultyOptions BindableDifficulty => Difficulty;
+        public DateTime BindableTimestamp => TimeStamp.ToDate();
+
+        // Metadata
+        public string FileName { get; set; }
+        public string BindableDebugName { get; set; }
+
+        public void OnBindableDebugNameChanged()
+        {
+            DebugName = BindableDebugName;
+        }
+        public int SaveNumber { get; set; }
+        public ESFXSaveGameType SaveGameType { get; set; }
+
+
+        // Original code is as follows
         public uint Version; // ME2 1.0 (release) has saves of version 29 (0x1D)
         public uint Checksum; // CRC32 of save data (from start) to before CRC32 value
 
@@ -142,10 +165,40 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
             stream.Serialize(ref this.DependentDLC);
         }
 
-        public static SaveFile Load(Stream input)
+        public static SaveFile Load(Stream input, string fileName = null)
         {
             SaveFile save = new SaveFile();
             save.Version = input.ReadUInt32();
+
+            if (fileName != null)
+            {
+                // Setup save params
+                save.FileName = fileName;
+
+                var sgName = Path.GetFileNameWithoutExtension(fileName);
+                if (sgName.StartsWith("Save_"))
+                {
+                    // Parse number
+                    var numStr = sgName.Substring(sgName.IndexOf("_") + 1);
+                    if (int.TryParse(numStr, out var saveNum))
+                    {
+                        save.SaveNumber = saveNum;
+                        save.SaveGameType = ESFXSaveGameType.SaveGameType_Manual;
+                    }
+                }
+                else if (sgName.StartsWith("AutoSave"))
+                {
+                    save.SaveGameType = ESFXSaveGameType.SaveGameType_Auto;
+                }
+                else if (sgName.StartsWith("ChapterSave"))
+                {
+                    save.SaveGameType = ESFXSaveGameType.SaveGameType_Chapter;
+                }
+                else if (sgName.StartsWith("QuickSave"))
+                {
+                    save.SaveGameType = ESFXSaveGameType.SaveGameType_Quick;
+                }
+            }
 
             if (save.Version != 29)
             {
@@ -154,6 +207,8 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
 
             UnrealStream stream = new UnrealStream(input, true, save.Version);
             save.Serialize(stream);
+
+            save.BindableDebugName = save.DebugName;
 
             if (save.Version >= 27)
             {
@@ -210,5 +265,9 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
                 }
             }
         }
+
+#pragma warning disable
+        public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore
     }
 }
