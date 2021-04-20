@@ -655,7 +655,6 @@ namespace ME2Randomizer.Classes
                         PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
                         RequiresTLK = true
                     },
-#if DEBUG
                     new RandomizationOption()
                     {
                         HumanName = "Henchmen powers",
@@ -678,7 +677,6 @@ namespace ME2Randomizer.Classes
                             }
                         }
                     },
-#endif
                     new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption()
                     {
