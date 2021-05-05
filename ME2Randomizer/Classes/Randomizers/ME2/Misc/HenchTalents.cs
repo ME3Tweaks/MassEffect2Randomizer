@@ -1214,15 +1214,21 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
         private static void LoadSquadmatePackages(HenchInfo hpi, string vanillaPackagePath, CaseInsensitiveConcurrentDictionary<HenchInfo> squadmatePackageMap, MERPackageCache henchCache)
         {
-            Debug.WriteLine($"Opening packages for {hpi.HenchInternalName}");
 
             var sqm = henchCache.GetCachedPackage(vanillaPackagePath);
             hpi.Packages.Add(sqm);
+            var casualHubsVer = henchCache.GetCachedPackage($"BioH_{hpi.HenchInternalName}_00_NC.pcc", true);
+            if (casualHubsVer != null)
+            {
+                // Liara doesn't have endgm file
+                hpi.Packages.Add(casualHubsVer);
+            }
+
             var endGmFile = henchCache.GetCachedPackage($"BioH_END_{hpi.HenchInternalName}_00.pcc", true);
             if (endGmFile != null)
             {
                 // Liara doesn't have endgm file
-                hpi.Packages.Add(MEPackageHandler.OpenMEPackage(endGmFile));
+                hpi.Packages.Add(endGmFile);
             }
 
             squadmatePackageMap[hpi.HenchInternalName] = hpi;
@@ -1238,6 +1244,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     hpi.Packages.Add(newPackageF);
                     hpi.Packages.Add(henchCache.GetCachedPackage($"BioH_END_{hpi.HenchInternalName}_0{sqmIndex}.pcc", true));
+                    var casHubV = henchCache.GetCachedPackage($"BioH_{hpi.HenchInternalName}_0{sqmIndex}_NC.pcc", true);
+                    if (casHubV != null)
+                        hpi.Packages.Add(casHubV);
                 }
                 else
                 {
