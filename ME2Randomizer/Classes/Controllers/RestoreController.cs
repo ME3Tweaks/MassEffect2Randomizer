@@ -154,6 +154,7 @@ namespace ME2Randomizer.Classes.Controllers
                 }
             }).ContinueWithOnUIThread(async x =>
             {
+                TaskbarHelper.SetProgressState(TaskbarProgressBarState.NoProgress);
                 await pd.CloseAsync();
                 postRestoreDelegate?.Invoke();
             });
