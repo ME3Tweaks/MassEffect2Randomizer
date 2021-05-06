@@ -155,7 +155,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             sb.Append(keepCasing ? strData[i] : char.ToLower(strData[i]));
                         }
                     }
-                    else if (currentChar == '!' & !addReactions)
+                    else if (currentChar == '!' && !addReactions)
                     {
                         sb.Append(currentChar);
                         if (ThreadSafeRandom.Next(2) == 0)
@@ -177,7 +177,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 {
                     str = AddReactionToLine(strData, str, keepCasing);
                 }
-                else //reactions not enabled, use original uwuify UwU insertion
+                else
                 { 
                     str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
                 }
@@ -191,14 +191,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             string finalString = "";
             bool dangerousLine = false;
 
-            if (modifiedLine.Length < 2 || Regex.Matches(modifiedLine, "[a-zA-Z]").Count == 0 || vanillaLine.Contains('{'))
+            string regexAllLetters = "[a-zA-Z]";
+            if (modifiedLine.Length < 2 || Regex.Matches(modifiedLine, regexAllLetters).Count == 0 || vanillaLine.Contains('{'))
             {
                 //I should go.
                 return modifiedLine;
             }
 
-            string dangerousCharacters = "<\n";
-            if (modifiedLine.IndexOfAny(dangerousCharacters.ToCharArray()) >= 0 || vanillaLine.Length > 200)
+            char[] reactionDangerousCharacters = new char[] { '<', '\n' };
+            if (modifiedLine.IndexOfAny(reactionDangerousCharacters) >= 0 || vanillaLine.Length > 200)
             {
                 dangerousLine = true;
             }
@@ -221,7 +222,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             int modOffset = 0;
 
             //for each regex match in the vanilla line:
-            for (int y = 0; y <= regexMatches.Count; y++)
+            for (int matchIndex = 0; matchIndex <= regexMatches.Count; matchIndex++)
             {
                 int start;
                 int stop;
@@ -233,20 +234,20 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     start = 0;
                     stop = vanillaLine.Length;
                 }
-                else if (y == 0)
+                else if (matchIndex == 0)
                 {
                     start = 0;
-                    stop = regexMatches[y].Index;
+                    stop = regexMatches[matchIndex].Index;
                 }
-                else if (y == regexMatches.Count)
+                else if (matchIndex == regexMatches.Count)
                 {
-                    start = regexMatches[y - 1].Index;
+                    start = regexMatches[matchIndex - 1].Index;
                     stop = vanillaLine.Length;
                 }
                 else
                 {
-                    start = regexMatches[y - 1].Index;
-                    stop = regexMatches[y].Index;
+                    start = regexMatches[matchIndex - 1].Index;
+                    stop = regexMatches[matchIndex].Index;
                 }
 
                 splitVanilla.Add(vanillaLine.Substring(start, stop - start));
@@ -256,14 +257,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 int modStop = stop + modOffset;
 
                 //step through sentence looking for punctuation or EOL
-                while (!((".!?\"").Contains(modifiedLine[modStop - 1])) & ((modStop - 1) < (modifiedLine.Length - 1)))
+                while (!((".!?\"").Contains(modifiedLine[modStop - 1])) && ((modStop - 1) < (modifiedLine.Length - 1)))
                 {
                     modOffset++;
                     modStop++;
                 }
 
                 //step through sentence looking for next space character or EOL
-                while (!(modifiedLine[modStop - 1].Equals(' ')) & ((modStop - 1) < (modifiedLine.Length - 1)))
+                while (!(modifiedLine[modStop - 1].Equals(' ')) && ((modStop - 1) < (modifiedLine.Length - 1)))
                 {
                     modOffset++;
                     modStop++;
@@ -305,13 +306,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     }
 
                     //question check, done here to make it a semi-random point
-                    if (s.Contains('?') & r.properties.Contains("question") & ThreadSafeRandom.Next(10) == 0)
+                    if (s.Contains('?') && r.properties.Contains("question") && ThreadSafeRandom.Next(10) == 0)
                     {
                         r.EarnPoint();
                     }
 
                     //exclamation check
-                    if (s.Contains('!') & r.properties.Contains("exclamation") & ThreadSafeRandom.Next(10) == 0)
+                    if (s.Contains('!') && r.properties.Contains("exclamation") && ThreadSafeRandom.Next(10) == 0)
                     {
                         r.EarnPoint();
                     }
@@ -322,13 +323,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 Reaction winningReaction = new Reaction();
                 foreach (Reaction r in ReactionList)
                 {
-                    if (r.properties.Contains("nolower") & !keepCasing)
+                    if (r.properties.Contains("nolower") && !keepCasing)
                     {
                         //reaction is not lowercase safe and lowercase is enabled
                         continue;
                     }
 
-                    if (r.properties.Contains("dangerous") & dangerousLine)
+                    if (r.properties.Contains("dangerous") && dangerousLine)
                     {
                         //reaction is dangerous and this is a dangerous string
                         continue;
@@ -440,7 +441,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                     foreach (string k in winningReaction.keywords) //each keyword in reaction
                                     {
                                         //semi-random otherwise it's EVERYWHERE
-                                        if (words[w].Contains(k, StringComparison.OrdinalIgnoreCase) & ThreadSafeRandom.Next(5) == 0)
+                                        if (words[w].Contains(k, StringComparison.OrdinalIgnoreCase) && ThreadSafeRandom.Next(5) == 0)
                                         {
                                             words[w] = Regex.Replace(words[w], "[.!?]", "");
                                             words[w] += " " + winningReaction.GetFace();
