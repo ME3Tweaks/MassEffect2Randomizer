@@ -23,7 +23,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public const string SUBOPTIONKEY_VOWELS_HARDMODE = "VOWELS_HARDMODE";
         public const string SUBOPTIONKEY_UWU_KEEPCASING = "UWU_KEEPCASING";
         public const string SUBOPTIONKEY_REACTIONS_ENABLED = "UWU_ADDFACES";
-        public static List<Reaction> ReactionList;
+
+        private static List<Reaction> ReactionList;
+        private static Dictionary<string, Regex> reactionRegexDictionary = new Dictionary<string, Regex>();
 
         public static bool RandomizeIntroText(RandomizationOption arg)
         {
@@ -191,34 +193,37 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             string finalString = "";
             bool dangerousLine = false;
 
-            string regexAllLetters = "[a-zA-Z]";
-            if (modifiedLine.Length < 2 || Regex.Matches(modifiedLine, regexAllLetters).Count == 0 || vanillaLine.Contains('{'))
-            {
-                //I should go.
-                return modifiedLine;
-            }
-
-            char[] reactionDangerousCharacters = new char[] { '<', '\n' };
-            if (modifiedLine.IndexOfAny(reactionDangerousCharacters) >= 0 || vanillaLine.Length > 200)
-            {
-                dangerousLine = true;
-            }
-
-            //initialize reactions if they aren't loaded
+            //initialize reactions/regex if this is first run
             if (ReactionList == null)
             {
                 string rawReactionDefinitions = MERUtilities.GetEmbeddedStaticFilesTextFile("reactiondefinitions.xml");
                 StringReader reactionReader = new StringReader(rawReactionDefinitions);
                 XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
                 ReactionList = (List<Reaction>)serializer.Deserialize(reactionReader);
+
+                reactionRegexDictionary.Add("EndOfSentence", new Regex(@"(?<![M| |n][M|D|r][s|r]\.)(?<!(,""))(?<=[.!?""])(?= [A-Z])", RegexOptions.Compiled));
+                reactionRegexDictionary.Add("AllLetters", new Regex("[a-zA-Z]", RegexOptions.Compiled));
+                reactionRegexDictionary.Add("PunctuationRemover", new Regex("(?<![D|M|r][w|r|s])[.!?](?!.)", RegexOptions.Compiled));
+                reactionRegexDictionary.Add("BorkedElipsesFixer", new Regex("(?<!\\.)\\.\\.(?=\\s|$)", RegexOptions.Compiled));
+            }
+
+            if (modifiedLine.Length < 2 || reactionRegexDictionary["AllLetters"].Matches(modifiedLine).Count == 0 || vanillaLine.Contains('{'))
+            {
+                //I should go.
+                return modifiedLine;
+            }
+
+            char[] dangerousCharacters = { '<', '\n' };
+            if (modifiedLine.IndexOfAny(dangerousCharacters) >= 0 || vanillaLine.Length > 200)
+            {
+                dangerousLine = true;
             }
 
             //split strings into sentences for processing
-            string pattern = @"(?<![M| |n][M|D|r][s|r]\.)(?<!(,""))(?<=[.!?""])(?= [A-Z])";
             List<string> splitVanilla = new List<string>();
             List<string> splitModified = new List<string>();
 
-            MatchCollection regexMatches = Regex.Matches(vanillaLine, pattern);
+            MatchCollection regexMatches = reactionRegexDictionary["EndOfSentence"].Matches(vanillaLine);
             int modOffset = 0;
 
             //for each regex match in the vanilla line:
@@ -283,19 +288,15 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             //reaction handling loop
             for (int i = 0; i < splitVanilla.Count; i++)
             {
-                string sd = splitVanilla[i];
+                string sv = splitVanilla[i];
                 string sm = splitModified[i];
 
-                //reset scores
+                //calculate scores
                 foreach (Reaction r in ReactionList)
                 {
                     r.keywordScore = 0;
-                }
 
-                //caclulate scores
-                foreach (Reaction r in ReactionList)
-                {
-                    string s = (r.properties.Contains("comparetomodified") ? sm : sd);
+                    string s = (r.properties.Contains("comparetomodified") ? sm : sv);
                     foreach (string keyword in r.keywords)
                     {
                         //if the keyword contains a capital letter, it's case sensitive
@@ -358,7 +359,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     if (!winningReaction.properties.Contains("easteregg"))
                     {
                         //standard winner processing. remove punctuation, apply face to line
-                        sm = Regex.Replace(sm, "(?<![D|M|r][w|r|s])[.!?](?!.)", "");
+                        sm = reactionRegexDictionary["PunctuationRemover"].Replace(sm, "");
                         sm += " " + winningReaction.GetFace();
 
                         if (!keepCasing)
@@ -463,10 +464,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
             
             //borked elipses removal
-            finalString = Regex.Replace(finalString, "(?<!\\.)\\.\\.(?=\\s|$)", ""); 
-            
+            finalString = reactionRegexDictionary["BorkedElipsesFixer"].Replace(finalString, "");
+
             //do punctuation duplication thing because it's funny
-            string dupChars = "!?";
+            char[] dupChars = { '?', '!' };
             foreach (char c in dupChars)
             {
                 if (finalString.Contains(c))
