@@ -25,7 +25,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public const string SUBOPTIONKEY_REACTIONS_ENABLED = "UWU_ADDFACES";
 
         private static List<Reaction> ReactionList;
-        private static Dictionary<string, Regex> reactionRegexDictionary = new Dictionary<string, Regex>();
+        private static Regex regexEndOfSentence;
+        private static Regex regexAllLetters;
+        private static Regex regexPunctuationRemover;
+        private static Regex regexBorkedElipsesFixer;
 
         public static bool RandomizeIntroText(RandomizationOption arg)
         {
@@ -201,13 +204,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
                 ReactionList = (List<Reaction>)serializer.Deserialize(reactionReader);
 
-                reactionRegexDictionary.Add("EndOfSentence", new Regex(@"(?<![M| |n][M|D|r][s|r]\.)(?<!(,""))(?<=[.!?""])(?= [A-Z])", RegexOptions.Compiled));
-                reactionRegexDictionary.Add("AllLetters", new Regex("[a-zA-Z]", RegexOptions.Compiled));
-                reactionRegexDictionary.Add("PunctuationRemover", new Regex("(?<![D|M|r][w|r|s])[.!?](?!.)", RegexOptions.Compiled));
-                reactionRegexDictionary.Add("BorkedElipsesFixer", new Regex("(?<!\\.)\\.\\.(?=\\s|$)", RegexOptions.Compiled));
+                regexEndOfSentence = new Regex(@"(?<![M| |n][M|D|r][s|r]\.)(?<!(,""))(?<=[.!?""])(?= [A-Z])", RegexOptions.Compiled);
+                regexAllLetters = new Regex("[a-zA-Z]", RegexOptions.Compiled);
+                regexPunctuationRemover = new Regex("(?<![D|M|r][w|r|s])[.!?](?!.)", RegexOptions.Compiled);
+                regexBorkedElipsesFixer = new Regex("(?<!\\.)\\.\\.(?=\\s|$)", RegexOptions.Compiled);
             }
 
-            if (modifiedLine.Length < 2 || reactionRegexDictionary["AllLetters"].Matches(modifiedLine).Count == 0 || vanillaLine.Contains('{'))
+            if (modifiedLine.Length < 2 || regexAllLetters.Matches(modifiedLine).Count == 0 || vanillaLine.Contains('{'))
             {
                 //I should go.
                 return modifiedLine;
@@ -223,7 +226,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             List<string> splitVanilla = new List<string>();
             List<string> splitModified = new List<string>();
 
-            MatchCollection regexMatches = reactionRegexDictionary["EndOfSentence"].Matches(vanillaLine);
+            MatchCollection regexMatches = regexEndOfSentence.Matches(vanillaLine);
             int modOffset = 0;
 
             //for each regex match in the vanilla line:
@@ -359,7 +362,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     if (!winningReaction.properties.Contains("easteregg"))
                     {
                         //standard winner processing. remove punctuation, apply face to line
-                        sm = reactionRegexDictionary["PunctuationRemover"].Replace(sm, "");
+                        sm = regexPunctuationRemover.Replace(sm, "");
                         sm += " " + winningReaction.GetFace();
 
                         if (!keepCasing)
@@ -464,7 +467,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
             
             //borked elipses removal
-            finalString = reactionRegexDictionary["BorkedElipsesFixer"].Replace(finalString, "");
+            finalString = regexBorkedElipsesFixer.Replace(finalString, "");
 
             //do punctuation duplication thing because it's funny
             char[] dupChars = { '?', '!' };
