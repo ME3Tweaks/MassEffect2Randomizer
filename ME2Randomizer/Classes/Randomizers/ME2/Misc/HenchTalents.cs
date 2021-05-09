@@ -597,64 +597,67 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 
             int numDone = 0;
             option.ProgressMax = henchFiles.Count;
-            Parallel.ForEach(henchFiles, h =>
-            {
-                //foreach (var h in henchFiles)
-                //{
 
-                // Debug only
 #if DEBUG
-                if (true
-                && false
-                && !h.Contains("leading", StringComparison.InvariantCultureIgnoreCase)
-                && !h.Contains("vixen", StringComparison.InvariantCultureIgnoreCase)
-                && !h.Contains("arvlvl", StringComparison.InvariantCultureIgnoreCase))
+            ThreadSafeRandom.SetSeed(132512);
+#endif
+            Parallel.ForEach(henchFiles, new ParallelOptions() { MaxDegreeOfParallelism = 1 }, h =>
                 {
-                    return;
-                }
+                    //foreach (var h in henchFiles)
+                    //{
+
+                    // Debug only
+#if DEBUG
+                    if (true
+                        && !h.Contains("mystic", StringComparison.InvariantCultureIgnoreCase)
+                        && !h.Contains("assassin", StringComparison.InvariantCultureIgnoreCase)
+                        && !h.Contains("liara", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return;
+                    }
 #endif
 
-                HenchInfo hpi = new HenchInfo();
+                    HenchInfo hpi = new HenchInfo();
 
-                string internalName;
-                if (h == "BioH_Wilson.pcc")
-                {
-                    hpi.HenchInternalName = "wilson";
-                }
-                else if (h == "BioD_ArvLvl1.pcc")
-                {
-                    hpi.LoadoutHint = "hench_Kenson";
-                    hpi.HenchInternalName = "kenson";
-                }
-                else if (h.StartsWith("BioH_"))
-                {
-                    internalName = h.Substring(5); // Remove BioH_
-                    internalName = internalName.Substring(0, internalName.IndexOf("_", StringComparison.InvariantCultureIgnoreCase)); // "Assassin"
-                    hpi.HenchInternalName = internalName;
-
-                    // These pawns appear embedded in existing files
-                    if (h.Contains("leading", StringComparison.InvariantCultureIgnoreCase))
+                    string internalName;
+                    if (h == "BioH_Wilson.pcc")
                     {
-                        hpi.LoadoutHint = "hench_Jacob";
+                        hpi.HenchInternalName = "wilson";
                     }
-                    else if (h.Contains("leading", StringComparison.InvariantCultureIgnoreCase))
+                    else if (h == "BioD_ArvLvl1.pcc")
                     {
-                        hpi.LoadoutHint = "hench_Miranda";
+                        hpi.LoadoutHint = "hench_Kenson";
+                        hpi.HenchInternalName = "kenson";
                     }
-                }
-                else
-                {
-                    // Custom other
-                }
+                    else if (h.StartsWith("BioH_"))
+                    {
+                        internalName = h.Substring(5); // Remove BioH_
+                        internalName = internalName.Substring(0, internalName.IndexOf("_", StringComparison.InvariantCultureIgnoreCase)); // "Assassin"
+                        hpi.HenchInternalName = internalName;
 
-                LoadSquadmatePackages(hpi, h, squadmatePackageMap, henchCache);
+                        // These pawns appear embedded in existing files
+                        if (h.Contains("leading", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            hpi.LoadoutHint = "hench_Jacob";
+                        }
+                        else if (h.Contains("leading", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            hpi.LoadoutHint = "hench_Miranda";
+                        }
+                    }
+                    else
+                    {
+                        // Custom other
+                    }
 
-                Interlocked.Increment(ref numDone);
-                option.ProgressValue = numDone;
-                option.ProgressIndeterminate = false;
+                    LoadSquadmatePackages(hpi, h, squadmatePackageMap, henchCache);
 
-                //}
-            });
+                    Interlocked.Increment(ref numDone);
+                    option.ProgressValue = numDone;
+                    option.ProgressIndeterminate = false;
+
+                    //}
+                });
             #endregion
 
             #region Build power pool
@@ -869,7 +872,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect();
 
-                Parallel.ForEach(hpi.Packages, new ParallelOptions() { MaxDegreeOfParallelism = 3 }, package =>
+                Parallel.ForEach(hpi.Packages, new ParallelOptions() { MaxDegreeOfParallelism = 1 }, package =>
                   {
                       //foreach (var loadout in assets)
                       //{
@@ -912,8 +915,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                   var evolution1 = talentSet.EvolvedPowers[powIndex * 2];
                                   var evolution2 = talentSet.EvolvedPowers[(powIndex * 2) + 1];
                                   configuredPowers.Add(new MappedPower() { BaseTalent = talentSetBasePower, EvolvedTalent1 = evolution1, EvolvedTalent2 = evolution2 });
-                                  props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution1.PowerExport), "EvolvedPowerClass1"));
-                                  props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution2.PowerExport), "EvolvedPowerClass2"));
+                                  var evo1 = PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution1.PowerExport);
+                                  var evo2 = PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution2.PowerExport);
+                                  evo1.WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
+                                  evo2.WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
+                                  props.AddOrReplaceProp(new ObjectProperty(evo1, "EvolvedPowerClass1"));
+                                  props.AddOrReplaceProp(new ObjectProperty(evo2, "EvolvedPowerClass2"));
 
                                   // Update the evolution text via override
                                   var ranksSource = talentSetBasePower.CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks");
@@ -1051,20 +1058,22 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                   // Power 3: Rank 0
                                   // Power 4: Locked by Loyalty
 
-                                  var talent = talentSet.Powers[i];
                                   var powerExport = loadout.FileRef.FindExport(talentSet.Powers[i].PowerExport.InstancedFullPath);
                                   var defaults = powerExport.GetDefaults();
 
                                   var properties = defaults.GetProperties();
                                   properties.RemoveNamedProperty("Rank");
-                                  properties.RemoveNamedProperty("UnlockRequirements");
+                                  if (properties.RemoveNamedProperty("UnlockRequirements"))
+                                  {
+                                      Debug.WriteLine("T");
+                                  }
 
                                   // All squadmates have a piont in Slot 0 by default.
                                   // Miranda and Jacob have a point in slot 1
                                   if (hpi.HenchInternalName == "kenson")
                                   {
                                       // Since you can't power up kenson we'll just give her points in all her powers
-                                      properties.Add(new FloatProperty(ThreadSafeRandom.Next(2) + 1, "Rank"));
+                                      properties.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.Next(2) + 1, "Rank"));
                                   }
                                   // VANILLA HENCH CODE
                                   else if (i == 0 || (i == 1 && hpi.HenchInternalName == "vixen" || hpi.HenchInternalName == "leading"))
@@ -1076,14 +1085,14 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                       if (removeRank2Gating)
                                       {
                                           // Rank 0
-                                          properties.Add(new FloatProperty(0, "Rank"));
+                                          properties.AddOrReplaceProp(new FloatProperty(0, "Rank"));
                                       }
                                       else
                                       {
                                           // Has unlock dependency on the prior slotted item
                                           var dependencies = new ArrayProperty<StructProperty>("UnlockRequirements");
                                           dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath), false));
-                                          properties.Add(dependencies);
+                                          properties.AddOrReplaceProp(dependencies);
                                       }
                                   }
                                   else if (i == 3 && hpi.HenchInternalName != "liara")
@@ -1091,8 +1100,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                       // Has unlock dependency on loyalty power
                                       // Has unlock dependency on the prior slotted item
                                       var dependencies = new ArrayProperty<StructProperty>("UnlockRequirements");
-                                      dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport(talentSet.Powers[i - 1].PowerExport.InstancedFullPath), true));
-                                      properties.Add(dependencies);
+                                      dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport("SFXGameContent_Powers.SFXPower_LoyaltyRequirement"), true));
+                                      properties.AddOrReplaceProp(dependencies);
                                   }
 
                                   defaults.WriteProperties(properties);
@@ -1310,49 +1319,56 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         }
 
         /// <summary>
-        /// Generates the structs for UnlockRequirements that are used to setup a dependency on this power
-        /// </summary>
+        /// Generates the structs for
         /// <param name="powerClass">The kit-power to depend on.</param>
-        /// <returns></returns>
-        private static List<StructProperty> GetUnlockRequirementsForPower(ExportEntry powerClass, bool isLoyaltyRequirement)
+        /// <returns>< UnlockRequirements that are used to setup a dependency on this power
+        /// </summary>/returns>
+        private static List<StructProperty> GetUnlockRequirementsForPower(ExportEntry powerClass, bool isLoyaltyPower, bool blankUnlock = false)
         {
             void PopulateProps(PropertyCollection props, ExportEntry export, float rank)
             {
                 props.Add(new ObjectProperty(export.UIndex, "PowerClass")); // The power that will be checked
                 props.Add(new FloatProperty(rank, "Rank")); // Required rank. 1 means at least one point in it and is used for evolved powers which area always at 4.
-                props.Add(new StringRefProperty(isLoyaltyRequirement ? 339163 : 0, "CustomUnlockText")); // "Locked: squad member is not loyal"
+                props.Add(new StringRefProperty(isLoyaltyPower ? 339163 : 0, "CustomUnlockText")); // "Locked: squad member is not loyal"
             }
 
             List<StructProperty> powerRequirements = new();
+            if (blankUnlock)
+                return powerRequirements;
 
             // Unevolved power
             PropertyCollection props = new PropertyCollection();
-            PopulateProps(props, powerClass, isLoyaltyRequirement ? 1 : 2); // Loyalty is rank 1. Others are rank 2
+            PopulateProps(props, powerClass, isLoyaltyPower ? 1 : 2); // Loyalty is rank 1. Others are rank 2
             powerRequirements.Add(new StructProperty("UnlockRequirement", props));
 
             // EVOLVED POWER
-
-            // Find base power
-            var baseClass = powerClass;
-            ExportEntry baseDefaults = baseClass.GetDefaults();
-            var evolvedPower1 = baseDefaults.GetProperty<ObjectProperty>("EvolvedPowerClass1");
-            while (evolvedPower1 == null || evolvedPower1.Value == 0)
+            if (!isLoyaltyPower)
             {
-                baseClass = (ExportEntry)baseClass.SuperClass;
-                baseDefaults = baseClass.GetDefaults();
-                evolvedPower1 = baseDefaults.GetProperty<ObjectProperty>("EvolvedPowerClass1");
+                // Find base power
+                var baseClass = powerClass;
+                ExportEntry baseDefaults = baseClass.GetDefaults();
+                var evolvedPower1 = baseDefaults.GetProperty<ObjectProperty>("EvolvedPowerClass1");
+                while (evolvedPower1 == null || evolvedPower1.Value == 0)
+                {
+                    baseClass = (ExportEntry)baseClass.SuperClass;
+                    baseDefaults = baseClass.GetDefaults();
+                    evolvedPower1 = baseDefaults.GetProperty<ObjectProperty>("EvolvedPowerClass1");
+                }
+
+
+                // Loyalty power has no unlock requirement beyond SFXPower_Loyalty
+
+                // Evolved power 1
+                props = new PropertyCollection();
+                PopulateProps(props, evolvedPower1.ResolveToEntry(powerClass.FileRef) as ExportEntry, 1);
+                powerRequirements.Add(new StructProperty("UnlockRequirement", props));
+
+                // Evolved power 2
+                var evolvedPower2 = baseDefaults.GetProperty<ObjectProperty>("EvolvedPowerClass2");
+                props = new PropertyCollection();
+                PopulateProps(props, evolvedPower2.ResolveToEntry(powerClass.FileRef) as ExportEntry, 1);
+                powerRequirements.Add(new StructProperty("UnlockRequirement", props));
             }
-
-            // Evolved power 1
-            props = new PropertyCollection();
-            PopulateProps(props, evolvedPower1.ResolveToEntry(powerClass.FileRef) as ExportEntry, 1);
-            powerRequirements.Add(new StructProperty("UnlockRequirement", props));
-
-            // Evolved power 2
-            var evolvedPower2 = baseDefaults.GetProperty<ObjectProperty>("EvolvedPowerClass2");
-            props = new PropertyCollection();
-            PopulateProps(props, evolvedPower2.ResolveToEntry(powerClass.FileRef) as ExportEntry, 1);
-            powerRequirements.Add(new StructProperty("UnlockRequirement", props));
 
             return powerRequirements;
         }

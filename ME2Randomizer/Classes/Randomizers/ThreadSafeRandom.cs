@@ -80,5 +80,16 @@ namespace ME2Randomizer.Classes.Randomizers
             return LocalRandom.Value.NextDouble();
         }
 
+#if DEBUG
+        /// <summary>
+        /// Sets the seed for the random number generator and configures it for single thread mode
+        /// </summary>
+        /// <param name="v"></param>
+        internal static void SetSeed(int v)
+        {
+            GlobalRandom = new Random(v);
+            SingleThreadMode = true;
+        }
+#endif
     }
 }
