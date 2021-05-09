@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Xml.Serialization;
+using System.Text.RegularExpressions;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
@@ -20,6 +22,13 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
     {
         public const string SUBOPTIONKEY_VOWELS_HARDMODE = "VOWELS_HARDMODE";
         public const string SUBOPTIONKEY_UWU_KEEPCASING = "UWU_KEEPCASING";
+        public const string SUBOPTIONKEY_REACTIONS_ENABLED = "UWU_ADDFACES";
+
+        private static List<Reaction> ReactionList;
+        private static Regex regexEndOfSentence;
+        private static Regex regexAllLetters;
+        private static Regex regexPunctuationRemover;
+        private static Regex regexBorkedElipsesFixer;
 
         public static bool RandomizeIntroText(RandomizationOption arg)
         {
@@ -57,6 +66,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
         public static bool UwuifyText(RandomizationOption option)
         {
             bool keepCasing = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_UWU_KEEPCASING);
+            bool addReactions = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_REACTIONS_ENABLED);
 
             var existingTLK = TLKHandler.GetBuildingTLK();
             var skipIDs = existingTLK.StringRefs.Select(x => x.StringID).ToList();
@@ -65,18 +75,18 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             // UwUify MER TLK first
             foreach (TalkFile tf in MERTlks)
             {
-                UwuifyTalkFile(tf, keepCasing, skipIDs, true);
+                UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, true);
             }
 
             // UwUify non MER TLK
             foreach (TalkFile tf in TLKHandler.GetAllTLKs().Where(x => !MERTlks.Contains(x)))
             {
-                UwuifyTalkFile(tf, keepCasing, skipIDs, false);
+                UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, false);
             }
             return true;
         }
 
-        private static void UwuifyTalkFile(TalkFile tf, bool keepCasing, List<int> skipIDs, bool isMERTlk)
+        private static void UwuifyTalkFile(TalkFile tf, bool keepCasing, bool addReactions, List<int> skipIDs, bool isMERTlk)
         {
             var tfName = Path.GetFileNameWithoutExtension(tf.path);
             var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
@@ -150,7 +160,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             sb.Append(keepCasing ? strData[i] : char.ToLower(strData[i]));
                         }
                     }
-                    else if (currentChar == '!')
+                    else if (currentChar == '!' && !addReactions)
                     {
                         sb.Append(currentChar);
                         if (ThreadSafeRandom.Next(2) == 0)
@@ -167,9 +177,322 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
 
                 var str = sb.ToString();
-                str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
+
+                if (addReactions)
+                {
+                    str = AddReactionToLine(strData, str, keepCasing);
+                }
+                else
+                { 
+                    str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
+                }
+
                 TLKHandler.ReplaceString(sref.StringID, str, langCode);
             }
+        }
+
+        private static string AddReactionToLine(string vanillaLine, string modifiedLine, bool keepCasing)
+        {
+            string finalString = "";
+            bool dangerousLine = false;
+
+            //initialize reactions/regex if this is first run
+            if (ReactionList == null)
+            {
+                string rawReactionDefinitions = MERUtilities.GetEmbeddedStaticFilesTextFile("reactiondefinitions.xml");
+                StringReader reactionReader = new StringReader(rawReactionDefinitions);
+                XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
+                ReactionList = (List<Reaction>)serializer.Deserialize(reactionReader);
+
+                regexEndOfSentence = new Regex(@"(?<![M| |n][M|D|r][s|r]\.)(?<!(,""))(?<=[.!?""])(?= [A-Z])", RegexOptions.Compiled);
+                regexAllLetters = new Regex("[a-zA-Z]", RegexOptions.Compiled);
+                regexPunctuationRemover = new Regex("(?<![D|M|r][w|r|s])[.!?](?!.)", RegexOptions.Compiled);
+                regexBorkedElipsesFixer = new Regex("(?<!\\.)\\.\\.(?=\\s|$)", RegexOptions.Compiled);
+            }
+
+            if (modifiedLine.Length < 2 || regexAllLetters.Matches(modifiedLine).Count == 0 || vanillaLine.Contains('{'))
+            {
+                //I should go.
+                return modifiedLine;
+            }
+
+            char[] dangerousCharacters = { '<', '\n' };
+            if (modifiedLine.IndexOfAny(dangerousCharacters) >= 0 || vanillaLine.Length > 200)
+            {
+                dangerousLine = true;
+            }
+
+            //split strings into sentences for processing
+            List<string> splitVanilla = new List<string>();
+            List<string> splitModified = new List<string>();
+
+            MatchCollection regexMatches = regexEndOfSentence.Matches(vanillaLine);
+            int modOffset = 0;
+
+            //for each regex match in the vanilla line:
+            for (int matchIndex = 0; matchIndex <= regexMatches.Count; matchIndex++)
+            {
+                int start;
+                int stop;
+
+                //vanilla sentence splitting
+                //find indexes for start and stop from surrounding regexMatches
+                if (regexMatches.Count == 0)
+                {
+                    start = 0;
+                    stop = vanillaLine.Length;
+                }
+                else if (matchIndex == 0)
+                {
+                    start = 0;
+                    stop = regexMatches[matchIndex].Index;
+                }
+                else if (matchIndex == regexMatches.Count)
+                {
+                    start = regexMatches[matchIndex - 1].Index;
+                    stop = vanillaLine.Length;
+                }
+                else
+                {
+                    start = regexMatches[matchIndex - 1].Index;
+                    stop = regexMatches[matchIndex].Index;
+                }
+
+                splitVanilla.Add(vanillaLine.Substring(start, stop - start));
+
+                //modified sentence splitting
+                int modStart = start + modOffset;
+                int modStop = stop + modOffset;
+
+                //step through sentence looking for punctuation or EOL
+                while (!((".!?\"").Contains(modifiedLine[modStop - 1])) && ((modStop - 1) < (modifiedLine.Length - 1)))
+                {
+                    modOffset++;
+                    modStop++;
+                }
+
+                //step through sentence looking for next space character or EOL
+                while (!(modifiedLine[modStop - 1].Equals(' ')) && ((modStop - 1) < (modifiedLine.Length - 1)))
+                {
+                    modOffset++;
+                    modStop++;
+                }
+
+                //if we found a space, step back
+                if (modStop < modifiedLine.Length)
+                {
+                    modOffset--;
+                    modStop--;
+                }
+
+                splitModified.Add(modifiedLine.Substring(modStart, modStop - modStart));
+            }
+
+            //reaction handling loop
+            for (int i = 0; i < splitVanilla.Count; i++)
+            {
+                string sv = splitVanilla[i];
+                string sm = splitModified[i];
+
+                //calculate scores
+                foreach (Reaction r in ReactionList)
+                {
+                    r.keywordScore = 0;
+
+                    string s = (r.properties.Contains("comparetomodified") ? sm : sv);
+                    foreach (string keyword in r.keywords)
+                    {
+                        //if the keyword contains a capital letter, it's case sensitive
+                        if (s.Contains(keyword, (keyword.Any(char.IsUpper) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)))
+                        {
+                            r.EarnPoint();
+                        }
+                    }
+
+                    //question check, done here to make it a semi-random point
+                    if (s.Contains('?') && r.properties.Contains("question") && ThreadSafeRandom.Next(10) == 0)
+                    {
+                        r.EarnPoint();
+                    }
+
+                    //exclamation check
+                    if (s.Contains('!') && r.properties.Contains("exclamation") && ThreadSafeRandom.Next(10) == 0)
+                    {
+                        r.EarnPoint();
+                    }
+                }
+
+                //determine winner
+                ReactionList.Shuffle(); //in case of a tie
+                Reaction winningReaction = new Reaction();
+                foreach (Reaction r in ReactionList)
+                {
+                    if (r.properties.Contains("nolower") && !keepCasing)
+                    {
+                        //reaction is not lowercase safe and lowercase is enabled
+                        continue;
+                    }
+
+                    if (r.properties.Contains("dangerous") && dangerousLine)
+                    {
+                        //reaction is dangerous and this is a dangerous string
+                        continue;
+                    }
+
+                    if (!r.properties.Contains("lowpriority"))
+                    {
+                        if ((r.keywordScore >= winningReaction.keywordScore))
+                        {
+                            winningReaction = r;
+                        }
+                    }
+                    else
+                    {
+                        if ((r.keywordScore > winningReaction.keywordScore))
+                        {
+                            winningReaction = r;
+                        }
+                    }
+                }
+
+                //winner processing if one exists
+                if (winningReaction.keywordScore > 0)
+                {
+                    //we have a winner!! congwatuwations ^_^
+                    if (!winningReaction.properties.Contains("easteregg"))
+                    {
+                        //standard winner processing. remove punctuation, apply face to line
+                        sm = regexPunctuationRemover.Replace(sm, "");
+                        sm += " " + winningReaction.GetFace();
+
+                        if (!keepCasing)
+                        {
+                            sm = sm.ToLower();
+                        }
+                    }
+                    else
+                    {
+                        //easter egg processing
+                        switch (winningReaction.name)
+                        {
+                            case "reee":
+                                //SAREN REEEEE
+                                //technically should be WEEEEEE. Still funny, but WEEEEE isn't the meme.
+                                string reee = "Sawen REEEEE";
+                                
+                                for (int e = 0; e < ThreadSafeRandom.Next(8); e++)
+                                {
+                                    reee += 'E';
+                                }
+
+                                if (!keepCasing)
+                                {
+                                    reee = reee.ToLower();
+                                }
+
+                                sm = Regex.Replace(sm, "(s|S)aw*en", reee);
+                                break;
+
+                            case "finger":
+                                //Sovereign t('.'t)
+                                string finger = "Soveweign t('.'t)";
+
+                                if (!keepCasing)
+                                {
+                                    finger = finger.ToLower();
+                                }
+
+                                sm = Regex.Replace(sm, "(S|s)ovew*eign", finger);
+                                break;
+
+                            case "jason":
+                                //Jacob? Who?
+                                string jason = winningReaction.GetFace();
+                                
+                                if (!keepCasing)
+                                {
+                                    jason = jason.ToLower();
+                                }
+
+                                sm = Regex.Replace(sm, "(J|j)acob", jason);
+                                break;
+
+                            case "shitpost":
+                                //We ArE hArBiNgEr
+                                bool flipflop = true;
+                                string sHiTpOsT = "";
+                                foreach (char c in sm.ToCharArray())
+                                {
+                                    if (flipflop)
+                                    {
+                                        sHiTpOsT += char.ToUpper(c);
+                                    }
+                                    else
+                                    {
+                                        sHiTpOsT += char.ToLower(c);
+                                    }
+                                    flipflop = !flipflop;
+                                }
+                                sm = sHiTpOsT;
+                                break;
+
+                            case "kitty":
+                                //nyaaaa =^.^=
+                                string nyaSentence = "";
+                                string[] words = sm.Split(" ");
+                                for (int w = 0; w < words.Length; w++) //each word in sentence
+                                {
+                                    foreach (string k in winningReaction.keywords) //each keyword in reaction
+                                    {
+                                        //semi-random otherwise it's EVERYWHERE
+                                        if (words[w].Contains(k, StringComparison.OrdinalIgnoreCase) && ThreadSafeRandom.Next(5) == 0)
+                                        {
+                                            words[w] = Regex.Replace(words[w], "[.!?]", "");
+                                            words[w] += " " + winningReaction.GetFace();
+                                        }
+                                    }
+                                    nyaSentence += words[w] + " ";
+                                }
+                                nyaSentence = nyaSentence.Remove(nyaSentence.Length - 1, 1); //string will always have a trailing space
+                                sm = nyaSentence;
+                                break;
+
+                            default:
+                                Debug.WriteLine("Easter egg reaction happened, but it was left unhandled!");
+                                break;
+                        }
+                    }
+                }
+                finalString += sm;
+            }
+            
+            //borked elipses removal
+            finalString = regexBorkedElipsesFixer.Replace(finalString, "");
+
+            //do punctuation duplication thing because it's funny
+            char[] dupChars = { '?', '!' };
+            foreach (char c in dupChars)
+            {
+                if (finalString.Contains(c))
+                {
+                    int rnd = ThreadSafeRandom.Next(4);
+                    switch (rnd)
+                    {
+                        case 0:
+                            finalString = finalString.Replace(c.ToString(), String.Concat(c, c));
+                            break;
+                        case 1:
+                            finalString = finalString.Replace(c.ToString(), String.Concat(c, c, c));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            //Debug.WriteLine("----------\nreaction input:  " + vanillaLine);
+            //Debug.WriteLine("reaction output: " + finalString);
+            return finalString;
         }
 
         private static void FindSkipRanges(ME1TalkFile.TLKStringRef sref, List<int> skipRanges)
@@ -394,6 +717,34 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     TLKHandler.ReplaceString(sref.StringID, new string(newStr), langCode);
                 }
             }
+        }
+    }
+
+    [XmlType("reaction")]
+    public class Reaction
+    {
+        [XmlAttribute("name")]
+        public string name;
+
+        [XmlElement("property")]
+        public List<string> properties;
+
+        [XmlElement("face")]
+        public List<string> faces;
+
+        [XmlElement("keyword")]
+        public List<string> keywords;
+
+        public int keywordScore = 0;
+
+        public void EarnPoint()
+        {
+            keywordScore += (properties.Contains("doublescore") ? 2 : 1);
+        }
+
+        public string GetFace()
+        {
+            return faces[ThreadSafeRandom.Next(faces.Count)];
         }
     }
 }
