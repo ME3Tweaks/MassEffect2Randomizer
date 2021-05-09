@@ -810,7 +810,15 @@ namespace ME2Randomizer.Classes
                                 IsOptionOnly = true,
                                 HumanName = "Keep casing",
                                 Description = "Keeps upper and lower casing.",
-                                SubOptionKey = RTexts.SUBOPTIONKEY_UWU_KEEPCASING
+                                SubOptionKey = RTexts.SUBOPTIONKEY_UWU_KEEPCASING,
+                            },
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Emoticons",
+                                Description = "Adds emoticons ^_^\n'Keep casing' recommended. Might break email or mission summaries, sowwy UwU",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                                SubOptionKey = RTexts.SUBOPTIONKEY_REACTIONS_ENABLED
                             }
                         }
                     },
