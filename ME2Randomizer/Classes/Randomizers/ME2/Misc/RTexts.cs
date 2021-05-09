@@ -73,21 +73,29 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var skipIDs = existingTLK.StringRefs.Select(x => x.StringID).ToList();
             var MERTlks = TLKHandler.GetMERTLKs();
 
+            var nonMerTLKs = TLKHandler.GetAllTLKs().Where(x => !MERTlks.Contains(x));
+
+            option.ProgressValue = 0;
+            option.ProgressMax = nonMerTLKs.Where(x=>x.LangCode == "INT").Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressMax += MERTlks.Where(x => x.LangCode == "INT").Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressIndeterminate = false;
+
+
             // UwUify MER TLK first
             foreach (TalkFile tf in MERTlks)
             {
-                UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, true);
+                UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, true, option);
             }
 
             // UwUify non MER TLK
-            foreach (TalkFile tf in TLKHandler.GetAllTLKs().Where(x => !MERTlks.Contains(x)))
+            foreach (TalkFile tf in nonMerTLKs)
             {
-                UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, false);
+                UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, false, option);
             }
             return true;
         }
 
-        private static void UwuifyTalkFile(TalkFile tf, bool keepCasing, bool addReactions, List<int> skipIDs, bool isMERTlk)
+        private static void UwuifyTalkFile(TalkFile tf, bool keepCasing, bool addReactions, List<int> skipIDs, bool isMERTlk, RandomizationOption option)
         {
             var tfName = Path.GetFileNameWithoutExtension(tf.path);
             var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
@@ -95,6 +103,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 return;
             foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
             {
+                option.IncrementProgressValue();
+
                 var strData = sref.Data;
 
                 //strData = "New Game";
@@ -184,13 +194,16 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                     str = AddReactionToLine(strData, str, keepCasing);
                 }
                 else
-                { 
+                {
                     str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
                 }
 
                 TLKHandler.ReplaceString(sref.StringID, str, langCode);
             }
         }
+
+        private static char[] uwuPunctuationDuplicateChars = { '?', '!' };
+
 
         private static string AddReactionToLine(string vanillaLine, string modifiedLine, bool keepCasing)
         {
@@ -201,9 +214,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             if (ReactionList == null)
             {
                 string rawReactionDefinitions = MERUtilities.GetEmbeddedStaticFilesTextFile("reactiondefinitions.xml");
-                StringReader reactionReader = new StringReader(rawReactionDefinitions);
+                var reactionXml = new StringReader(rawReactionDefinitions);
                 XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
-                ReactionList = (List<Reaction>)serializer.Deserialize(reactionReader);
+                ReactionList = (List<Reaction>)serializer.Deserialize(reactionXml);
 
                 regexEndOfSentence = new Regex(@"(?<![M| |n][M|D|r][s|r]\.)(?<!(,""))(?<=[.!?""])(?= [A-Z])", RegexOptions.Compiled);
                 regexAllLetters = new Regex("[a-zA-Z]", RegexOptions.Compiled);
@@ -380,7 +393,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                                 //SAREN REEEEE
                                 //technically should be WEEEEEE. Still funny, but WEEEEE isn't the meme.
                                 string reee = "Sawen REEEEE";
-                                
+
                                 for (int e = 0; e < ThreadSafeRandom.Next(8); e++)
                                 {
                                     reee += 'E';
@@ -409,7 +422,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                             case "jason":
                                 //Jacob? Who?
                                 string jason = winningReaction.GetFace();
-                                
+
                                 if (!keepCasing)
                                 {
                                     jason = jason.ToLower();
@@ -466,13 +479,12 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 }
                 finalString += sm;
             }
-            
+
             //borked elipses removal
             finalString = regexBorkedElipsesFixer.Replace(finalString, "");
 
             //do punctuation duplication thing because it's funny
-            char[] dupChars = { '?', '!' };
-            foreach (char c in dupChars)
+            foreach (char c in uwuPunctuationDuplicateChars)
             {
                 if (finalString.Contains(c))
                 {
