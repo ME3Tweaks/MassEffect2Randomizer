@@ -378,6 +378,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             var fname = Path.GetFileName(convStart.FileRef.FilePath);
             if (fname == "BioD_CitHub_220AsL.pcc" && convStart.UIndex == 803) // seems to be able to softlock thane's interrogation as some of the inputs appear to have been disabled. If they're randomized around, it could cause softlock on convo start which kills loyalty mission
                 return false;
+            if (fname == "BioD_RprGtA_420CoreBattle.pcc" && convStart.UIndex == 4626) // can softlock cause shep hits a deathplane
+                return false;
 
             return true;
         }
