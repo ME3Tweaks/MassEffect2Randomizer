@@ -166,6 +166,8 @@ namespace ME2Randomizer
             contributors.Add("Audemus - Textures");
             contributors.Add("JadeBarker - Technical assistance");
             contributors.Add("StrifeTheHistorian - Psychological profiles");
+            contributors.Add("Not_Female - UwU Emoticons implementation");
+            contributors.Add("AdmiralKirk - Testing and feedback");
             contributors.Sort();
             return contributors;
         }
