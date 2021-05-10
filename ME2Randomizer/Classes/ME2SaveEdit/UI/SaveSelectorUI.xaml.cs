@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Controllers;
 using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
@@ -134,7 +135,7 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.UI
             InternalRefundPoints(true, false);
         }
 
-        private void InternalRefundPoints(bool refundPlayer, bool refundHench)
+        private async void InternalRefundPoints(bool refundPlayer, bool refundHench)
         {
             if (refundPlayer)
             {
@@ -180,10 +181,12 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.UI
             }
 
             // Commit the save
+#if DEBUG
             using (var outS = File.Open(SelectedSaveFile.FileName, FileMode.Create, FileAccess.Write))
             {
                 SelectedSaveFile.Save(outS);
             }
+#endif
 
             // Test the save file
             using (var outS = File.OpenRead(SelectedSaveFile.FileName))
@@ -191,6 +194,7 @@ namespace ME2Randomizer.Classes.ME2SaveEdit.UI
                 var testSave = SaveFile.Load(outS);
             }
 
+            await this.ShowMessageAsync("Save updated", "Your save file has been updated.");
             Debug.WriteLine("Done!");
         }
 

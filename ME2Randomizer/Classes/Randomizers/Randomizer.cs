@@ -203,10 +203,11 @@ namespace ME2Randomizer.Classes
 
 #if DEBUG
                         if (true
+                        //&& false //uncomment to disable filtering
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("Arv", StringComparison.InvariantCultureIgnoreCase) // Only modify JnkKgA files
+                        && !file.Contains("BioP_TwrAsA", StringComparison.InvariantCultureIgnoreCase) // Only modify JnkKgA files
                         )
                             return;
 #endif
@@ -643,22 +644,39 @@ namespace ME2Randomizer.Classes
 
             RandomizationGroups.Add(new RandomizationGroup()
             {
-                GroupName = "Gameplay",
+                GroupName = "Squad powers",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption()
                     {
                         HumanName = "Class powers",
-                        Description="Shuffles the powers of all player classes. Loading an existing save after running this will cause you to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
+                        Description = "Shuffles the powers of all player classes. Loading an existing save after running this will cause you to lose talent points. Use the refund points button below to adjust your latest save file and reset your powers.",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
-                        RequiresTLK = true
+                        RequiresTLK = true,
+                        SetupRandomizerDelegate = HenchTalents.ResetTalents,
+                        SetupRandomizerButtonToolTip = "Allows you to select a save file to remove player power records from.\nThis will wipe all assigned power points and refund the correct amount of talent points to spend.",
+                        SetupRandomizerButtonText = "Refund points",
+                        /* Will have to implement later as removing gating code is actually complicated
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                SubOptionKey = HenchTalents.SUBOPTION_HENCHPOWERS_REMOVEGATING,
+                                HumanName = "Remove rank-up gating",
+                                Description = "Removes the unlock requirement for the second power slot. The final power slot will still be gated by loyalty."
+                            }
+                        }*/
                     },
+
+#if DEBUG
+                    // Needs fixes in porting code...
                     new RandomizationOption()
                     {
                         HumanName = "Henchmen powers",
-                        Description="Shuffles the powers of squadmates. Loading an existing save after running this will cause them to lose talent points, use the console command 'givetalentpoints X' to recover them (X is a number).",
+                        Description = "Shuffles the powers of squadmates. Loading an existing save after running this will cause them to lose talent points. Use the refund points button below to adjust your latest save file and reset their powers.",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilities,
@@ -677,7 +695,17 @@ namespace ME2Randomizer.Classes
                             }
                         }
                     },
-                    new RandomizationOption() {HumanName = "Skip minigames", Description="Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+#endif
+                }
+            });
+
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Gameplay",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Skip minigames", Description = "Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption()
                     {
                         HumanName = "Enable basic friendly fire",

@@ -629,7 +629,10 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                 // Only look for children of TheWorld so we can do integer check
                 var persistentLevel = owningPawn.ClassName == "BioPawn" ? null : owningPawn.FileRef.FindExport("TheWorld.PersistentLevel");
                 var instance = owningPawn.ClassName == "BioPawn" ? headMeshExp : owningPawn.FileRef.Exports.FirstOrDefault(x => x.idxLink == persistentLevel.UIndex && x.IsA(owningPawn.ClassName));
-                StripHeadMaterials(instance, owningPawn);
+                if (instance != null)
+                {
+                    StripHeadMaterials(instance, owningPawn);
+                }
 
 
                 // Remove morph head from the biopawn, if any, as this will corrupt the head
