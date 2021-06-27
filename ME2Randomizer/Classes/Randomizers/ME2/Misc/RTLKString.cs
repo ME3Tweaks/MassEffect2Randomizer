@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ME3ExplorerCore.TLK.ME2ME3;
+using LegendaryExplorerCore.TLK.ME2ME3;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {

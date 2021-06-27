@@ -13,8 +13,8 @@ using System.Text.RegularExpressions;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.TLK.ME1;
-using ME3ExplorerCore.TLK.ME2ME3;
+using LegendaryExplorerCore.TLK.ME1;
+using LegendaryExplorerCore.TLK.ME2ME3;
 using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc

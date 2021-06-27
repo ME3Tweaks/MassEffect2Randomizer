@@ -28,8 +28,8 @@ using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.DebugTools;
 //using ME2Randomizer.DebugTools;
 using ME2Randomizer.ui;
-using ME3ExplorerCore.Gammtek.Extensions;
-using ME3ExplorerCore.Helpers;
+using LegendaryExplorerCore.Gammtek.Extensions;
+using LegendaryExplorerCore.Helpers;
 using Serilog;
 
 namespace ME2Randomizer
@@ -58,9 +58,9 @@ namespace ME2Randomizer
         public bool ShowProgressPanel { get; set; }
         public RandomizationMode SelectedRandomizeMode { get; set; }
 
-        public ME3ExplorerCore.Misc.ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<ImageCredit>();
-        public ME3ExplorerCore.Misc.ObservableCollectionExtended<string> ContributorCredits { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<string>();
-        public ME3ExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit> LibraryCredits { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit>();
+        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<ImageCredit>();
+        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<string> ContributorCredits { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<string>();
+        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit> LibraryCredits { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit>();
 
         public void OnSelectedRandomizeModeChanged()
         {
@@ -70,7 +70,7 @@ namespace ME2Randomizer
         /// <summary>
         /// The list of options shown
         /// </summary>
-        public ME3ExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup>();
+        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup>();
         public bool AllowOptionsChanging { get; set; } = true;
         public bool PerformReroll { get; set; } = true;
         public int CurrentProgressValue { get; set; }
@@ -94,7 +94,7 @@ namespace ME2Randomizer
             }
         }
         public LogCollector.LogItem SelectedLogForUpload { get; set; }
-        public ME3ExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new ME3ExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem>();
+        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem>();
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {

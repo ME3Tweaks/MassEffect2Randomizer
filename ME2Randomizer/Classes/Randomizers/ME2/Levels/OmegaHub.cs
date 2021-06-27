@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.Dialogue;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Kismet;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Dialogue;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {

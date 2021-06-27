@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Misc;
 
 namespace ME2Randomizer.Classes.gameini
 {

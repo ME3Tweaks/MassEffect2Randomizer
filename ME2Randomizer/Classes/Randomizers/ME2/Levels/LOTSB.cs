@@ -1,4 +1,4 @@
-﻿using ME3ExplorerCore.Packages;
+﻿using LegendaryExplorerCore.Packages;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {

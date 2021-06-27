@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.ME1.Unreal.UnhoodBytecode;
-using ME3ExplorerCore.Packages;
+using LegendaryExplorerCore.ME1.Unreal.UnhoodBytecode;
+using LegendaryExplorerCore.Packages;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {

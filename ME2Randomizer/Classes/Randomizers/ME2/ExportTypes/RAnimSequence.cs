@@ -1,7 +1,7 @@
-﻿using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal;
+﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 using System;
-using ME3ExplorerCore.Helpers;
+using LegendaryExplorerCore.Helpers;
 using System.Diagnostics;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes

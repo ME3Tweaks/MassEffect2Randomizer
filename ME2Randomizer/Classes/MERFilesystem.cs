@@ -11,8 +11,8 @@ using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Packages;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Packages;
 using Serilog;
 
 namespace ME2Randomizer.Classes
@@ -126,11 +126,11 @@ namespace ME2Randomizer.Classes
             GlobalCache = null;
         }
 
-        public static ME3ExplorerCore.Misc.CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
+        public static LegendaryExplorerCore.Misc.CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
         public static void ReloadLoadedFiles()
         {
             var loadedFiles = MELoadedFiles.GetAllGameFiles(MEDirectories.GetDefaultGamePath(Game), Game, true);
-            LoadedFiles = new ME3ExplorerCore.Misc.CaseInsensitiveDictionary<string>();
+            LoadedFiles = new LegendaryExplorerCore.Misc.CaseInsensitiveDictionary<string>();
             foreach (var lf in loadedFiles)
             {
                 LoadedFiles[Path.GetFileName(lf)] = lf;

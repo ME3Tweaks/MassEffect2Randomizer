@@ -3,9 +3,9 @@ using System.IO;
 using ALOTInstallerCore;
 using ALOTInstallerCore.Helpers;
 using MassEffectRandomizer.Classes;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal;
-using ME3ExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {

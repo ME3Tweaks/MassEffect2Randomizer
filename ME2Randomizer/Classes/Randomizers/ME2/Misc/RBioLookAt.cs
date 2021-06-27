@@ -1,6 +1,6 @@
 ﻿using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 using Serilog;
 using System;
 

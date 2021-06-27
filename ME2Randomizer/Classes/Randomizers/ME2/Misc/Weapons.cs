@@ -8,8 +8,8 @@ using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.gameini;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Misc;
 using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc

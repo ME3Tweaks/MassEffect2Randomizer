@@ -11,8 +11,8 @@ using ALOTInstallerCore.ModManager.Services;
 using MahApps.Metro.Controls.Dialogs;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Helpers;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Helpers;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Microsoft.WindowsAPICodePack.Taskbar;
 

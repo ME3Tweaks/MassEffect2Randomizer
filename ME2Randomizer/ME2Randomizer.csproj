@@ -67,7 +67,7 @@
     <PackageReference Include="PropertyChanged.Fody" Version="4.0.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0-dev-00887" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="System.Management" Version="5.0.0" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
   </ItemGroup>
@@ -75,7 +75,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ALOTInstaller\ALOTInstallerCore\ALOTInstallerCore.csproj" />
     <ProjectReference Include="..\ALOTInstaller\MahApps.Metro\src\MahApps.Metro\MahApps.Metro.csproj" />
-    <ProjectReference Include="..\ALOTInstaller\ME3ExplorerLib\ME3ExplorerCore\ME3ExplorerCore.csproj" />
   </ItemGroup>
   
   <ItemGroup>

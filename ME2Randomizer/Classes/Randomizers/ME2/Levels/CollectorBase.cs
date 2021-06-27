@@ -1,6 +1,6 @@
 ﻿using System;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,9 +8,9 @@ using System.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.Kismet;
+using LegendaryExplorerCore.Kismet;
 using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
-using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 {

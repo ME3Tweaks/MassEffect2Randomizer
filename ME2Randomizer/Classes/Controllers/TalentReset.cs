@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
 using ME2Randomizer.Classes.ME2SaveEdit.UI;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.Misc;
 
 namespace ME2Randomizer.Classes.Controllers
 {

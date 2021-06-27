@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using ME2Randomizer.Classes.gameini;
-using DuplicatingIni = ME3ExplorerCore.Misc.DuplicatingIni;
+using DuplicatingIni = LegendaryExplorerCore.Misc.DuplicatingIni;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Coalesced
 {

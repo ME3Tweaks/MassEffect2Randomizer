@@ -10,9 +10,9 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using MahApps.Metro.Controls;
 using ME2Randomizer.ui;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Memory;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Memory;
+using LegendaryExplorerCore.Misc;
 
 namespace ME2Randomizer.DebugTools
 {

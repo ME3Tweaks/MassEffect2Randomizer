@@ -1,5 +1,5 @@
-﻿using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal.BinaryConverters;
+﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 using Serilog;
 using System;
 using System.Collections.Generic;

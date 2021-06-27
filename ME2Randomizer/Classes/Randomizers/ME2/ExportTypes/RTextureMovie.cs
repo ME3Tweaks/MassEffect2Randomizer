@@ -1,8 +1,8 @@
-﻿using ME3ExplorerCore.Packages;
+﻿using LegendaryExplorerCore.Packages;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using ME3ExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {

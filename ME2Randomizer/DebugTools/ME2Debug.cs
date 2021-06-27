@@ -1,15 +1,15 @@
 ﻿using System.ComponentModel;
 using ME2Randomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
+using LegendaryExplorerCore.Unreal;
 
 namespace ME2Randomizer.DebugTools
 {
