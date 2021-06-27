@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='ME2Debug'">
-    <DefineConstants>DEBUG;__ME2__;APPUPDATESUPPORT</DefineConstants>
+    <DefineConstants>DEBUG;__LE2__;APPUPDATESUPPORT</DefineConstants>
     <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -82,6 +82,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Folder Include="Classes\Randomizers\ME2\TextureAssets\LE2\NewFolder\" />
     <Folder Include="Classes\Restore\" />
   </ItemGroup>
 
@@ -92,7 +93,7 @@
     <Product>Mass Effect 2 Randomizer</Product>
     <Description>Randomizer for Mass Effect 2</Description>
     <Copyright>2019-2021 ME3Tweaks</Copyright>
-    <Version>0.9.21</Version>
+    <Version>0.9.50</Version>
     <Authors>ME3Tweaks</Authors>
   </PropertyGroup>
 

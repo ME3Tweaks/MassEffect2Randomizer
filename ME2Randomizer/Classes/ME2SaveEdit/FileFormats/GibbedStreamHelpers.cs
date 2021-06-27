@@ -2,6 +2,7 @@
 using System.IO;
 using ALOTInstallerCore.Helpers;
 using LegendaryExplorerCore.Gammtek.IO;
+using LegendaryExplorerCore.Helpers;
 
 namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
 {

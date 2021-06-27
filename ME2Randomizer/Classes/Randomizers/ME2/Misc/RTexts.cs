@@ -76,8 +76,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             var nonMerTLKs = TLKHandler.GetAllTLKs().Where(x => !MERTlks.Contains(x));
 
             option.ProgressValue = 0;
-            option.ProgressMax = nonMerTLKs.Where(x=>x.LangCode == "INT").Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
-            option.ProgressMax += MERTlks.Where(x => x.LangCode == "INT").Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressMax = nonMerTLKs.Where(x=>x.name.EndsWith(@"INT.tlk")).Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressMax += MERTlks.Where(x => x.name.EndsWith(@"INT.tlk")).Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
             option.ProgressIndeterminate = false;
 
 

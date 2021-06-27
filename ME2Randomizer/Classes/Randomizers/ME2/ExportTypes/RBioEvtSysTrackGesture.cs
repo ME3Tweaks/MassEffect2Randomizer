@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Kismet;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.Utility;

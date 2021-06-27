@@ -12,6 +12,7 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
@@ -69,7 +70,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                     if (animTreeTemplate.ObjectFlags.Has(UnrealFlags.EObjectFlags.DebugPostLoad))
                     {
                         animTreeTemplate = EntryCloner.CloneTree(animTreeTemplate, true);
-                        animTreeTemplate.ObjectName = new NameReference("MER_AnimTree", export.FileRef.GetNextIndexForName("MER_AnimTree")); // New name
+                        animTreeTemplate.ObjectName = export.FileRef.GetNextIndexedName("MER_AnimTree"); // New name
                         smc.WriteProperty(new ObjectProperty(animTreeTemplate, "AnimTreeTemplate")); // Write the template back
                     }
                     else if (isSubfile)

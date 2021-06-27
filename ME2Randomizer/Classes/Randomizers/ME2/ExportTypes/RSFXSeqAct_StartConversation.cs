@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Kismet;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using LegendaryExplorerCore.Packages;
 

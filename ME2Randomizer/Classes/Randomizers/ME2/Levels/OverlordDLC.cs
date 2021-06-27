@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using LegendaryExplorerCore.Helpers;

@@ -68,8 +68,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 var interp1 = loungeP.GetUExport(3813);
 
                 // Make 2 additional dance options by cloning the interp and the data tree
-                var interp2 = SeqTools.CloneBasicSequenceObject(interp1);
-                var interp3 = SeqTools.CloneBasicSequenceObject(interp1);
+                var interp2 = MERSeqTools.CloneBasicSequenceObject(interp1);
+                var interp3 = MERSeqTools.CloneBasicSequenceObject(interp1);
 
 
                 // Clone the interp data for attaching to 2 and 3
@@ -100,7 +100,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
 
                 // Link up the random choice it makes
-                var randSw = SeqTools.InstallRandomSwitchIntoSequence(sequence, 3);
+                var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(sequence, 3);
                 KismetHelper.CreateOutputLink(randSw, "Link 1", interp1);
                 KismetHelper.CreateOutputLink(randSw, "Link 2", interp2);
                 KismetHelper.CreateOutputLink(randSw, "Link 3", interp3);

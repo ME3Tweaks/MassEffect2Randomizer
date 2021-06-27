@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes.Randomizers.Utility;
@@ -9,6 +10,24 @@ using LegendaryExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
 {
+    public static class VectorExtensions
+    {
+        public static float MinValue(this Vector3 vector)
+        {
+            var value = float.MaxValue;
+            value = Math.Min(vector.X, value);
+            value = Math.Min(vector.Y, value);
+            return Math.Min(vector.Z, value);
+        }
+
+        public static float MaxValue(this Vector3 vector)
+        {
+            var value = float.MinValue;
+            value = Math.Max(vector.X, value);
+            value = Math.Max(vector.Y, value);
+            return Math.Max(vector.Z, value);
+        }
+    }
     public static class RStructs
     {
         public static StructProperty ToVectorStructProperty(this Vector3 vector, string propName = null)

@@ -9,11 +9,13 @@ using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.SharpDX;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc

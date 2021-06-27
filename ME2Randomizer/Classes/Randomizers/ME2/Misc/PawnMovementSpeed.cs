@@ -105,10 +105,9 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(25, 75) + (ThreadSafeRandom.Next(10) == 0 ? 20 : 0), "StormTurnSpeed"));
             props.Add(new FloatProperty(ThreadSafeRandom.NextFloat(250, 1250) + (ThreadSafeRandom.Next(10) == 0 ? 100 : 0), "AccelRate"));
 
-            var export = new ExportEntry(bio_appr_character.FileRef, null, props)
+            var export = new ExportEntry(bio_appr_character.FileRef, null, new NameReference("ME2RMovementData", ThreadSafeRandom.Next(200000)), properties: props)
             {
                 Class = sfxMovementData,
-                ObjectName = new NameReference("ME2RMovementData", ThreadSafeRandom.Next(200000)),
                 idxLink = bio_appr_character.FileRef.Exports.First(x => x.ClassName == "Package").UIndex,
             };
 

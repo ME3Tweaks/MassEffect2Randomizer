@@ -222,15 +222,19 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
         public static void EndTFCs()
         {
-            var usedBGTFC = ActiveBuilder.BGTfcStream.Position > 16;
-            var usedDLCTFC = ActiveBuilder.DLCTfcStream.Position > 16;
-            ActiveBuilder.BGTfcStream?.Close();
-            ActiveBuilder.DLCTfcStream?.Close();
+            if (ActiveBuilder != null)
+            {
+                var usedBGTFC = ActiveBuilder.BGTfcStream.Position > 16;
+                var usedDLCTFC = ActiveBuilder.DLCTfcStream.Position > 16;
+                ActiveBuilder.BGTfcStream?.Close();
+                ActiveBuilder.DLCTfcStream?.Close();
 
-            if (!usedBGTFC)
-                File.Delete(MERFileSystem.GetTFCPath(false));
-            if (!usedDLCTFC)
-                File.Delete(MERFileSystem.GetTFCPath(true));
+                if (!usedBGTFC)
+                    File.Delete(MERFileSystem.GetTFCPath(false));
+                if (!usedDLCTFC)
+                    File.Delete(MERFileSystem.GetTFCPath(true));
+            }
+
             ActiveBuilder = null;
         }
     }

@@ -9,6 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME2Randomizer.Classes.Randomizers.Utility;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
@@ -88,7 +90,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
                         else if (vl.ExpectedTypeName == "SeqVar_Object" && !addedToShuffler)
                         {
                             // Find what assigns
-                            if (SeqTools.IsAssignedBioPawn(export, variableLinkNode, sequenceElements))
+                            if (MERSeqTools.IsAssignedBioPawn(export, variableLinkNode, sequenceElements))
                             {
                                 pawnsToShuffleDirectAttached.Add(variableLinkNode);
                                 addedToShuffler = true;

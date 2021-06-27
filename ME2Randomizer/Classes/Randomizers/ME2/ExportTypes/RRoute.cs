@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {

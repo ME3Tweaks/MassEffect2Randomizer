@@ -23,8 +23,11 @@ namespace ME2Randomizer.Classes
         public static MEGame Game => MEGame.ME2;
         public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
         public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", "BIOG_Male_Player_C.pcc" };
-# elif __ME3__
-        public static MEGame Game => MEGame.ME3;
+# elif __LE2__
+        public static MEGame Game => MEGame.LE2;
+        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
+        public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc" };
+
 #endif
 
 
@@ -46,7 +49,7 @@ namespace ME2Randomizer.Classes
             // Re-extract even if we are on re-roll
             CreateRandomizerDLCMod(dlcModPath);
             Locations.GetTarget(Game).InstallBinkBypass();
-            DLCModCookedPath = Path.Combine(dlcModPath, Game == MEGame.ME2 ? "CookedPC" : "CookedPCConsole"); // Must be changed for ME3
+            DLCModCookedPath = Path.Combine(dlcModPath, Game.CookedDirName());
 
 
             ReloadLoadedFiles();

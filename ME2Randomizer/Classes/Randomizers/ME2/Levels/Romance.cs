@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Kismet;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using LegendaryExplorerCore.Packages;
 
@@ -35,7 +36,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 // Install random switch and point it at the romance log culminations for each
                 // Miranda gets 2 as she has a 50/50 of miranda or lonely shep.
-                var randomSwitch = SeqTools.InstallRandomSwitchIntoSequence(romSeq, 7);
+                var randomSwitch = MERSeqTools.InstallRandomSwitchIntoSequence(romSeq, 7);
                 var outLinks = SeqTools.GetOutboundLinksOfNode(randomSwitch);
 
                 outLinks[0].Add(new SeqTools.OutboundLink() { InputLinkIdx = 0, LinkedOp = romChooserPackage.GetUExport(28) }); // JACOB
@@ -68,7 +69,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
 
                 // Install random switch and point it at the romance log culminations for each
                 // Miranda gets 2 as she has a 50/50 of miranda or lonely shep.
-                var randomSwitch = SeqTools.InstallRandomSwitchIntoSequence(romSeq, 2);
+                var randomSwitch = MERSeqTools.InstallRandomSwitchIntoSequence(romSeq, 2);
                 var outLinks = SeqTools.GetOutboundLinksOfNode(randomSwitch);
 
                 outLinks[0].Add(new SeqTools.OutboundLink() {InputLinkIdx = 0, LinkedOp = romChooserPackage.GetUExport(8432)}); // MIRANDA

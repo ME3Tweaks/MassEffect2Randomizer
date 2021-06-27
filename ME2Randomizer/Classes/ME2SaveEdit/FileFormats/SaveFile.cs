@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using ALOTInstallerCore.Helpers;
+using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats

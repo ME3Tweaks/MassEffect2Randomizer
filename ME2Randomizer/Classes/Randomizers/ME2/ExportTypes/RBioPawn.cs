@@ -9,6 +9,7 @@ using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes

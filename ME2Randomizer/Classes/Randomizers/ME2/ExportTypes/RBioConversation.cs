@@ -11,7 +11,6 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using static ME2Randomizer.Classes.Randomizers.Utility.InterpTools;
-using static ME2Randomizer.Classes.Randomizers.Utility.SeqTools;
 
 namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
 {
@@ -109,7 +108,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
                             if (connectedItem.ClassName == "SeqVar_Object")
                             {
                                 var objValue = connectedItem.GetProperty<ObjectProperty>("ObjValue");
-                                if (objValue == null && !SeqTools.IsAssignedBioPawn(convStart, connectedItem, sequenceObjects))
+                                if (objValue == null && !MERSeqTools.IsAssignedBioPawn(convStart, connectedItem, sequenceObjects))
                                 {
                                     continue; // This is not a shufflable node, it is never assigned anything
                                 }
@@ -384,7 +383,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             return true;
         }
 
-        private static void BuildActorMap(Dictionary<NameReference, ActorLookup> findActorMap, VarLinkInfo sourceLink, int newSourceLinkEntryUindex)
+        private static void BuildActorMap(Dictionary<NameReference, ActorLookup> findActorMap, SeqTools.VarLinkInfo sourceLink, int newSourceLinkEntryUindex)
         {
             var originalInfo = GetLookupInfo(sourceLink.LinkedNodes[0] as ExportEntry, sourceLink);
             ActorLookup lookupInfo = GetLookupInfo(sourceLink.LinkedNodes[0].FileRef.GetUExport(newSourceLinkEntryUindex), sourceLink);
@@ -396,7 +395,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.ExportTypes
             }
         }
 
-        private static ActorLookup GetLookupInfo(ExportEntry entry, VarLinkInfo varilink)
+        private static ActorLookup GetLookupInfo(ExportEntry entry, SeqTools.VarLinkInfo varilink)
         {
             ActorLookup lookupInfo = new ActorLookup();
 

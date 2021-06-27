@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using ME2Randomizer.Classes.Randomizers.Utility;
@@ -152,7 +153,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     burger.WriteProperty(lp.rot.ToRotatorStructProperty("Rotation"));
 
                     // Add burger object to kismet unhide
-                    var clonedSeqObj = SeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
+                    var clonedSeqObj = MERSeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
                     clonedSeqObj.WriteProperty(new ObjectProperty(burger.UIndex, "ObjValue"));
                     KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObj);
 
@@ -165,7 +166,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                         plate.WriteProperty(lp.loc.ToVectorStructProperty("Location"));
 
                         // Add plate object to kismet unhide
-                        var clonedSeqObjPlate = SeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
+                        var clonedSeqObjPlate = MERSeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
                         clonedSeqObjPlate.WriteProperty(new ObjectProperty(plate.UIndex, "ObjValue"));
                         KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObjPlate);
                     }

@@ -31,6 +31,8 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Misc
             }
 
             return false;
+#else
+            return false;
 #endif
         }
 

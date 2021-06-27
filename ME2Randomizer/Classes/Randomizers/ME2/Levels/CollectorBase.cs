@@ -37,7 +37,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 // Open tubes on kills to start the attack (post platforms)----------------------
                 var seq = preReaperP.GetUExport(15190);
 
-                var attackSw = SeqTools.InstallRandomSwitchIntoSequence(seq, 2); //50% chance
+                var attackSw = MERSeqTools.InstallRandomSwitchIntoSequence(seq, 2); //50% chance
 
                 // killed squad member -> squad still exists to 50/50 sw
                 KismetHelper.CreateOutputLink(preReaperP.GetUExport(15298), "SquadStillExists", attackSw);
@@ -200,7 +200,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                     if (newPawnsInThisSeq.Any())
                     {
                         // install the switch
-                        var randSw = SeqTools.InstallRandomSwitchIntoSequence(flySeq, numEnemies);
+                        var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(flySeq, numEnemies);
                         outbound[0][0].LinkedOp = randSw;
                         SeqTools.WriteOutboundLinksToNode(preGate, outbound);
 
@@ -298,7 +298,7 @@ namespace ME2Randomizer.Classes.Randomizers.ME2.Levels
                 KismetHelper.RemoveAllLinks(activated);
 
                 // install new logic
-                var randSwitch = SeqTools.InstallRandomSwitchIntoSequence(bioticTeamSeq, 13); // don't include theif or veteran as dlc might not be installed
+                var randSwitch = MERSeqTools.InstallRandomSwitchIntoSequence(bioticTeamSeq, 13); // don't include theif or veteran as dlc might not be installed
                 KismetHelper.CreateOutputLink(activated, "Out", randSwitch);
 
                 // Outputs of random choice

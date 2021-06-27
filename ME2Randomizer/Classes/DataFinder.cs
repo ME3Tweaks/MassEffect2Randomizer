@@ -20,11 +20,13 @@ using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Gammtek.IO;
 using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using Newtonsoft.Json;
 using EnemyPowerChanger = ME2Randomizer.Classes.Randomizers.ME2.Enemy.EnemyPowerChanger;
 
@@ -1168,7 +1170,7 @@ namespace ME2Randomizer.Classes
                 {
                     //Debug.WriteLine($@" OK");
                 }
-                else if (UnrealObjectInfo.IsAKnownNativeClass(import))
+                else if (GlobalUnrealObjectInfo.IsAKnownNativeClass(import))
                 {
                     // Debug.WriteLine($@" OK, in native");
                 }

@@ -22,6 +22,7 @@ using ME2Randomizer.Classes.Randomizers.ME2.Levels;
 using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using LegendaryExplorerCore.Memory;
+using ME2Randomizer.Classes.Randomizers.ME2.TextureAssets.LE2;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 
@@ -40,8 +41,13 @@ namespace ME2Randomizer.Classes
             "BioD_Nor_103aGalaxyMap",
             "BioG_UIWorld" // Char creator lighting
         };
-#elif __ME3__
-
+#elif __LE2__
+        private static List<string> SpecializedFiles { get; } = new List<string>()
+        {
+            "BioP_Char",
+            "BioD_Nor_103aGalaxyMap",
+            "BioG_UIWorld" // Char creator lighting
+        };
 #endif
 
         public Randomizer(MainWindow mainWindow)
@@ -146,8 +152,8 @@ namespace ME2Randomizer.Classes
                 // Prepare the TLK
 #if __ME2__
                 ME2Textures.SetupME2Textures();
-#elif __ME3__
-            ME3Textures.SetupME3Textures();
+#elif __LE2__
+                LE2Textures.SetupLE2Textures();
 #endif
 
                 void srUpdate(object? o, EventArgs eventArgs)
@@ -181,7 +187,7 @@ namespace ME2Randomizer.Classes
                     mainWindow.ProgressBarIndeterminate = true;
 
                     // we only want pcc files (me2/me3). no upks
-                    var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false, false).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
+                    var files = MELoadedFiles.GetFilesLoadedInGame(MERFileSystem.Game, true, false, false).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
 
                     mainWindow.ProgressBarIndeterminate = false;
                     mainWindow.ProgressBar_Bottom_Max = files.Count();
@@ -207,7 +213,7 @@ namespace ME2Randomizer.Classes
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("BioP_TwrAsA", StringComparison.InvariantCultureIgnoreCase) // Only modify JnkKgA files
+                        && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -312,7 +318,7 @@ namespace ME2Randomizer.Classes
         /// <param name="RandomizationGroups"></param>
         internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
         {
-#if __ME2__
+#if __ME2__ || __LE2__
 
 #if DEBUG
             //EnemyPowerChanger.Init(null); // Load the initial list
@@ -542,7 +548,7 @@ namespace ME2Randomizer.Classes
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true
                     },
-#if DEBUG
+#if DEBUG && __ME2__
                     new RandomizationOption() {HumanName = "Skip splash",
                         Description = "Skips the splash screen",
                         PerformSpecificRandomizationDelegate = EntryMenu.SetupFastStartup,
