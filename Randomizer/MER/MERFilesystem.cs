@@ -1,21 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Reflection;
-using ALOTInstallerCore;
-using ALOTInstallerCore.Helpers;
-using MassEffectRandomizer.Classes;
-using ME2Randomizer.Classes.Randomizers;
-using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
-using ME2Randomizer.Classes.Randomizers.Utility;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Packages;
-using Serilog;
 
-namespace ME2Randomizer.Classes
+namespace Randomizer.MER
 {
     public class MERFileSystem
     {

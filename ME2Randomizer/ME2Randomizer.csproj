@@ -5,7 +5,7 @@
     <TargetFramework>net5.0-windows8.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
-    <Configurations>ME2Debug;ME2Release</Configurations>
+    <Configurations>Game2Debug;Game2Release;Game1Debug;Game1Release</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,13 +23,25 @@
     <Resource Include="fonts\aerolight.ttf" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='ME2Debug'">
-    <DefineConstants>DEBUG;__LE2__;APPUPDATESUPPORT</DefineConstants>
+  <PropertyGroup Condition="'$(Configuration)'=='Game2Debug'">
+    <DefineConstants>DEBUG;__ME2__;APPUPDATESUPPORT</DefineConstants>
     <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='ME2Release'">
+
+  <PropertyGroup Condition="'$(Configuration)'=='Game1Debug'">
+    <DefineConstants>DEBUG;__ME2__;APPUPDATESUPPORT</DefineConstants>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Game2Release'">
+    <DefineConstants>__ME2__;APPUPDATESUPPORT</DefineConstants>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Game1Release'">
     <DefineConstants>__ME2__;APPUPDATESUPPORT</DefineConstants>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -48,8 +60,6 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="staticfiles\**\*" />
-    <EmbeddedResource Include="Classes\Randomizers\ME2\TextureAssets\**\*.bin" />
-    <EmbeddedResource Include="Classes\Randomizers\ME2\TextureMovieAssets\**\*.bik" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,6 +84,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\ALOTInstaller\ALOTInstallerCore\ALOTInstallerCore.csproj" />
+    <ProjectReference Include="..\ALOTInstaller\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
     <ProjectReference Include="..\ALOTInstaller\MahApps.Metro\src\MahApps.Metro\MahApps.Metro.csproj" />
   </ItemGroup>
   
@@ -82,7 +93,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Classes\Randomizers\ME2\TextureAssets\LE2\NewFolder\" />
     <Folder Include="Classes\Restore\" />
   </ItemGroup>
 
@@ -97,7 +107,11 @@
     <Authors>ME3Tweaks</Authors>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ME2Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Debug|x64'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Debug|x64'">
     <Optimize>false</Optimize>
   </PropertyGroup>
 </Project>

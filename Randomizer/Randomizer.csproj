@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>x64</Platforms>
+    <Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Debug|x64'">
+    <DefineConstants>DEBUG;TRACE;GAME1</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Release|x64'">
+    <DefineConstants>TRACE;GAME1</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Debug|x64'">
+    <DefineConstants>DEBUG;TRACE;GAME2</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Release|x64'">
+    <DefineConstants>TRACE;GAME2</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Randomizers\Game2\ME2\**" />
+    <EmbeddedResource Remove="Randomizers\Game2\ME2\**" />
+    <None Remove="Randomizers\Game2\ME2\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Randomizers\Game1\TextureAssetsLE1\" />
+    <Folder Include="Randomizers\Game3\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ALOTInstaller\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
+  </ItemGroup>
+
+</Project>
