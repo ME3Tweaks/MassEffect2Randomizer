@@ -91,9 +91,9 @@
     <ApplicationIcon>masseffectrandomizer.ico</ApplicationIcon>
     <Company>ME3Tweaks</Company>
     <Product>Mass Effect 2 Randomizer</Product>
-    <Description>Randomizer for Mass Effect 2</Description>
+    <Description>Randomizer for the original Mass Effect 2</Description>
     <Copyright>2019-2021 ME3Tweaks</Copyright>
-    <Version>0.9.21</Version>
+    <Version>0.9.22</Version>
     <Authors>ME3Tweaks</Authors>
   </PropertyGroup>
 
