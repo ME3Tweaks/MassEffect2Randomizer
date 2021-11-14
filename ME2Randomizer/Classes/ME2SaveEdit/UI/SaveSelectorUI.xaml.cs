@@ -22,8 +22,8 @@ using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.Controllers;
 using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
 using ME2Randomizer.ui;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Misc;
 using Path = System.IO.Path;
 
 namespace ME2Randomizer.Classes.ME2SaveEdit.UI

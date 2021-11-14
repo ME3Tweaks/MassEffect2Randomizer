@@ -6,14 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
-using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
-using ME3ExplorerCore.Kismet;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
-    class SeqTools
+    class MERSeqTools
     {
         public static ExportEntry InstallRandomSwitchIntoSequence(ExportEntry sequence, int numLinks)
         {
@@ -121,16 +122,16 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        public static List<List<OutboundLink>> GetOutboundLinksOfNode(ExportEntry node)
+        public static List<List<SeqTools.OutboundLink>> GetOutboundLinksOfNode(ExportEntry node)
         {
-            var outputLinksMapping = new List<List<OutboundLink>>();
+            var outputLinksMapping = new List<List<SeqTools.OutboundLink>>();
             var outlinksProp = node.GetProperty<ArrayProperty<StructProperty>>("OutputLinks");
             if (outlinksProp != null)
             {
                 int i = 0;
                 foreach (var ol in outlinksProp)
                 {
-                    List<OutboundLink> oLinks = new List<OutboundLink>();
+                    var oLinks = new List<SeqTools.OutboundLink>();
                     outputLinksMapping.Add(oLinks);
 
                     var links = ol.GetProp<ArrayProperty<StructProperty>>("Links");
@@ -138,7 +139,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
                     {
                         foreach (var l in links)
                         {
-                            oLinks.Add(OutboundLink.FromStruct(l, node.FileRef));
+                            oLinks.Add(SeqTools.OutboundLink.FromStruct(l, node.FileRef));
                         }
                     }
 
@@ -154,7 +155,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
         /// </summary>
         /// <param name="node"></param>
         /// <param name="linkSet"></param>
-        public static void WriteOutboundLinksToNode(ExportEntry node, List<List<OutboundLink>> linkSet)
+        public static void WriteOutboundLinksToNode(ExportEntry node, List<List<SeqTools.OutboundLink>> linkSet)
         {
             var outlinksProp = node.GetProperty<ArrayProperty<StructProperty>>("OutputLinks");
 
@@ -172,38 +173,6 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             }
 
             node.WriteProperty(outlinksProp);
-        }
-
-        internal class OutboundLink
-        {
-            public IEntry? LinkedOp { get; set; }
-            public int InputLinkIdx { get; set; }
-
-            public static OutboundLink FromStruct(StructProperty sp, IMEPackage package)
-            {
-                return new OutboundLink()
-                {
-                    LinkedOp = sp.GetProp<ObjectProperty>("LinkedOp")?.ResolveToEntry(package),
-                    InputLinkIdx = sp.GetProp<IntProperty>("InputLinkIdx")
-                };
-            }
-
-            public StructProperty GenerateStruct()
-            {
-                return new StructProperty("SeqOpOutputInputLink", false,
-                    new ObjectProperty(LinkedOp.UIndex, "LinkedOp"),
-                    new IntProperty(InputLinkIdx, "InputLInkIdx"),
-                    new NoneProperty());
-            }
-
-            public static OutboundLink FromTargetExport(ExportEntry exportEntry, int inputLinkIdx)
-            {
-                return new OutboundLink()
-                {
-                    LinkedOp = exportEntry,
-                    InputLinkIdx = inputLinkIdx
-                };
-            }
         }
 
         /// <summary>
@@ -243,7 +212,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             foreach (var seqObj in sequenceElements)
             {
                 if (seqObj == node) continue; // Skip node pointing to itself
-                var linkSet = GetVariableLinksOfNode(seqObj);
+                var linkSet = SeqTools.GetVariableLinksOfNode(seqObj);
                 if (linkSet.Any(x => x.LinkedNodes.Any(y => y == node)))
                 {
                     referencingNodes.Add(seqObj);
@@ -279,65 +248,6 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Basic description of a VarLink (bottom of kismet action - this includes all links)
-        /// </summary>
-        [DebuggerDisplay("VarLink {LinkDesc}, ExpectedType: {ExpectedTypeName}")]
-        internal class VarLinkInfo
-        {
-            public string LinkDesc { get; set; }
-            public string PropertyName { get; set; }
-            public IEntry ExpectedType { get; set; }
-            public string ExpectedTypeName => ExpectedType.ObjectName;
-            public List<IEntry> LinkedNodes { get; set; }
-
-            public static VarLinkInfo FromStruct(StructProperty sp, IMEPackage package)
-            {
-                return new VarLinkInfo()
-                {
-                    LinkDesc = sp.GetProp<StrProperty>("LinkDesc"),
-                    PropertyName = sp.GetProp<NameProperty>("PropertyName")?.Value,
-                    ExpectedType = sp.GetProp<ObjectProperty>("ExpectedType").ResolveToEntry(package),
-                    LinkedNodes = sp.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables")?.Select(x => x.ResolveToEntry(package)).ToList() ?? new List<IEntry>()
-                };
-            }
-        }
-
-        public static List<VarLinkInfo> GetVariableLinksOfNode(ExportEntry export)
-        {
-            var varLinks = new List<VarLinkInfo>();
-            var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
-            if (variableLinks != null)
-            {
-                foreach (var vl in variableLinks)
-                {
-                    varLinks.Add(VarLinkInfo.FromStruct(vl, export.FileRef));
-                }
-            }
-
-            return varLinks;
-        }
-
-        /// <summary>
-        /// Writes the list of variable links to the node. Only the linked objects are written. The list MUST be in order and be the same length as the current list.
-        /// </summary>
-        /// <param name="export"></param>
-        /// <param name="varLinks"></param>
-        public static void WriteVariableLinksToNode(ExportEntry export, List<VarLinkInfo> varLinks)
-        {
-            var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
-            if (variableLinks != null && varLinks.Count == variableLinks.Count)
-            {
-                for (int i = 0; i < variableLinks.Count; i++)
-                {
-                    var linkedVarList = variableLinks[i].GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
-                    linkedVarList?.ReplaceAll(varLinks[i].LinkedNodes.Select(x => new ObjectProperty(x)));
-                }
-            }
-
-            export.WriteProperty(variableLinks);
         }
 
         /// <summary>
@@ -388,7 +298,7 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
             export.WriteProperty(new ObjectProperty(objValue.UIndex, "ObjValue"));
         }
 
-        public static void PrintVarLinkInfo(List<VarLinkInfo> seqLinks)
+        public static void PrintVarLinkInfo(List<SeqTools.VarLinkInfo> seqLinks)
         {
             foreach (var link in seqLinks)
             {

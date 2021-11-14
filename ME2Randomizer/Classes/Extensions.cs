@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Windows.Media;
 using ME2Randomizer.Classes.Randomizers;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes
 {

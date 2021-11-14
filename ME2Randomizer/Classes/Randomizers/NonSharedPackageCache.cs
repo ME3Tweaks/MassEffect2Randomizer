@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.Packages;
+using LegendaryExplorerCore.Packages;
 
 namespace ME2Randomizer.Classes.Randomizers
 {

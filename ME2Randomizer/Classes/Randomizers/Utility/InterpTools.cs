@@ -1,5 +1,5 @@
-﻿using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal;
+﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {

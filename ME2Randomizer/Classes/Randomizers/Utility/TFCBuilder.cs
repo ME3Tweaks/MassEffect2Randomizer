@@ -1,6 +1,6 @@
-﻿using ME3ExplorerCore.Unreal;
-using ME3ExplorerCore.Unreal.BinaryConverters;
-using ME3ExplorerCore.Unreal.Classes;
+﻿using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.Classes;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,8 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Packages;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
 using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
@@ -222,15 +222,19 @@ namespace ME2Randomizer.Classes.Randomizers.Utility
 
         public static void EndTFCs()
         {
-            var usedBGTFC = ActiveBuilder.BGTfcStream.Position > 16;
-            var usedDLCTFC = ActiveBuilder.DLCTfcStream.Position > 16;
-            ActiveBuilder.BGTfcStream?.Close();
-            ActiveBuilder.DLCTfcStream?.Close();
+            if (ActiveBuilder != null)
+            {
+                var usedBGTFC = ActiveBuilder.BGTfcStream.Position > 16;
+                var usedDLCTFC = ActiveBuilder.DLCTfcStream.Position > 16;
+                ActiveBuilder.BGTfcStream?.Close();
+                ActiveBuilder.DLCTfcStream?.Close();
 
-            if (!usedBGTFC)
-                File.Delete(MERFileSystem.GetTFCPath(false));
-            if (!usedDLCTFC)
-                File.Delete(MERFileSystem.GetTFCPath(true));
+                if (!usedBGTFC)
+                    File.Delete(MERFileSystem.GetTFCPath(false));
+                if (!usedDLCTFC)
+                    File.Delete(MERFileSystem.GetTFCPath(true));
+            }
+
             ActiveBuilder = null;
         }
     }

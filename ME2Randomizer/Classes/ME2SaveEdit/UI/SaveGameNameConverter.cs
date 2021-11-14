@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal;
 
 namespace ME2Randomizer.Classes.ME2SaveEdit.UI
 {

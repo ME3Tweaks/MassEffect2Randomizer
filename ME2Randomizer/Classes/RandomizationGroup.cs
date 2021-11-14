@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.Misc;
 
 namespace ME2Randomizer.Classes
 {

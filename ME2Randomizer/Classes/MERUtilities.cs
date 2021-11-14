@@ -21,8 +21,8 @@ using ALOTInstallerCore.Helpers;
 using ME2Randomizer;
 using ME2Randomizer.Classes;
 using ME2Randomizer.Classes.Randomizers.Utility;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 
 namespace MassEffectRandomizer.Classes
 {

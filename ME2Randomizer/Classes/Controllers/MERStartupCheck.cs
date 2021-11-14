@@ -131,6 +131,9 @@ namespace ME2Randomizer.Classes.Controllers
                     }
 
                     args = $"\"{System.Security.Principal.WindowsIdentity.GetCurrent().Name}\" {args}";
+
+                    throw new Exception("not implemented.");
+                    /*
                     var permissionsGranterExe = Path.Combine(Locations.ResourcesDir, "Binaries", "PermissionsGranter.exe");
 
                     //need to run write permissions program
@@ -171,6 +174,7 @@ namespace ME2Randomizer.Classes.Controllers
                             return false;
                         }
                     }
+                    */
                 }
             }
             catch (Exception e)

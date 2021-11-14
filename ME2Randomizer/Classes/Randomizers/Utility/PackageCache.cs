@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MassEffectRandomizer.Classes;
-using ME3ExplorerCore.Packages;
+using LegendaryExplorerCore.Packages;
 using Serilog;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility

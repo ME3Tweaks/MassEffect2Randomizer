@@ -21,13 +21,13 @@ using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME2Randomizer.Classes.Telemetry;
-using ME3ExplorerCore;
-using ME3ExplorerCore.Compression;
-using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Gammtek.Extensions;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore;
+using LegendaryExplorerCore.Compression;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Gammtek.Extensions;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
@@ -105,7 +105,7 @@ namespace ME2Randomizer.Classes.Controllers
             // PRE LIBRARY LOAD
             RegistryHandler.RegistrySettingsPath = @"HKEY_CURRENT_USER\Software\MassEffect2Randomizer";
             RegistryHandler.CurrentUserRegistrySubpath = @"Software\MassEffect2Randomizer";
-            ME3ExplorerCoreLib.SetSynchronizationContext(TaskScheduler.FromCurrentSynchronizationContext());
+            LegendaryExplorerCoreLib.SetSynchronizationContext(TaskScheduler.FromCurrentSynchronizationContext());
 
             try
             {
@@ -257,6 +257,18 @@ namespace ME2Randomizer.Classes.Controllers
                     ToolTipService.ShowDurationProperty.OverrideMetadata(typeof(DependencyObject), new FrameworkPropertyMetadata(int.MaxValue));
 
                     ALOTInstallerCoreLib.PostCriticalStartup(x => pd.SetMessage(x), RunOnUIThread, false);
+
+#if __LE2__
+                    LE2Directory.ReloadDefaultGamePath(true);
+                    if (LE2Directory.DefaultGamePath != null)
+                    {
+                        GameTarget gt = new GameTarget(MEGame.LE2, LE2Directory.DefaultGamePath, true);
+                        if (gt.ValidateTarget() == null)
+                        {
+                            Locations.SetTarget(gt, false);
+                        }
+                    }
+#endif
                     MEPackageHandler.GlobalSharedCacheEnabled = false; // ME2R does not use the global shared cache.
 
                     handleM3Passthrough();
@@ -339,8 +351,8 @@ namespace ME2Randomizer.Classes.Controllers
 
 
                         var backupStatus = BackupService.GetBackupStatus(MERFileSystem.Game);
-                        mw.BackupRestoreText = backupStatus.BackupActionText;
-                        mw.BackupRestore_Button.ToolTip = backupStatus.BackedUp ? "Click to restore game/uninstall randomizer mod" : "Click to backup game";
+                        mw.BackupRestoreText = backupStatus?.BackupActionText;
+                        mw.BackupRestore_Button.ToolTip = backupStatus != null && backupStatus.BackedUp ? "Click to restore game/uninstall randomizer mod" : "Click to backup game";
 
                         mw.FinalizeInterfaceLoad();
 

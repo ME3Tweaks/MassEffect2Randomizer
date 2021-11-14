@@ -1,10 +1,10 @@
-﻿using ME3ExplorerCore.Unreal;
+﻿using LegendaryExplorerCore.Unreal;
 using System.Collections.Generic;
 using System.Linq;
 using ME2Randomizer.Classes.Randomizers.ME2.Misc;
-using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
-using ME3ExplorerCore.Packages;
-using NameProperty = ME3ExplorerCore.Unreal.NameProperty;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
+using LegendaryExplorerCore.Packages;
+using NameProperty = LegendaryExplorerCore.Unreal.NameProperty;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {

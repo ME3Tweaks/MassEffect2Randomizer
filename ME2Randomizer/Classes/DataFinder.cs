@@ -16,15 +16,17 @@ using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
 using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
 using ME2Randomizer.Classes.Randomizers.Utility;
 using ME2Randomizer.DebugTools;
-using ME3ExplorerCore.GameFilesystem;
-using ME3ExplorerCore.Gammtek.Extensions.Collections.Generic;
-using ME3ExplorerCore.Gammtek.IO;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Misc;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
-using ME3ExplorerCore.Unreal;
-using ME3ExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
+using LegendaryExplorerCore.Gammtek.IO;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Misc;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using Newtonsoft.Json;
 using EnemyPowerChanger = ME2Randomizer.Classes.Randomizers.ME2.Enemy.EnemyPowerChanger;
 
@@ -1168,7 +1170,7 @@ namespace ME2Randomizer.Classes
                 {
                     //Debug.WriteLine($@" OK");
                 }
-                else if (UnrealObjectInfo.IsAKnownNativeClass(import))
+                else if (GlobalUnrealObjectInfo.IsAKnownNativeClass(import))
                 {
                     // Debug.WriteLine($@" OK, in native");
                 }

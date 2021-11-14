@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using ME3ExplorerCore.Helpers;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Misc;
 
 namespace ME2Randomizer.Classes.gameini
 {
@@ -67,8 +67,8 @@ namespace ME2Randomizer.Classes.gameini
             foreach (var file in Inis)
             {
                 //Console.WriteLine("Coalescing " + Path.GetFileName(file));
-                outStream.WriteUnrealStringASCII(file.Key);
-                outStream.WriteUnrealStringASCII(file.Value.ToString());
+                outStream.WriteUnrealStringLatin1(file.Key);
+                outStream.WriteUnrealStringLatin1(file.Value.ToString());
             }
             File.WriteAllBytes(outfile, outStream.ToArray());
             return true;

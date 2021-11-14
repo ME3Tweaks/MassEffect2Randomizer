@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using MassEffectRandomizer.Classes;
 using ME2Randomizer.Classes.gameini;
-using ME3ExplorerCore.Misc;
+using LegendaryExplorerCore.Misc;
 using Serilog;
 
 namespace ME2Randomizer.Classes

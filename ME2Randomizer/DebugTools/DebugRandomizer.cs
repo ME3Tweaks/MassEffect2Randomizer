@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ME2Randomizer.Classes;
-using ME3ExplorerCore.ME1.Unreal.UnhoodBytecode;
-using ME3ExplorerCore.Packages;
+using LegendaryExplorerCore.ME1.Unreal.UnhoodBytecode;
+using LegendaryExplorerCore.Packages;
 
 namespace ME2Randomizer.DebugTools
 {

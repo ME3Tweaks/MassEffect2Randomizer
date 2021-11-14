@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ME3ExplorerCore.Packages;
-using ME3ExplorerCore.Packages.CloningImportingAndRelinking;
-using ME3ExplorerCore.Unreal;
-using ME3ExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 
 namespace ME2Randomizer.Classes.Randomizers.Utility
 {
