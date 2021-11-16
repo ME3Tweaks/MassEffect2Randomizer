@@ -1,4 +1,8 @@
-﻿namespace Randomizer.Randomizers.Game2.ExportTypes
+﻿using System.Linq;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+
+namespace Randomizer.Randomizers.Game2.ExportTypes
 {
     class RBioMorphFace
     {

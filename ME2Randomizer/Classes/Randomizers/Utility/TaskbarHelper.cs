@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAPICodePack.Taskbar;
 
-namespace ME2Randomizer.Classes.Randomizers.Utility
+namespace RandomizerUI.Classes.Randomizers.Utility
 {
 
     /// <summary>

@@ -1,5 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
+using Randomizer.MER;
+using Serilog;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {

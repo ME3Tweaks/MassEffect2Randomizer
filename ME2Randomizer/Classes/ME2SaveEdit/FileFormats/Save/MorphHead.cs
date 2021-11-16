@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats.Save
+namespace RandomizerUI.Classes.ME2SaveEdit.FileFormats.Save
 {
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public partial class MorphHead : IUnrealSerializable

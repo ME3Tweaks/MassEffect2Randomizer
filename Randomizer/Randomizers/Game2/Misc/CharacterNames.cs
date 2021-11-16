@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
+using Microsoft.Win32;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.TLK;
 
 namespace Randomizer.Randomizers.Game2.Misc

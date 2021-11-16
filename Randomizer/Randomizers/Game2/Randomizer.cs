@@ -1,18 +1,30 @@
-﻿#if GAME2
+﻿#if __GAME2__
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
-using Serilog;
-using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Memory;
+using LegendaryExplorerCore.Misc;
+using ME3TweaksCore.Helpers;
+using Randomizer.MER;
+using Randomizer.Randomizers.Game2.Coalesced;
+using Randomizer.Randomizers.Game2.Enemy;
+using Randomizer.Randomizers.Game2.ExportTypes;
+using Randomizer.Randomizers.Game2.Levels;
+using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Game2.TextureAssets;
+using Randomizer.Randomizers.Game2.TextureAssets.LE2;
+using Randomizer.Randomizers.Game2.TLK;
+using Serilog;
 
-namespace ME2Randomizer.Classes
+namespace Randomizer.Randomizers.Game2
 {
     public class Randomizer
     {
@@ -20,21 +32,12 @@ namespace ME2Randomizer.Classes
         private BackgroundWorker randomizationWorker;
 
         // Files that should not be generally passed over
-#if __ME2__
         private static List<string> SpecializedFiles { get; } = new List<string>()
         {
             "BioP_Char",
             "BioD_Nor_103aGalaxyMap",
             "BioG_UIWorld" // Char creator lighting
         };
-#elif __LE2__
-        private static List<string> SpecializedFiles { get; } = new List<string>()
-        {
-            "BioP_Char",
-            "BioD_Nor_103aGalaxyMap",
-            "BioG_UIWorld" // Char creator lighting
-        };
-#endif
 
         public Randomizer(MainWindow mainWindow)
         {
@@ -91,11 +94,11 @@ namespace ME2Randomizer.Classes
             {
                 MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
                 mainWindow.CurrentOperationText = $"Randomizer failed with error: {e.Error.Message}, please report to Mgamerz";
-                Crashes.TrackError(new Exception("Randomizer thread exited with exception", e.Error));
+                TelemetryInterposer.TrackError(new Exception("Randomizer thread exited with exception", e.Error));
             }
             else
             {
-                Analytics.TrackEvent("Randomization completed");
+                TelemetryInterposer.TrackEvent("Randomization completed");
                 mainWindow.CurrentOperationText = "Randomization complete";
             }
             CommandManager.InvalidateRequerySuggested();
@@ -136,11 +139,8 @@ namespace ME2Randomizer.Classes
                 sw.Start();
 
                 // Prepare the TLK
-#if __ME2__
                 ME2Textures.SetupME2Textures();
-#elif __LE2__
                 LE2Textures.SetupLE2Textures();
-#endif
 
                 void srUpdate(object? o, EventArgs eventArgs)
                 {
@@ -233,7 +233,7 @@ namespace ME2Randomizer.Classes
                         catch (Exception e)
                         {
                             Log.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
-                            Crashes.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
+                            TelemetryInterposer.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
                             Debugger.Break();
                         }
                     });
@@ -254,7 +254,7 @@ namespace ME2Randomizer.Classes
                     }
                     catch (Exception ex)
                     {
-                        Crashes.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
+                        TelemetryInterposer.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
                     }
                 }
 
@@ -304,8 +304,6 @@ namespace ME2Randomizer.Classes
         /// <param name="RandomizationGroups"></param>
         internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
         {
-#if __ME2__ || __LE2__
-
 #if DEBUG
             //EnemyPowerChanger.Init(null); // Load the initial list
             //EnemyWeaponChanger.Preboot(); // Load the initial list
@@ -895,7 +893,7 @@ namespace ME2Randomizer.Classes
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
                     },
-                    // Crashes game too often :/
+                    // TelemetryInterposer game too often :/
                     //new RandomizationOption()
                     //{
                     //    HumanName = "Music",
@@ -913,8 +911,6 @@ namespace ME2Randomizer.Classes
                 g.Options.Sort(x => x.HumanName);
             }
             RandomizationGroups.Sort(x => x.GroupName);
-#endif
-
         }
     }
 }

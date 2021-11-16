@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace ME2Randomizer.Classes.Randomizers.Utility
+namespace RandomizerUI.Classes.Randomizers.Utility
 {
     public static class IEnumerableExtensions
     {

@@ -1,11 +1,11 @@
 ﻿<mah:MetroWindow  xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-                  x:Class="ME2Randomizer.DebugTools.DebugWindow"
+                  x:Class="RandomizerUI.DebugTools.DebugWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ME2Randomizer.DebugTools" xmlns:fonts="clr-namespace:ME2Randomizer.fonts"
-                  mc:Ignorable="d"
+        xmlns:fonts="clr-namespace:RandomizerUI.fonts"
+        mc:Ignorable="d"
         Title="DebugWindow" Height="450" Width="800">
     <StackPanel>
         <Button DockPanel.Dock="Right" Click="MemAnalyzer_Click" Padding="20,0,20,0" Visibility="Visible">

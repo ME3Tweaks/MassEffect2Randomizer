@@ -4,7 +4,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Misc;
+using ME3TweaksCore.Helpers;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
+using Serilog;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {

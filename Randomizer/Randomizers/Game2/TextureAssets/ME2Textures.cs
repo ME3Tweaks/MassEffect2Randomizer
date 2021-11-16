@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 
 namespace Randomizer.Randomizers.Game2.TextureAssets
 {

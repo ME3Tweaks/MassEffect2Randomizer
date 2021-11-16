@@ -1,5 +1,9 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {

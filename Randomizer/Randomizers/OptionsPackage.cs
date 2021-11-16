@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ME3TweaksCore.Targets;
 
 namespace Randomizer.Randomizers
 {
@@ -20,5 +21,9 @@ namespace Randomizer.Randomizers
         /// If true, remove the DLC mod component before install, which prevents stacking for most randomization. If false, the DLC component will stay, which stacks changes
         /// </summary>
         public bool Reroll { get; set; }
+        /// <summary>
+        /// Target to run randomization on
+        /// </summary>
+        public GameTarget RandomizationTarget { get; set; }
     }
 }

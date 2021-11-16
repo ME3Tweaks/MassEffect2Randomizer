@@ -1,0 +1,103 @@
+﻿<backgroundstrings>
+  <childhoods>
+    <childhood name="Child at heart">
+      You never really grew up in your mind. You've still got your favorite Lego set on your shelf in your room on the ship. Your toys helped distract you from the rough life you lived when you were younger, and you never really grew out of that.
+
+      Your crewmates on the SSV Normandy teased you for it sometimes, but nobody could deny the tactical awareness you've gained from your experience with toys, which were unfortunately lost with the ship.
+    </childhood>
+    <childhood name="Hipster">
+      You were too cool for school, and you let everyone know it. You're the ultimate hipster - if someone knows what you like, it's already too mainstream. You rode the wave of cool before it was cool, but your mother didn't approve, and you were kicked out and ended up in the military.
+
+      You became the commander of the SSV Normandy, becoming the pinnacle hipster. But that title was lost with destruction of the SSV Normandy.
+    </childhood>
+    <childhood name="Life of the party">
+      If there was a party, you were there. You partied so hard the local news would write stories about you. Your early twenties were so much fun, or at least the pictures others took seem to indicate you had fun, because you actually can't remember most of it.
+
+      The party ended with your death on the SSV Normandy, and you were mourned by fraternities all over Earth.
+    </childhood>
+    <childhood name="Imposter">
+      Your original career choice was influenced by the admiration of a popular chef. Joining a space transportation company as a young self proclaimed culinary wizard trying to get your food in the door, you were bounced around from ship to ship trying to find a suitable place of work.
+
+      It would have been devastating if anyone had learned that you actually couldn't cook. Thankfully you were mistakenly assigned to the command of the SSV Normandy, so you didn't have to cook anymore.
+    </childhood>
+    <childhood name="Scientist">
+      You survived the quarantine of New York Zero in 2165, which claimed the lives of both of your parents and your brother. Devastated by your loss, you spent years becoming a child prodigy of the sciences to help ensure this would not happen again, leading you to join the Alliance's scientific division when you turned 18.
+
+      Working with various scientists from other races, you helped develop a cure for the disease, and were subsequently reassigned into the military division.
+    </childhood>
+    <childhood name="Introvert">
+      Your parents divorced when you were young, and ever since then, you've had trouble maintaining relationships with others. You found it uncomfortable to exert the energy required to hold up your end of the deal, causing many connections to others to wither away.
+
+      You spent a lot of time on your own, becoming independent and acquiring an ability to recognize the subtle non-verbal communications of others. These skills let you understand people at a glance, a skill the Alliance took notice of.
+    </childhood>
+    <childhood name="Disgraced">
+      You were wrongly accused of extortion when you were 19, and spent years having to fight off a bogus charge that tarnished your family's name even after you were exonerated. You were a lone wolf through most of it, losing the support of your friends.
+
+      With nowhere else to turn, you joined the Alliance Navy. As the years have gone by, people began to remember the Shepard name for your service, not the stories the press wrote about your trial.
+    </childhood>
+  </childhoods>
+  <reputations>
+    <reputation name="Rough Rider">
+      A cowboy is how they used to call them back in the time before planes, your policy was shoot first and ask questions later. Known to lay down the law when necessary, you also know when to let up, and let people learn from their own mistakes. It looks like the Geth may have finally called your bluff.
+
+      Joke's on them.
+    </reputation>
+    <reputation name="Terrorist">
+      Your enemies cringed when they hear your name. So did your allies. You are known to be an absolutely ruthless and brutal soldier, willing to do anything to get the job done, consequences be damned.
+
+      But that's all in the past. The Normandy SR-1 was destroyed, and now you're nothing but a piece of human steak on a lab table. Whoever did this to you better be ready, because your boot will be meeting their neck soon.
+    </reputation>
+    <reputation name="Pacifist (in name only)">
+      The kindest soul that there ever was, was how someone once described you. You wouldn't hurt a fly, and you'd surely let the spider out of the house rather than smashing it.
+
+      At least, that was what they used to think. Two years ago you became bloodthirsty, shooting up bars, med clinics, and platoons worth of Geth. The Alliance seemed almost thankful you died on the SR-1 so they didn't have to deal with you anymore.
+    </reputation>
+    <reputation name="Social Elite">
+      You didn't need to wield guns to show your power, you had people willing to do it for you. You had friends in high places who owed you favors you intended to collect on someday, and today was that day: rebuild me.
+
+      You intend to visit some of these "friends" and see who's willing to pay up, and to see who's afraid of ghosts.
+    </reputation>
+    <reputation name="Influencer">
+      I was Commander Shepard, and this was my favorite department store on Earth.
+
+      Your advertising skills were so legendary, you were often called Billy Mays III. Merchants knew you by name even if you never stepped foot in their shop. But that legend ended when the Normandy SR-1 was destroyed.
+
+      But you're about to start a comeback tour, this time ready to sell spaceships worth of humanity's next greatest invention: thermal clips.
+    </reputation>
+    <reputation name="Streamer">
+      You've always been a performer; starting this "streaming" thing 5 years ago when you joined the Alliance military. The Alliance saw the following you cultivated, granting you promotions that quickly led you up the ranks, bringing many new recruits into the service. You were a bit too ambitious though, and got the Normandy SR-1 blown up in one of your Geth Prank'd videos. The Alliance posthumously court-martialed you as a result.
+
+      Your audience of 770,000 live viewers are about to see the highest technical achievement of the human race: Shepard Mark II.
+    </reputation>
+    <reputation name="Sombra main">
+      You love having fun, but only at the expense of others. You're the background noise, making yourself known only when you make a grand entrance. You found your way into computer systems that were always touted as "impenetrable", and technically "still are", at least according to the owners.
+
+      These hacking skills have helped you evade the Alliance by hiding in plain sight, creating a perfect disguise as "Commander Shepard". It will be difficult to continue this cover with the Normandy SR-1 destroyed.
+    </reputation>
+    <reputation name="Freeman">
+      Handy with a crowbar, used to wearing orange armor, you are a "scientist". At least that's what you tell everybody who doesn't know you are a badass alien killer who fights the Combine across the universe, back in your universe. But then the G-Man catapulted you here, in a universe where you can talk, and where crowbars are out of fashion.
+
+      But one thing stays the same, you still kick ass. You dropped the "scientist" thing - now badass is simply your job description.
+    </reputation>
+    <reputation name="Thrill-Seeker">
+      You joined the Alliance Navy for the thrills. You've done all of it, from high altitude halo jumping to deep diving without oxygen, even good old Russian roulette. But the Navy finally gave you a place where you could find thrills everyday and get paid for it too.
+
+      Your kicking ass of the Geth didn't help your tendencies, and their latest attack only really pissed you off.
+    </reputation>
+    <reputation name="Hedonist">
+      You're not in it for the violence, the thrills, or the cause; no, you're in it for the "companionship", the boys and ladies. You like to sample the local population wherever you go, so you thought the Navy was a good way to travel. The more exotic, the better, too, and you've done just that by inviting aliens of all sorts on your ship.
+
+      Now that you fly under a new flag, maybe you can get even more!
+    </reputation>
+    <reputation name="Adamant">
+      You have to be right. On everything. Your ship, the fate of the galaxy, even manually calibrating your teams' weapons. If it's not done your way, it's done the wrong way. And while everyone hates you for that, they also tend to realize you're mostly always right. Do you bend the universe to your will, or are you just lucky? Nobody knows, but being right has gotten you far.
+
+      But now you've blown up. Although, if you always have to be right, can you even die before you decided you were gonna die?
+    </reputation>
+    <reputation name="Falco">
+      You're a hot shot, overconfident in your abilities, typically relying on your squad to back you up. You're flirtatious, cunning, and a wise-crack. Secretly though, you've trying to cover up the mistakes you've made, like that time something went horribly wrong with your ship's G-diffuser system in Corneria City.
+
+      Despite your best efforts, stopping the attack on the Normandy was beyond your abilities. Guess that G-diffuser incident didn't really matter in the end.
+    </reputation>
+  </reputations>
+</backgroundstrings>

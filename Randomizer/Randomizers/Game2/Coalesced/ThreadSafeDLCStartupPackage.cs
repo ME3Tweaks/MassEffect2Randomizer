@@ -1,4 +1,7 @@
-﻿namespace Randomizer.Randomizers.Game2.Coalesced
+﻿using System.Linq;
+using LegendaryExplorerCore.Misc;
+
+namespace Randomizer.Randomizers.Game2.Coalesced
 {
     public static class ThreadSafeDLCStartupPackage
     {

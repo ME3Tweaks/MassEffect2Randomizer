@@ -1,7 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:MassEffectRandomizer.Classes.Updater"
-        xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro">
+                    xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro">
     <Style TargetType="{x:Type Dialog:BaseMetroDialog}"
         x:Key="WiderDialogStyle"
         BasedOn="{StaticResource {x:Type Dialog:BaseMetroDialog}}">

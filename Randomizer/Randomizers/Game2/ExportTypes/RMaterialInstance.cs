@@ -1,5 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using Randomizer.Randomizers.Game2.Misc;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace ME2Randomizer.Classes.Converters
+namespace RandomizerUI.Classes.Converters
 {
     [Localizable(false)]
     public class ImplementedConverter : IValueConverter

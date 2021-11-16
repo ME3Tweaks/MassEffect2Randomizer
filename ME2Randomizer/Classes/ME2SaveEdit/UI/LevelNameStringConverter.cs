@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.UI
+namespace RandomizerUI.Classes.ME2SaveEdit.UI
 {
     [Localizable(false)]
     public class LevelNameStringConverter : IValueConverter

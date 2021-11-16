@@ -1,4 +1,8 @@
-﻿namespace Randomizer.Randomizers.Game2.Levels
+﻿using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using Randomizer.Shared;
+
+namespace Randomizer.Randomizers.Game2.Levels
 {
     class Romance
     {

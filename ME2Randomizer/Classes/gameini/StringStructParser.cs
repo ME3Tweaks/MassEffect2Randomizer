@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Serilog;
 
-namespace ME2Randomizer.Classes.gameini
+namespace RandomizerUI.Classes.gameini
 {
     public class StringStructParser
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace ME2Randomizer.ui
+namespace RandomizerUI.ui
 {
     public class RelayCommand : ICommand
     {

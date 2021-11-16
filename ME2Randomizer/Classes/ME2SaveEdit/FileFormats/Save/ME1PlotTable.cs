@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats.Save
+namespace RandomizerUI.Classes.ME2SaveEdit.FileFormats.Save
 {
     // 00BAE040
     public class ME1PlotTable : IUnrealSerializable

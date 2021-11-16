@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
-using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
-using LegendaryExplorerCore.SharpDX;
 using LegendaryExplorerCore.Unreal;
-using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 
-namespace ME2Randomizer.Classes.Randomizers.Utility
+namespace RandomizerUI.Classes.Randomizers.Utility
 {
 
     /// <summary>

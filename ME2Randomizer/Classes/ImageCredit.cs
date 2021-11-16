@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MassEffectRandomizer.Classes;
 
-namespace ME2Randomizer.Classes
+namespace RandomizerUI.Classes
 {
     public class ImageCredit : INotifyPropertyChanged
     {

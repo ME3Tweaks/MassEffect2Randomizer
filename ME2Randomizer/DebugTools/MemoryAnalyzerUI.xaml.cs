@@ -8,13 +8,13 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using MahApps.Metro.Controls;
-using ME2Randomizer.ui;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Memory;
 using LegendaryExplorerCore.Misc;
+using MahApps.Metro.Controls;
+using RandomizerUI.ui;
 
-namespace ME2Randomizer.DebugTools
+namespace RandomizerUI.DebugTools
 {
     /// <summary>
     /// Interaction logic for MemoryAnalyzer.xaml

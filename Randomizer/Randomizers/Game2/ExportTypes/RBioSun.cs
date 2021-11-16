@@ -1,4 +1,7 @@
-﻿using Randomizer.Randomizers.Game2.Misc;
+﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
+using Randomizer.Randomizers.Game2.Misc;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {

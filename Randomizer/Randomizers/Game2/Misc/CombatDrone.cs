@@ -1,4 +1,7 @@
-﻿namespace Randomizer.Randomizers.Game2.Misc
+﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+
+namespace Randomizer.Randomizers.Game2.Misc
 {
     /// <summary>
     /// Randomizes the color of combat drones

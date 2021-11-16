@@ -1,4 +1,4 @@
-﻿namespace ME2Randomizer.Classes.ME2SaveEdit.Components
+﻿namespace RandomizerUI.Classes.ME2SaveEdit.Components
 {
     internal class Plot
     {

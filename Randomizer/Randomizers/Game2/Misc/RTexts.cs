@@ -8,6 +8,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using LegendaryExplorerCore.TLK.ME1;
+using LegendaryExplorerCore.TLK.ME2ME3;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.TLK;
 
 namespace Randomizer.Randomizers.Game2.Misc

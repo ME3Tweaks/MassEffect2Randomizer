@@ -1,4 +1,8 @@
 ﻿using System.IO;
+using System.Linq;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
 using Randomizer.Randomizers.Game2.Coalesced;
 
 namespace Randomizer.Randomizers.Game2.Misc

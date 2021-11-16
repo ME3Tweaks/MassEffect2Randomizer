@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
+using Randomizer.MER;
+using Randomizer.Shared;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {

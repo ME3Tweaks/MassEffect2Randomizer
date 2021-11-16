@@ -5,7 +5,7 @@ using System.IO;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
+namespace RandomizerUI.Classes.ME2SaveEdit.FileFormats
 {
     public class UnrealStream : IUnrealStream
     {

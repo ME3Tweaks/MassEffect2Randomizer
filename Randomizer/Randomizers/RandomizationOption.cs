@@ -7,6 +7,11 @@ using PropertyChanged;
 
 namespace Randomizer.Randomizers
 {
+    public enum RandomizationMode {
+        RANDSETTING_NONE,
+        RANDSETTING_RECOMMENDED,
+        RANDSETTING_SCREED,
+    }
     public class RandomizationOption : INotifyPropertyChanged
     {
         /// <summary>

@@ -6,27 +6,18 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
-using MassEffectRandomizer.Classes;
-using ME2Randomizer.Classes.Controllers;
-using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
-using ME2Randomizer.ui;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using RandomizerUI.Classes.Controllers;
+using RandomizerUI.Classes.ME2SaveEdit.FileFormats;
+using RandomizerUI.ui;
 using Path = System.IO.Path;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.UI
+namespace RandomizerUI.Classes.ME2SaveEdit.UI
 {
     /// <summary>
     /// Interaction logic for SaveSelectorUI.xaml

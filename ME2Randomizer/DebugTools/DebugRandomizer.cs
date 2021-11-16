@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ME2Randomizer.Classes;
-using LegendaryExplorerCore.ME1.Unreal.UnhoodBytecode;
+﻿using LegendaryExplorerCore.ME1.Unreal.UnhoodBytecode;
 using LegendaryExplorerCore.Packages;
+using RandomizerUI.Classes;
 
-namespace ME2Randomizer.DebugTools
+namespace RandomizerUI.DebugTools
 {
     class DebugRandomizer
     {

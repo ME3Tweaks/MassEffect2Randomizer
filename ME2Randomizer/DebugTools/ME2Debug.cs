@@ -1,18 +1,6 @@
-﻿using System.ComponentModel;
-using ME2Randomizer.Classes;
-using ME2Randomizer.Classes.Randomizers.Utility;
-using LegendaryExplorerCore.GameFilesystem;
-using LegendaryExplorerCore.Helpers;
-using LegendaryExplorerCore.Packages;
-using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
-using LegendaryExplorerCore.Unreal;
-
-namespace ME2Randomizer.DebugTools
+﻿namespace RandomizerUI.DebugTools
 {
+    /*
     class ME2Debug
     {
         public static void GetExportsInPersistentThatAreAlsoInSub()
@@ -202,4 +190,5 @@ namespace ME2Randomizer.DebugTools
 
         }
     }
+    */
 }

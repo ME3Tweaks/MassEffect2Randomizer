@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using LegendaryExplorerCore.Packages;
 using Randomizer.Randomizers.Game2.TLK;
 
 namespace Randomizer.Randomizers.Game2.Levels

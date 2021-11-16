@@ -1,4 +1,8 @@
 ﻿using System.IO;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {

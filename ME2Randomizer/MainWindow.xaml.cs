@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,55 +11,70 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
-using ALOTInstallerCore;
-using ALOTInstallerCore.Helpers;
-using ALOTInstallerCore.ModManager.ME3Tweaks;
-using ALOTInstallerCore.ModManager.Objects;
-using ALOTInstallerCore.ModManager.Services;
-using ALOTInstallerCore.PlatformSpecific.Windows;
-using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
-using MassEffectRandomizer.Classes;
-using ME2Randomizer.Classes;
-using ME2Randomizer.Classes.Controllers;
-using ME2Randomizer.Classes.Randomizers;
-using ME2Randomizer.Classes.Randomizers.ME2.Misc;
-using ME2Randomizer.DebugTools;
-//using ME2Randomizer.DebugTools;
-using ME2Randomizer.ui;
 using LegendaryExplorerCore.Gammtek.Extensions;
 using LegendaryExplorerCore.Helpers;
-using Serilog;
+using LegendaryExplorerCore.Misc;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
+using ME3TweaksCore.Diagnostics;
+using ME3TweaksCore.Helpers;
+using ME3TweaksCore.Services.Backup;
+using ME3TweaksCore.Targets;
+using PropertyChanged;
+using Randomizer.Randomizers;
+using RandomizerUI.Classes;
+using RandomizerUI.Classes.Controllers;
+using RandomizerUI.Classes.Randomizers;
+using RandomizerUI.DebugTools;
+using RandomizerUI.ui;
+using RandomizationGroup = RandomizerUI.Classes.RandomizationGroup;
+using RandomizationOption = RandomizerUI.Classes.RandomizationOption;
 
-namespace ME2Randomizer
+namespace RandomizerUI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : MetroWindow, INotifyPropertyChanged
+    [AddINotifyPropertyChangedInterface]
+    public partial class MainWindow : MetroWindow
     {
+#if __GAME1__
+        private static string FaqLink = "https://me3tweaks.com/masseffectrandomizer/faq";
+#elif __GAME2__
         private static string FaqLink = "https://me3tweaks.com/masseffect2randomizer/faq";
+#elif __GAME3__
+        private static string FaqLink = "https://me3tweaks.com/masseffect3randomizer/faq";
+#endif
 
-        public enum RandomizationMode
-        {
-            ERandomizationMode_SelectAny = 0,
-            ERandomizationMode_Common = 1,
-            ERandomizationMode_Screed = 2
-        }
+        /// <summary>
+        /// Which index is currently selected in the dropdown for which game to run for
+        /// </summary>
+        public int SelectedGameIndex { get; set; }
+
+        /// <summary>
+        /// The current selected game target
+        /// </summary>
+        public GameTarget SelectedTarget { get; set; }
+
+        /// <summary>
+        /// The list of targets in the dropdown
+        /// </summary>
+        public ObservableCollectionExtended<GameTarget> SelectableTargets { get; } = new();
+
         public bool UseMultiThreadRNG { get; set; } = true;
 
-        #region Flyouts
+#region Flyouts
         public bool LogUploaderFlyoutOpen { get; set; }
         public bool FirstRunFlyoutOpen { get; set; }
-        #endregion
+#endregion
 
         public string GamePathString { get; set; } = "Please wait";
         public bool ShowProgressPanel { get; set; }
         public RandomizationMode SelectedRandomizeMode { get; set; }
 
-        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<ImageCredit>();
-        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<string> ContributorCredits { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<string>();
-        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit> LibraryCredits { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<LibraryCredit>();
+        public ObservableCollectionExtended<ImageCredit> ImageCredits { get; } = new();
+        public ObservableCollectionExtended<string> ContributorCredits { get; } = new();
+        public ObservableCollectionExtended<LibraryCredit> LibraryCredits { get; } = new();
 
         public void OnSelectedRandomizeModeChanged()
         {
@@ -70,7 +84,7 @@ namespace ME2Randomizer
         /// <summary>
         /// The list of options shown
         /// </summary>
-        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<RandomizationGroup>();
+        public ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ObservableCollectionExtended<RandomizationGroup>();
         public bool AllowOptionsChanging { get; set; } = true;
         public bool PerformReroll { get; set; } = true;
         public int CurrentProgressValue { get; set; }
@@ -94,7 +108,7 @@ namespace ME2Randomizer
             }
         }
         public LogCollector.LogItem SelectedLogForUpload { get; set; }
-        public LegendaryExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new LegendaryExplorerCore.Misc.ObservableCollectionExtended<LogCollector.LogItem>();
+        public ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new ObservableCollectionExtended<LogCollector.LogItem>();
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
@@ -172,7 +186,7 @@ namespace ME2Randomizer
             return contributors;
         }
 
-        #region Commands
+#region Commands
         public GenericCommand StartRandomizationCommand { get; set; }
         public GenericCommand CloseLogUICommand { get; set; }
         public GenericCommand UploadSelectedLogCommand { get; set; }
@@ -197,7 +211,7 @@ namespace ME2Randomizer
                 pd.SetIndeterminate();
                 Task.Run(() =>
                     {
-                        Utilities.DeleteFilesAndFoldersRecursively(dlcModPath);
+                        MUtilities.DeleteFilesAndFoldersRecursively(dlcModPath);
                         DLCComponentInstalled = false;
                         Thread.Sleep(2000);
                     })
@@ -230,7 +244,7 @@ namespace ME2Randomizer
             }
         }
 
-        #endregion
+#endregion
 
 
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -265,7 +279,7 @@ namespace ME2Randomizer
                     AffirmativeButtonText = "Continue anyways",
                     NegativeButtonText = "Cancel"
                 };
-                var result = await this.ShowMessageAsync("No ME3Tweaks-based backup availbale", "It is recommended that you create an ME3Tweaks-based backup before randomization, as this allows much faster re-rolls. You can take a backup using the button on the bottom left of the interface.", MessageDialogStyle.AffirmativeAndNegative, settings);
+                var result = await this.ShowMessageAsync("No ME3Tweaks-based backup available", "It is recommended that you create an ME3Tweaks-based backup before randomization, as this allows much faster re-rolls. You can take a backup using the button on the bottom left of the interface.", MessageDialogStyle.AffirmativeAndNegative, settings);
                 if (result == MessageDialogResult.Negative)
                 {
                     // Do nothing. User canceled
@@ -423,8 +437,8 @@ namespace ME2Randomizer
 
         private async void BackupRestore_Click(object sender, RoutedEventArgs e)
         {
-            string path = BackupService.GetGameBackupPath(MERFileSystem.Game, out var isVanilla, false);
-            var gameTarget = Locations.GetTarget(MERFileSystem.Game);
+            string path = BackupService.GetGameBackupPath(SelectedGameTarget.Game);
+            var gameTarget = MERTargets.GetTarget(SelectedGameTarget);
             if (path != null && gameTarget != null)
             {
 
@@ -465,7 +479,7 @@ namespace ME2Randomizer
 
         private void Button_FirstTimeRunDismiss_Click(object sender, RoutedEventArgs e)
         {
-            RegistryHandler.WriteRegistrySettingBool(SETTING_FIRSTRUN, true);
+            MERSettings.WriteRegistrySettingBool(SETTING_FIRSTRUN, true);
             FirstRunFlyoutOpen = false;
         }
 
@@ -561,7 +575,7 @@ namespace ME2Randomizer
                     var DiagnosticResultText = response.result;
                     if (response.result.StartsWith("http"))
                     {
-                        Utilities.OpenWebPage(response.result);
+                        MUtilities.OpenWebPage(response.result);
                     }
                 }
 
@@ -586,7 +600,7 @@ namespace ME2Randomizer
             nbw.RunWorkerAsync();
         }
 
-        #region Settings
+#region Settings
 
         public const string SETTING_FIRSTRUN = "FirstRunCompleted";
         private void FirstRunShowButton_Click(object sender, RoutedEventArgs e)
@@ -594,14 +608,14 @@ namespace ME2Randomizer
             FirstRunFlyoutOpen = true;
         }
 
-        #endregion
+#endregion
 
         public void SetupTargetDescriptionText()
         {
-            var target = Locations.GetTarget(MERFileSystem.Game);
-            if (target == null)
+            if (CurrentGameTarget == null)
             {
-                GamePathString = $"{MERFileSystem.Game.ToGameName()} not detected. Repair and run your game to fix detection.";
+                var gameName = Randomizer.MER.MERUtilities.GetGameUIName(SelectedGameIndex == 0);
+                GamePathString = $"{CurrentGameTarget.Game.ToGameName()} not detected. Repair and run your game to fix detection.";
             }
             else if (target.TextureModded)
             {

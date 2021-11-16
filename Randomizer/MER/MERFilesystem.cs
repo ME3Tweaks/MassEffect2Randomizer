@@ -2,23 +2,34 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Reflection;
 using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
+using ME3TweaksCore.GameFilesystem;
+using ME3TweaksCore.Helpers;
+using ME3TweaksCore.Targets;
+using Randomizer.Randomizers;
+using Randomizer.Randomizers.Game2.Coalesced;
+using Randomizer.Randomizers.Game2.TLK;
+using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.MER
 {
+    /// <summary>
+    /// Filesystem class for Mass Effect Randomizer programs. It is conditionally compiled for Game 1/2/3 and can be accessed as the authority on which game the build is for.
+    /// </summary>
     public class MERFileSystem
     {
-#if __ME2__
-        public static MEGame Game => MEGame.ME2;
-        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
+#if __GAME2__
+        /// <summary>
+        /// List of games this build supports
+        /// </summary>
+        public static MEGame[] Games = new[] { MEGame.ME2, MEGame.LE2 };
+        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
         public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", "BIOG_Male_Player_C.pcc" };
-# elif __LE2__
-        public static MEGame Game => MEGame.LE2;
-        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
-        public static readonly string[] alwaysBasegameFiles = { "Startup_DEU.pcc", "Startup_ESN.pcc", "Startup_FRA.pcc", "Startup_INT.pcc", "Startup_ITA.pcc", "Startup_JPN.pcc", "Startup_POL.pcc", "Startup_RUS.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc" };
-
 #endif
 
 
@@ -32,19 +43,26 @@ namespace Randomizer.MER
         {
             var useTlk = options.SelectedOptions.Any(x => x.RequiresTLK);
             installedStartupPackage = false;
-            ReloadLoadedFiles();
+            ReloadLoadedFiles(options.RandomizationTarget);
 
-            dlcModPath = GetDLCModPath();
-            if (options.Reroll && Directory.Exists(dlcModPath)) Utilities.DeleteFilesAndFoldersRecursively(dlcModPath); //Nukes the DLC folder
+            dlcModPath = GetDLCModPath(options.RandomizationTarget);
+            if (options.Reroll && Directory.Exists(dlcModPath)) 
+                MUtilities.DeleteFilesAndFoldersRecursively(dlcModPath); //Nukes the DLC folder
 
             // Re-extract even if we are on re-roll
-            CreateRandomizerDLCMod(dlcModPath);
-            Locations.GetTarget(Game).InstallBinkBypass();
-            DLCModCookedPath = Path.Combine(dlcModPath, Game.CookedDirName());
+            CreateRandomizerDLCMod(options.RandomizationTarget, dlcModPath);
+            options.RandomizationTarget.InstallBinkBypass();
+            DLCModCookedPath = Path.Combine(dlcModPath, options.RandomizationTarget.Game.CookedDirName());
 
 
-            ReloadLoadedFiles();
-            CoalescedHandler.StartHandler();
+            ReloadLoadedFiles(options.RandomizationTarget);
+
+            // ME1 Randomizer does not use this feature
+            if (options.RandomizationTarget.Game.IsGame2() || options.RandomizationTarget.Game.IsGame3())
+            {
+                CoalescedHandler.StartHandler();
+            }
+
             if (useTlk)
             {
                 TLKHandler.StartHandler();
@@ -68,36 +86,34 @@ namespace Randomizer.MER
         /// <summary>
         /// Installs the DLC mod's startup package and adds it to the startup ini files
         /// </summary>
-        public static void InstallStartupPackage()
+        public static void InstallStartupPackage(MEGame game)
         {
             if (installedStartupPackage)
                 return;
             installedStartupPackage = true;
-            var startupPackage = GetStartupPackage();
+            var startupPackage = GetStartupPackage(game);
             MERFileSystem.SavePackage(startupPackage, true);
 
-            ThreadSafeDLCStartupPackage.AddStartupPackage($"Startup_DLC_MOD_{MERFileSystem.Game}Randomizer");
+            ThreadSafeDLCStartupPackage.AddStartupPackage($"Startup_DLC_MOD_{game}Randomizer");
         }
 
         /// <summary>
         /// Fetches the DLC mod component's startup package
         /// </summary>
         /// <returns></returns>
-        public static IMEPackage GetStartupPackage()
+        public static IMEPackage GetStartupPackage(MEGame game)
         {
-            var startupDestName = $"Startup_DLC_MOD_{MERFileSystem.Game}Randomizer_INT.pcc";
+            var startupDestName = $"Startup_DLC_MOD_{game}Randomizer_INT.pcc";
             return MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile(startupDestName)), startupDestName);
         }
 
         public static void Finalize(OptionsPackage selectedOptions)
         {
             var metacmmFile = Path.Combine(dlcModPath, @"_metacmm.txt");
-            Version version = Assembly.GetExecutingAssembly().GetName().Version;
             var metacmm = new MetaCMM()
             {
-                InstalledBy = $"Mass Effect 2 Randomizer {version}",
-                ModName = "Mass Effect 2 Randomization",
-                Version = version.ToString(),
+                ModName = $"{MERUtilities.GetGameUIName(selectedOptions.RandomizationTarget.Game.IsOTGame())} Randomization",
+                Version = MLibraryConsumer.GetAppVersion().ToString(),
             };
             var allOptions = new List<string>();
             foreach (var option in selectedOptions.SelectedOptions)
@@ -116,14 +132,23 @@ namespace Randomizer.MER
             }
 
             metacmm.OptionsSelectedAtInstallTime.AddRange(allOptions);
-            File.WriteAllText(metacmmFile, metacmm.ToCMMText());
+
+#if __GAME1__
+            var installedBy = $"Mass Effect Randomizer {MLibraryConsumer.GetAppVersion()}";
+#elif __GAME2__
+            var installedBy = $"Mass Effect 2 Randomizer {MLibraryConsumer.GetAppVersion()}";
+#elif __GAME3__
+            var installedBy = $"Mass Effect 3 Randomizer {MLibraryConsumer.GetAppVersion()}";
+#endif
+
+            metacmm.WriteMetaCMM(metacmmFile, installedBy);
             GlobalCache = null;
         }
 
-        public static LegendaryExplorerCore.Misc.CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
-        public static void ReloadLoadedFiles()
+        public static CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
+        public static void ReloadLoadedFiles(GameTarget target)
         {
-            var loadedFiles = MELoadedFiles.GetAllGameFiles(MEDirectories.GetDefaultGamePath(Game), Game, true);
+            var loadedFiles = MELoadedFiles.GetAllGameFiles(target.TargetPath, target.Game, true);
             LoadedFiles = new LegendaryExplorerCore.Misc.CaseInsensitiveDictionary<string>();
             foreach (var lf in loadedFiles)
             {
@@ -136,12 +161,12 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="packagename"></param>
         /// <returns></returns>
-        public static string GetPackageFile(string packagename, bool logIfNotFound = true)
+        public static string GetPackageFile(GameTarget target, string packagename, bool logIfNotFound = true)
         {
             if (LoadedFiles == null)
             {
                 MERLog.Warning("Calling GetPackageFile() without LoadedFiles! Populating now, but this should be fixed!");
-                ReloadLoadedFiles();
+                ReloadLoadedFiles(target);
             }
 
             bool packageFile = packagename.RepresentsPackageFilePath();
@@ -198,12 +223,12 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        private static void CreateRandomizerDLCMod(string dlcpath)
+        private static void CreateRandomizerDLCMod(GameTarget target, string dlcpath)
         {
             Directory.CreateDirectory(dlcpath);
 
             MemoryStream zipMemory = new MemoryStream();
-            MERUtilities.ExtractInternalFileToMemory($"starterkit.{Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
+            MERUtilities.ExtractInternalFileToMemory($"starterkit.{target.Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
             using ZipArchive archive = new ZipArchive(zipMemory);
             archive.ExtractToDirectory(dlcpath);
         }
@@ -238,9 +263,9 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="relativeSubPath"></param>
         /// <returns></returns>
-        public static string GetSpecificFile(string relativeSubPath)
+        public static string GetSpecificFile(MEGame game, string relativeSubPath)
         {
-            return Path.Combine(MEDirectories.GetDefaultGamePath(Game), relativeSubPath);
+            return Path.Combine(MEDirectories.GetDefaultGamePath(game), relativeSubPath);
 
         }
 
@@ -248,27 +273,27 @@ namespace Randomizer.MER
         /// Gets the path to the TFC used by MER. MER uses 2 TFCs - one is in the basegame 'Textures_MER_PreDLCLoad.tfc', the other being in the DLC mod (or basegame, if DLC mod is not used)
         /// </summary>
         /// <returns></returns>
-        public static string GetTFCPath(bool postLoadTFC)
+        public static string GetTFCPath(MEGame game, bool postLoadTFC)
         {
             if (postLoadTFC)
             {
-                return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{Game}Randomizer.tfc");
+                return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{game}Randomizer.tfc");
             }
 
             // TFC that can be used safely before load
-            return Path.Combine(MEDirectories.GetCookedPath(Game), @"Textures_MER_PreDLCLoad.tfc");
+            return Path.Combine(MEDirectories.GetCookedPath(game), @"Textures_MER_PreDLCLoad.tfc");
         }
 
         /// <summary>
         /// Gets the path of the DLC mod component. Does not check if it exists. Returns null if the game cannot be found.
         /// </summary>
         /// <returns></returns>
-        public static string GetDLCModPath()
+        public static string GetDLCModPath(GameTarget target)
         {
-            var dlcPath = MEDirectories.GetDLCPath(Game);
+            var dlcPath = MEDirectories.GetDLCPath(target.Game, target.TargetPath);
             if (dlcPath != null)
             {
-                return Path.Combine(dlcPath, $"DLC_MOD_{Game}Randomizer");
+                return Path.Combine(dlcPath, $"DLC_MOD_{target.Game}Randomizer");
             }
             return null;
         }

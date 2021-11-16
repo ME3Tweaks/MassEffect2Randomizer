@@ -1,6 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {

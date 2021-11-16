@@ -2,10 +2,10 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
-using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
 using LegendaryExplorerCore.Unreal;
+using RandomizerUI.Classes.ME2SaveEdit.FileFormats;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.UI
+namespace RandomizerUI.Classes.ME2SaveEdit.UI
 {
     [Localizable(false)]
     public class SaveGameNameConverter : IValueConverter

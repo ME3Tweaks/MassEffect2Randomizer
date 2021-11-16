@@ -6,16 +6,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using ALOTInstallerCore;
-using ALOTInstallerCore.ModManager.ME3Tweaks;
 using CommandLine;
-using MassEffectRandomizer.Classes;
-using ME2Randomizer.Classes.Controllers;
-using ME2Randomizer.Classes.Randomizers.Utility;
+using RandomizerUI.Classes;
+using RandomizerUI.Classes.Controllers;
 using Serilog;
 
-namespace ME2Randomizer
+namespace RandomizerUI
 {
     /// <summary>
     /// Interaction logic for App.xaml

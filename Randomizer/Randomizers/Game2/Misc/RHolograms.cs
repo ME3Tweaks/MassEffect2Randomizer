@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {

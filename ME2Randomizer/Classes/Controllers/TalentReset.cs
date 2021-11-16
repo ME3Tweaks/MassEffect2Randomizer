@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using ME2Randomizer.Classes.ME2SaveEdit.FileFormats;
-using ME2Randomizer.Classes.ME2SaveEdit.UI;
-using LegendaryExplorerCore.Misc;
+﻿using System.Windows;
+using RandomizerUI.Classes.ME2SaveEdit.UI;
 
-namespace ME2Randomizer.Classes.Controllers
+namespace RandomizerUI.Classes.Controllers
 {
 
 

@@ -2,10 +2,9 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
-using System.Windows.Media;
 using Brushes = System.Drawing.Brushes;
 
-namespace ME2Randomizer.Classes.Converters
+namespace RandomizerUI.Classes.Converters
 {
     [Localizable(false)]
     public class DangerColorConverter : IValueConverter

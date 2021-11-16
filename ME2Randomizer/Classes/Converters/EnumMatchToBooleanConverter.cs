@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace ME2Randomizer.Classes.Converters
+namespace RandomizerUI.Classes.Converters
 {
     public class EnumMatchToBooleanConverter : IValueConverter
     {

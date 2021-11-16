@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats.Save
+namespace RandomizerUI.Classes.ME2SaveEdit.FileFormats.Save
 {
     // 00BAE5B0
     [TypeConverter(typeof(ExpandableObjectConverter))]

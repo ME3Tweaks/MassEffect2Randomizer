@@ -3,20 +3,14 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using ALOTInstallerCore;
-using ALOTInstallerCore.Helpers;
-using ALOTInstallerCore.ModManager;
-using ALOTInstallerCore.ModManager.ME3Tweaks;
-using ALOTInstallerCore.ModManager.Services;
-using MahApps.Metro.Controls.Dialogs;
-using ME2Randomizer.Classes.Randomizers.ME2.Misc;
-using ME2Randomizer.Classes.Randomizers.Utility;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Microsoft.WindowsAPICodePack.Taskbar;
+using RandomizerUI.Classes.Randomizers.Utility;
 
-namespace ME2Randomizer.Classes.Controllers
+namespace RandomizerUI.Classes.Controllers
 {
     class RestoreController
     {

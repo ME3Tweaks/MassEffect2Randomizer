@@ -2,6 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.TLK.ME2ME3;
 using HuffmanCompression = LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression;
 
 namespace Randomizer.Randomizers.Game2.TLK

@@ -1,4 +1,9 @@
-﻿namespace Randomizer.Randomizers.Game2.Misc
+﻿using System.Linq;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+
+namespace Randomizer.Randomizers.Game2.Misc
 {
     class SkipMiniGames
     {

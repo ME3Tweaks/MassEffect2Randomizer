@@ -1,40 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
-using ALOTInstallerCore;
-using ALOTInstallerCore.Helpers;
-using ALOTInstallerCore.Helpers.AppSettings;
-using ALOTInstallerCore.ModManager.ME3Tweaks;
-using ALOTInstallerCore.ModManager.Objects;
-using ALOTInstallerCore.ModManager.Services;
-using ALOTInstallerCore.PlatformSpecific.Windows;
-using ALOTInstallerCore.Steps;
-using ControlzEx.Theming;
-using MahApps.Metro.Controls;
-using MahApps.Metro.Controls.Dialogs;
-using ME2Randomizer.Classes.Randomizers.Utility;
-using ME2Randomizer.Classes.Telemetry;
 using LegendaryExplorerCore;
-using LegendaryExplorerCore.Compression;
 using LegendaryExplorerCore.GameFilesystem;
-using LegendaryExplorerCore.Gammtek.Extensions;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
-using LegendaryExplorerCore.Unreal.BinaryConverters;
+using MahApps.Metro.Controls.Dialogs;
+using ME2Randomizer;
 using Microsoft.AppCenter;
-using Microsoft.AppCenter.Analytics;
-using Microsoft.AppCenter.Crashes;
+using RandomizerUI.Classes.Randomizers.Utility;
+using RandomizerUI.Classes.Telemetry;
 using Serilog;
-using Utilities = ALOTInstallerCore.Utilities;
 
-namespace ME2Randomizer.Classes.Controllers
+namespace RandomizerUI.Classes.Controllers
 {
     public class StartupUIController
     {

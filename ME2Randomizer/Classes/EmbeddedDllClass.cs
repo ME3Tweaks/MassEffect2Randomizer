@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MassEffectRandomizer.Classes
+namespace RandomizerUI.Classes
 {
     /// <summary>
     /// A class used by managed classes to managed unmanaged DLLs.

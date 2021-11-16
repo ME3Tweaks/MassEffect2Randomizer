@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ALOTInstallerCore.Helpers;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 
-namespace ME2Randomizer.Classes.Controllers
+namespace RandomizerUI.Classes.Controllers
 {
     /// <summary>
     /// Maps the internal telemetry calls to Microsoft AppCenter calls

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {

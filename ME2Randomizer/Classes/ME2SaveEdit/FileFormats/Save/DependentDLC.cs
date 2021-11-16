@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats.Save
+namespace RandomizerUI.Classes.ME2SaveEdit.FileFormats.Save
 {
     // 00BAB3B0
     public class DependentDLC : IUnrealSerializable

@@ -6,7 +6,7 @@ using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace ME2Randomizer.fonts
+namespace RandomizerUI.fonts
 {
     [ContentProperty("Text")]
     public class OutlinedTextBlock : FrameworkElement

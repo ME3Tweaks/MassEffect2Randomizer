@@ -1,4 +1,9 @@
 ﻿using System.Linq;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {

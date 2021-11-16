@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 using Randomizer.Randomizers.Game2.Levels;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes

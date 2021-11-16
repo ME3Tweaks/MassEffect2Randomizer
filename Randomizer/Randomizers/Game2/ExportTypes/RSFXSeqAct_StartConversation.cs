@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {

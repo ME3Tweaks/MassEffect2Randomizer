@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace ME2Randomizer.Classes.gameini
+namespace RandomizerUI.Classes.gameini
 {
     public class CaseInsensitiveDictionary<V> : Dictionary<string, V>
     {

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Misc;
 
 namespace Randomizer.Randomizers.Game2.Levels

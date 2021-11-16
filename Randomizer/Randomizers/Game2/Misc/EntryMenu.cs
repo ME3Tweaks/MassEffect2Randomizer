@@ -1,4 +1,8 @@
-﻿namespace Randomizer.Randomizers.Game2.Misc
+﻿using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+
+namespace Randomizer.Randomizers.Game2.Misc
 {
     public class EntryMenu
     {

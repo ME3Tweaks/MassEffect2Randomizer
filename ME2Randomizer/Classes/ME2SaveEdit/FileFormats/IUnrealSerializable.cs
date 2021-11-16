@@ -1,4 +1,4 @@
-﻿namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
+﻿namespace RandomizerUI.Classes.ME2SaveEdit.FileFormats
 {
     public interface IUnrealSerializable
     {

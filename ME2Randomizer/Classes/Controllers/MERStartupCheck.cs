@@ -3,13 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management;
-using ALOTInstallerCore;
-using ALOTInstallerCore.Helpers;
-using ME2Randomizer.Classes.Randomizers.Utility;
 using Microsoft.Win32;
-using Serilog;
+using RandomizerUI.Classes.Randomizers.Utility;
 
-namespace ME2Randomizer.Classes.Controllers
+namespace RandomizerUI.Classes.Controllers
 {
     class MERStartupCheck
     {

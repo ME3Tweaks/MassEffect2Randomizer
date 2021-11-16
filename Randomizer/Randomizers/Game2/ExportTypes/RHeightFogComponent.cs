@@ -1,4 +1,7 @@
-﻿namespace Randomizer.Randomizers.Game2.ExportTypes
+﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+
+namespace Randomizer.Randomizers.Game2.ExportTypes
 {
     class RHeightFogComponent
     {

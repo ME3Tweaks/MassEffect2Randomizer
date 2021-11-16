@@ -1,6 +1,14 @@
 ﻿using System.Collections.Generic;
+using LegendaryExplorerCore.Dialogue;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Shared;
+using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -64,7 +72,6 @@ namespace Randomizer.Randomizers.Game2.Levels
             RandomizeEndorsementLine(@"BioD_CitHub_300UpperWing_LOC_INT.pcc", 3539, 3514, 105, 18, cache, pickedIndices); // gun turian
             RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 1979, 1963, 43, 8, cache, pickedIndices); //biotic
             RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 2038, 2022, 44, 11, cache, pickedIndices); //omni
-
         }
 
         private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, MERPackageCache cache, List<int> pickedIndices)

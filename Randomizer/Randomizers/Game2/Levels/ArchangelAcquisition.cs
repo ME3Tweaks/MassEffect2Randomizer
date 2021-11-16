@@ -1,4 +1,7 @@
 ﻿using System.IO;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {

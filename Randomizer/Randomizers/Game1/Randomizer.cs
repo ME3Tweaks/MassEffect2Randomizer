@@ -1,4 +1,4 @@
-﻿#if GAME1
+﻿#if __GAME1__
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

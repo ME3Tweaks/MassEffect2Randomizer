@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace MassEffectRandomizer.Classes
+namespace RandomizerUI.Classes
 {
     class IniFile   // revision 11
     {

@@ -1,12 +1,11 @@
-﻿using LegendaryExplorerCore.Unreal;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using ME2Randomizer.Classes.Randomizers.ME2.Misc;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 using NameProperty = LegendaryExplorerCore.Unreal.NameProperty;
 
-namespace ME2Randomizer.Classes.Randomizers.Utility
+namespace RandomizerUI.Classes.Randomizers.Utility
 {
     class ScalarParameter
     {

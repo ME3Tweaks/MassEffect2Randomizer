@@ -4,11 +4,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
+using System.Windows;
+using System.Windows.Media.Imaging;
 using System.Xml;
 using System.Xml.Linq;
 using LegendaryExplorerCore.Packages;
@@ -949,6 +952,22 @@ namespace Randomizer.MER
             }
             image.Freeze();
             return image;
+        }
+
+        /// <summary>
+        /// Gets the UI name for the build of the randomizer and generation
+        /// </summary>
+        /// <param name="originalTrilogy"></param>
+        /// <returns></returns>
+        public static string GetGameUIName(bool originalTrilogy)
+        {
+#if __GAME1__
+            return originalTrilogy ? "Mass Effect" : "Mass Effect (Legendary Editon)";
+#elif __GAME2__
+            return originalTrilogy ? "Mass Effect 2" : "Mass Effect 2 (Legendary Editon)";
+#else
+            return originalTrilogy ? "Mass Effect 3" : "Mass Effect 3 (Legendary Editon)";
+#endif
         }
     }
 }

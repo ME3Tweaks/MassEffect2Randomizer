@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.FileFormats
+namespace RandomizerUI.Classes.ME2SaveEdit.FileFormats
 {
     public class UnrealFieldOffsetAttribute : Attribute
     {

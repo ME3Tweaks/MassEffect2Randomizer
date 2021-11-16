@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {

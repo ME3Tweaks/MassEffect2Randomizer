@@ -1,4 +1,8 @@
-﻿namespace Randomizer.Randomizers.Game2.Misc
+﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
+
+namespace Randomizer.Randomizers.Game2.Misc
 {
     class SFXGame
     {

@@ -1,30 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Win32;     //This namespace is used to work with Registry editor.
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Diagnostics;
-using System.Security.Principal;
-using System.Xml;
-using System.Windows;
-using System.Xml.Linq;
-using System.Security.Cryptography;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Management;
-using Serilog;
 using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Text;
+using System.Threading;
+using System.Windows;
 using System.Windows.Media.Imaging;
-using ALOTInstallerCore.Helpers;
-using ME2Randomizer;
-using ME2Randomizer.Classes;
-using ME2Randomizer.Classes.Randomizers.Utility;
+using System.Xml;
+using System.Xml.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using Microsoft.Win32;
+using RandomizerUI.Classes.Randomizers.Utility;
+//This namespace is used to work with Registry editor.
 
-namespace MassEffectRandomizer.Classes
+namespace RandomizerUI.Classes
 {
     public class MERUtilities
     {

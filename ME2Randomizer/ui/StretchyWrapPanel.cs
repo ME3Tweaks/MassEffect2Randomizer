@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace ME2Randomizer.ui
+namespace RandomizerUI.ui
 {
     public class StretchyWrapPanel : Panel
     {

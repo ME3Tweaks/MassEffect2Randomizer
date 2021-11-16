@@ -8,132 +8,51 @@
     <Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release;Game3Debug;Game3Release</Configurations>
   </PropertyGroup>
 
-  
-  
-  <Choose>
-        <When Condition=" '$(Configuration)'=='Debug' ">
-            <PropertyGroup>
-                <DebugSymbols>true</DebugSymbols>
-                <DebugType>full</DebugType>
-                <Optimize>false</Optimize>
-                <OutputPath>.\bin\Debug\</OutputPath>
-                <DefineConstants>DEBUG;TRACE</DefineConstants>
-            </PropertyGroup>
-            <ItemGroup>
-                <Compile Include="UnitTesting\*.cs" />
-                <Reference Include="NUnit.dll" />
-            </ItemGroup>
-        </When>
-        <When Condition=" '$(Configuration)'=='retail' ">
-            <PropertyGroup>
-                <DebugSymbols>false</DebugSymbols>
-                <Optimize>true</Optimize>
-                <OutputPath>.\bin\Release\</OutputPath>
-                <DefineConstants>TRACE</DefineConstants>
-            </PropertyGroup>
-        </When>
-    </Choose>  <Choose>
-    <When Condition=" '$(Configuration)'=='Debug' ">
-      <PropertyGroup>
-        <DebugSymbols>true</DebugSymbols>
-        <DebugType>full</DebugType>
-        <Optimize>false</Optimize>
-        <OutputPath>.\bin\Debug\</OutputPath>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-      </PropertyGroup>
-      <ItemGroup>
-        <Compile Include="UnitTesting\*.cs" />
-        <Reference Include="NUnit.dll" />
-      </ItemGroup>
-    </When>
-    <When Condition=" '$(Configuration)'=='retail' ">
-      <PropertyGroup>
-        <DebugSymbols>false</DebugSymbols>
-        <Optimize>true</Optimize>
-        <OutputPath>.\bin\Release\</OutputPath>
-        <DefineConstants>TRACE</DefineConstants>
-      </PropertyGroup>
-    </When>
-  Game1Deubug or  or $)(Configuration
-    <When Condition ="'$(Inputenv)'=='DEV' And ('$(Inputcom)'=='BR' Or '$(Inputcom)'=='QS')">O == 'Game1Releaesse'''
-            <!---->/When>    
-        <When Condition=" '$(Configuration)'=='Game1Debug' Or '$(Configuration)' == 'Game1Release' ">
-
-    </When>    22  <ItemGroup>
+  <ItemGroup>
     <Resource Include="images\*.png" />
     <Resource Include="images\*.jpg" />
     <None Remove="Classes\ME2SaveEdit\UI\SaveSelectorUI.xaml" />
     <None Remove="DebugTools\DebugWindow.xaml" />
     <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
     <None Remove="images\firstrun_bg.jpg" />
-    <None Remove="staticfiles\PremadeSeqObjs.pcc" />
-    <None Remove="staticfiles\starterkit\me2starterkit.zip" />
-    <None Remove="staticfiles\text\imagecredits.txt" />
-    <None Remove="staticfiles\text\librarycredits.txt" />
-    <None Remove="staticfiles\text\powerlistme2.json" />
     <Resource Include="fonts\aerolight.ttf" />
-  </ItemGroup>      <ItemGroup>
-        <Resource Include="images\*.png" />
-        <Resource Include="images\*.jpg" />
-        <None Remove="Classes\ME2SaveEdit\UI\SaveSelectorUI.xaml" />
-        <None Remove="DebugTools\DebugWindow.xaml" />
-        <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
-        <None Remove="images\firstrun_bg.jpg" />
-        <None Remove="staticfiles\PremadeSeqObjs.pcc" />
-        <None Remove="staticfiles\starterkit\me2starterkit.zip" />
-        <None Remove="staticfiles\text\imagecredits.txt" />
-        <None Remove="staticfiles\text\librarycredits.txt" />
-        <None Remove="staticfiles\text\powerlistme2.json" />
-        <Resource Include="fonts\aerolight.ttf" />
-      
-  <!--!---->Shared resources  
-          <Resource Include="fonts\aerolight.ttf" />
-<Resource Include="fonts\aerolight.ttf" />
+  </ItemGroup>
 
-            <Resource Include="fonts\aerolight.ttf" />
-
-    <ItemGroupItemGroup></ItemGroup>
-
-              <Resource Include="fonts\aerolight.ttf" />
-    
-
-
-
+  <PropertyGroup Condition="'$(Configuration)'=='Game1Debug'">
+    <DefineConstants>DEBUG;__GAME1__</DefineConstants>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Game2Debug'">
-    <DefineConstants>DEBUG;__ME2__;APPUPDATESUPPORT</DefineConstants>
+    <DefineConstants>DEBUG;__GAME2__</DefineConstants>
+    <XamlDebuggingInformation>True</XamlDebuggingInformation>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Game3Debug'">
+    <DefineConstants>DEBUG;__GAME3__</DefineConstants>
     <XamlDebuggingInformation>True</XamlDebuggingInformation>
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Game1Debug'">
-    <DefineConstants>DEBUG;__ME2__;APPUPDATESUPPORT</DefineConstants>
-    <XamlDebuggingInformation>True</XamlDebuggingInformation>
-    <DebugType>pdbonly</DebugType>
+  <PropertyGroup Condition="'$(Configuration)'=='Game1Release'">
+    <DefineConstants>__GAME1__</DefineConstants>
+    <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Game2Release'">
-    <DefineConstants>__ME2__;APPUPDATESUPPORT</DefineConstants>
+    <DefineConstants>__GAME2__</DefineConstants>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Game1Release'">
-    <DefineConstants>__ME2__;APPUPDATESUPPORT</DefineConstants>
+  <PropertyGroup Condition="'$(Configuration)'=='Game3Release'">
+    <DefineConstants>__GAME3__</DefineConstants>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='ME3Debug'">
-    <DefineConstants>DEBUG;__ME3__</DefineConstants>
-    <XamlDebuggingInformation>True</XamlDebuggingInformation>
-    <DebugType>portable</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='ME3Release'">
-    <DefineConstants>__ME3__</DefineConstants>
-    <DebugType>embedded</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="staticfiles\**\*" />
   </ItemGroup>
@@ -141,36 +60,46 @@
   <ItemGroup>
     <PackageReference Include="AuthenticodeExaminer" Version="0.3.0" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Fody" Version="6.5.1">
+    <PackageReference Include="Fody" Version="6.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft-Windows10-APICodePack-Core" Version="1.1.5" />
-    <PackageReference Include="Microsoft.AppCenter" Version="4.2.0" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.2.0" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.2.0" />
+    <PackageReference Include="Microsoft.AppCenter" Version="4.4.0" />
+    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.4.0" />
+    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.4.0" />
     <PackageReference Include="Octokit" Version="0.50.0" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.0.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="System.Management" Version="5.0.0" />
+    <PackageReference Include="System.Management" Version="6.0.0" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\ALOTInstaller\ALOTInstallerCore\ALOTInstallerCore.csproj" />
-    <ProjectReference Include="..\ALOTInstaller\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
-    <ProjectReference Include="..\ALOTInstaller\MahApps.Metro\src\MahApps.Metro\MahApps.Metro.csproj" />
+    <ProjectReference Include="..\MahApps.Metro\src\MahApps.Metro\MahApps.Metro.csproj" />
+    <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCoreWPF\ME3TweaksCoreWPF.csproj" />
+    <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\ME3TweaksCore.csproj" />
+    <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\submodules\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
+    <ProjectReference Include="..\Randomizer\Randomizer.csproj" />
   </ItemGroup>
   
   <ItemGroup>
+    <Resource Include="images\game2\firstrun_bg.jpg" />
+    <Resource Include="images\game2\main_bg.jpg" />
+    <Resource Include="images\shared\discord.png" />
+    <Resource Include="images\shared\me3tweaks.png" />
+    <Resource Include="images\shared\logscreen.jpg" />
     <Resource Include="masseffectrandomizer.ico" />
   </ItemGroup>
   
   <ItemGroup>
     <Folder Include="Classes\Restore\" />
-    <Folder Include="images\NewFolder\" />
+    <Folder Include="images\game1\" />
+    <Folder Include="images\game3\" />
+    <Folder Include="staticfiles\game1\" />
+    <Folder Include="staticfiles\game3\" />
   </ItemGroup>
 
   <PropertyGroup>

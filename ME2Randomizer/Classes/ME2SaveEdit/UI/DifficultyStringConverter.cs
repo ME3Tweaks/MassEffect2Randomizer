@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
-using ME2Randomizer.Classes.ME2SaveEdit.FileFormats.Save;
+using RandomizerUI.Classes.ME2SaveEdit.FileFormats.Save;
 
-namespace ME2Randomizer.Classes.ME2SaveEdit.UI
+namespace RandomizerUI.Classes.ME2SaveEdit.UI
 {
     [Localizable(false)]
     public class DifficultyStringConverter : IValueConverter

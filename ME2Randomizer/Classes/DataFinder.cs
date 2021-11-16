@@ -5,20 +5,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Printing.IndexedProperties;
 using System.Threading;
 using System.Threading.Tasks;
-using MassEffectRandomizer.Classes;
-using ME2Randomizer.Classes.Randomizers;
-using ME2Randomizer.Classes.Randomizers.ME2;
-using ME2Randomizer.Classes.Randomizers.ME2.Coalesced;
-using ME2Randomizer.Classes.Randomizers.ME2.Enemy;
-using ME2Randomizer.Classes.Randomizers.ME2.ExportTypes;
-using ME2Randomizer.Classes.Randomizers.Utility;
-using ME2Randomizer.DebugTools;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
-using LegendaryExplorerCore.Gammtek.IO;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Misc;
@@ -28,9 +18,11 @@ using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using Newtonsoft.Json;
+using RandomizerUI.Classes.Randomizers;
+using RandomizerUI.Classes.Randomizers.Utility;
 using EnemyPowerChanger = ME2Randomizer.Classes.Randomizers.ME2.Enemy.EnemyPowerChanger;
 
-namespace ME2Randomizer.Classes
+namespace RandomizerUI.Classes
 {
     class DataFinder
     {

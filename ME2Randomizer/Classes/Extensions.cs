@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows.Media;
-using ME2Randomizer.Classes.Randomizers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using RandomizerUI.Classes.Randomizers;
 
-namespace ME2Randomizer.Classes
+namespace RandomizerUI.Classes
 {
     public static class UnrealExtensions
     {
