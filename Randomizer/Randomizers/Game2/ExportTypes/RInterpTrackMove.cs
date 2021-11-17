@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
@@ -9,7 +10,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
     {
 
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"InterpTrackMove" && ThreadSafeRandom.Next(1) == 0;
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             MERLog.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing movement interpolations for " + export.UIndex + ": " + export.InstancedFullPath);

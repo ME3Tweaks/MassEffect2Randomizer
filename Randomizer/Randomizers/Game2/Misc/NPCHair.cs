@@ -6,13 +6,15 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
     class NPCHair
     {
-        public static bool Init(RandomizationOption option)
+        public static bool Init(GameTarget target, RandomizationOption option)
         {
             var hmmHir = NonSharedPackageCache.Cache.GetCachedPackage("BIOG_HMM_HIR_PRO_R.pcc");
             var hmfHir = NonSharedPackageCache.Cache.GetCachedPackage("BIOG_HMF_HIR_PRO.pcc");
@@ -43,7 +45,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             HairListFemale.Clear();
         }
 
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export, false, out var hairMeshExp)) return false;
             return ForcedRun(hairMeshExp);

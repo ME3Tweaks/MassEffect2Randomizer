@@ -7,10 +7,12 @@ using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.Levels;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -232,7 +234,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             public Talent EvolvedTalent2 { get; set; }
         }
 
-        public static bool ShuffleClassAbilitites(RandomizationOption option)
+        public static bool ShuffleClassAbilitites(GameTarget target, RandomizationOption option)
         {
             List<ExportEntry> allPowers = new();
             List<ExportEntry> assets = new();
@@ -247,7 +249,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             // Step 1: Build list of all powers
             foreach (var asset in CharacterClassAssets)
             {
-                var loadout = asset.GetAsset();
+                var loadout = asset.GetAsset(target);
                 assets.Add(loadout);
                 var powersList = loadout.GetProperty<ArrayProperty<ObjectProperty>>("Powers");
                 foreach (var pow in powersList)

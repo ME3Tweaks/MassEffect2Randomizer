@@ -7,12 +7,14 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Levels;
 using Randomizer.Randomizers.Game2.TLK;
-using RandomizerUI.Classes.Randomizers.Utility;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -100,7 +102,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             /// </summary>
             public bool IsUsable { get; set; } = true;
 
-            public override ExportEntry GetAsset(MERPackageCache cache = null)
+            public override ExportEntry GetAsset(GameTarget target, MERPackageCache cache = null)
             {
                 if (IsCorrectedAsset)
                 {
@@ -109,12 +111,12 @@ namespace Randomizer.Randomizers.Game2.Misc
                 }
                 else
                 {
-                    var packageF = MERFileSystem.GetPackageFile(PackageFile);
+                    var packageF = MERFileSystem.GetPackageFile(target, PackageFile);
                     return packageF != null ? MERFileSystem.OpenMEPackage(packageF).FindExport(AssetPath) : null;
                 }
             }
 
-            public ExportEntry GetHairAsset()
+            public ExportEntry GetHairAsset(GameTarget target)
             {
                 if (IsCorrectedAsset)
                 {
@@ -123,7 +125,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 }
                 else
                 {
-                    var packageF = MERFileSystem.GetPackageFile(PackageFile);
+                    var packageF = MERFileSystem.GetPackageFile(target, PackageFile);
                     return packageF != null ? MERFileSystem.OpenMEPackage(packageF).FindExport(HairAssetPath) : null;
                 }
             }
@@ -522,7 +524,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             return false;
         }
 
-        public static bool RandomizeExport2(ExportEntry headMeshExp, RandomizationOption option)
+        public static bool RandomizeExport2(GameTarget target, ExportEntry headMeshExp, RandomizationOption option)
         {
             if (!CanRandomize2(headMeshExp, out var skelMesh)) return false;
             var fname = Path.GetFileName(headMeshExp.FileRef.FilePath);
@@ -561,7 +563,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 }
 
                 // Port in the new asset.
-                var sourceExp = newAsset.GetAsset();
+                var sourceExp = newAsset.GetAsset(target);
                 var newMdl = PackageTools.PortExportIntoPackage(headMeshExp.FileRef, sourceExp, useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
 
                 // Write the properties.
@@ -640,7 +642,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 if (newAsset.HairAssetPath != null)
                 {
                     // Port in hair
-                    var hairMDL = PackageTools.PortExportIntoPackage(headMeshExp.FileRef, newAsset.GetHairAsset(), useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
+                    var hairMDL = PackageTools.PortExportIntoPackage(headMeshExp.FileRef, newAsset.GetHairAsset(target), useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
 
                     // Clone existing mesh
                     var hairMeshExp = EntryCloner.CloneEntry(headMeshExp);
@@ -900,7 +902,7 @@ namespace Randomizer.Randomizers.Game2.Misc
         //    return false;
         //}
 
-        public static bool FilePrerun(IMEPackage package, RandomizationOption arg2)
+        public static bool FilePrerun(GameTarget target, IMEPackage package, RandomizationOption arg2)
         {
             var packagename = Path.GetFileName(package.FilePath);
             if (packagename.Equals("BioP_ProCer.pcc", StringComparison.InvariantCultureIgnoreCase)) // Miranda and Jacob pawns at end of stage
@@ -947,7 +949,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 #if DEBUG
                 mirandaIdx = 1; //debug
 #endif
-                var mirandaSourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+                var mirandaSourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, $"BioH_Vixen_0{mirandaIdx}.pcc"));
                 var classPath = $"TheWorld.PersistentLevel.SFXPawn_Miranda_";
                 if (mirandaIdx != 0)
                 {
@@ -1002,7 +1004,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 // Miranda
                 var mirandaIdx = ThreadSafeRandom.Next(2);
                 mirandaIdx = 1;
-                var mirandaSourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Vixen_0{mirandaIdx}.pcc"));
+                var mirandaSourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, $"BioH_Vixen_0{mirandaIdx}.pcc"));
                 var classPath = $"TheWorld.PersistentLevel.SFXPawn_Miranda_";
                 if (mirandaIdx != 0)
                 {
@@ -1016,7 +1018,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                 // Jacob
                 var jacobIdx = ThreadSafeRandom.Next(2);
-                var jacobSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile($"BioH_Leading_0{jacobIdx}.pcc"));
+                var jacobSourcePackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, $"BioH_Leading_0{jacobIdx}.pcc"));
                 classPath = "TheWorld.PersistentLevel.SFXPawn_Jacob_";
                 if (jacobIdx != 0)
                 {

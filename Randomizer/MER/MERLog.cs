@@ -1,5 +1,8 @@
 ﻿using System;
+using System.IO;
+using ME3TweaksCore.Helpers;
 using Serilog;
+using Serilog.Sinks.RollingFile.Extension;
 
 namespace Randomizer.MER
 {
@@ -15,7 +18,7 @@ namespace Randomizer.MER
 #elif __GAME3__
         private const string Prefix = "ME3R";
 #endif
-        public static void Exception(Exception exception, string preMessage)
+        public static void Exception(Exception exception, string preMessage, bool fatal = false)
         {
             var prefix = $"[{Prefix}] ";
             Log.Error($"{prefix}{preMessage}");
@@ -26,14 +29,21 @@ namespace Randomizer.MER
                 var line1 = exception.GetType().Name + ": " + exception.Message;
                 foreach (var line in line1.Split("\n"))
                 {
-                    Log.Error(prefix + line);
+                    if (fatal)
+                        Log.Fatal(prefix + line);
+                    else
+                        Log.Error(prefix + line);
+
                 }
 
                 if (exception.StackTrace != null)
                 {
                     foreach (var line in exception.StackTrace.Split("\n"))
                     {
-                        Log.Error(prefix + line);
+                        if (fatal)
+                            Log.Fatal(prefix + line);
+                        else
+                            Log.Error(prefix + line);
                     }
                 }
 
@@ -69,6 +79,21 @@ namespace Randomizer.MER
         {
             var prefix = $"[{Prefix}] ";
             Log.Debug($"{prefix}{message}");
+        }
+
+        /// <summary>
+        /// Creates an ILogger for the randomizer application. This does NOT assign it to Log.Logger.
+        /// </summary>
+        /// <returns></returns>
+        public static ILogger CreateLogger()
+        {
+            return new LoggerConfiguration().WriteTo.SizeRollingFile(Path.Combine(MCoreFilesystem.GetAppDataFolder(), "logs", $"{Prefix.ToLower()}log.txt"),
+                                    retainedFileDurationLimit: TimeSpan.FromDays(14),
+                                    fileSizeLimitBytes: 1024 * 1024 * 10) // 10MB  
+#if DEBUG
+                            .WriteTo.Debug()
+#endif
+                            .CreateLogger();
         }
     }
 }

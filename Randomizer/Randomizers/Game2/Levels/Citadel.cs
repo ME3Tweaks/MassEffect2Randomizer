@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using LegendaryExplorerCore.Dialogue;
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
-using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -161,18 +163,18 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         #endregion
 
-        internal static bool PerformRandomization(RandomizationOption notUsed)
+        internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
             RandomizeEndorsements();
-            RandomizeThaneInterrogation();
-            RandomizeCouncilConvo();
-            RandomizeShepDance();
+            RandomizeThaneInterrogation(target);
+            RandomizeCouncilConvo(target);
+            RandomizeShepDance(target);
             return true;
         }
 
-        private static void RandomizeShepDance()
+        private static void RandomizeShepDance(GameTarget target)
         {
-            var loungeF = MERFileSystem.GetPackageFile("BioD_CitHub_310Lounge.pcc");
+            var loungeF = MERFileSystem.GetPackageFile(target, "BioD_CitHub_310Lounge.pcc");
             if (loungeF != null)
             {
                 var loungeP = MEPackageHandler.OpenMEPackage(loungeF);
@@ -237,9 +239,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
         }
 
-        private static void RandomizeCouncilConvo()
+        private static void RandomizeCouncilConvo(GameTarget target)
         {
-            var embassyF = MERFileSystem.GetPackageFile("BioD_CitHub_Embassy_LOC_INT.pcc");
+            var embassyF = MERFileSystem.GetPackageFile(target, "BioD_CitHub_Embassy_LOC_INT.pcc");
             if (embassyF != null)
             {
                 var embassyInt = MEPackageHandler.OpenMEPackage(embassyF);
@@ -312,16 +314,16 @@ namespace Randomizer.Randomizers.Game2.Levels
         }
 
 
-        private static void RandomizeThaneInterrogation()
+        private static void RandomizeThaneInterrogation(GameTarget target)
         {
             // The main dickhead guy
             var lockedUpAsset = BodyModels.RandomElement();
-            var citHubTF = MERFileSystem.GetPackageFile("BioD_CitHub_200Dialogue.pcc");
+            var citHubTF = MERFileSystem.GetPackageFile(target, "BioD_CitHub_200Dialogue.pcc");
             if (citHubTF != null)
             {
                 var citHubTP = MEPackageHandler.OpenMEPackage(citHubTF);
 
-                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lockedUpAsset.BodyAsset.GetAsset());
+                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lockedUpAsset.BodyAsset.GetAsset(target));
                 citHubTP.GetUExport(670).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
                 if (!lockedUpAsset.KeepHead)
                 {
@@ -336,7 +338,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
 
             // Laywer
-            var citHubASLTF = MERFileSystem.GetPackageFile("BioD_CitHub_220AsL.pcc");
+            var citHubASLTF = MERFileSystem.GetPackageFile(target, "BioD_CitHub_220AsL.pcc");
             var lawyerAsset = BodyModels.RandomElement();
             if (lawyerAsset == lockedUpAsset)
             {
@@ -346,7 +348,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 var citHubTP = MEPackageHandler.OpenMEPackage(citHubASLTF);
 
-                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lawyerAsset.BodyAsset.GetAsset());
+                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lawyerAsset.BodyAsset.GetAsset(target));
                 citHubTP.GetUExport(822).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
                 if (!lawyerAsset.KeepHead)
                 {

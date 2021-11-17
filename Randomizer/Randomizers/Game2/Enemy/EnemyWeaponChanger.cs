@@ -10,10 +10,11 @@ using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Newtonsoft.Json;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
-using RandomizerUI.Classes.Randomizers.Utility;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Enemy
 {
@@ -28,7 +29,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
         public static List<GunInfo> AllAvailableWeapons;
         private static List<GunInfo> VisibleAvailableWeapons;
 
-        public static void LoadGuns()
+        public static void LoadGuns(GameTarget target)
         {
             if (AllAvailableWeapons == null)
             {
@@ -41,7 +42,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 VisibleAvailableWeapons = new List<GunInfo>();
                 foreach (var g in allGuns)
                 {
-                    var gf = MERFileSystem.GetPackageFile(g.PackageFileName, false);
+                    var gf = MERFileSystem.GetPackageFile(target, g.PackageFileName, false);
                     if (g.IsCorrectedPackage || (gf != null && File.Exists(gf)))
                     {
                         MERLog.Information($@"Adding {g.GunName} to weapon selection pools");
@@ -69,24 +70,24 @@ namespace Randomizer.Randomizers.Game2.Enemy
         /// </summary>
         /// <param name="option"></param>
         /// <returns></returns>
-        public static bool Init(RandomizationOption option)
+        public static bool Init(GameTarget target, RandomizationOption option)
         {
             MERLog.Information(@"Preloading weapon data");
-            LoadGuns();
-            WeaponAnimsPackage = MERFileSystem.GetStartupPackage();
+            LoadGuns(target);
+            WeaponAnimsPackage = MERFileSystem.GetStartupPackage(target);
             WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
 
             MERLog.Information(@"Installing weapon animations startup package");
-            MERFileSystem.InstallStartupPackage(); // Contains weapon animations
+            MERFileSystem.InstallStartupPackage(target); // Contains weapon animations
             return true;
         }
 
         /// <summary>
         /// Only use for debug mode!
         /// </summary>
-        public static void Preboot()
+        public static void Preboot(GameTarget target)
         {
-            LoadGuns();
+            LoadGuns(target);
         }
 
         /// <summary>
@@ -285,7 +286,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             return guns;
         }
 
-        public static IEntry PortWeaponIntoPackage(IMEPackage targetPackage, GunInfo gunInfo)
+        public static IEntry PortWeaponIntoPackage(GameTarget target, IMEPackage targetPackage, GunInfo gunInfo)
         {
             IMEPackage sourcePackage;
             if (gunInfo.IsCorrectedPackage)
@@ -346,7 +347,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 else
                 {
                     List<EntryStringPair> relinkResults = null;
-                    if (gunInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(gunInfo.PackageFileName) && MERFileSystem.GetPackageFile(gunInfo.PackageFileName.ToLocalizedFilename()) == null))
+                    if (gunInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(gunInfo.PackageFileName) && MERFileSystem.GetPackageFile(target, gunInfo.PackageFileName.ToLocalizedFilename()) == null))
                     {
                         // Faster this way, without having to check imports
                         Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
@@ -421,11 +422,11 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
         }
 
-        internal static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        internal static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export, out var wrtype)) return false;
             if (wrtype == EWRType.Loadout)
-                return RandomizeWeaponLoadout(export, option);
+                return RandomizeWeaponLoadout(target, export, option);
             else if (wrtype == EWRType.ApprBody)
                 return InstallWeaponAnims(export, option);
             // This seems kind of pointless so we're not going to enable it
@@ -434,7 +435,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             return false;
         }
 
-        private static bool SetWeaponSeqAct(ExportEntry export, RandomizationOption option)
+        private static bool SetWeaponSeqAct(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (ThreadSafeRandom.Next(1) == 0)
             {
@@ -443,7 +444,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 {
                     var randGun = VisibleAvailableWeapons.RandomElement();
                     Debug.WriteLine($"Changing SetWeapon from {cWeapon.ResolveToEntry(export.FileRef).ObjectName} to {randGun.GunName}");
-                    cWeapon.Value = PortWeaponIntoPackage(export.FileRef, randGun).UIndex;
+                    cWeapon.Value = PortWeaponIntoPackage(target, export.FileRef, randGun).UIndex;
                     export.WriteProperty(cWeapon);
                 }
                 return true;
@@ -536,7 +537,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
         private static bool tried = false;
 
 
-        private static bool RandomizeWeaponLoadout(ExportEntry export, RandomizationOption option)
+        private static bool RandomizeWeaponLoadout(GameTarget target, ExportEntry export, RandomizationOption option)
         {
 
 
@@ -584,7 +585,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                         else
                         {
                             // Gun needs ported in
-                            var newEntry = PortWeaponIntoPackage(export.FileRef, randomNewGun);
+                            var newEntry = PortWeaponIntoPackage(target, export.FileRef, randomNewGun);
                             gun.Value = newEntry.UIndex;
                         }
 

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.TLK.ME2ME3;
+using ME3TweaksCore.GameFilesystem;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using HuffmanCompression = LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression;
 
 namespace Randomizer.Randomizers.Game2.TLK
@@ -22,10 +25,10 @@ namespace Randomizer.Randomizers.Game2.TLK
         /// Starts up the TLK subsystem. These methods should not be across multiple threads as they are not thread safe!
         /// </summary>
         /// <param name="usingDLCSystem"></param>
-        public static void StartHandler()
+        public static void StartHandler(GameTarget target)
         {
             CurrentHandler = new TLKHandler();
-            CurrentHandler.Start();
+            CurrentHandler.Start(target);
         }
 
         public static void EndHandler()
@@ -127,12 +130,12 @@ namespace Randomizer.Randomizers.Game2.TLK
         private SortedSet<string> loadedLanguages = new SortedSet<string>();
         private int NextDynamicID = FirstDynamicID;
         private TalkFile MERTalkFile;
-        private void Start()
+        private void Start(GameTarget target)
         {
             LoadedOfficialTalkFiles = new List<TalkFile>();
             MERTalkFiles = new List<TalkFile>();
             // Load the basegame TLKs
-            var bgPath = MEDirectories.GetBioGamePath(MERFileSystem.Game);
+            var bgPath = M3Directories.GetBioGamePath(target);
             // ME2 specific - ignore ME2Randomizer TLKs, we do not want to modify those
             var tlkFiles = Directory.GetFiles(bgPath, "*.tlk", SearchOption.AllDirectories);
             foreach (var tlkFile in tlkFiles)

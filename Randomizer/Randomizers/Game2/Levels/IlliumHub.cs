@@ -1,8 +1,9 @@
 ﻿using System.IO;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using RandomizerUI.Classes.Randomizers.Utility;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -12,9 +13,9 @@ namespace Randomizer.Randomizers.Game2.Levels
     class IlliumHub
     {
 
-        internal static bool PerformRandomization(RandomizationOption notUsed)
+        internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
-            RandomizeDancer();
+            RandomizeDancer(target);
             return true;
         }
 
@@ -187,14 +188,14 @@ namespace Randomizer.Randomizers.Game2.Levels
             public string PackageFile { get; set; }
             public string AssetPath { get; set; }
 
-            public virtual ExportEntry GetAsset(MERPackageCache cache = null)
+            public virtual ExportEntry GetAsset(GameTarget target, MERPackageCache cache = null)
             {
                 IMEPackage package = null;
                 if (cache != null)
                     package = cache.GetCachedPackage(PackageFile);
                 else
                 {
-                    var packageF = MERFileSystem.GetPackageFile(PackageFile);
+                    var packageF = MERFileSystem.GetPackageFile(target, PackageFile);
                     if (packageF != null)
                     {
                         package = MEPackageHandler.OpenMEPackage(packageF);
@@ -204,9 +205,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                 return package?.FindExport(AssetPath);
             }
 
-            public virtual bool IsAssetFileAvailable()
+            public virtual bool IsAssetFileAvailable(GameTarget target)
             {
-                return MERFileSystem.GetPackageFile(PackageFile, false) != null;
+                return MERFileSystem.GetPackageFile(target, PackageFile, false) != null;
             }
         }
 
@@ -222,9 +223,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             public bool RemoveMaterials { get; set; }
         }
 
-        private static void RandomizeDancer()
+        private static void RandomizeDancer(GameTarget target)
         {
-            var loungeF = MERFileSystem.GetPackageFile("BioD_TwrHub_202Lounge.pcc");
+            var loungeF = MERFileSystem.GetPackageFile(target, "BioD_TwrHub_202Lounge.pcc");
             if (loungeF != null && File.Exists(loungeF))
             {
                 var package = MEPackageHandler.OpenMEPackage(loungeF);
@@ -233,18 +234,18 @@ namespace Randomizer.Randomizers.Game2.Levels
 
                 // Install new head and body assets
                 var newInfo = DancerOptions.RandomElement();
-                while (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable())
+                while (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable(target))
                 {
                     // Find another asset that is available
                     MERLog.Information($@"Asset {newInfo.BodyAsset.AssetPath} in {newInfo.BodyAsset.PackageFile} not available, repicking...");
                     newInfo = DancerOptions.RandomElement();
                 }
-                var newBody = PackageTools.PortExportIntoPackage(package, newInfo.BodyAsset.GetAsset());
+                var newBody = PackageTools.PortExportIntoPackage(package, newInfo.BodyAsset.GetAsset(target));
                 bodySM.WriteProperty(new ObjectProperty(newBody.UIndex, "SkeletalMesh"));
 
                 if (newInfo.HeadAsset != null)
                 {
-                    var newHead = PackageTools.PortExportIntoPackage(package, newInfo.HeadAsset.GetAsset());
+                    var newHead = PackageTools.PortExportIntoPackage(package, newInfo.HeadAsset.GetAsset(target));
                     headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "SkeletalMesh"));
                 }
                 else if (!newInfo.KeepHead)
@@ -278,7 +279,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
                 if (newInfo.MorphFace != null)
                 {
-                    var newHead = PackageTools.PortExportIntoPackage(package, newInfo.MorphFace.GetAsset());
+                    var newHead = PackageTools.PortExportIntoPackage(package, newInfo.MorphFace.GetAsset(target));
                     headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "MorphHead"));
                 }
                 MERFileSystem.SavePackage(package);

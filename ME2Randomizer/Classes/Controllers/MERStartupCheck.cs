@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Management;
+using ME3TweaksCore;
+using ME3TweaksCore.Helpers;
 using Microsoft.Win32;
-using RandomizerUI.Classes.Randomizers.Utility;
+using NickStrupat;
+using Randomizer.MER;
 
 namespace RandomizerUI.Classes.Controllers
 {
@@ -24,20 +27,17 @@ namespace RandomizerUI.Classes.Controllers
 
         private static void PerformOperatingSystemCheck(Action<string, string> messageCallback)
         {
-            // This check is only on Windows to ensure app runs on supported Windows operating systems
-#if WINDOWS
             var os = Environment.OSVersion.Version;
-            if (os < ALOTInstallerCoreLib.MIN_SUPPORTED_WINDOWS_OS)
+            if (os < ME3TweaksCoreLib.MIN_SUPPORTED_OS)
             {
-                MERLog.Fatal($@"This operating system version is below the minimum supported version: {os}, minimum supported: {ALOTInstallerCoreLib.MIN_SUPPORTED_WINDOWS_OS}");
-                messageCallback?.Invoke("This operating system is not supported", $"Mass Effect 2 Randomizer is not supported on this operating system. The application may not work. To ensure application compatibility or receive support from ME3Tweaks, upgrade to a version of Windows that is supported by Microsoft.");
+                MERLog.Fatal($@"This operating system version is below the minimum supported version: {os}, minimum supported: {ME3TweaksCoreLib.MIN_SUPPORTED_OS}");
+                messageCallback?.Invoke("This operating system is not supported", $"{MERUI.GetRandomizerName()} is not supported on this operating system. The application may not work. To ensure application compatibility or receive support from ME3Tweaks, upgrade to a version of Windows that is supported by Microsoft.");
             }
-#endif
         }
 
         private static void PerformRAMCheck(Action<string, string> messageCallback)
         {
-            var ramAmountsBytes = Utilities.GetInstalledRamAmount();
+            var ramAmountsBytes = MUtilities.GetInstalledRamAmount();
             var installedRamGB = ramAmountsBytes * 1.0d / (2 ^ 30);
             if (ramAmountsBytes > 0 && installedRamGB < 10)
             {
@@ -94,7 +94,6 @@ namespace RandomizerUI.Classes.Controllers
 
         private static bool PerformWriteCheck(Action<string, string> messageCallback)
         {
-#if WINDOWS
             MERLog.Information("Performing write check on all game directories...");
             var targets = Locations.GetAllAvailableTargets();
             try
@@ -107,11 +106,11 @@ namespace RandomizerUI.Classes.Controllers
                     var testDirectories = Directory.GetDirectories(t.TargetPath, "*", SearchOption.AllDirectories);
                     foreach (var d in testDirectories)
                     {
-                        isFullyWritable &= Utilities.IsDirectoryWritable(d);
+                        isFullyWritable &= MUtilities.IsDirectoryWritable(d);
                     }
                 }
 
-                bool isAdmin = Utilities.IsAdministrator();
+                bool isAdmin = MUtilities.IsAdministrator();
 
                 if (directoriesToGrant.Any())
                 {
@@ -179,14 +178,12 @@ namespace RandomizerUI.Classes.Controllers
                 MERLog.Exception(e, "Error checking for write privileges. This may be a significant sign that an installed game is not in a good state.");
                 return false;
             }
-#endif
             return true;
         }
 
-#if WINDOWS
         private static void PerformUACCheck()
         {
-            bool isAdmin = Utilities.IsAdministrator();
+            bool isAdmin = MUtilities.IsAdministrator();
 
             //Check if UAC is off
             bool uacIsOn = true;
@@ -204,6 +201,15 @@ namespace RandomizerUI.Classes.Controllers
                 //await this.ShowMessageAsync($"{Utilities.GetAppPrefixedName()} Installer should be run as standard user", $"Running {Utilities.GetAppPrefixedName()} Installer as an administrator will disable drag and drop functionality and may cause issues due to the program running in a different user context. You should restart the application without running it as an administrator unless directed by the developers.");
             }
         }
-#endif
+
+        /// <summary>
+        /// Gets the amount of installed memory in bytes
+        /// </summary>
+        /// <returns></returns>
+        public static ulong GetInstalledRamAmount()
+        {
+            var computerInfo = new ComputerInfo();
+            return computerInfo.TotalPhysicalMemory;
+        }
     }
 }

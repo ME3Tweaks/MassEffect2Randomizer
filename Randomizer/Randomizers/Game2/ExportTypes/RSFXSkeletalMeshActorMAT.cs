@@ -7,7 +7,9 @@ using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
-using RandomizerUI.Classes.Randomizers.Utility;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -16,7 +18,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && exp.ClassName == "SFXSkeletalMeshActorMAT" && !exp.ObjectName.Name.Contains("Dead", StringComparison.InvariantCultureIgnoreCase);
         private static string[] smaKeywords = new[] { "Dancing", "Dance", "Angry", "Cursing", "Fearful", "ROM", "Drunk", "Kiss", "Headbutt", "Hugging", "Consoling", "Come_Here", "Cough", "Count", "Bhand_Slapped" };
 
-        public static bool RandomizeBasicGestures(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeBasicGestures(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             if (export.GetProperty<ObjectProperty>("SkeletalMeshComponent")?.ResolveToEntry(export.FileRef) is ExportEntry smc)

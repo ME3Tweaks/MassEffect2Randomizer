@@ -10,10 +10,11 @@ using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Newtonsoft.Json;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
-using RandomizerUI.Classes.Randomizers.Utility;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Enemy
 {
@@ -54,7 +55,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
         public static List<PowerInfo> Powers;
 
-        public static void LoadPowers()
+        public static void LoadPowers(GameTarget target)
         {
             if (Powers == null)
             {
@@ -63,10 +64,10 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 var powermanifest = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
                 foreach (var powerInfo in powermanifest)
                 {
-                    var powerFilePath = MERFileSystem.GetPackageFile(powerInfo.PackageFileName, false);
+                    var powerFilePath = MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName, false);
                     if (powerInfo.IsCorrectedPackage || (powerFilePath != null && File.Exists(powerFilePath)))
                     {
-                        if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(powerInfo.FileDependency, false) == null)
+                        if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(target, powerInfo.FileDependency, false) == null)
                         {
                             MERLog.Information($@"Dependency file {powerInfo.FileDependency} not found, not adding {powerInfo.PowerName} to power selection pool");
                             continue; // Dependency not met
@@ -88,10 +89,10 @@ namespace Randomizer.Randomizers.Game2.Enemy
         /// </summary>
         /// <param name="option"></param>
         /// <returns></returns>
-        public static bool Init(RandomizationOption option)
+        public static bool Init(GameTarget target, RandomizationOption option)
         {
             MERLog.Information(@"Preloading power data");
-            LoadPowers();
+            LoadPowers(target);
             return true;
         }
 
@@ -295,7 +296,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
         /// <param name="powerInfo"></param>
         /// <param name="additionalPowers">A list of additioanl powers that are referenced when this powerinfo is an import only power (prevent re-opening package)</param>
         /// <returns></returns>
-        public static IEntry PortPowerIntoPackage(IMEPackage targetPackage, PowerInfo powerInfo, out IMEPackage sourcePackage)
+        public static IEntry PortPowerIntoPackage(GameTarget target, IMEPackage targetPackage, PowerInfo powerInfo, out IMEPackage sourcePackage)
         {
             if (powerInfo.IsCorrectedPackage)
             {
@@ -370,7 +371,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     // END DEBUG ONLY--------------------------------
 #endif
                     List<EntryStringPair> relinkResults = null;
-                    if ((powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
+                    if ((powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
                     {
                         // Faster this way, without having to check imports
                         Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
@@ -402,7 +403,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                                                                                         && export.ObjectName.Name != "Loadout_None" // Loadout_None has nothing, don't bother giving it anything
                                                                 && Path.GetFileName(export.FileRef.FilePath).StartsWith("Bio");
 
-        internal static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        internal static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
 #if DEBUG
@@ -526,7 +527,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     else
                     {
                         // Power needs ported in
-                        power.Value = PortPowerIntoPackage(export.FileRef, randomNewPower, out _)?.UIndex ?? int.MinValue;
+                        power.Value = PortPowerIntoPackage(target, export.FileRef, randomNewPower, out _)?.UIndex ?? int.MinValue;
                     }
 
                     if (existingPowerEntry != null && existingPowerEntry.UIndex > 0 && PackageTools.IsPersistentPackage(export.FileRef.FilePath))

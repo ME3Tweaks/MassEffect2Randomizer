@@ -4,16 +4,21 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using LegendaryExplorerCore.Packages;
-using Randomizer.MER;
+using ME3TweaksCore.Targets;
 using Serilog;
 
-namespace RandomizerUI.Classes.Randomizers.Utility
+namespace Randomizer.MER
 {
     /// <summary>
     /// A superset cache package that can cache embedded assets
     /// </summary>
     public class MERPackageCache : PackageCache
     {
+        /// <summary>
+        /// Target to fetch packages out of for MER. This must be set or an exception will be thrown.
+        /// </summary>
+        public GameTarget Target { get; set; }
+
         /// <summary>
         /// Returns a cached package. Ensure this cache is synchronized if across threads or you may end up saving two different instances of files to the same location
         /// </summary>
@@ -30,7 +35,7 @@ namespace RandomizerUI.Classes.Randomizers.Utility
 
             if (openIfNotInCache)
             {
-                var file = MERFileSystem.GetPackageFile(packageName, false);
+                var file = MERFileSystem.GetPackageFile(Target, packageName, false);
                 if (file != null && File.Exists(file))
                 {
                     int i = 3;

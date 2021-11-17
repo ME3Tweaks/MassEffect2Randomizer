@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0-windows8.0</TargetFramework>
@@ -8,68 +8,38 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Debug|x64'">
     <DefineConstants>DEBUG;TRACE;__GAME1__</DefineConstants>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game2\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Release|x64'">
     <DefineConstants>TRACE;__GAME1__</DefineConstants>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game2\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Debug|x64'">
     <DefineConstants>DEBUG;TRACE;__GAME2__</DefineConstants>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Release|x64'">
     <DefineConstants>TRACE;__GAME2__</DefineConstants>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game3Debug|x64'">
     <DefineConstants>DEBUG;TRACE;__GAME3__</DefineConstants>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game2\**\*</DefaultItemExcludes>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game3Release|x64'">
     <DefineConstants>TRACE;__GAME3__</DefineConstants>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game2\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
 
-  <ItemGroup>
-    <Compile Remove="Randomizers\Game2\ME2\**" />
-    <EmbeddedResource Remove="Randomizers\Game2\ME2\**" />
-    <None Remove="Randomizers\Game2\ME2\**" />
-  </ItemGroup>
 
-
-  <ItemGroup>
-    <None Remove="Randomizers\Game2\Assets\StarterKit\le2starterkit.zip" />
-    <None Remove="Randomizers\Game2\Assets\StarterKit\me2starterkit.zip" />
-    <None Remove="Randomizers\Game2\Assets\Text\allowedcutscenerandomizationtags.txt" />
-    <None Remove="Randomizers\Game2\Assets\Text\bundledmanifest.xml" />
-    <None Remove="Randomizers\Game2\Assets\Text\gameovertexts.xml" />
-    <None Remove="Randomizers\Game2\Assets\Text\imagecredits.txt" />
-    <None Remove="Randomizers\Game2\Assets\Text\librarycredits.txt" />
-    <None Remove="Randomizers\Game2\Assets\Text\musiclistme2.json" />
-    <None Remove="Randomizers\Game2\Assets\Text\openingcrawls.xml" />
-    <None Remove="Randomizers\Game2\Assets\Text\powerlistme2.json" />
-    <None Remove="Randomizers\Game2\Assets\Text\psychprofiles.xml" />
-    <None Remove="Randomizers\Game2\Assets\Text\reactiondefinitions.xml" />
-    <None Remove="Randomizers\Game2\Assets\Text\unusableguns.json" />
-    <None Remove="Randomizers\Game2\Assets\Text\weaponlistme2.json" />
-    <None Remove="Randomizers\Game2\Assets\Text\weaponloadoutrules.json" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <EmbeddedResource Include="Randomizers\Game2\Assets\StarterKit\le2starterkit.zip" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\StarterKit\me2starterkit.zip" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\allowedcutscenerandomizationtags.txt" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\bundledmanifest.xml" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\gameovertexts.xml" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\imagecredits.txt" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\librarycredits.txt" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\musiclistme2.json" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\openingcrawls.xml" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\powerlistme2.json" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\psychprofiles.xml" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\reactiondefinitions.xml" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\unusableguns.json" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\weaponlistme2.json" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\Text\weaponloadoutrules.json" />
+  <ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
+    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.json" />
+    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.txt" />
+    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.xml" />
+    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.zip" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,6 +47,11 @@
     <Folder Include="Randomizers\Game1\GalaxyMap\" />
     <Folder Include="Randomizers\Game1\TextureAssetsLE1\" />
     <Folder Include="Randomizers\Game3\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+    <PackageReference Include="Serilog.Sinks.RollingFile.Extension" Version="2.0.2" />
   </ItemGroup>
 
   <ItemGroup>

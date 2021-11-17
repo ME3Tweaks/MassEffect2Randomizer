@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Microsoft.Win32;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.TLK;
@@ -52,7 +54,7 @@ namespace Randomizer.Randomizers.Game2.Misc
         private static int BeatPrisonerTLKID = 7892170;
         private static int BeatPrisonerGuardTLKID = 7892171;
 
-        private static void ChangePrisonerNames()
+        private static void ChangePrisonerNames(GameTarget target)
         {
             InstallName(342079); // Prisoner 780
             InstallName(342078); // Prisoner 403
@@ -62,7 +64,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             if (didGuard && didPrisoner)
             {
                 // Make it so the beating scene shows names
-                var cellBLock3F = MERFileSystem.GetPackageFile("BioD_PrsCvA_103CellBlock03.pcc");
+                var cellBLock3F = MERFileSystem.GetPackageFile(target, "BioD_PrsCvA_103CellBlock03.pcc");
                 if (cellBLock3F != null)
                 {
                     var cellBlock3P = MEPackageHandler.OpenMEPackage(cellBLock3F);
@@ -85,7 +87,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             }
         }
 
-        public static bool InstallNameSet(RandomizationOption option)
+        public static bool InstallNameSet(GameTarget target, RandomizationOption option)
         {
             // Setup
             PawnNameListInstanced.ReplaceAll(PawnNames);
@@ -97,7 +99,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             // Jack mission
             InstallName(343493); // Technician
-            ChangePrisonerNames();
+            ChangePrisonerNames(target);
 
             // Omega Hub
             InstallName(282031); // Annoyed Human
@@ -135,7 +137,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             InstallName(287918); // Survivor
             InstallName(287919); // Survivor
             InstallName(287920); // Survivor
-            FixFirstSurvivorNameBchLmL();
+            FixFirstSurvivorNameBchLmL(target);
 
             // Geth Acqusition
             InstallName(342401); // Cerb scientist 1
@@ -172,11 +174,11 @@ namespace Randomizer.Randomizers.Game2.Misc
             return true;
         }
 
-        private static void FixFirstSurvivorNameBchLmL()
+        private static void FixFirstSurvivorNameBchLmL(GameTarget target)
         {
 
             // Make it so the beating scene shows names
-            var beachPathF = MERFileSystem.GetPackageFile("BioD_BchLmL_102BeachFight.pcc");
+            var beachPathF = MERFileSystem.GetPackageFile(target, "BioD_BchLmL_102BeachFight.pcc");
             if (beachPathF != null)
             {
                 var beachPathP = MEPackageHandler.OpenMEPackage(beachPathF);

@@ -3,12 +3,12 @@
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                      xmlns:global="clr-namespace:ME2Randomizer"
-                      xmlns:helpers="clr-namespace:ALOTInstallerCore.Helpers;assembly=ALOTInstallerCore"
                       xmlns:converters="clr-namespace:RandomizerUI.Classes.Converters"
                       xmlns:fonts="clr-namespace:RandomizerUI.fonts"
                       xmlns:randomizerUi="clr-namespace:RandomizerUI"
                       xmlns:classes1="clr-namespace:RandomizerUI.Classes"
+                      xmlns:randomizers="clr-namespace:Randomizer.Randomizers;assembly=Randomizer"
+                      xmlns:targets="clr-namespace:ME3TweaksCore.Targets;assembly=ME3TweaksCore"
                       x:Class="RandomizerUI.MainWindow" 
                       IconScalingMode="ScaleDownLargerFrame" 
                       mc:Ignorable="d" 
@@ -33,7 +33,7 @@
                 <SolidColorBrush x:Key="HighlightBrush" Color="White" />
             </Style.Resources>
         </Style>
-        <DataTemplate x:Key="RandomizationOptionTemplate" DataType="classes:RandomizationOption">
+        <DataTemplate x:Key="RandomizationOptionTemplate" DataType="randomizers:RandomizationOption">
             <StackPanel Background="{Binding Self, Converter={StaticResource ImplementedConverter}}">
                 <CheckBox Content="{Binding HumanName}" FontWeight="Bold" Margin="3" 
                           IsChecked="{Binding OptionIsSelected}"
@@ -48,21 +48,21 @@
                            PreviewMouseUp="ROClickHACK_Click"/>
                 <StackPanel  Visibility="{Binding SetupRandomizerDelegate, Converter={StaticResource NullVisibilityConverter}}"
                             Margin="20,0,0,0">
-                        <Button Content="{Binding SetupRandomizerButtonText}" 
+                    <Button Content="{Binding SetupRandomizerButtonText}" 
                                 ToolTip="{Binding SetupRandomizerButtonToolTip}" Style="{StaticResource MahApps.Styles.Button.Dialogs.Accent}" 
-                                Command="{Binding SetupRandomizerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=global:MainWindow}}" 
+                                Command="{Binding SetupRandomizerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=randomizerUi:MainWindow}}" 
                                 CommandParameter="{Binding}"
                                 Padding="20,3" HorizontalAlignment="Right" Margin="0,3"  MinHeight="0" MinWidth="0"/>
-                        <StackPanel.Style>
-                            <Style TargetType="StackPanel">
-                                <Setter Property="Opacity" Value="0.5"></Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding OptionIsSelected}" Value="True">
-                                        <Setter Property="Opacity" Value="1"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </StackPanel.Style>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding OptionIsSelected}" Value="True">
+                                    <Setter Property="Opacity" Value="1"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                 </StackPanel>
                 <StackPanel Visibility="{Binding HasSliderOption, Converter={StaticResource BoolToVisibilityConverter}}"
                             Margin="20,0,0,0">
@@ -94,7 +94,7 @@
                               ItemTemplate="{DynamicResource RandomizationOptionTemplate}"/>
             </StackPanel>
         </DataTemplate>
-        <DataTemplate x:Key="CreditTemplate" DataType="classes:ImageCredit">
+        <DataTemplate x:Key="CreditTemplate" DataType="classes1:ImageCredit">
             <StackPanel>
                 <TextBlock>           
                     <Hyperlink NavigateUri="{Binding Link}" RequestNavigate="Hyperlink_RequestNavigate">
@@ -122,7 +122,7 @@
                 <TextBlock Text="{Binding Path=License}"/>
             </StackPanel>
         </DataTemplate>
-        <DataTemplate x:Key="LibraryCreditTemplate" DataType="classes:LibraryCredit">
+        <DataTemplate x:Key="LibraryCreditTemplate" DataType="classes1:LibraryCredit">
             <StackPanel>
                 <TextBlock>           
                     <Hyperlink NavigateUri="{Binding Link}" RequestNavigate="Hyperlink_RequestNavigate">
@@ -155,7 +155,7 @@
             <Controls:Flyout x:Name="LogUploaderFlyout" SnapsToDevicePixels="True" IsOpen="{Binding LogUploaderFlyoutOpen}" TitleVisibility="Collapsed" Theme="Accent" CloseButtonVisibility="Collapsed" Position="Bottom" Width="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualWidth}" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDown="Flyout_Mousedown" MouseDoubleClick="Flyout_Doubleclick">
                 <Border>
                     <Border.Background>
-                        <ImageBrush ImageSource="pack://application:,,,/ME2Randomizer;component/images/me3_bg_800x600.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
+                        <ImageBrush ImageSource="pack://application:,,,/RandomizerUI;component/images/shared/logscreen.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
                     </Border.Background>
                     <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,150">
                         <TextBlock VerticalAlignment="Stretch" SnapsToDevicePixels="True" FontSize="25" FontWeight="Light" HorizontalAlignment="Center" TextAlignment="Center">
@@ -174,7 +174,7 @@
             <Controls:Flyout x:Name="FirstRunFlyout" SnapsToDevicePixels="True" TitleVisibility="Hidden" Theme="Accent" CloseButtonVisibility="Hidden" Position="Top" Height="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Controls:MetroWindow}, Path=ActualHeight}" MouseDoubleClick="Flyout_Doubleclick" MouseDown="Flyout_Mousedown" IsOpen="{Binding FirstRunFlyoutOpen}">
                 <Border Padding="10">
                     <Border.Background>
-                        <ImageBrush ImageSource="images/firstrun_bg.jpg" AlignmentY="Center" Stretch="UniformToFill"/>
+                        <ImageBrush ImageSource="{Binding FirstRunBackgroundImage}" AlignmentY="Center" Stretch="UniformToFill"/>
                     </Border.Background>
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Vertical" UseLayoutRounding="True" Margin="0,95,0,0" Width="700">
                         <StackPanel Margin="0,0,0,40">
@@ -218,7 +218,7 @@
     </Controls:MetroWindow.Flyouts>
     <Border Padding="10">
         <Border.Background>
-            <ImageBrush Opacity="0.3" ImageSource="images/me2.jpg" AlignmentY="Center" Stretch="UniformToFill" />
+            <ImageBrush Opacity="0.3" ImageSource="{Binding MainWindowBackgroundImage}" AlignmentY="Center" Stretch="UniformToFill" />
         </Border.Background>
         <DockPanel Margin="7" LastChildFill="True">
             <!-- Bottom Panel -->
@@ -246,7 +246,7 @@
                                 <fonts:OutlinedTextBlock Text="FAQ" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
                             </Button>
                             <Button Name="Discord_Button" Click="DiscordButton_Click" Margin="5,0,0,0" MinWidth="40" ToolTip="Join the ME3Tweaks Discord server">
-                                <Image Source="/images/discord.png" Height="16" Width="16"/>
+                                <Image Source="/images/shared/discord.png" Height="16" Width="16"/>
                             </Button>
                             <Button Name="FirstRunShow_Button" Click="FirstRunShowButton_Click" Margin="5,0,0,0" MinWidth="40" ToolTip="Show first run flyout" Visibility="{x:Static randomizerUi:App.IsDebugVisibility}">
                                 <fonts:OutlinedTextBlock Text="Show first run" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="12" StrokeThickness="2" />
@@ -322,6 +322,10 @@
                     <DockPanel HorizontalAlignment="Center">
                         <StackPanel Margin="5" DockPanel.Dock="Top" Width="Auto">
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Text="Select randomization options and then choose Randomize to begin randomization." VerticalAlignment="Top" Visibility="{Binding DirectionsTextVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <RadioButton Name="OTGameRadioButton" Content="Original Trilogy" Margin="5,0" Background="Transparent" Click="SwitchToOT_Click"/>
+                                <RadioButton Name="LEGameRadioButton" Content="Legendary Edition" Margin="5,0" Background="Transparent" Click="SwitchToLE_Click"/>
+                            </StackPanel>
                             <TextBlock HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Name="GameLocationTextbox" VerticalAlignment="Top" Text="{Binding GamePathString}" />
                         </StackPanel>
                         <ScrollViewer>
@@ -332,7 +336,7 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type classes1:RandomizationGroup}">
+                                    <DataTemplate DataType="{x:Type randomizers:RandomizationGroup}">
                                         <StackPanel Margin="10">
                                             <fonts:OutlinedTextBlock Text="{Binding GroupName}" Fill="#f3fbfe" Stroke="Black" FontFamily="{StaticResource AeroLight}" FontSize="18" StrokeThickness="2" />
                                             <ItemsControl ItemsSource="{Binding Options}" ItemTemplate="{DynamicResource RandomizationOptionTemplate}"/>
@@ -370,7 +374,8 @@
                                             <Setter Property="Control.Background" Value="Transparent"/>
                                         </Style>
                                     </ItemsControl.ItemContainerStyle>
-                                </ListBox>                                <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="The following libraries are used in this project:" TextWrapping="Wrap" TextAlignment="Center"/>
+                                </ListBox>
+                                <TextBlock DockPanel.Dock="Top" Margin="0,5" Text="The following libraries are used in this project:" TextWrapping="Wrap" TextAlignment="Center"/>
                                 <ListBox ItemsSource="{Binding LibraryCredits}" DockPanel.Dock="Top" Background="Transparent" ItemTemplate="{StaticResource LibraryCreditTemplate}">
                                     <ListBox.Resources>
                                         <Style TargetType="ListBox">

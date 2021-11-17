@@ -5,29 +5,31 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
     class CollectorBase
     {
-        public static bool PerformRandomization(RandomizationOption option)
+        public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            RandomizeFlyerSpawnPawns();
-            AutomatePlatforming400(option);
-            MakeTubesSectionHarder();
-            
-            RandomizeTheLongWalk(option);
-            InstallBorger();
+            RandomizeFlyerSpawnPawns(target);
+            AutomatePlatforming400(target, option);
+            MakeTubesSectionHarder(target);
+
+            RandomizeTheLongWalk(target, option);
+            InstallBorger(target);
             return true;
         }
 
-        private static void MakeTubesSectionHarder()
+        private static void MakeTubesSectionHarder(GameTarget target)
         {
-            var preReaperF = MERFileSystem.GetPackageFile("BioD_EndGm2_420CombatZone.pcc");
+            var preReaperF = MERFileSystem.GetPackageFile(target, "BioD_EndGm2_420CombatZone.pcc");
             if (preReaperF != null && File.Exists(preReaperF))
             {
                 var preReaperP = MEPackageHandler.OpenMEPackage(preReaperF);
@@ -85,12 +87,12 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
         }
 
-        private static void GateTubesAttack()
+        private static void GateTubesAttack(GameTarget target)
         {
             // This doesn't actually work like expected, it seems gate doesn't store input value
 
             // Adds a gate to the tubes attack to ensure it doesn't fire while the previous attack is running still.
-            var tubesF = MERFileSystem.GetPackageFile("BioD_EndGm2_425ReaperTubes.pcc");
+            var tubesF = MERFileSystem.GetPackageFile(target, "BioD_EndGm2_425ReaperTubes.pcc");
             if (tubesF != null && File.Exists(tubesF))
             {
                 var tubesP = MEPackageHandler.OpenMEPackage(tubesF);
@@ -121,14 +123,14 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
         }
 
-        private static void RandomizeFlyerSpawnPawns()
+        private static void RandomizeFlyerSpawnPawns(GameTarget target)
         {
             string[] files =
             {
                 "BioD_EndGm2_420CombatZone.pcc",
                 "BioD_EndGm2_430ReaperCombat.pcc"
             };
-            ChangeFlyersInFiles(files);
+            ChangeFlyersInFiles(target, files);
 
             // Install names
             TLKHandler.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
@@ -136,21 +138,21 @@ namespace Randomizer.Randomizers.Game2.Levels
             //TLKHandler.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
         }
 
-        private static void ChangeFlyersInFiles(string[] files)
+        private static void ChangeFlyersInFiles(GameTarget target, string[] files)
         {
             foreach (var f in files)
             {
-                var fPath = MERFileSystem.GetPackageFile(f);
+                var fPath = MERFileSystem.GetPackageFile(target, f);
                 if (fPath != null && File.Exists(fPath))
                 {
                     var package = MEPackageHandler.OpenMEPackage(fPath);
-                    GenericRandomizeFlyerSpawns(package, 3);
+                    GenericRandomizeFlyerSpawns(target, package, 3);
                     MERFileSystem.SavePackage(package);
                 }
             }
         }
 
-        private static void GenericRandomizeFlyerSpawns(IMEPackage package, int maxNumNewEnemies, EPortablePawnClassification minClassification = EPortablePawnClassification.Mook, EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)
+        private static void GenericRandomizeFlyerSpawns(GameTarget target, IMEPackage package, int maxNumNewEnemies, EPortablePawnClassification minClassification = EPortablePawnClassification.Mook, EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)
         {
             var flyerPrepSequences = package.Exports.Where(x => x.ClassName == "Sequence" && x.GetProperty<StrProperty>("ObjName") is StrProperty objName && objName == "REF_SpawnPrep_Flyer").ToList();
 
@@ -175,7 +177,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                         if (!newPawnsInThisSeq.Contains(randPawn))
                         {
                             numEnemies++;
-                            PawnPorting.PortPawnIntoPackage(randPawn, package);
+                            PawnPorting.PortPawnIntoPackage(target, randPawn, package);
                             newPawnsInThisSeq.Add(randPawn);
                             // Clone the ai factory sequence object and add it to the sequence
                             var newAiFactorySeqObj = EntryCloner.CloneTree(aifactoryObj);
@@ -213,9 +215,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
         }
 
-        private static void InstallBorger()
+        private static void InstallBorger(GameTarget target)
         {
-            var endGame3F = MERFileSystem.GetPackageFile("BioP_EndGm3.pcc");
+            var endGame3F = MERFileSystem.GetPackageFile(target, "BioP_EndGm3.pcc");
             if (endGame3F != null && File.Exists(endGame3F))
             {
                 var biopEndGm3 = MEPackageHandler.OpenMEPackage(endGame3F);
@@ -227,9 +229,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var burgerMDL = PackageTools.PortExportIntoPackage(biopEndGm3, burgerPackage.FindExport("Edmonton_Burger_Delux2go.Burger_MDL"));
 
                 // 2. Link up the textures
-                TFCBuilder.RandomizeExport(biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
-                TFCBuilder.RandomizeExport(biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
-                TFCBuilder.RandomizeExport(biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
+                TFCBuilder.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
+                TFCBuilder.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
+                TFCBuilder.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
 
                 // 3. Convert the collector base into lunch or possibly early dinner
                 // It's early dinner cause that thing will keep you full all night long
@@ -240,9 +242,9 @@ namespace Randomizer.Randomizers.Game2.Levels
         }
 
 
-        private static void AutomatePlatforming400(RandomizationOption option)
+        private static void AutomatePlatforming400(GameTarget target, RandomizationOption option)
         {
-            var platformControllerF = MERFileSystem.GetPackageFile("BioD_EndGm2_420CombatZone.pcc");
+            var platformControllerF = MERFileSystem.GetPackageFile(target, "BioD_EndGm2_420CombatZone.pcc");
             if (platformControllerF != null)
             {
                 var platformController = MEPackageHandler.OpenMEPackage(platformControllerF);
@@ -283,9 +285,9 @@ namespace Randomizer.Randomizers.Game2.Levels
         }
 
 
-        private static void RandomizeTheLongWalk(RandomizationOption option)
+        private static void RandomizeTheLongWalk(GameTarget target, RandomizationOption option)
         {
-            var prelongwalkfile = MERFileSystem.GetPackageFile("BioD_EndGm2_200Factory.pcc");
+            var prelongwalkfile = MERFileSystem.GetPackageFile(target, "BioD_EndGm2_200Factory.pcc");
             if (prelongwalkfile != null)
             {
                 // Pre-long walk selection
@@ -313,13 +315,13 @@ namespace Randomizer.Randomizers.Game2.Levels
                 KismetHelper.CreateOutputLink(randSwitch, "Link 11", package.GetUExport(1402)); //miranda
 
                 // kasumi
-                if (MERFileSystem.GetPackageFile("BioH_Thief_00.pcc") != null)
+                if (MERFileSystem.GetPackageFile(target, "BioH_Thief_00.pcc") != null)
                 {
                     KismetHelper.CreateOutputLink(randSwitch, "Link 12", package.GetUExport(1396)); //kasumi
                 }
 
                 // zaeed
-                if (MERFileSystem.GetPackageFile("BioH_Veteran_00.pcc") != null)
+                if (MERFileSystem.GetPackageFile(target, "BioH_Veteran_00.pcc") != null)
                 {
                     KismetHelper.CreateOutputLink(randSwitch, "Link 13", package.GetUExport(1416)); //zaeed
                 }
@@ -327,7 +329,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 MERFileSystem.SavePackage(package);
             }
 
-            var biodEndGm2F = MERFileSystem.GetPackageFile("BioD_EndGm2.pcc");
+            var biodEndGm2F = MERFileSystem.GetPackageFile(target, "BioD_EndGm2.pcc");
             if (biodEndGm2F != null)
             {
                 var package = MEPackageHandler.OpenMEPackage(biodEndGm2F);
@@ -346,7 +348,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 MERFileSystem.SavePackage(package);
             }
 
-            var longwalkfile = MERFileSystem.GetPackageFile("BioD_EndGm2_300LongWalk.pcc");
+            var longwalkfile = MERFileSystem.GetPackageFile(target, "BioD_EndGm2_300LongWalk.pcc");
             if (longwalkfile != null)
             {
                 // automate TLW
@@ -418,7 +420,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             foreach (var map in endwalkexportmap)
             {
-                var file = MERFileSystem.GetPackageFile(map.Key + ".pcc");
+                var file = MERFileSystem.GetPackageFile(target, map.Key + ".pcc");
                 if (file != null)
                 {
                     var package = MEPackageHandler.OpenMEPackage(file);

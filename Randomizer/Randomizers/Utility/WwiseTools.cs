@@ -1,9 +1,9 @@
 ﻿using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
-using Randomizer.Randomizers.Game2.ExportTypes;
+using Randomizer.Shared.DataTypes;
 
-namespace RandomizerUI.Classes.Randomizers.Utility
+namespace Randomizer.Randomizers.Utility
 {
     public static class WwiseTools
     {
@@ -28,7 +28,7 @@ namespace RandomizerUI.Classes.Randomizers.Utility
         /// </summary>
         /// <param name="originalExport">The audio you want to play (e.g. this is the audio that will be 'installed')</param>
         /// <param name="targetAudioStream">The audio stream that you want to replace.</param>
-        public static void RepointWwiseStreamToInfo(RMusic.MusicStreamInfo streamInfo, ExportEntry targetAudioStream)
+        public static void RepointWwiseStreamToInfo(MusicStreamInfo streamInfo, ExportEntry targetAudioStream)
         {
             WwiseStream stream = new WwiseStream();
             stream.Filename = ""; // Just make sure it's not set to null so internal code thinks this is not Pcc stored.

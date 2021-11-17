@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using LegendaryExplorerCore.TLK.ME1;
 using LegendaryExplorerCore.TLK.ME2ME3;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.TLK;
 
@@ -27,7 +28,7 @@ namespace Randomizer.Randomizers.Game2.Misc
         private static Regex regexPunctuationRemover;
         private static Regex regexBorkedElipsesFixer;
 
-        public static bool RandomizeIntroText(RandomizationOption arg)
+        public static bool RandomizeIntroText(GameTarget target, RandomizationOption arg)
         {
             string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("openingcrawls.xml");
             XElement rootElement = XElement.Parse(fileContents);
@@ -50,7 +51,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             return string.Join('\n', lines);
         }
 
-        public static bool RandomizeGameOverText(RandomizationOption arg)
+        public static bool RandomizeGameOverText(GameTarget target, RandomizationOption arg)
         {
             string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("gameovertexts.xml");
             XElement rootElement = XElement.Parse(fileContents);
@@ -60,7 +61,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             return true;
         }
 
-        public static bool UwuifyText(RandomizationOption option)
+        public static bool UwuifyText(GameTarget target, RandomizationOption option)
         {
             bool keepCasing = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_UWU_KEEPCASING);
             bool addReactions = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_REACTIONS_ENABLED);
@@ -586,10 +587,8 @@ namespace Randomizer.Randomizers.Game2.Misc
         /// Swap the vowels around. Optional hard mode allows swapping 2 consonants to make it extra difficult to read
         /// </summary>
         /// <param name="Tlks"></param>
-        public static bool RandomizeVowels(RandomizationOption option)
+        public static bool RandomizeVowels(GameTarget target, RandomizationOption option)
         {
-
-
             // Map of what letter maps to what other letter
             MERLog.Information("Randomizing vowels in words");
             var hardMode = option.HasSubOptionSelected(RTexts.SUBOPTIONKEY_VOWELS_HARDMODE);

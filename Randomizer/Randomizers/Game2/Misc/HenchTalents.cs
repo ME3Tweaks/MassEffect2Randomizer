@@ -12,9 +12,10 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.TLK;
-using RandomizerUI.Classes.Randomizers.Utility;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -578,11 +579,11 @@ namespace Randomizer.Randomizers.Game2.Misc
             "BioD_ArvLvl1.pcc" // Kenson
         };
 
-        public static bool ShuffleSquadmateAbilities(RandomizationOption option)
+        public static bool ShuffleSquadmateAbilities(GameTarget target, RandomizationOption option)
         {
             bool removeRank2Gating = option.HasSubOptionSelected(SUBOPTION_HENCHPOWERS_REMOVEGATING);
 
-            PatchOutTutorials();
+            PatchOutTutorials(target);
 
             var henchCache = new MERPackageCache();
 
@@ -1156,10 +1157,10 @@ namespace Randomizer.Randomizers.Game2.Misc
             return true;
         }
 
-        private static void PatchOutTutorials()
+        private static void PatchOutTutorials(GameTarget target)
         {
             // Patch out Warp tutorial
-            var catwalkF = MERFileSystem.GetPackageFile("BioD_ProCer_200Catwalk.pcc");
+            var catwalkF = MERFileSystem.GetPackageFile(target,"BioD_ProCer_200Catwalk.pcc");
             if (catwalkF != null)
             {
                 var catwalkP = MEPackageHandler.OpenMEPackage(catwalkF);
@@ -1179,7 +1180,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             }
 
             // Patch out Warp tutorial
-            var controlRoomF = MERFileSystem.GetPackageFile("BioD_ProCer_250ControlRoom.pcc");
+            var controlRoomF = MERFileSystem.GetPackageFile(target, "BioD_ProCer_250ControlRoom.pcc");
             if (controlRoomF != null)
             {
                 var controlRoomP = MEPackageHandler.OpenMEPackage(controlRoomF);
@@ -1409,7 +1410,8 @@ namespace Randomizer.Randomizers.Game2.Misc
 
         public static void ResetTalents(RandomizationOption obj)
         {
-            TalentReset.ResetTalents(true);
+            //todo: fix this
+            //TalentReset.ResetTalents(true);
         }
     }
 }

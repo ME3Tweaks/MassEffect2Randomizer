@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using Randomizer.MER;
 using DuplicatingIni = LegendaryExplorerCore.Misc.DuplicatingIni;
 
 namespace Randomizer.Randomizers.Game2.Coalesced

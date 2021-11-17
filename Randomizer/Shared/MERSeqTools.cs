@@ -7,6 +7,7 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Shared
 {

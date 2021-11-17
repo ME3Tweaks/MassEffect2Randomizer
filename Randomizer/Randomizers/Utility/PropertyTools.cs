@@ -3,9 +3,10 @@ using System.Linq;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using Randomizer.Randomizers.Game2.Misc;
 using NameProperty = LegendaryExplorerCore.Unreal.NameProperty;
 
-namespace RandomizerUI.Classes.Randomizers.Utility
+namespace Randomizer.Randomizers.Utility
 {
     class ScalarParameter
     {
@@ -124,7 +125,7 @@ namespace RandomizerUI.Classes.Randomizers.Utility
 
     }
 
-    class RProperty
+    class PropertyTools
     {
         public static void RandVector(PropertyCollection props, string propname, float min, float max, bool createIfMissing)
         {

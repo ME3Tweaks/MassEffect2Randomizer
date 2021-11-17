@@ -3,6 +3,7 @@ using System.Diagnostics;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -17,7 +18,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
 
 
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"AnimSequence";
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var game = export.FileRef.Game;

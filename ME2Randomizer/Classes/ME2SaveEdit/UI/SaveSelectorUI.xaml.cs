@@ -12,6 +12,7 @@ using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
+using Randomizer.MER;
 using RandomizerUI.Classes.Controllers;
 using RandomizerUI.Classes.ME2SaveEdit.FileFormats;
 using RandomizerUI.ui;

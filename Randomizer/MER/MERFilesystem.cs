@@ -14,7 +14,6 @@ using ME3TweaksCore.Targets;
 using Randomizer.Randomizers;
 using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.TLK;
-using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.MER
 {
@@ -65,7 +64,7 @@ namespace Randomizer.MER
 
             if (useTlk)
             {
-                TLKHandler.StartHandler();
+                TLKHandler.StartHandler(options.RandomizationTarget);
             }
         }
 
@@ -86,24 +85,24 @@ namespace Randomizer.MER
         /// <summary>
         /// Installs the DLC mod's startup package and adds it to the startup ini files
         /// </summary>
-        public static void InstallStartupPackage(MEGame game)
+        public static void InstallStartupPackage(GameTarget target)
         {
             if (installedStartupPackage)
                 return;
             installedStartupPackage = true;
-            var startupPackage = GetStartupPackage(game);
+            var startupPackage = GetStartupPackage(target);
             MERFileSystem.SavePackage(startupPackage, true);
 
-            ThreadSafeDLCStartupPackage.AddStartupPackage($"Startup_DLC_MOD_{game}Randomizer");
+            ThreadSafeDLCStartupPackage.AddStartupPackage($"Startup_DLC_MOD_{target.Game}Randomizer");
         }
 
         /// <summary>
         /// Fetches the DLC mod component's startup package
         /// </summary>
         /// <returns></returns>
-        public static IMEPackage GetStartupPackage(MEGame game)
+        public static IMEPackage GetStartupPackage(GameTarget target)
         {
-            var startupDestName = $"Startup_DLC_MOD_{game}Randomizer_INT.pcc";
+            var startupDestName = $"Startup_DLC_MOD_{target.Game}Randomizer_INT.pcc";
             return MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile(startupDestName)), startupDestName);
         }
 
@@ -263,9 +262,9 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="relativeSubPath"></param>
         /// <returns></returns>
-        public static string GetSpecificFile(MEGame game, string relativeSubPath)
+        public static string GetSpecificFile(GameTarget target, string relativeSubPath)
         {
-            return Path.Combine(MEDirectories.GetDefaultGamePath(game), relativeSubPath);
+            return Path.Combine(target.TargetPath, relativeSubPath);
 
         }
 
@@ -273,15 +272,15 @@ namespace Randomizer.MER
         /// Gets the path to the TFC used by MER. MER uses 2 TFCs - one is in the basegame 'Textures_MER_PreDLCLoad.tfc', the other being in the DLC mod (or basegame, if DLC mod is not used)
         /// </summary>
         /// <returns></returns>
-        public static string GetTFCPath(MEGame game, bool postLoadTFC)
+        public static string GetTFCPath(GameTarget target, bool postLoadTFC)
         {
             if (postLoadTFC)
             {
-                return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{game}Randomizer.tfc");
+                return Path.Combine(DLCModCookedPath, $"Textures_DLC_MOD_{target.Game}Randomizer.tfc");
             }
 
             // TFC that can be used safely before load
-            return Path.Combine(MEDirectories.GetCookedPath(game), @"Textures_MER_PreDLCLoad.tfc");
+            return Path.Combine(M3Directories.GetCookedPath(target), @"Textures_MER_PreDLCLoad.tfc");
         }
 
         /// <summary>

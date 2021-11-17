@@ -2,7 +2,9 @@
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -34,7 +36,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             return false;
         }
 
-        public static bool RandomizePawnSize(ExportEntry export, RandomizationOption option)
+        public static bool RandomizePawnSize(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             MERLog.Information($"[{Path.GetFileNameWithoutExtension(export.FileRef.FilePath)}] Randomizing pawn size for " + export.UIndex + ": " + export.InstancedFullPath);

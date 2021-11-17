@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Windows.Media;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
@@ -141,6 +142,25 @@ namespace Randomizer.MER
             var index = keys.RandomIndex();
             return new KeyValuePair<TKey, TValue>(keys[index], values[index]);
 
+        }
+    }
+
+    public static class Vector3Extensions
+    {
+        public static float Min(this Vector3 vector)
+        {
+            float min = vector.X;
+            if (vector.Y < min) min = vector.Y;
+            if (vector.Z < min) min = vector.Z;
+            return min;
+        }
+
+        public static float Max(this Vector3 vector)
+        {
+            float max = vector.X;
+            if (vector.Y > max) max = vector.Y;
+            if (vector.Z > max) max = vector.Z;
+            return max;
         }
     }
 }

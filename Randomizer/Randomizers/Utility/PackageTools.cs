@@ -8,8 +8,9 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using Randomizer.MER;
 
-namespace RandomizerUI.Classes.Randomizers.Utility
+namespace Randomizer.Randomizers.Utility
 {
     public static class PackageTools
     {

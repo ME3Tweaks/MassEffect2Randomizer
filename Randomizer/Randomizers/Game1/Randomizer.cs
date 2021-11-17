@@ -169,7 +169,7 @@ namespace Randomizer.Randomizers.Game1
             }
         }
 
-        private void RandomizeBioWaypointSet(IExportEntry export, Random random)
+        private void RandomizeBioWaypointSet(ExportEntry export, Random random)
         {
             Log.Information("Randomizing BioWaypointSet " + export.UIndex + " in " + Path.GetFileName(export.FileRef.FileName));
             var waypointReferences = export.GetProperty<ArrayProperty<StructProperty>>("WaypointReferences");
@@ -185,7 +185,7 @@ namespace Randomizer.Randomizers.Game1
                     var nav = waypoint.GetProp<ObjectProperty>("Nav");
                     if (nav != null && nav.Value > 0)
                     {
-                        IExportEntry currentPoint = export.FileRef.getUExport(nav.Value);
+                        ExportEntry currentPoint = export.FileRef.getUExport(nav.Value);
                         if (currentPoint.ClassName == "BioPathPoint" || currentPoint.ClassName == "PathNode")
                         {
                             nav.Value = waypoints[0].UIndex;
@@ -266,7 +266,7 @@ namespace Randomizer.Randomizers.Game1
             riseFromFeignFinishDelay.WriteProperty(new FloatProperty(random.NextFloat(0, .7), "Duration"));
 
             //Randomly disable squadmates from not targeting enemies in Zhu's Hope and Tower
-            IExportEntry[] saveTheColonistPMCheckExports = new[] { colonyBattlePackage.getUExport(1434), colonyBattlePackage.getUExport(1437), colonyBattlePackage.getUExport(1440), towerBattlePackage.getUExport(576) };
+            ExportEntry[] saveTheColonistPMCheckExports = new[] { colonyBattlePackage.getUExport(1434), colonyBattlePackage.getUExport(1437), colonyBattlePackage.getUExport(1440), towerBattlePackage.getUExport(576) };
             foreach (var saveColonist in saveTheColonistPMCheckExports)
             {
                 if (random.Next(8) == 0)
@@ -299,7 +299,7 @@ namespace Randomizer.Randomizers.Game1
             string globalTLKPath = Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "Packages", "Dialog", "GlobalTlk.upk");
             ME1Package globalTLK = new ME1Package(globalTLKPath);
             List<TalkFile> Tlks = new List<TalkFile>();
-            foreach (IExportEntry exp in globalTLK.Exports)
+            foreach (ExportEntry exp in globalTLK.Exports)
             {
                 //TODO: Use BioTlkFileSet or something to only do INT
                 if (exp.ClassName == "BioTlkFile")
@@ -350,9 +350,9 @@ namespace Randomizer.Randomizers.Game1
 
             //Randomize ENGINE
             ME1Package engine = new ME1Package(Utilities.GetEngineFile());
-            IExportEntry talentEffectLevels = null;
+            ExportEntry talentEffectLevels = null;
 
-            foreach (IExportEntry export in engine.Exports)
+            foreach (ExportEntry export in engine.Exports)
             {
                 switch (export.ObjectName)
                 {
@@ -466,7 +466,7 @@ namespace Randomizer.Randomizers.Game1
 
             //RANDOMIZE ENTRYMENU
             ME1Package entrymenu = new ME1Package(Utilities.GetEntryMenuFile());
-            foreach (IExportEntry export in entrymenu.Exports)
+            foreach (ExportEntry export in entrymenu.Exports)
             {
                 switch (export.ObjectName)
                 {
@@ -615,7 +615,7 @@ namespace Randomizer.Randomizers.Game1
                         ME1Package package = new ME1Package(files[i]);
                         if (RunMapRandomizerPassAllExports)
                         {
-                            foreach (IExportEntry exp in package.Exports)
+                            foreach (ExportEntry exp in package.Exports)
                             {
                                 if (mainWindow.RANDSETTING_PAWN_MAPFACES && exp.ClassName == "BioMorphFace")
                                 {
@@ -635,7 +635,7 @@ namespace Randomizer.Randomizers.Game1
                                     var seqRef = exp.GetProperty<ObjectProperty>("oSequenceReference");
                                     if (seqRef != null && exp.FileRef.isUExport(seqRef.Value))
                                     {
-                                        IExportEntry possibleHazSequence = exp.FileRef.getUExport(seqRef.Value);
+                                        ExportEntry possibleHazSequence = exp.FileRef.getUExport(seqRef.Value);
                                         var objName = possibleHazSequence.GetProperty<StrProperty>("ObjName");
                                         if (objName != null && objName == "REF_HazardSystem")
                                         {
@@ -1538,7 +1538,7 @@ namespace Randomizer.Randomizers.Game1
                     //Set location
                     var newRandomizationInfo = keeperRandomizationInfoForThisLevel[0];
                     keeperRandomizationInfoForThisLevel.RemoveAt(0);
-                    IExportEntry bioPawn = staPackage.getUExport(keeper.PawnExportUIndex);
+                    ExportEntry bioPawn = staPackage.getUExport(keeper.PawnExportUIndex);
                     Utilities.SetLocation(bioPawn, newRandomizationInfo.Position);
                     if (newRandomizationInfo.Yaw != 0)
                     {
@@ -1549,7 +1549,7 @@ namespace Randomizer.Randomizers.Game1
                     if (keeper.KismetTeleportBoolUIndex != 0)
                     {
                         //Has teleport bool
-                        IExportEntry teleportBool = staPackage.getUExport(keeper.KismetTeleportBoolUIndex);
+                        ExportEntry teleportBool = staPackage.getUExport(keeper.KismetTeleportBoolUIndex);
                         teleportBool.WriteProperty(new IntProperty(0, "bValue")); //teleport false
                     }
                 }
@@ -1574,7 +1574,7 @@ namespace Randomizer.Randomizers.Game1
             p.getUExport(5640).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackFloatDrawScale_5640_PRO08DSG.bin");
             p.getUExport(5643).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackMove_5643_PRO08DSG.bin");
 
-            IExportEntry drawScaleExport = p.getUExport(5640);
+            ExportEntry drawScaleExport = p.getUExport(5640);
             var floatTrack = drawScaleExport.GetProperty<StructProperty>("FloatTrack");
             {
                 var points = floatTrack?.GetProp<ArrayProperty<StructProperty>>("Points");
@@ -1594,7 +1594,7 @@ namespace Randomizer.Randomizers.Game1
 
             drawScaleExport.WriteProperty(floatTrack);
 
-            IExportEntry movementExport = p.getUExport(5643);
+            ExportEntry movementExport = p.getUExport(5643);
             var props = movementExport.GetProperties();
             var posTrack = props.GetProp<StructProperty>("PosTrack");
             if (posTrack != null)
@@ -1624,7 +1624,7 @@ namespace Randomizer.Randomizers.Game1
             ModifiedFiles[p.FileName] = p.FileName;
         }
 
-        private void RandomizeBioLookAtDefinition(IExportEntry export, Random random)
+        private void RandomizeBioLookAtDefinition(ExportEntry export, Random random)
         {
             Log.Information("Randomizing BioLookAtDefinition " + export.UIndex);
             var boneDefinitions = export.GetProperty<ArrayProperty<StructProperty>>("BoneDefinitions");
@@ -1729,7 +1729,7 @@ namespace Randomizer.Randomizers.Game1
             ModifiedFiles[finalCutsceneFile.FileName] = finalCutsceneFile.FileName;
         }
 
-        private void RandomizeHeightFogComponent(IExportEntry exp, Random random)
+        private void RandomizeHeightFogComponent(ExportEntry exp, Random random)
         {
             var properties = exp.GetProperties();
             var lightColor = properties.GetProp<StructProperty>("LightColor");
@@ -1775,7 +1775,7 @@ namespace Randomizer.Randomizers.Game1
             ModifiedFiles[pinnacleTextures.FileName] = pinnacleTextures.FileName;
         }
 
-        private void RandomizePawnMaterialInstances(IExportEntry exp, Random random)
+        private void RandomizePawnMaterialInstances(ExportEntry exp, Random random)
         {
             //Don't know if this works
             var hairMeshObj = exp.GetProperty<ObjectProperty>("m_oHairMesh");
@@ -1788,7 +1788,7 @@ namespace Randomizer.Randomizers.Game1
                     foreach (var materialObj in materials)
                     {
                         //MaterialInstanceConstant
-                        IExportEntry material = exp.FileRef.getUExport(materialObj.Value);
+                        ExportEntry material = exp.FileRef.getUExport(materialObj.Value);
                         var props = material.GetProperties();
 
                         {
@@ -1829,7 +1829,7 @@ namespace Randomizer.Randomizers.Game1
         {
             //Randomize planet in the sky
             ME1Package bdtsPlanetFile = new ME1Package(Utilities.GetGameFile(@"DLC\DLC_UNC\CookedPC\Maps\UNC52\LAY\BIOA_UNC52_00_LAY.SFM"));
-            IExportEntry planetMaterial = bdtsPlanetFile.getUExport(1546); //BIOA_DLC_UNC52_T.GXM_EarthDup
+            ExportEntry planetMaterial = bdtsPlanetFile.getUExport(1546); //BIOA_DLC_UNC52_T.GXM_EarthDup
             RandomizePlanetMaterialInstanceConstant(planetMaterial, random, realistic: true);
             bdtsPlanetFile.save();
             ModifiedFiles[bdtsPlanetFile.FileName] = bdtsPlanetFile.FileName;
@@ -1868,11 +1868,11 @@ namespace Randomizer.Randomizers.Game1
 
         private void RandomizeSplash(Random random, ME1Package entrymenu)
         {
-            IExportEntry planetMaterial = entrymenu.getUExport(1316);
+            ExportEntry planetMaterial = entrymenu.getUExport(1316);
             RandomizePlanetMaterialInstanceConstant(planetMaterial, random);
 
             //Corona
-            IExportEntry coronaMaterial = entrymenu.getUExport(1317);
+            ExportEntry coronaMaterial = entrymenu.getUExport(1317);
             var props = coronaMaterial.GetProperties();
             {
                 var scalars = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues");
@@ -1884,14 +1884,14 @@ namespace Randomizer.Randomizers.Game1
             coronaMaterial.WriteProperties(props);
 
             //CameraPan
-            IExportEntry cameraInterpData = entrymenu.getUExport(946);
+            ExportEntry cameraInterpData = entrymenu.getUExport(946);
             var interpLength = cameraInterpData.GetProperty<FloatProperty>("InterpLength");
             float animationLength = random.NextFloat(60, 120);
             ;
             interpLength.Value = animationLength;
             cameraInterpData.WriteProperty(interpLength);
 
-            IExportEntry cameraInterpTrackMove = entrymenu.getUExport(967);
+            ExportEntry cameraInterpTrackMove = entrymenu.getUExport(967);
             cameraInterpTrackMove.Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.InterpTrackMove967_EntryMenu_CameraPan.bin");
             props = cameraInterpTrackMove.GetProperties(forceReload: true);
             var posTrack = props.GetProp<StructProperty>("PosTrack");
@@ -2011,12 +2011,12 @@ namespace Randomizer.Randomizers.Game1
             dbStandard.WriteProperties(props);
         }
 
-        private void RandomizeInterpPawns(IExportEntry export, Random random)
+        private void RandomizeInterpPawns(ExportEntry export, Random random)
         {
             var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
 
             List<ObjectProperty> pawnsToShuffle = new List<ObjectProperty>();
-            var playerRefs = new List<IExportEntry>();
+            var playerRefs = new List<ExportEntry>();
             foreach (var variableLink in variableLinks)
             {
                 var expectedType = variableLink.GetProp<ObjectProperty>("ExpectedType");
@@ -2032,7 +2032,7 @@ namespace Randomizer.Randomizers.Game1
                         {
                             var linkedObjectEntry = export.FileRef.getEntry(linkedObj.Value);
                             var linkedObjName = linkedObjectEntry.ObjectName;
-                            if (linkedObjName == "BioPawn" && linkedObjectEntry is IExportEntry bioPawnExport)
+                            if (linkedObjName == "BioPawn" && linkedObjectEntry is ExportEntry bioPawnExport)
                             {
                                 var flyingpawn = bioPawnExport.GetProperty<BoolProperty>("bCanFly")?.Value;
                                 if (flyingpawn == null || flyingpawn == false)
@@ -2078,7 +2078,7 @@ namespace Randomizer.Randomizers.Game1
             }
         }
 
-        private void RandomizePlanetMaterialInstanceConstant(IExportEntry planetMaterial, Random random, bool realistic = false)
+        private void RandomizePlanetMaterialInstanceConstant(ExportEntry planetMaterial, Random random, bool realistic = false)
         {
             var props = planetMaterial.GetProperties();
             {
@@ -2114,7 +2114,7 @@ namespace Randomizer.Randomizers.Game1
         private static readonly int[] GalaxyMapImageIdsThatAreMSVReserved = { 76, 79, 82, 85 }; //MSV Ships
         private static readonly int[] GalaxyMapImageIdsToNeverRandomize = { 127, 128 }; //no idea what these are
 
-        private void RandomizePlanetImages(Random random, Dictionary<int, RandomizedPlanetInfo> planetsRowToRPIMapping, Bio2DA planets2DA, ME1Package galaxyMapImagesPackage, IExportEntry galaxyMapImagesUi, Dictionary<string, List<string>> galaxyMapGroupResources)
+        private void RandomizePlanetImages(Random random, Dictionary<int, RandomizedPlanetInfo> planetsRowToRPIMapping, Bio2DA planets2DA, ME1Package galaxyMapImagesPackage, ExportEntry galaxyMapImagesUi, Dictionary<string, List<string>> galaxyMapGroupResources)
         {
             mainWindow.CurrentOperationText = "Updating galaxy map images";
             mainWindow.ProgressBarIndeterminate = false;
@@ -2205,7 +2205,7 @@ namespace Randomizer.Randomizers.Game1
                         assignedImageIndexes.Add(imageIndexCell.GetIntValue());
 
                         var newImageSwf = newImagePool;
-                        IExportEntry matchingExport = null;
+                        ExportEntry matchingExport = null;
 
                         int uiTableRowName = imageIndexCell.GetIntValue();
                         int rowIndex = galaxyMapImages2DA.GetRowIndexByName(uiTableRowName.ToString());
@@ -2323,7 +2323,7 @@ namespace Randomizer.Randomizers.Game1
             }
         }
 
-        private void ReplaceSWFFromResource(IExportEntry exp, string swfResourcePath)
+        private void ReplaceSWFFromResource(ExportEntry exp, string swfResourcePath)
         {
             Debug.WriteLine($"Replacing {Path.GetFileName(exp.FileRef.FileName)} {exp.UIndex} {exp.ObjectName} SWF with {swfResourcePath}");
             var bytes = Utilities.GetEmbeddedStaticFilesBinaryFile(swfResourcePath, true);
@@ -2339,7 +2339,7 @@ namespace Randomizer.Randomizers.Game1
             exp.WriteProperties(props);
         }
 
-        private void RandomizeFaceFX(IExportEntry exp, Random random, int amount)
+        private void RandomizeFaceFX(ExportEntry exp, Random random, int amount)
         {
             try
             {
@@ -2561,7 +2561,7 @@ namespace Randomizer.Randomizers.Game1
 
         private static string[] hazardTypes = { "Cold", "Heat", "Toxic", "Radiation", "Vacuum" };
 
-        private void RandomizeHazard(IExportEntry export, Random random)
+        private void RandomizeHazard(ExportEntry export, Random random)
         {
             Log.Information("Randomizing hazard sequence objects for " + export.UIndex + ": " + export.GetIndexedFullPath);
             var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
@@ -2603,7 +2603,7 @@ namespace Randomizer.Randomizers.Game1
             }
         }
 
-        private void scaleHeadMesh(IExportEntry meshRef, float headScale)
+        private void scaleHeadMesh(ExportEntry meshRef, float headScale)
         {
             Log.Information("Randomizing headmesh for " + meshRef.GetIndexedFullPath);
             var drawScale = meshRef.GetProperty<FloatProperty>("Scale");
@@ -2634,7 +2634,7 @@ namespace Randomizer.Randomizers.Game1
             }
         }
 
-        private void RandomizeInterpTrackMove(IExportEntry export, Random random, double amount)
+        private void RandomizeInterpTrackMove(ExportEntry export, Random random, double amount)
         {
             Log.Information("Randomizing movement interpolations for " + export.UIndex + ": " + export.GetIndexedFullPath);
             var props = export.GetProperties();
@@ -2727,7 +2727,7 @@ namespace Randomizer.Randomizers.Game1
 
         private void RandomizeMako(ME1Package package, Random random)
         {
-            IExportEntry SVehicleSimTank = package.Exports[23314];
+            ExportEntry SVehicleSimTank = package.Exports[23314];
             var props = SVehicleSimTank.GetProperties();
             StructProperty torqueCurve = SVehicleSimTank.GetProperty<StructProperty>("m_TorqueCurve");
             ArrayProperty<StructProperty> points = torqueCurve.GetProp<ArrayProperty<StructProperty>>("Points");
@@ -2749,11 +2749,11 @@ namespace Randomizer.Randomizers.Game1
             {
                 //Reverse the steering to back wheels
                 //Front
-                IExportEntry LFWheel = package.Exports[36984];
-                IExportEntry RFWheel = package.Exports[36987];
+                ExportEntry LFWheel = package.Exports[36984];
+                ExportEntry RFWheel = package.Exports[36987];
                 //Rear
-                IExportEntry LRWheel = package.Exports[36986];
-                IExportEntry RRWheel = package.Exports[36989];
+                ExportEntry LRWheel = package.Exports[36986];
+                ExportEntry RRWheel = package.Exports[36989];
 
                 var LFSteer = LFWheel.GetProperty<FloatProperty>("SteerFactor");
                 var LRSteer = LRWheel.GetProperty<FloatProperty>("SteerFactor");
@@ -2772,7 +2772,7 @@ namespace Randomizer.Randomizers.Game1
             }
 
             //Randomize the jumpjets
-            IExportEntry BioVehicleBehaviorBase = package.Exports[23805];
+            ExportEntry BioVehicleBehaviorBase = package.Exports[23805];
             var behaviorProps = BioVehicleBehaviorBase.GetProperties();
             foreach (UProperty prop in behaviorProps)
             {
@@ -2786,7 +2786,7 @@ namespace Randomizer.Randomizers.Game1
             BioVehicleBehaviorBase.WriteProperties(behaviorProps);
         }
 
-        private void RandomizePlanetNameDescriptions(IExportEntry export, Random random, List<TalkFile> Tlks)
+        private void RandomizePlanetNameDescriptions(ExportEntry export, Random random, List<TalkFile> Tlks)
         {
             mainWindow.CurrentOperationText = "Applying entropy to galaxy map";
             string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("planetinfo.xml");
@@ -2856,11 +2856,11 @@ namespace Randomizer.Randomizers.Game1
 
             List<int> rowsToNotRandomlyReassign = new List<int>();
 
-            IExportEntry systemsExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_System");
-            IExportEntry clustersExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_Cluster");
-            IExportEntry areaMapExport = export.FileRef.Exports.First(x => x.ObjectName == "AreaMap_AreaMap");
-            IExportEntry plotPlanetExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_PlotPlanet");
-            IExportEntry mapExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_Map");
+            ExportEntry systemsExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_System");
+            ExportEntry clustersExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_Cluster");
+            ExportEntry areaMapExport = export.FileRef.Exports.First(x => x.ObjectName == "AreaMap_AreaMap");
+            ExportEntry plotPlanetExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_PlotPlanet");
+            ExportEntry mapExport = export.FileRef.Exports.First(x => x.ObjectName == "GalaxyMap_Map");
 
             Bio2DA systems2DA = new Bio2DA(systemsExport);
             Bio2DA clusters2DA = new Bio2DA(clustersExport);
@@ -2977,7 +2977,7 @@ namespace Randomizer.Randomizers.Game1
             }
             ME1Package galaxyMapImagesBasegame = new ME1Package(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\GUI\GUI_SF_GalaxyMap.upk")); //lol demiurge, what were you doing?
             ME1Package ui2DAPackage = new ME1Package(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\2DAs\BIOG_2DA_UI_X.upk")); //lol demiurge, what were you doing?
-            IExportEntry galaxyMapImages2DAExport = ui2DAPackage.getUExport(8);
+            ExportEntry galaxyMapImages2DAExport = ui2DAPackage.getUExport(8);
             RandomizePlanetImages(random, rowRPIMap, planets2DA, galaxyMapImagesBasegame, galaxyMapImages2DAExport, galaxyMapGroupResources);
             UpdateGalaxyMapReferencesForTLKs(Tlks, true, true); //Update TLKs.
             planets2DA.Write2DAToExport();
@@ -3553,7 +3553,7 @@ namespace Randomizer.Randomizers.Game1
             }
         }
 
-        public static void DumpPlanetTexts(IExportEntry export, TalkFile tf)
+        public static void DumpPlanetTexts(ExportEntry export, TalkFile tf)
         {
             Bio2DA planets = new Bio2DA(export);
             var planetInfos = new List<RandomizedPlanetInfo>();
@@ -3642,7 +3642,7 @@ namespace Randomizer.Randomizers.Game1
 
         }
 
-        private void RandomizeBioPawnSize(IExportEntry export, Random random, double amount)
+        private void RandomizeBioPawnSize(ExportEntry export, Random random, double amount)
         {
             Log.Information("Randomizing pawn size for " + export.UIndex + ": " + export.GetIndexedFullPath);
             var props = export.GetProperties();
@@ -3696,7 +3696,7 @@ namespace Randomizer.Randomizers.Game1
             {
                 ME1Package package = new ME1Package(file);
                 {
-                    foreach (IExportEntry export in package.Exports)
+                    foreach (ExportEntry export in package.Exports)
                     {
                         if (export.ClassName == "BioMorphFace")
                         {
@@ -3709,7 +3709,7 @@ namespace Randomizer.Randomizers.Game1
             }
         }
 
-        private void RandomizeMovementSpeeds(IExportEntry export, Random random)
+        private void RandomizeMovementSpeeds(ExportEntry export, Random random)
         {
             mainWindow.CurrentOperationText = "Randomizing Movement Speeds";
 
@@ -3734,7 +3734,7 @@ namespace Randomizer.Randomizers.Game1
         //{
         //    ME1Package engine = new ME1Package(Utilities.GetEngineFile());
 
-        //    foreach (IExportEntry export in engine.Exports)
+        //    foreach (ExportEntry export in engine.Exports)
         //    {
         //        switch (export.ObjectName)
         //        {
@@ -3781,7 +3781,7 @@ namespace Randomizer.Randomizers.Game1
 
 
 
-        private void RandomizeCharacter(IExportEntry export, Random random)
+        private void RandomizeCharacter(ExportEntry export, Random random)
         {
             bool hasChanges = false;
             int[] humanLightArmorManufacturers = { 373, 374, 375, 379, 383, 451 };
@@ -3855,7 +3855,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizeClustersXY(IExportEntry export, Random random, List<TalkFile> Tlks)
+        private void RandomizeClustersXY(ExportEntry export, Random random, List<TalkFile> Tlks)
         {
             mainWindow.CurrentOperationText = "Randomizing Galaxy Map - Clusters";
 
@@ -3881,7 +3881,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizeSystems(IExportEntry export, Random random)
+        private void RandomizeSystems(ExportEntry export, Random random)
         {
             mainWindow.CurrentOperationText = "Randomizing Galaxy Map - Systems";
 
@@ -3914,7 +3914,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizePlanets(IExportEntry export, Random random)
+        private void RandomizePlanets(ExportEntry export, Random random)
         {
             mainWindow.CurrentOperationText = "Randomizing Galaxy Map - Planets";
 
@@ -4008,7 +4008,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizeWeaponStats(IExportEntry export, Random random)
+        private void RandomizeWeaponStats(ExportEntry export, Random random)
         {
             mainWindow.CurrentOperationText = "Randomizing Item Levels (only partially implemented)";
 
@@ -4076,7 +4076,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizeStartingWeapons(IExportEntry export, Random random)
+        private void RandomizeStartingWeapons(ExportEntry export, Random random)
         {
             /* These are the valid values, invalid ones are removed. They might include some ones not normally accessible but are fully functional
             324	Manf_Armax_Weap
@@ -4125,7 +4125,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private bool ShuffleClassTalentsAndPowers(IExportEntry export, Random random)
+        private bool ShuffleClassTalentsAndPowers(ExportEntry export, Random random)
         {
             //List of talents... i think. Taken from talent_talenteffectlevels
             //int[] talentsarray = { 0, 7, 14, 15, 21, 28, 29, 30, 35, 42, 49, 50, 56, 57, 63, 64, 84, 86, 91, 93, 98, 99, 108, 109, 119, 122, 126, 128, 131, 132, 134, 137, 138, 141, 142, 145, 146, 149, 150, 153, 154, 157, 158, 163, 164, 165, 166, 167, 168, 169, 170, 171, 174, 175, 176, 177, 178, 180, 182, 184, 186, 188, 189, 190, 192, 193, 194, 195, 196, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 305, 306, 307, 310, 312, 313, 315, 317, 318, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332 };
@@ -4293,7 +4293,7 @@ namespace Randomizer.Randomizers.Game1
 
             //Patch out Destroyer Tutorial as it may cause a softlock as it checks for kaidan throw
             ME1Package Pro10_08_Dsg = new ME1Package(Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "Maps", "PRO", "DSG", "BIOA_PRO10_08_DSG.SFM"));
-            IExportEntry GDInvulnerabilityCounter = (IExportEntry)Pro10_08_Dsg.getEntry(13521);
+            ExportEntry GDInvulnerabilityCounter = (ExportEntry)Pro10_08_Dsg.getEntry(13521);
             var invulnCount = GDInvulnerabilityCounter.GetProperty<IntProperty>("IntValue");
             if (invulnCount != null && invulnCount.Value != 0)
             {
@@ -4486,7 +4486,7 @@ namespace Randomizer.Randomizers.Game1
             ;
         }
 
-        private void RandomizeTalentEffectLevels(IExportEntry export, List<TalkFile> Tlks, Random random)
+        private void RandomizeTalentEffectLevels(ExportEntry export, List<TalkFile> Tlks, Random random)
         {
             mainWindow.CurrentOperationText = "Randomizing Talent and Power stats";
             Bio2DA talentEffectLevels = new Bio2DA(export);
@@ -4560,9 +4560,9 @@ namespace Randomizer.Randomizers.Game1
             UpdateTalentStrings(export, Tlks);
         }
 
-        private void UpdateTalentStrings(IExportEntry talentEffectLevelsExport, List<TalkFile> talkFiles)
+        private void UpdateTalentStrings(ExportEntry talentEffectLevelsExport, List<TalkFile> talkFiles)
         {
-            IExportEntry talentGUIExport = talentEffectLevelsExport.FileRef.Exports.First(x => x.ObjectName == "Talent_TalentGUI");
+            ExportEntry talentGUIExport = talentEffectLevelsExport.FileRef.Exports.First(x => x.ObjectName == "Talent_TalentGUI");
             Bio2DA talentGUI2DA = new Bio2DA(talentGUIExport);
             Bio2DA talentEffectLevels2DA = new Bio2DA(talentEffectLevelsExport);
             const int columnPatternStart = 4;
@@ -4667,7 +4667,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizeLevelUpChallenge(IExportEntry export, Random random)
+        private void RandomizeLevelUpChallenge(ExportEntry export, Random random)
         {
             mainWindow.CurrentOperationText = "Randomizing Class talents list";
             bool randomizeLevels = false; //will use better later
@@ -4722,7 +4722,7 @@ namespace Randomizer.Randomizers.Game1
         /// Randomizes the character creator
         /// </summary>
         /// <param name="random">Random number generator</param>
-        private void RandomizeCharacterCreator2DA(Random random, IExportEntry export)
+        private void RandomizeCharacterCreator2DA(Random random, ExportEntry export)
         {
             mainWindow.CurrentOperationText = "Randomizing Charactor Creator";
             //if (headrandomizerclasses.Contains(export.ObjectName))
@@ -4851,7 +4851,7 @@ namespace Randomizer.Randomizers.Game1
             //Randomize look at targets
             ME1Package biog_uiworld = new ME1Package(Utilities.GetGameFile(@"BioGame\CookedPC\Maps\BIOG_UIWorld.sfm"));
             var bioInerts = biog_uiworld.Exports.Where(x => x.ClassName == "BioInert").ToList();
-            foreach (IExportEntry ex in bioInerts)
+            foreach (ExportEntry ex in bioInerts)
             {
                 RandomizeLocation(ex, random);
             }
@@ -4917,19 +4917,19 @@ namespace Randomizer.Randomizers.Game1
 
         }
 
-        private void RandomizeLocation(IExportEntry e, Random random)
+        private void RandomizeLocation(ExportEntry e, Random random)
         {
             SetLocation(e, random.NextFloat(-100000, 100000), random.NextFloat(-100000, 100000), random.NextFloat(-100000, 100000));
         }
 
-        public static void SetLocation(IExportEntry export, float x, float y, float z)
+        public static void SetLocation(ExportEntry export, float x, float y, float z)
         {
             StructProperty prop = export.GetProperty<StructProperty>("location");
             SetLocation(prop, x, y, z);
             export.WriteProperty(prop);
         }
 
-        public static Point3D GetLocation(IExportEntry export)
+        public static Point3D GetLocation(ExportEntry export)
         {
             float x = 0, y = 0, z = int.MinValue;
             var prop = export.GetProperty<StructProperty>("location");
@@ -4997,7 +4997,7 @@ namespace Randomizer.Randomizers.Game1
             prop.GetProp<FloatProperty>("Z").Value = z;
         }
 
-        private void RandomizeBioMorphFace(IExportEntry export, Random random, double amount = 0.3)
+        private void RandomizeBioMorphFace(ExportEntry export, Random random, double amount = 0.3)
         {
             var props = export.GetProperties();
             ArrayProperty<StructProperty> m_aMorphFeatures = props.GetProp<ArrayProperty<StructProperty>>("m_aMorphFeatures");
@@ -5036,7 +5036,7 @@ namespace Randomizer.Randomizers.Game1
             export.WriteProperties(props);
         }
 
-        private void RandomizePregeneratedHead(IExportEntry export, Random random)
+        private void RandomizePregeneratedHead(ExportEntry export, Random random)
         {
             int[] floatSliderIndexesToRandomize = { 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 19, 20, 21, 22, 24, 25, 26, 27, 29, 30 };
             Dictionary<int, int> columnMaxDictionary = new Dictionary<int, int>();
@@ -5109,7 +5109,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizeMusic(IExportEntry export, Random random, string randomizingtext = null)
+        private void RandomizeMusic(ExportEntry export, Random random, string randomizingtext = null)
         {
             if (randomizingtext == null)
             {
@@ -5199,7 +5199,7 @@ namespace Randomizer.Randomizers.Game1
         /// </summary>
         /// <param name="export">2DA Export</param>
         /// <param name="random">Random number generator</param>
-        private void RandomizeGUISounds(IExportEntry export, Random random, string randomizingtext = null, string requiredprefix = null)
+        private void RandomizeGUISounds(ExportEntry export, Random random, string randomizingtext = null, string requiredprefix = null)
         {
             if (randomizingtext == null)
             {

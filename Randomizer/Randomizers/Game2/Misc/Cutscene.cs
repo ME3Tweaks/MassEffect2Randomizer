@@ -7,6 +7,7 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Shared;
 
@@ -43,7 +44,7 @@ namespace Randomizer.Randomizers.Game2.Misc
         };
 
 
-        public static bool ShuffleCutscenePawns2(ExportEntry export, RandomizationOption option)
+        public static bool ShuffleCutscenePawns2(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export, out var cutsceneName)) return false;
             if (acceptableTagsForPawnShuffling == null) LoadAsset();

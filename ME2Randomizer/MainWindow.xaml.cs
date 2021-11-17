@@ -11,24 +11,23 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
-using LegendaryExplorerCore.Gammtek.Extensions;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
+using LegendaryExplorerCore.Packages;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using ME3TweaksCore.Diagnostics;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Services.Backup;
+using ME3TweaksCore.Services.Restore;
 using ME3TweaksCore.Targets;
 using PropertyChanged;
+using Randomizer.MER;
 using Randomizer.Randomizers;
 using RandomizerUI.Classes;
 using RandomizerUI.Classes.Controllers;
-using RandomizerUI.Classes.Randomizers;
 using RandomizerUI.DebugTools;
 using RandomizerUI.ui;
-using RandomizationGroup = RandomizerUI.Classes.RandomizationGroup;
-using RandomizationOption = RandomizerUI.Classes.RandomizationOption;
 
 namespace RandomizerUI
 {
@@ -63,10 +62,10 @@ namespace RandomizerUI
 
         public bool UseMultiThreadRNG { get; set; } = true;
 
-#region Flyouts
+        #region Flyouts
         public bool LogUploaderFlyoutOpen { get; set; }
         public bool FirstRunFlyoutOpen { get; set; }
-#endregion
+        #endregion
 
         public string GamePathString { get; set; } = "Please wait";
         public bool ShowProgressPanel { get; set; }
@@ -107,8 +106,8 @@ namespace RandomizerUI
                 CommandManager.InvalidateRequerySuggested();
             }
         }
-        public LogCollector.LogItem SelectedLogForUpload { get; set; }
-        public ObservableCollectionExtended<LogCollector.LogItem> LogsAvailableForUpload { get; } = new ObservableCollectionExtended<LogCollector.LogItem>();
+        public LogItem SelectedLogForUpload { get; set; }
+        public ObservableCollectionExtended<LogItem> LogsAvailableForUpload { get; } = new();
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
@@ -186,7 +185,7 @@ namespace RandomizerUI
             return contributors;
         }
 
-#region Commands
+        #region Commands
         public GenericCommand StartRandomizationCommand { get; set; }
         public GenericCommand CloseLogUICommand { get; set; }
         public GenericCommand UploadSelectedLogCommand { get; set; }
@@ -204,7 +203,7 @@ namespace RandomizerUI
 
         private async void UninstallDLCComponent()
         {
-            var dlcModPath = MERFileSystem.GetDLCModPath();
+            var dlcModPath = MERFileSystem.GetDLCModPath(SelectedTarget);
             if (Directory.Exists(dlcModPath))
             {
                 var pd = await this.ShowProgressAsync("Deleting DLC component", "Please wait while the DLC mod component of your current randomization is deleted.");
@@ -226,7 +225,8 @@ namespace RandomizerUI
 
         private bool CanUninstallDLCComponent()
         {
-            var status = BackupService.GetBackupStatus(MERFileSystem.Game);
+            if (SelectedTarget == null) return false;
+            var status = BackupService.GetBackupStatus(SelectedTarget.Game);
             var canUninstall = ShowUninstallButton = status != null && !status.BackedUp && DLCComponentInstalled;
             return canUninstall;
         }
@@ -244,7 +244,7 @@ namespace RandomizerUI
             }
         }
 
-#endregion
+        #endregion
 
 
         public async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -256,22 +256,63 @@ namespace RandomizerUI
 
         public bool DirectionsTextVisible { get; set; }
 
+        public string FirstRunBackgroundImage
+        {
+            get
+            {
+#if __GAME1__
+                return "/images/game3/firstrun_bg.jpg";
+#elif __GAME2__
+                return "/images/game2/firstrun_bg.jpg";
+#elif __GAME3__
+                return "/images/game3/firstrun_bg.jpg";
+#endif
+                throw new Exception("NOT A VALID BUILD");
+            }
+        }
+
+        public string MainWindowBackgroundImage
+        {
+            get
+            {
+#if __GAME1__
+                if (SelectedTarget != null && SelectedTarget.Game.IsLEGame())
+                {
+                    return "/images/game1/lebackground.jpg";
+                }
+                return "/images/game1/otbackground.jpg";
+#elif __GAME2__
+                if (SelectedTarget != null && SelectedTarget.Game.IsLEGame())
+                {
+                    return "/images/game2/lebackground.jpg";
+                }
+                return "/images/game2/otbackground.jpg";
+#elif __GAME3__
+                if (SelectedTarget != null && SelectedTarget.Game.IsLEGame())
+                {
+                    return "/images/game3/lebackground.jpg";
+                }
+                return "/images/game3/otbackground.jpg";
+#endif
+                throw new Exception("NOT A VALID BUILD");
+            }
+        }
+
         private bool CanStartRandomization()
         {
             if (SeedTextBox == null || !int.TryParse(SeedTextBox.Text, out var value) || value == 0)
                 return false;
-            var target = Locations.GetTarget(MERFileSystem.Game);
 
             // Target not found or texture modded
-            if (target == null || target.TextureModded)
+            if (SelectedTarget == null || SelectedTarget.TextureModded)
                 return false;
             return true;
         }
 
         private async void StartRandomization()
         {
-            var modPath = MERFileSystem.GetDLCModPath();
-            var backupStatus = BackupService.GetBackupStatus(MERFileSystem.Game);
+            var modPath = MERFileSystem.GetDLCModPath(SelectedTarget);
+            var backupStatus = BackupService.GetBackupStatus(SelectedTarget.Game);
             if (!backupStatus.BackedUp && !Directory.Exists(modPath))
             {
                 var settings = new MetroDialogSettings()
@@ -290,7 +331,11 @@ namespace RandomizerUI
 
             if (Directory.Exists(modPath) && PerformReroll)
             {
-                var isControllerInstalled = SFXGame.IsControllerBasedInstall();
+                var isControllerInstalled = false;
+#if __GAME2__
+                // Only ME2 controller mod matters here (for now)
+                isControllerInstalled = Randomizer.Randomizers.Game2.Misc.SFXGame.IsControllerBasedInstall(SelectedTarget);
+#endif
                 if (!isControllerInstalled)
                 {
                     if (backupStatus.BackedUp)
@@ -312,7 +357,7 @@ namespace RandomizerUI
                         if (result == MessageDialogResult.Affirmative)
                         {
                             // Perform quick restore first
-                            RestoreController.StartRestore(this, true, InternalStartRandomization);
+                            RestoreController.StartRestore(this, SelectedTarget, true, InternalStartRandomization);
                             return; // Return, we will run randomization after this
                         }
 
@@ -335,6 +380,7 @@ namespace RandomizerUI
                 }
                 else
                 {
+#if __GAME2__
                     if (backupStatus.BackedUp)
                     {
                         var settings = new MetroDialogSettings()
@@ -356,19 +402,20 @@ namespace RandomizerUI
                         if (result == MessageDialogResult.Affirmative)
                         {
                             // Perform quick restore first
-                            RestoreController.StartRestore(this, true, InternalStartRandomization);
+                            RestoreController.StartRestore(this, SelectedTarget, true, InternalStartRandomization);
                             return; // Return, we will run randomization after this
                         }
 
                         if (result == MessageDialogResult.Negative)
                         {
-                            RestoreController.StartRestore(this, true);
+                            RestoreController.StartRestore(this, SelectedTarget, true);
                             return; // Return, we will run randomization after this
                         }
                         // User did not want to restore, just run 
                     }
                     else
                     {
+#endif
                         // no backup, can't quick restore
                         var settings = new MetroDialogSettings()
                         {
@@ -381,7 +428,9 @@ namespace RandomizerUI
                             // Do nothing. User canceled
                             return;
                         }
+#if __GAME2__
                     }
+#endif
                 }
             }
 
@@ -390,10 +439,16 @@ namespace RandomizerUI
 
         private async void InternalStartRandomization()
         {
-            if (!MERUtilities.IsGameRunning(MERFileSystem.Game))
+            if (!MERUtilities.IsGameRunning(SelectedTarget.Game))
             {
                 ShowProgressPanel = true;
-                var randomizer = new Randomizer(this);
+#if __GAME1__
+                var randomizer = new Randomizer.Randomizers.Game1.Randomizer();
+#elif __GAME2__
+                var randomizer = new Randomizer.Randomizers.Game2.Randomizer();
+#elif __GAME3__
+                var randomizer = new Randomizer.Randomizers.Game3.Randomizer();
+#endif
 
                 AllowOptionsChanging = false;
 
@@ -426,7 +481,13 @@ namespace RandomizerUI
 
         public void FinalizeInterfaceLoad()
         {
-            Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
+#if __GAME1__
+            Randomizer.Randomizers.Game1.Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
+#elif __GAME2__
+            Randomizer.Randomizers.Game2.Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
+#elif __GAME3__
+            Randomizer.Randomizers.Game3.Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
+#endif
             ShowProgressPanel = false;
         }
 
@@ -437,14 +498,20 @@ namespace RandomizerUI
 
         private async void BackupRestore_Click(object sender, RoutedEventArgs e)
         {
-            string path = BackupService.GetGameBackupPath(SelectedGameTarget.Game);
-            var gameTarget = MERTargets.GetTarget(SelectedGameTarget);
-            if (path != null && gameTarget != null)
+            if (SelectedTarget == null)
+                return; // Do not allow!
+
+            string path = BackupService.GetGameBackupPath(SelectedTarget.Game);
+            if (path != null)
             {
 
-                if (gameTarget.TextureModded)
+                if (SelectedTarget.TextureModded)
                 {
-                    RestoreController.StartRestore(this, false);
+                    var restore = new GameRestore(SelectedTarget.Game)
+                    {
+                        // ENTER CALLBACKS
+                    };
+                    restore.PerformRestore(SelectedTarget, SelectedTarget.TargetPath);
                 }
                 else
                 {
@@ -453,23 +520,21 @@ namespace RandomizerUI
                     settings.FirstAuxiliaryButtonText = "Cancel";
                     settings.AffirmativeButtonText = "Quick";
                     settings.DefaultButtonFocus = MessageDialogResult.Affirmative;
-                    var result = await this.ShowMessageAsync("Select restore mode", "Select which restore mode you would like to perform:\n\nQuick: Restores basegame files modifiable by Mass Effect 2 Randomizer, deletes the DLC mod component\n\nFull: Deletes entire game installation and restores the backup in its place. Fully resets the game to the backup state", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                    var result = await this.ShowMessageAsync("Select restore mode", $"Select which restore mode you would like to perform:\n\nQuick: Restores basegame files modifiable by {MERUI.GetRandomizerName()}, deletes the DLC mod component\n\nFull: Deletes entire game installation and restores the backup in its place. Fully resets the game to the backup state", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
                     if (result == MessageDialogResult.FirstAuxiliary)
                     {
                         // Do nothing. User canceled
                     }
                     else
                     {
-                        RestoreController.StartRestore(this, result == MessageDialogResult.Affirmative);
+                        RestoreController.StartRestore(this, SelectedTarget, result == MessageDialogResult.Affirmative);
                     }
                 }
-
-
             }
-            else if (gameTarget == null)
-            {
-                await this.ShowMessageAsync($"{MERFileSystem.Game.ToGameName()} not found", $"{MERFileSystem.Game.ToGameName()} was not found, and as such, cannot be restored by {MERFileSystem.Game.ToGameName()} Randomizer. Repair your game using Steam, Origin, or your DVD, or restore your backup using ME3Tweaks Mod Manager.");
-            }
+            //else if (gameTarget == null)
+            //{
+            //    await this.ShowMessageAsync($"{MERFileSystem.Game.ToGameName()} not found", $"{MERFileSystem.Game.ToGameName()} was not found, and as such, cannot be restored by {MERFileSystem.Game.ToGameName()} Randomizer. Repair your game using Steam, Origin, or your DVD, or restore your backup using ME3Tweaks Mod Manager.");
+            //}
         }
 
         private void DebugCloseDiagnostics_Click(object sender, RoutedEventArgs e)
@@ -479,7 +544,7 @@ namespace RandomizerUI
 
         private void Button_FirstTimeRunDismiss_Click(object sender, RoutedEventArgs e)
         {
-            MERSettings.WriteRegistrySettingBool(SETTING_FIRSTRUN, true);
+            MERSettings.WriteSettingBool(ESetting.SETTING_FIRSTRUN, true);
             FirstRunFlyoutOpen = false;
         }
 
@@ -511,8 +576,6 @@ namespace RandomizerUI
             //ME3Tweaks Discord
             MERUtilities.OpenWebPage(App.DISCORD_INVITE_LINK);
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public void OnLogUploaderFlyoutOpenChanged()
         {
@@ -575,7 +638,7 @@ namespace RandomizerUI
                     var DiagnosticResultText = response.result;
                     if (response.result.StartsWith("http"))
                     {
-                        MUtilities.OpenWebPage(response.result);
+                        MERUtilities.OpenWebPage(response.result);
                     }
                 }
 
@@ -583,7 +646,7 @@ namespace RandomizerUI
                 if (!response.uploaded || QuickFixHelper.IsQuickFixEnabled(QuickFixHelper.QuickFixName.ForceSavingLogLocally))
                 {
                     // Upload failed.
-                    var GeneratedLogPath = Path.Combine(LogCollector.LogDir, $"FailedLogUpload_{DateTime.Now.ToString("s").Replace(":", ".")}.txt");
+                    var GeneratedLogPath = Path.Combine(MCoreFilesystem.GetLogDir(), $"FailedLogUpload_{DateTime.Now.ToString("s").Replace(":", ".")}.txt");
                     File.WriteAllText(GeneratedLogPath, logUploadText.ToString());
                 }
 
@@ -600,7 +663,7 @@ namespace RandomizerUI
             nbw.RunWorkerAsync();
         }
 
-#region Settings
+        #region Settings
 
         public const string SETTING_FIRSTRUN = "FirstRunCompleted";
         private void FirstRunShowButton_Click(object sender, RoutedEventArgs e)
@@ -608,23 +671,23 @@ namespace RandomizerUI
             FirstRunFlyoutOpen = true;
         }
 
-#endregion
+        #endregion
 
         public void SetupTargetDescriptionText()
         {
-            if (CurrentGameTarget == null)
+            if (SelectedTarget == null)
             {
                 var gameName = Randomizer.MER.MERUtilities.GetGameUIName(SelectedGameIndex == 0);
-                GamePathString = $"{CurrentGameTarget.Game.ToGameName()} not detected. Repair and run your game to fix detection.";
+                GamePathString = $"{gameName} not detected. Repair and run your game to fix detection.";
             }
-            else if (target.TextureModded)
+            else if (SelectedTarget.TextureModded)
             {
                 GamePathString = "Cannot randomize, game is texture modded";
             }
             else
             {
                 DirectionsTextVisible = true;
-                GamePathString = $"Randomization target: {target.TargetPath}";
+                GamePathString = $"Randomization target: {SelectedTarget.TargetPath}";
             }
         }
 
@@ -634,6 +697,24 @@ namespace RandomizerUI
             {
                 // Toggle
                 option.OptionIsSelected = !option.OptionIsSelected;
+            }
+        }
+
+        private void SwitchToOT_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedTarget = Locations.GetTarget(false);
+        }
+
+        private void SwitchToLE_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedTarget = Locations.GetTarget(true);
+        }
+
+        private void OnSelectedTargetChanged()
+        {
+            if (SelectedTarget != null)
+            {
+                GameLocationTextbox.Text = SelectedTarget.TargetPath;
             }
         }
     }

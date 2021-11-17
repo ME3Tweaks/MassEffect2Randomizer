@@ -3,15 +3,15 @@ using System.Diagnostics;
 using System.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Serilog;
 
-namespace Randomizer.Randomizers.Game2.ExportTypes
+namespace Randomizer.Randomizers.Shared
 {
     public class RFaceFXAnimSet
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "FaceFXAnimSet";
-        public static bool RandomizeExport(ExportEntry exp,RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry exp,RandomizationOption option)
         {
             if (!CanRandomize(exp)) return false;
             //if (exp.UIndex != 1999) return false;
@@ -115,7 +115,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             catch (Exception e)
             {
                 //Do nothing for now.
-                Log.Error("AnimSet error! " + App.FlattenException((e)));
+                MERLog.Exception(e, "AnimSet Error");
             }
             return false;
         }

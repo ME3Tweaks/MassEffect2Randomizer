@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
+using Randomizer.Randomizers;
 using Brushes = System.Drawing.Brushes;
 
 namespace RandomizerUI.Classes.Converters

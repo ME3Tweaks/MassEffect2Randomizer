@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -14,7 +16,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             "BIOG_Hench_FAC.HMM.hench_leadingman"
         };
 
-        public static bool RandomizeSquadmateFaces(RandomizationOption option)
+        public static bool RandomizeSquadmateFaces(GameTarget target, RandomizationOption option)
         {
             var henchFiles = MERFileSystem.LoadedFiles.Where(x => x.Key.StartsWith("BioH_")
                                                                   || x.Key.StartsWith("BioP_ProCer")
@@ -22,7 +24,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                                                                   || x.Key == "BioD_EndGm1_110ROMJacob.pcc");
             foreach (var h in henchFiles)
             {
-                var hPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(h.Key));
+                var hPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, h.Key));
                 foreach (var smhp in SquadmateMorphHeadPaths)
                 {
                     var mf = hPackage.FindExport(smhp);
@@ -41,7 +43,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                                                                 && export.ClassName == @"BioMorphFace" 
                                                                 && !export.ObjectName.Name.Contains("hench_leadingman") 
                                                                 && !export.ObjectName.Name.Contains("hench_wilson");
-        public static bool RandomizeExportNonHench(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExportNonHench(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomizeNonHench(export)) return false;
             RandomizeInternal(export, option);

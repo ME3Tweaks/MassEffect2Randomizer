@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
@@ -16,8 +17,9 @@ using System.Xml;
 using System.Xml.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.GameFilesystem;
+using ME3TweaksCore.Targets;
 using Microsoft.Win32;
-//This namespace is used to work with Registry editor.
 
 namespace Randomizer.MER
 {
@@ -73,9 +75,16 @@ namespace Randomizer.MER
 
         public static string GetEmbeddedStaticFilesTextFile(string filename)
         {
+#if __GAME1__
+            var assetBase = "Randomizer.Randomizers.Game1.Assets.Text.";
+#elif __GAME2__
+            var assetBase = "Randomizer.Randomizers.Game2.Assets.Text.";
+#elif __GAME3__
+            var assetBase = "Randomizer.Randomizers.Game3.Assets.Text.";
+#endif
             string result = string.Empty;
-            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
-            using (Stream stream = typeof(MainWindow).Assembly.GetManifestResourceStream("ME2Randomizer.staticfiles.text." + filename))
+            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + filename))
             {
                 using (StreamReader sr = new StreamReader(stream))
                 {
@@ -93,8 +102,8 @@ namespace Randomizer.MER
         /// <returns></returns>
         public static byte[] GetEmbeddedStaticFile(string filename, bool fullName = false)
         {
-            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
-            using (Stream stream = typeof(MainWindow).Assembly.GetManifestResourceStream(fullName ? filename : "ME2Randomizer.staticfiles." + filename))
+            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "ME2Randomizer.staticfiles." + filename))
             {
                 byte[] ba = new byte[stream.Length];
                 stream.Read(ba, 0, ba.Length);
@@ -177,95 +186,9 @@ namespace Randomizer.MER
             return principal.IsInRole(WindowsBuiltInRole.Administrator);
         }
 
-        /// <summary>
-        /// Gets the currently origin or steam game path.
-        /// </summary>
-        /// <param name="allowMissing">Allow directory to be missing if registry key still exists</param>
-        /// <returns></returns>
-        //public static string GetGamePath(bool allowMissing = false)
-        //{
-        //    MERUtilities.WriteDebugLog("Looking up game path for Mass Effect.");
-
-        //    //does not exist in ini (or ini does not exist).
-        //    string softwareKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\";
-        //    string key64 = @"Wow6432Node\";
-        //    string gameKey = @"BioWare\Mass Effect 2";
-        //    string entry = "Path";
-
-        //    string path = (string)Registry.GetValue(softwareKey + gameKey, entry, null);
-        //    if (path == null)
-        //    {
-        //        path = (string)Registry.GetValue(softwareKey + key64 + gameKey, entry, null);
-        //    }
-        //    if (path != null)
-        //    {
-        //        WriteDebugLog("Found game path via registry: " + path);
-        //        path = path.TrimEnd(Path.DirectorySeparatorChar);
-        //        if (allowMissing) return path; //don't do the rest of the check. we don't care
-
-        //        string GameEXEPath = Path.Combine(path, @"Binaries\MassEffect2.exe");
-        //        WriteDebugLog("GetGamePath Registry EXE Check Path: " + GameEXEPath);
-
-        //        if (File.Exists(GameEXEPath))
-        //        {
-        //            WriteDebugLog("EXE file exists - returning this path: " + GameEXEPath);
-        //            return path; //we have path now
-        //        }
-        //    }
-        //    else
-        //    {
-        //        WriteDebugLog("Could not find game via registry. Game is not installed, has not yet been run, or is not legitimate.");
-        //    }
-        //    WriteDebugLog("No path found. Returning null");
-        //    return null;
-        //}
-
-        //public static string GetGameEXEPath()
-        //{
-        //    string path = GetGamePath();
-        //    if (path == null) { return null; }
-        //    WriteDebugLog("GetEXE ME2 Path: " + Path.Combine(path, @"Binaries\MassEffect2.exe"));
-        //    return Path.Combine(path, @"Binaries\MassEffect2.exe");
-        //}
-
         public static bool IsDirectoryEmpty(string path)
         {
             return !Directory.EnumerateFileSystemEntries(path).Any();
-        }
-
-        internal static void WriteRegistryKey(RegistryKey subkey, string subpath, string value, string data)
-        {
-            int i = 0;
-            string[] subkeys = subpath.Split('\\');
-            while (i < subkeys.Length)
-            {
-                subkey = subkey.CreateSubKey(subkeys[i]);
-                i++;
-            }
-            subkey.SetValue(value, data);
-        }
-
-        internal static void WriteRegistryKey(RegistryKey subkey, string subpath, string value, bool data)
-        {
-            WriteRegistryKey(subkey, subpath, value, data ? 1 : 0);
-        }
-
-        internal static void WriteRegistryKey(RegistryKey subkey, string subpath, string value, int data)
-        {
-            int i = 0;
-            string[] subkeys = subpath.Split('\\');
-            while (i < subkeys.Length)
-            {
-                subkey = subkey.CreateSubKey(subkeys[i]);
-                i++;
-            }
-            subkey.SetValue(value, data);
-        }
-
-        public static string GetBackupRegistrySettingString(string name)
-        {
-            string softwareKey = @"HKEY_CURRENT_USER\" + App.BACKUP_REGISTRY_KEY;
-            return (string)Registry.GetValue(softwareKey, name, null);
         }
 
         /// <summary>
@@ -275,7 +198,7 @@ namespace Randomizer.MER
         /// <returns></returns>
         public static List<string> ListStaticAssets(string assetRootPath, bool includeSubitems = false, bool includemerPrefix = true)
         {
-            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
+            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
             string prefix = $"ME2Randomizer.staticfiles.{assetRootPath}";
             List<string> itemsL = new List<string>();
             foreach (var item in items)
@@ -292,28 +215,6 @@ namespace Randomizer.MER
 
             prefix = includemerPrefix ? prefix : $"staticfiles.{assetRootPath}";
             return itemsL.Select(x => prefix + '.' + x).ToList();
-        }
-        public static string GetRegistrySettingString(string name)
-        {
-            string softwareKey = @"HKEY_CURRENT_USER\" + App.REGISTRY_KEY;
-            return (string)Registry.GetValue(softwareKey, name, null);
-        }
-
-        public static string GetRegistrySettingString(string key, string name)
-        {
-            return (string)Registry.GetValue(key, name, null);
-        }
-
-        public static bool? GetRegistrySettingBool(string name)
-        {
-            string softwareKey = @"HKEY_CURRENT_USER\" + App.REGISTRY_KEY;
-
-            int? value = (int?)Registry.GetValue(softwareKey, name, null);
-            if (value != null)
-            {
-                return value > 0;
-            }
-            return null;
         }
 
         public static int GetPartitionDiskBackingType(string partitionLetter)
@@ -894,21 +795,15 @@ namespace Randomizer.MER
 #endif
         }
 
-        public static bool IsSupportedLocale()
+        public static bool IsSupportedLocale(GameTarget target)
         {
-            var target = Locations.GetTarget(MERFileSystem.Game);
-            if (target != null)
-            {
 
-                var locintfile1 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\Startup_INT.pcc");
-                var locintfile2 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\BioD_QuaTlL_321AgriDomeTrial1_LOC_INT.pcc");
-                var locintfile3 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\ss_global_hench_geth_S_INT.afc");
-                var locintfile4 = Path.Combine(target.TargetPath, @"BioGame\CookedPC\BioD_ProFre_500Warhouse_LOC_INT.pcc");
+            var locintfile1 = Path.Combine(M3Directories.GetCookedPath(target), "Startup_INT.pcc");
+            var locintfile2 = Path.Combine(M3Directories.GetCookedPath(target), "BioD_QuaTlL_321AgriDomeTrial1_LOC_INT.pcc");
+            var locintfile3 = Path.Combine(M3Directories.GetCookedPath(target), "ss_global_hench_geth_S_INT.afc");
+            var locintfile4 = Path.Combine(M3Directories.GetCookedPath(target), "BioD_ProFre_500Warhouse_LOC_INT.pcc");
 
-                return File.Exists(locintfile1) && File.Exists(locintfile2) && File.Exists(locintfile3) && File.Exists(locintfile4);
-            }
-
-            return false;
+            return File.Exists(locintfile1) && File.Exists(locintfile2) && File.Exists(locintfile3) && File.Exists(locintfile4);
         }
         internal static string GetAppCrashHandledFile()
         {

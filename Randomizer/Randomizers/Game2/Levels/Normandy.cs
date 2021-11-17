@@ -8,20 +8,21 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
-using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
     public class Normandy
     {
-        public static bool PerformRandomization(RandomizationOption option)
+        public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            AddBurgersToCookingQuest();
-            RandomizeNormandyHolo();
-            RandomizeWrongWashroomSFX();
+            AddBurgersToCookingQuest(target);
+            RandomizeNormandyHolo(target);
+            RandomizeWrongWashroomSFX(target);
             return true;
         }
 
@@ -44,11 +45,11 @@ namespace Randomizer.Randomizers.Game2.Levels
             ( "BioD_Nor_CR3_200_LOC_INT.pcc", 597 ), // AUGH!
         };
 
-        private static void RandomizeWrongWashroomSFX()
+        private static void RandomizeWrongWashroomSFX(GameTarget target)
         {
             // Yeah I went to canada
             // they call them washrooms
-            var henchmenLOCInt250 = MERFileSystem.GetPackageFile("BioD_Nor_250Henchmen_LOC_INT.pcc");
+            var henchmenLOCInt250 = MERFileSystem.GetPackageFile(target, "BioD_Nor_250Henchmen_LOC_INT.pcc");
             if (henchmenLOCInt250 != null && File.Exists(henchmenLOCInt250))
             {
                 var washroomP = MEPackageHandler.OpenMEPackage(henchmenLOCInt250);
@@ -75,9 +76,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             (new Vector3(160,3823,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
         };
 
-        private static void AddBurgersToCookingQuest()
+        private static void AddBurgersToCookingQuest(GameTarget target)
         {
-            var cookingAreaF = MERFileSystem.GetPackageFile("BioD_Nor_250Henchmen.pcc");
+            var cookingAreaF = MERFileSystem.GetPackageFile(target, "BioD_Nor_250Henchmen.pcc");
             if (cookingAreaF != null && File.Exists(cookingAreaF))
             {
                 var nor250Henchmen = MEPackageHandler.OpenMEPackage(cookingAreaF);
@@ -104,9 +105,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                 firstBurgerSKM.WriteProperty(ds);
 
                 // 2. Link up the textures
-                TFCBuilder.RandomizeExport(nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
-                TFCBuilder.RandomizeExport(nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
-                TFCBuilder.RandomizeExport(nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
+                TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
+                TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
+                TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
 
                 // 3. Clone 3 more burgers
                 addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
@@ -114,7 +115,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
 
                 // 4. Port in plates for the ones people are eating to sit on
-                var plateFile = MERFileSystem.GetPackageFile("BioA_OmgHub800_Marketplace.pcc");
+                var plateFile = MERFileSystem.GetPackageFile(target, "BioA_OmgHub800_Marketplace.pcc");
                 var platePackage = MEPackageHandler.OpenMEPackage(plateFile);
                 List<ExportEntry> plateExports = new List<ExportEntry>();
                 var plateSMA1 = PackageTools.PortExportIntoPackage(nor250Henchmen, platePackage.GetUExport(3280), world.UIndex, false);
@@ -125,8 +126,8 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var pDiff = nor250Henchmen.FindExport("BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_Diff");
                 pNorm.ObjectName = "Plates_NotUgly_Norm";
                 pDiff.ObjectName = "Plates_NotUgly_Diff";
-                TFCBuilder.RandomizeExport(pDiff, null);
-                TFCBuilder.RandomizeExport(pNorm, null);
+                TFCBuilder.RandomizeExport(target, pDiff, null);
+                TFCBuilder.RandomizeExport(target, pNorm, null);
 
 
                 // We need to make dynamic lit - values are copied from another SMA in BioA_Nor_200. I don't know what the channels mean
@@ -180,9 +181,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
         }
 
-        private static void RandomizeTrashCompactor()
+        private static void RandomizeTrashCompactor(GameTarget target)
         {
-            var packageF = MERFileSystem.GetPackageFile("BioA_Nor_310.pcc");
+            var packageF = MERFileSystem.GetPackageFile(target, "BioA_Nor_310.pcc");
             if (packageF != null && File.Exists(packageF))
             {
                 var package = MEPackageHandler.OpenMEPackage(packageF);
@@ -197,12 +198,12 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         }
 
-        private static void RandomizeNormandyHolo()
+        private static void RandomizeNormandyHolo(GameTarget target)
         {
             string[] packages = { "BioD_Nor_104Comm.pcc", "BioA_Nor_110.pcc" };
             foreach (var packagef in packages)
             {
-                var package = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(packagef));
+                var package = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, packagef));
 
                 //WIREFRAME COLOR
                 var wireframeMaterial = package.Exports.First(x => x.ObjectName == "Wireframe_mat_Master");

@@ -5,7 +5,7 @@ using System.IO;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
 
-namespace RandomizerUI.Classes.gameini
+namespace Randomizer.Randomizers.Game2.Game2FileFormats
 {
     [Localizable(false)]
     public class ME2Coalesced

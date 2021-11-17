@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using Randomizer.Randomizers;
 
 namespace RandomizerUI.Classes.Converters
 {

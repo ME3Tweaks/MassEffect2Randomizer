@@ -1,6 +1,8 @@
 ﻿using System.IO;
+using System.Reflection;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -47,11 +49,11 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         //#endif
 
 
-        public static byte[] GetTextureMovieAssetBinary(string assetName)
+        public static byte[] GetTextureMovieAssetBinary(MEGame game, string assetName)
         {
-            var items = typeof(MainWindow).Assembly.GetManifestResourceNames();
-            var fullname = $"ME2Randomizer.Classes.Randomizers.{MERFileSystem.Game}.TextureMovieAssets.{assetName}";
-            using (Stream stream = typeof(MainWindow).Assembly.GetManifestResourceStream(fullname))
+            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            var fullname = $"ME2Randomizer.Classes.Randomizers.{game}.TextureMovieAssets.{assetName}";
+            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullname))
             {
                 byte[] ba = new byte[stream.Length];
                 stream.Read(ba, 0, ba.Length);

@@ -2,15 +2,17 @@
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
     class ArchangelAcquisition
     {
-        private static void MakeGarrusDeadly()
+        private static void MakeGarrusDeadly(GameTarget target)
         {
             // Relay at the end of the DLC
-            var garrusShootSeqFile = MERFileSystem.GetPackageFile(@"BioD_OmgGrA_100Leadup.pcc");
+            var garrusShootSeqFile = MERFileSystem.GetPackageFile(target, @"BioD_OmgGrA_100Leadup.pcc");
             if (garrusShootSeqFile != null && File.Exists(garrusShootSeqFile))
             {
                 var garrusSeqP = MEPackageHandler.OpenMEPackage(garrusShootSeqFile);
@@ -57,9 +59,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             export.WriteProperty(new IntProperty(ThreadSafeRandom.Next(min, max), "IntValue"));
         }
 
-        public static bool PerformRandomization(RandomizationOption option)
+        public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            MakeGarrusDeadly();
+            MakeGarrusDeadly(target);
             return true;
         }
     }

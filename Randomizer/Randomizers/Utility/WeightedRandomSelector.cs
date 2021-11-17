@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RandomizerUI.Classes.Randomizers.Utility
+namespace Randomizer.Randomizers.Utility
 {
     public static class IEnumerableExtensions
     {

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Misc;
 
@@ -64,7 +65,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             return false;
         }
 
-        internal static bool PerformRandomization(RandomizationOption notUsed)
+        internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
             var uncFiles = MERFileSystem.LoadedFiles.Keys.Where(x => x.Contains("_Unc1", StringComparison.InvariantCultureIgnoreCase)).ToList();
 
@@ -73,7 +74,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 // DLC is installed
                 foreach (var uncF in uncFiles)
                 {
-                    var package = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(Path.GetFileName(uncF)));
+                    var package = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, Path.GetFileName(uncF)));
                     RandomizeArcherFaceColor(package);
                     RandomizeCorruptionVFX(package);
                     MakeGethCannonScary(package);

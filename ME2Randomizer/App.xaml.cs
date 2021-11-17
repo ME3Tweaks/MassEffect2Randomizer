@@ -2,11 +2,13 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Windows;
 using CommandLine;
+using LegendaryExplorerCore.Helpers;
+using ME3TweaksCore.Diagnostics;
+using ME3TweaksCore.Helpers;
+using Randomizer.MER;
 using RandomizerUI.Classes;
 using RandomizerUI.Classes.Controllers;
 using Serilog;
@@ -18,9 +20,6 @@ namespace RandomizerUI
     /// </summary>
     public partial class App : Application
     {
-        internal const string REGISTRY_KEY = @"Software\MassEffect2Randomizer";
-        internal const string BACKUP_REGISTRY_KEY = @"Software\ALOTAddon"; //Shared. Do not change
-
         private static bool POST_STARTUP = false;
         public const string DISCORD_INVITE_LINK = "https://discord.gg/s8HA6dc";
 
@@ -32,31 +31,13 @@ namespace RandomizerUI
         public static Visibility IsDebugVisibility => IsDebug ? Visibility.Visible : Visibility.Collapsed;
         public static bool BetaAvailable { get; set; }
 
-        public static string AppVersion
-        {
-            get
-            {
-                Version assemblyVersion = Assembly.GetEntryAssembly().GetName().Version;
-                string version = $@"{assemblyVersion.Major}.{assemblyVersion.Minor}";
-                if (assemblyVersion.Revision != 0 || assemblyVersion.Build != 0)
-                {
-                    version += @"." + assemblyVersion.Build;
-                    if (assemblyVersion.Revision != 0)
-                    {
-                        version += @"." + assemblyVersion.Revision;
-                    }
-                }
-
-                return version;
-            }
-        }
-
         [STAThread]
         public static void Main()
         {
             Directory.SetCurrentDirectory(AppContext.BaseDirectory);
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            SetupFirstVariables();
             try
             {
                 var application = new App();
@@ -68,6 +49,20 @@ namespace RandomizerUI
                 OnFatalCrash(e);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Setup variables that need to be set very early
+        /// </summary>
+        private static void SetupFirstVariables()
+        {
+#if __GAME1__
+            MCoreFilesystem.AppDataFolderName = "ME1Randomizer";
+#elif __GAME2__
+            MCoreFilesystem.AppDataFolderName = "ME2Randomizer";
+#elif __GAME3__
+            MCoreFilesystem.AppDataFolderName = "ME3Randomizer";
+#endif
         }
 
         public App() : base()
@@ -85,10 +80,8 @@ namespace RandomizerUI
         /// <param name="e">Exception to process</param>
         static void OnDispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            string errorMessage = string.Format("Mass Effect 2 Randomizer has crashed! This is the exception that caused the crash:");
-            string st = FlattenException(e.Exception);
-            Log.Fatal(errorMessage);
-            Log.Fatal(st);
+            var errorMessage = $"{MERUI.GetRandomizerName()} has crashed! This is the exception that caused the crash:";
+            MERLog.Exception(e.Exception, errorMessage, true);
         }
 
         /// <summary>
@@ -99,30 +92,11 @@ namespace RandomizerUI
         {
             if (!POST_STARTUP)
             {
-                string errorMessage = string.Format("Mass Effect 2 Randomizer has encountered a fatal startup crash:\n" + FlattenException(e));
-                File.WriteAllText(Path.Combine(MERUtilities.GetAppDataFolder(), "FATAL_STARTUP_CRASH.txt"), errorMessage);
+                var errorMessage = $"{MERUI.GetRandomizerName()} has encountered a fatal startup crash:\n{e.FlattenException()}";
+                File.WriteAllText(Path.Combine(MCoreFilesystem.GetAppDataFolder(), "FATAL_STARTUP_CRASH.txt"), errorMessage);
             }
         }
 
-        /// <summary>
-        /// Flattens an exception into a printable string
-        /// </summary>
-        /// <param name="exception">Exception to flatten</param>
-        /// <returns>Printable string</returns>
-        public static string FlattenException(Exception exception)
-        {
-            var stringBuilder = new StringBuilder();
-
-            while (exception != null)
-            {
-                stringBuilder.AppendLine(exception.GetType().Name + ": " + exception.Message);
-                stringBuilder.AppendLine(exception.StackTrace);
-
-                exception = exception.InnerException;
-            }
-
-            return stringBuilder.ToString();
-        }
 
         private void handleCommandLine()
         {
@@ -144,27 +118,30 @@ namespace RandomizerUI
 
                     if (parsedCommandLineArgs.Value.UpdateRebootDest != null)
                     {
-                        Log.Logger = LogCollector.CreateLogger();
-                        Log.Information(LogCollector.SessionStartString);
+                        // This is not in update mode. Create the logger.
+                        Log.Logger = MERLog.CreateLogger();
+                        MERLog.Information(LogCollector.SessionStartString);
                         copyAndRebootUpdate(parsedCommandLineArgs.Value.UpdateRebootDest);
                         return;
                     }
 
                     // Set passthroughs
+#if __GAME1__
                     if (parsedCommandLineArgs.Value.PassthroughME1Path != null)
                     {
                         StartupUIController.PassthroughME1Path = parsedCommandLineArgs.Value.PassthroughME1Path;
                     }
-
+#elif __GAME2__
                     if (parsedCommandLineArgs.Value.PassthroughME2Path != null)
                     {
                         StartupUIController.PassthroughME2Path = parsedCommandLineArgs.Value.PassthroughME2Path;
                     }
-
+#elif __GAME3__
                     if (parsedCommandLineArgs.Value.PassthroughME3Path != null)
                     {
                         StartupUIController.PassthroughME3Path = parsedCommandLineArgs.Value.PassthroughME3Path;
                     }
+#endif
                 }
                 else
                 {
@@ -191,7 +168,7 @@ namespace RandomizerUI
                 {
                     Log.Information("Applying update");
                     if (File.Exists(updateRebootDest)) File.Delete(updateRebootDest);
-                    File.Copy(Utilities.GetExecutablePath(), updateRebootDest);
+                    File.Copy(MLibraryConsumer.GetExecutablePath(), updateRebootDest);
                     ProcessStartInfo psi = new ProcessStartInfo(updateRebootDest)
                     {
                         WorkingDirectory = Directory.GetParent(updateRebootDest).FullName
@@ -211,14 +188,14 @@ namespace RandomizerUI
                     else
                     {
                         Log.Fatal("Unable to apply update after 5 attempts. We are giving up.");
-                        MessageBox.Show($"Update was unable to apply. The last error message was {e.Message}.\nSee the logs directory in {LogCollector.LogDir} for more information.\n\nUpdate file: {Utilities.GetExecutablePath()}\nDestination file: {updateRebootDest}\n\nIf this continues to happen please come to the ME3Tweaks discord or download a new release from GitHub.");
+                        MessageBox.Show($"Update was unable to apply. The last error message was {e.Message}.\nSee the logs directory in {MCoreFilesystem.GetLogDir()} for more information.\n\nUpdate file: {MLibraryConsumer.GetExecutablePath()}\nDestination file: {updateRebootDest}\n\nIf this continues to happen please come to the ME3Tweaks discord or download a new release from GitHub.");
                         Environment.Exit(1);
                     }
                 }
             }
-
-            #endregion
         }
+
+        #endregion
 
         class Options
         {
@@ -226,17 +203,32 @@ namespace RandomizerUI
                 HelpText = "Copies this program's executable to the specified location, runs the new executable, and then exits this process.")]
             public string UpdateRebootDest { get; private set; }
 
+#if __GAME1__
             [Option("me1path",
                 HelpText = "Sets the path for Mass Effect on app boot. It must point to the game root directory.")]
             public string PassthroughME1Path { get; private set; }
 
+            [Option("le1path",
+                HelpText = "Sets the path for Mass Effect (Legendary Edition) on app boot. It must point to the game root directory.")]
+            public string PassthroughLE1Path { get; private set; }
+#elif __GAME2__
             [Option("me2path",
                 HelpText = "Sets the path for Mass Effect 2 on app boot. It must point to the game root directory.")]
             public string PassthroughME2Path { get; private set; }
 
+            [Option("le2path",
+                HelpText = "Sets the path for Mass Effect 2 (Legendary Edition) on app boot. It must point to the game root directory.")]
+            public string PassthroughLE2Path { get; private set; }
+#elif __GAME3__
             [Option("me3path",
                 HelpText = "Sets the path for Mass Effect 3 on app boot. It must point to the game root directory.")]
             public string PassthroughME3Path { get; private set; }
+
+            [Option("le3path",
+                HelpText = "Sets the path for Mass Effect 3 (Legendary Edition) on app boot. It must point to the game root directory.")]
+            public string PassthroughLE3Path { get; private set; }
+#endif
+
 
             [Option("update-boot",
                 HelpText = "Indicates that the process should run in update mode for a single file .net core executable. The process will exit upon starting because the platform extraction process will have completed.")]

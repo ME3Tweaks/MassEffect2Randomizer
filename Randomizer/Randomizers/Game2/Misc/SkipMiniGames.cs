@@ -2,6 +2,7 @@
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -49,7 +50,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             SeqAct
         }
 
-        public static bool DetectAndSkipMiniGameSeqRefs(ExportEntry exp, RandomizationOption option)
+        public static bool DetectAndSkipMiniGameSeqRefs(GameTarget target, ExportEntry exp, RandomizationOption option)
         {
             if (!CanApplySkip(exp, out var miniGameType)) return false;
 

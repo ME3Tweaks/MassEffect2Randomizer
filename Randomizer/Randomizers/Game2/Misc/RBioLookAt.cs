@@ -1,5 +1,7 @@
 ﻿using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -7,10 +9,10 @@ namespace Randomizer.Randomizers.Game2.Misc
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioLookAtTarget";
 
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
-            var location = Location.GetLocation(export);
+            var location = LocationTools.GetLocation(export);
             if (location != null)
             {
                 var locS = location;
@@ -27,7 +29,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                     locS.Z *= ThreadSafeRandom.NextFloat(.25, 1.75);
                 }
 
-                Location.SetLocation(export, locS);
+                LocationTools.SetLocation(export, locS);
                 return true;
             }
             return false;
@@ -38,7 +40,7 @@ namespace Randomizer.Randomizers.Game2.Misc
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioLookAtDefinition" || export.ClassName == @"Bio_Appr_Character";
 
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var boneDefinitions = export.GetProperty<ArrayProperty<StructProperty>>(export.ClassName == @"BioLookAtDefinition" ? "BoneDefinitions" : "m_aLookBoneDefs");

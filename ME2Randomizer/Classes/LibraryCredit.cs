@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel;
+using PropertyChanged;
+using Randomizer.MER;
 
 namespace RandomizerUI.Classes
 {
-    public class LibraryCredit : INotifyPropertyChanged
+    [AddINotifyPropertyChangedInterface]
+    public class LibraryCredit
     {
         public string LibraryName { get; internal set; }
         public string LibraryPurpose { get; internal set; }
         public string Link { get; internal set; }
-#pragma warning disable
-        public event PropertyChangedEventHandler PropertyChanged;
-#pragma warning restore
 
         /// <summary>
         /// Loads the image credits from an embedded file

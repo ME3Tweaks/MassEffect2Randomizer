@@ -12,7 +12,9 @@ using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Memory;
 using LegendaryExplorerCore.Misc;
+using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Helpers;
+using ME3TweaksCore.Misc;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.Enemy;
@@ -22,13 +24,14 @@ using Randomizer.Randomizers.Game2.Misc;
 using Randomizer.Randomizers.Game2.TextureAssets;
 using Randomizer.Randomizers.Game2.TextureAssets.LE2;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Shared;
+using Randomizer.Randomizers.Utility;
 using Serilog;
 
 namespace Randomizer.Randomizers.Game2
 {
     public class Randomizer
     {
-        private MainWindow mainWindow;
         private BackgroundWorker randomizationWorker;
 
         // Files that should not be generally passed over
@@ -39,9 +42,9 @@ namespace Randomizer.Randomizers.Game2
             "BioG_UIWorld" // Char creator lighting
         };
 
-        public Randomizer(MainWindow mainWindow)
+        public Randomizer()
         {
-            this.mainWindow = mainWindow;
+
         }
 
         /// <summary>
@@ -67,23 +70,16 @@ namespace Randomizer.Randomizers.Game2
             randomizationWorker.DoWork += PerformRandomization;
             randomizationWorker.RunWorkerCompleted += Randomization_Completed;
 
-            var seedStr = mainWindow.SeedTextBox.Text;
-            if (!int.TryParse(seedStr, out int seed))
-            {
-                seed = new Random().Next();
-                mainWindow.SeedTextBox.Text = seed.ToString();
-            }
-
             if (SelectedOptions.UseMultiThread)
             {
                 MERLog.Information("-------------------------STARTING RANDOMIZER (MULTI THREAD)--------------------------");
             }
             else
             {
-                MERLog.Information($"------------------------STARTING RANDOMIZER WITH SEED {seed} (SINGLE THREAD)--------------------------");
+                MERLog.Information($"------------------------STARTING RANDOMIZER WITH SEED {op.Seed} (SINGLE THREAD)--------------------------");
             }
             randomizationWorker.RunWorkerAsync();
-            TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Indeterminate, mainWindow);
+            op.SetTaskbarState?.Invoke(MTaskbarState.Indeterminate);
         }
 
 
@@ -93,26 +89,25 @@ namespace Randomizer.Randomizers.Game2
             if (e.Error != null)
             {
                 MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
-                mainWindow.CurrentOperationText = $"Randomizer failed with error: {e.Error.Message}, please report to Mgamerz";
+                SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizer failed with error: {e.Error.Message}, please report to Mgamerz");
                 TelemetryInterposer.TrackError(new Exception("Randomizer thread exited with exception", e.Error));
             }
             else
             {
                 TelemetryInterposer.TrackEvent("Randomization completed");
-                mainWindow.CurrentOperationText = "Randomization complete";
+                SelectedOptions.SetCurrentOperationText?.Invoke("Randomization complete");
             }
             CommandManager.InvalidateRequerySuggested();
-            TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress, mainWindow);
-            mainWindow.AllowOptionsChanging = true;
-            mainWindow.ShowProgressPanel = false;
+            SelectedOptions.SetTaskbarState?.Invoke(MTaskbarState.None);
+            SelectedOptions.SetRandomizationInProgress?.Invoke(false);
         }
 
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
             MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
             ResetClasses();
-            mainWindow.CurrentOperationText = "Initializing randomizer";
-            mainWindow.ProgressBarIndeterminate = true;
+            SelectedOptions.SetCurrentOperationText?.Invoke("Initializing randomizer");
+            SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
             var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
             var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
@@ -138,20 +133,25 @@ namespace Randomizer.Randomizers.Game2
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
 
-                // Prepare the TLK
-                ME2Textures.SetupME2Textures();
-                LE2Textures.SetupLE2Textures();
+                // Prepare the textures
+                if (SelectedOptions.RandomizationTarget.Game == MEGame.ME2)
+                {
+                    ME2Textures.SetupME2Textures(SelectedOptions.RandomizationTarget);
+                }
+                else
+                {
+                    LE2Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
+                }
 
                 void srUpdate(object? o, EventArgs eventArgs)
                 {
                     if (o is RandomizationOption option)
                     {
-                        mainWindow.ProgressBarIndeterminate = option.ProgressIndeterminate;
-                        mainWindow.CurrentProgressValue = option.ProgressValue;
-                        mainWindow.ProgressBar_Bottom_Max = option.ProgressMax;
+                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(option.ProgressIndeterminate);
+                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(option.ProgressValue, option.ProgressMax);
                         if (option.CurrentOperation != null)
                         {
-                            mainWindow.CurrentOperationText = option.CurrentOperation;
+                            SelectedOptions.SetCurrentOperationText?.Invoke(option.CurrentOperation);
                         }
                     }
                 }
@@ -161,24 +161,24 @@ namespace Randomizer.Randomizers.Game2
                 {
                     sr.OnOperationUpdate += srUpdate;
                     MERLog.Information($"Running specific randomizer {sr.HumanName}");
-                    mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
-                    sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+                    SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
+                    sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
                     sr.OnOperationUpdate -= srUpdate;
                 }
 
                 // Pass 2: All exports
                 if (perExportRandomizers.Any() || perFileRandomizers.Any())
                 {
-                    mainWindow.CurrentOperationText = "Getting list of files...";
-                    mainWindow.ProgressBarIndeterminate = true;
+                    SelectedOptions.SetCurrentOperationText?.Invoke("Getting list of files...");
+                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
 
                     // we only want pcc files (me2/me3). no upks
-                    var files = MELoadedFiles.GetFilesLoadedInGame(MERFileSystem.Game, true, false, false).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
+                    var files = MELoadedFiles.GetFilesLoadedInGame(SelectedOptions.RandomizationTarget.Game, true, false, false, SelectedOptions.RandomizationTarget.TargetPath).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
+                    
+                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(false);
 
-                    mainWindow.ProgressBarIndeterminate = false;
-                    mainWindow.ProgressBar_Bottom_Max = files.Count();
-                    mainWindow.ProgressBar_Bottom_Min = 0;
-                    int currentFileNumber = 0;
+                    var currentFileNumber = 0;
+                    var totalFilesCount = files.Count;
 
 #if DEBUG
                     Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
@@ -190,8 +190,10 @@ namespace Randomizer.Randomizers.Game2
                         var name = Path.GetFileNameWithoutExtension(file);
                         if (SpecializedFiles.Contains(name, StringComparer.InvariantCultureIgnoreCase)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
 
-                        mainWindow.CurrentProgressValue = Interlocked.Increment(ref currentFileNumber);
-                        mainWindow.CurrentOperationText = $"Randomizing game files [{currentFileNumber}/{files.Count()}]";
+                        Interlocked.Increment(ref currentFileNumber);
+                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(currentFileNumber, totalFilesCount);
+
+                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing game files [{currentFileNumber}/{files.Count}]");
 
 #if DEBUG
                         if (true
@@ -212,7 +214,7 @@ namespace Randomizer.Randomizers.Game2
                             foreach (var rp in perFileRandomizers)
                             {
                                 // Specific randomization pass before the exports are processed
-                                rp.PerformFileSpecificRandomization(package, rp);
+                                rp.PerformFileSpecificRandomization(SelectedOptions.RandomizationTarget, package, rp);
                             }
 
                             if (perExportRandomizers.Any())
@@ -223,7 +225,7 @@ namespace Randomizer.Randomizers.Game2
                                     var exp = package.Exports[i];
                                     foreach (var r in perExportRandomizers)
                                     {
-                                        r.PerformRandomizationOnExportDelegate(exp, r);
+                                        r.PerformRandomizationOnExportDelegate(SelectedOptions.RandomizationTarget, exp, r);
                                     }
                                 }
                             }
@@ -246,10 +248,10 @@ namespace Randomizer.Randomizers.Game2
                     try
                     {
                         sr.OnOperationUpdate += srUpdate;
-                        mainWindow.ProgressBarIndeterminate = true;
+                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
                         MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
-                        mainWindow.CurrentOperationText = $"Randomizing {sr.HumanName}";
-                        sr.PerformSpecificRandomizationDelegate?.Invoke(sr);
+                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
+                        sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
                         sr.OnOperationUpdate -= srUpdate;
                     }
                     catch (Exception ex)
@@ -261,9 +263,9 @@ namespace Randomizer.Randomizers.Game2
                 sw.Stop();
                 MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
 
-                mainWindow.ProgressBarIndeterminate = true;
-                mainWindow.CurrentOperationText = "Finishing up";
-                mainWindow.DLCComponentInstalled = true;
+                SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+                SelectedOptions.SetCurrentOperationText?.Invoke("Finishing up");
+                SelectedOptions.NotifyDLCComponentInstalled?.Invoke(true);
             }
             catch (Exception exception)
             {
@@ -272,7 +274,7 @@ namespace Randomizer.Randomizers.Game2
             }
 
             // Close out files and free memory
-            TFCBuilder.EndTFCs();
+            TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
             CoalescedHandler.EndHandler();
             TLKHandler.EndHandler();
             MERFileSystem.Finalize(SelectedOptions);
@@ -302,7 +304,7 @@ namespace Randomizer.Randomizers.Game2
         /// Sets the options up that can be selected and their methods they call
         /// </summary>
         /// <param name="RandomizationGroups"></param>
-        internal static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
+        public static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
         {
 #if DEBUG
             //EnemyPowerChanger.Init(null); // Load the initial list

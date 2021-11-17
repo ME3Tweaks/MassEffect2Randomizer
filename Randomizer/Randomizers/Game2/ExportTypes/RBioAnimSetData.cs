@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
@@ -90,7 +91,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioAnimSetData" && !export.ObjectName.Name.Contains("CAM", StringComparison.InvariantCultureIgnoreCase);
 
 
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             //build groups

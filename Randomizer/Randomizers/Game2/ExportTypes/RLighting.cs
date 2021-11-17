@@ -1,5 +1,6 @@
 ﻿using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.Randomizers.Game2.Misc;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
@@ -15,7 +16,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
              export.ClassName == @"DirectionalLightComponent" ||
              export.ClassName == @"SkyLightComponent");
 
-        public static bool RandomizeExport(ExportEntry export,RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export,RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             //Log.Information($@"Randomizing light {export.UIndex}");

@@ -2,33 +2,36 @@
 using System.IO;
 using System.Linq;
 using LegendaryExplorerCore.Packages;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
     class GenesisDLC
     {
-        public static bool PerformRandomization(RandomizationOption option)
+        public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            return CompletelyRandomizeAudio();
+            return CompletelyRandomizeAudio(target);
         }
 
-        private static bool CompletelyRandomizeAudio()
+        private static bool CompletelyRandomizeAudio(GameTarget target)
         {
-            var g2LocIntF = MERFileSystem.GetSpecificFile(@"BioGame\DLC\DLC_DHME1\CookedPC\BioD_ProNor_LOC_int.pcc");
+            var g2LocIntF = MERFileSystem.GetSpecificFile(target, @"BioGame\DLC\DLC_DHME1\CookedPC\BioD_ProNor_LOC_int.pcc");
             if (g2LocIntF != null && File.Exists(g2LocIntF))
             {
                 var g2LocIntP = MEPackageHandler.OpenMEPackage(g2LocIntF);
 
-                RandomizeAudio(g2LocIntP, 3317, true);
-                RandomizeAudio(g2LocIntP, 3318, false);
+                RandomizeAudio(target, g2LocIntP, 3317, true);
+                RandomizeAudio(target, g2LocIntP, 3318, false);
 
                 MERFileSystem.SavePackage(g2LocIntP);
             }
             return false;
         }
 
-        private static void RandomizeAudio(IMEPackage package, int topLevelUIndex, bool female)
+        private static void RandomizeAudio(GameTarget target, IMEPackage package, int topLevelUIndex, bool female)
         {
             var audioToChange = package.Exports.Where(x => x.idxLink == topLevelUIndex && x.ClassName == "WwiseStream").ToList();
             var audioSources = MERFileSystem.LoadedFiles.Keys.Where(x => x.Contains("_LOC_INT", StringComparison.InvariantCultureIgnoreCase) && x.Contains("Bio")).ToList();
@@ -38,7 +41,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 while (!installed)
                 {
                     var rAudioSourceF = audioSources.RandomElement();
-                    var rAudioSourceP = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(rAudioSourceF));
+                    var rAudioSourceP = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, rAudioSourceF));
                     var audioOptions = rAudioSourceP.Exports.Where(x => x.ClassName == "WwiseStream").ToList();
                     if (!audioOptions.Any())
                         continue;

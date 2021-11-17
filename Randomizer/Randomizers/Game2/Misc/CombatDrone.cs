@@ -1,5 +1,6 @@
 ﻿using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -9,7 +10,7 @@ namespace Randomizer.Randomizers.Game2.Misc
     public class CombatDrone
     {
         private static bool CanRandomize(ExportEntry export) => export.IsDefaultObject && (export.Archetype?.ObjectName.Name == "Default__SFXPawn_EngineerCombatDrone" || export.ClassName == "SFXPawn_EngineerCombatDrone" || export.Archetype?.ObjectName.Name == "Default__SFXPower_CombatDrone");
-        public static bool RandomizeExport(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var props = export.GetProperties();

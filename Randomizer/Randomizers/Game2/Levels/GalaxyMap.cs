@@ -3,6 +3,8 @@ using System.IO;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.Misc;
@@ -15,12 +17,12 @@ namespace Randomizer.Randomizers.Game2.Levels
         public const string SUBOPTIONKEY_INFINITEGAS = "InfiniteGas";
         #endregion
 
-        public static bool RandomizeGalaxyMap(RandomizationOption option)
+        public static bool RandomizeGalaxyMap(GameTarget target, RandomizationOption option)
         {
             // Make the ship faster because otherwise it takes ages to do stuff
             // And can also consume more fuel
 
-            var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
+            var sfxgame = MERFileSystem.GetPackageFile(target, "SFXGame.pcc");
             if (sfxgame != null && File.Exists(sfxgame))
             {
                 var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
@@ -62,7 +64,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             camgalaxy.SetSingleEntry("m_fShipSystemDeccel", 25);
             camgalaxy.SetSingleEntry("m_fShipClusterDeccel", .7f);
 
-            var packageF = MERFileSystem.GetPackageFile(@"BioD_Nor_103aGalaxyMap.pcc");
+            var packageF = MERFileSystem.GetPackageFile(target, @"BioD_Nor_103aGalaxyMap.pcc");
             var package = MEPackageHandler.OpenMEPackage(packageF);
             foreach (ExportEntry export in package.Exports)
             {

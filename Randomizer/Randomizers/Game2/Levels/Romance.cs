@@ -1,14 +1,16 @@
 ﻿using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using Randomizer.Shared;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
     class Romance
     {
-        public static bool PerformRandomization(RandomizationOption option)
+        public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            RandomizeRomance();
+            RandomizeRomance(target);
             return true;
         }
 
@@ -18,14 +20,14 @@ namespace Randomizer.Randomizers.Game2.Levels
         /// will think it is part of the normandy.
         /// </summary>
         /// <param name="random"></param>
-        private static void RandomizeRomance()
+        private static void RandomizeRomance(GameTarget target)
         {
 
             // Romance is 2 pass: 
 
             // Pass 1: The initial chances that are not ME1 or Miranda
             {
-                var romChooserPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("BioD_EndGm1_110Romance.pcc"));
+                var romChooserPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "BioD_EndGm1_110Romance.pcc"));
                 var romSeq = romChooserPackage.GetUExport(88);
                 var outToRepoint = romChooserPackage.GetUExport(65); //repoint to our switch
 
@@ -58,7 +60,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             // Pass 2: ME1 or Miranda if Pass 1 fell through at runtime
             {
-                var romChooserPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("BioD_EndGm1_110ROMMirranda.pcc"));
+                var romChooserPackage = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "BioD_EndGm1_110ROMMirranda.pcc"));
                 var romSeq = romChooserPackage.GetUExport(8468);
                 var outToRepoint = romChooserPackage.GetUExport(2354); //repoint to our switch
 

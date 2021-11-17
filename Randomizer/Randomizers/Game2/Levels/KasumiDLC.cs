@@ -4,7 +4,9 @@ using System.IO;
 using System.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -67,13 +69,13 @@ namespace Randomizer.Randomizers.Game2.Levels
             //BioA_PtyMtl_120SecurityOffice 2243
         }
 
-        private static void ChangeNormandyPaintings()
+        private static void ChangeNormandyPaintings(GameTarget target)
         {
             //BioA_Nor_230
             // BioT_NorHenMT Painting01_Diff
             // BioT_NorHenMT Painting02_Diff
             // Both square
-            var nor230F = MERFileSystem.GetPackageFile("BioA_Nor_230.pcc");
+            var nor230F = MERFileSystem.GetPackageFile(target, "BioA_Nor_230.pcc");
             if (nor230F != null && File.Exists(nor230F))
             {
                 var nor230P = MEPackageHandler.OpenMEPackage(nor230F);
@@ -82,7 +84,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var painting2 = nor230P.FindExport("BioT_NorHenMT.Painting02_Diff");
                 if (painting1 != null && painting2 != null)
                 {
-                    var assets = TFCBuilder.ListTextureAssets("Kasumi.NormandyPaintings").Select(x => $"Kasumi.NormandyPaintings.{x}").ToList();
+                    var assets = TFCBuilder.ListTextureAssets(target.Game, "Kasumi.NormandyPaintings").Select(x => $"Kasumi.NormandyPaintings.{x}").ToList();
                     assets.Shuffle();
 
                     RTexture2D r2d = new RTexture2D()
@@ -91,25 +93,25 @@ namespace Randomizer.Randomizers.Game2.Levels
                         LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_Environment", 1025), "TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
                     };
 
-                    TFCBuilder.InstallTexture(r2d, painting1, assets.PullFirstItem());
-                    TFCBuilder.InstallTexture(r2d, painting2, assets.PullFirstItem());
+                    TFCBuilder.InstallTexture(target, r2d, painting1, assets.PullFirstItem());
+                    TFCBuilder.InstallTexture(target, r2d, painting2, assets.PullFirstItem());
 
                     MERFileSystem.SavePackage(nor230P);
                 }
             }
         }
 
-        private static void RandomizeArtGallery()
+        private static void RandomizeArtGallery(GameTarget target)
         {
-            var wideAssets = TFCBuilder.ListTextureAssets("Kasumi.ArtGallery.wide").Select(x => $"Kasumi.ArtGallery.wide.{x}").ToList();
-            var tallAssets = TFCBuilder.ListTextureAssets("Kasumi.ArtGallery.tall").Select(x => $"Kasumi.ArtGallery.tall.{x}").ToList();
+            var wideAssets = TFCBuilder.ListTextureAssets(target.Game,"Kasumi.ArtGallery.wide").Select(x => $"Kasumi.ArtGallery.wide.{x}").ToList();
+            var tallAssets = TFCBuilder.ListTextureAssets(target.Game, "Kasumi.ArtGallery.tall").Select(x => $"Kasumi.ArtGallery.tall.{x}").ToList();
             wideAssets.Shuffle();
             tallAssets.Shuffle();
 
             var artyGallery = GetKasumiArtGallerySetup();
             foreach (var kagf in artyGallery)
             {
-                var artGalleryF = MERFileSystem.GetPackageFile(kagf.PackageName);
+                var artGalleryF = MERFileSystem.GetPackageFile(target, kagf.PackageName);
                 if (artGalleryF != null && File.Exists(artGalleryF))
                 {
                     var artGalleryP = MEPackageHandler.OpenMEPackage(artGalleryF);
@@ -156,15 +158,15 @@ namespace Randomizer.Randomizers.Game2.Levels
                         }
                     }
 
-                    InstallARArtTextures(kagf.WideTextureUIndexes, wideAssets, artGalleryP, "Wide");
-                    InstallARArtTextures(kagf.TallTextureUIndexes, tallAssets, artGalleryP, "Tall");
+                    InstallARArtTextures(target,kagf.WideTextureUIndexes, wideAssets, artGalleryP, "Wide");
+                    InstallARArtTextures(target, kagf.TallTextureUIndexes, tallAssets, artGalleryP, "Tall");
 
                     MERFileSystem.SavePackage(artGalleryP);
                 }
             }
         }
 
-        private static void InstallARArtTextures(List<int> uindexes, List<string> assets, IMEPackage artGalleryP, string loggingName)
+        private static void InstallARArtTextures(GameTarget target, List<int> uindexes, List<string> assets, IMEPackage artGalleryP, string loggingName)
         {
             if (uindexes == null) return; // This set is not installed
             while (uindexes.Any())
@@ -183,7 +185,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                     AllowedTextureAssetNames = new List<string>() { asset },
                     TextureInstancedFullPath = texExport.InstancedFullPath // don't think this is used but just leave it here anyways.
                 };
-                TFCBuilder.InstallTexture(r2d, texExport, asset);
+                TFCBuilder.InstallTexture(target, r2d, texExport, asset);
             }
         }
 
@@ -209,12 +211,12 @@ namespace Randomizer.Randomizers.Game2.Levels
             //casuals.Entries.Add(new DuplicatingIni.IniEntry("+CasualAppearances", $"(Id=95,Type=CustomizableType_Torso,Mesh=(Male=\"{randomMale.packageFile}.{randomMale.entryFullPath}\",MaleMaterialOverride=\"{randomMale.packageFile}.{randomMale.matInstFullPath}\",Female=\"{randomFemale.packageFile}.{randomFemale.entryFullPath}\",FemaleMaterialOverride=\"{randomFemale.packageFile}.{randomFemale.matInstFullPath}\"),PlotFlag=6709)"));
         }
 
-        internal static bool PerformRandomization(RandomizationOption notUsed)
+        internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
-            ChangeNormandyPaintings();
+            ChangeNormandyPaintings(target);
             //RandomizeTuxedoMesh();
             //ChangeSecurityTV();
-            RandomizeArtGallery();
+            RandomizeArtGallery(target);
             return true;
         }
     }

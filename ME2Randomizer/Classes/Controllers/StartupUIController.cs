@@ -11,9 +11,13 @@ using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using MahApps.Metro.Controls.Dialogs;
-using ME2Randomizer;
+using ME3TweaksCore;
+using ME3TweaksCore.Helpers;
+using ME3TweaksCore.Services.Backup;
+using ME3TweaksCore.Targets;
 using Microsoft.AppCenter;
-using RandomizerUI.Classes.Randomizers.Utility;
+using Randomizer.MER;
+using Randomizer.Randomizers;
 using RandomizerUI.Classes.Telemetry;
 using Serilog;
 
@@ -21,7 +25,6 @@ namespace RandomizerUI.Classes.Controllers
 {
     public class StartupUIController
     {
-        private static void SetWrapperLogger(ILogger logger) => Log.Logger = logger;
         private static bool telemetryStarted = false;
         internal static string PassthroughME1Path;
         internal static string PassthroughME2Path;
@@ -86,38 +89,38 @@ namespace RandomizerUI.Classes.Controllers
         public static async void BeginFlow(MainWindow window)
         {
             // PRE LIBRARY LOAD
-            RegistryHandler.RegistrySettingsPath = @"HKEY_CURRENT_USER\Software\MassEffect2Randomizer";
-            RegistryHandler.CurrentUserRegistrySubpath = @"Software\MassEffect2Randomizer";
+            //RegistryHandler.RegistrySettingsPath = @"HKEY_CURRENT_USER\Software\MassEffect2Randomizer";
+            //RegistryHandler.CurrentUserRegistrySubpath = @"Software\MassEffect2Randomizer";
             LegendaryExplorerCoreLib.SetSynchronizationContext(TaskScheduler.FromCurrentSynchronizationContext());
 
             try
             {
                 // This is in a try catch because this is a critical no-crash zone that is before launch
-                window.Title = $"Mass Effect 2 Randomizer {App.AppVersion}";
+                window.Title = $"{MERUI.GetRandomizerName()} {MLibraryConsumer.GetAppVersion()}";
             }
             catch { }
 
-            if (Utilities.GetExecutablePath().StartsWith(Path.GetTempPath(), StringComparison.InvariantCultureIgnoreCase))
+            if (MLibraryConsumer.GetExecutablePath().StartsWith(Path.GetTempPath(), StringComparison.InvariantCultureIgnoreCase))
             {
                 // Running from temp! This is not allowed
-                await window.ShowMessageAsync("Cannot run from temp directory", $"Mass Effect 2 Randomizer cannot be run from the system's Temp directory. If this executable was run from within an archive, it needs to be extracted first.");
+                await window.ShowMessageAsync("Cannot run from temp directory", $"{MERUI.GetRandomizerName()} cannot be run from the system's Temp directory. If this executable was run from within an archive, it needs to be extracted first.");
                 Environment.Exit(1);
             }
 
-            var pd = await window.ShowProgressAsync("Starting up", $"Mass Effect 2 Randomizer is starting up. Please wait.");
+            var pd = await window.ShowProgressAsync("Starting up", $"{MERUI.GetRandomizerName()} is starting up. Please wait.");
             pd.SetIndeterminate();
             NamedBackgroundWorker bw = new NamedBackgroundWorker("StartupThread");
             bw.DoWork += (a, b) =>
             {
+                // Setup telemetry handlers
+                TelemetryInterposer.SetEventCallback(TelemetryController.TrackEvent);
+                TelemetryInterposer.SetErrorCallback(TelemetryController.TrackError);
 
-                ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, $"Mass Effect 2 Randomizer {App.AppVersion} starting up", false);
+                // Initialize core libraries
+                ME3TweaksCoreLib.Initialize(RunOnUIThread);
+                //ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, $"Mass Effect 2 Randomizer {App.AppVersion} starting up", false);
                 // Logger is now available
 
-                // Setup telemetry handlers
-                CoreAnalytics.TrackEvent = TelemetryController.TrackEvent;
-                CoreCrashes.TrackError = TelemetryController.TrackError;
-                CoreCrashes.TrackError2 = TelemetryController.TrackError2;
-                CoreCrashes.TrackError3 = TelemetryController.TrackError3;
 
                 // Setup the InteropPackage for the update check
                 #region Update interop
@@ -125,6 +128,7 @@ namespace RandomizerUI.Classes.Controllers
 
                 AppUpdateInteropPackage interopPackage = new AppUpdateInteropPackage()
                 {
+                    // TODO: UPDATE THIS
                     GithubOwner = "Mgamerz",
                     GithubReponame = "MassEffect2Randomizer",
                     UpdateAssetPrefix = "ME2Randomizer",
@@ -235,64 +239,55 @@ namespace RandomizerUI.Classes.Controllers
                 GameTarget target = null;
                 try
                 {
-                    pd.SetMessage("Loading Mass Effect 2 Randomizer framework");
+                    pd.SetMessage($"Loading {MERUI.GetRandomizerName()} framework");
                     ToolTipService.ShowOnDisabledProperty.OverrideMetadata(typeof(Control), new FrameworkPropertyMetadata(true));
                     ToolTipService.ShowDurationProperty.OverrideMetadata(typeof(DependencyObject), new FrameworkPropertyMetadata(int.MaxValue));
 
-                    ALOTInstallerCoreLib.PostCriticalStartup(x => pd.SetMessage(x), RunOnUIThread, false);
+                    //ALOTInstallerCoreLib.PostCriticalStartup(x => pd.SetMessage(x), RunOnUIThread, false);
 
-#if __LE2__
-                    LE2Directory.ReloadDefaultGamePath(true);
-                    if (LE2Directory.DefaultGamePath != null)
-                    {
-                        GameTarget gt = new GameTarget(MEGame.LE2, LE2Directory.DefaultGamePath, true);
-                        if (gt.ValidateTarget() == null)
-                        {
-                            Locations.SetTarget(gt, false);
-                        }
-                    }
-#endif
                     MEPackageHandler.GlobalSharedCacheEnabled = false; // ME2R does not use the global shared cache.
 
                     handleM3Passthrough();
-                    target = Locations.GetTarget(MERFileSystem.Game);
-                    if (target == null)
+                    foreach (var game in Locations.SupportedGames)
                     {
-                        var gamePath = MEDirectories.GetDefaultGamePath(MERFileSystem.Game);
-                        if (Directory.Exists(gamePath))
+                        target = Locations.GetTarget(game.IsLEGame());
+                        if (target == null)
                         {
-                            target = new GameTarget(MERFileSystem.Game, gamePath, true);
-                            var validationFailedReason = target.ValidateTarget();
-                            if (validationFailedReason == null)
+                            var gamePath = MEDirectories.GetDefaultGamePath(game);
+                            if (Directory.Exists(gamePath))
                             {
-                                // CHECK NOT TEXTURE MODIFIED
-                                if (target.TextureModded)
+                                target = new GameTarget(game, gamePath, true);
+                                var validationFailedReason = target.ValidateTarget();
+                                if (validationFailedReason == null)
                                 {
-                                    MERLog.Error($@"Game target is texture modded: {target.TargetPath}. This game target is not targetable by ME2R");
-                                    object o = new object();
-                                    Application.Current.Dispatcher.Invoke(async () =>
+                                    // CHECK NOT TEXTURE MODIFIED
+                                    if (target.TextureModded)
                                     {
-                                        if (Application.Current.MainWindow is MainWindow mw)
+                                        MERLog.Error($@"Game target is texture modded: {target.TargetPath}. This game target is not targetable");
+                                        object o = new object();
+                                        Application.Current.Dispatcher.Invoke(async () =>
                                         {
-                                            await mw.ShowMessageAsync("Mass Effect 2 target is texture modded", $"The game located at {target.TargetPath} has had textures modified. Mass Effect 2 Randomizer cannot randomize texture modified games, as it adds package files. If you want to texture mod your game, it must be done after randomization.", ContentWidthPercent: 75);
-                                            lock (o)
+                                            if (Application.Current.MainWindow is MainWindow mw)
                                             {
-                                                Monitor.Pulse(o);
+                                                await mw.ShowMessageAsync("Mass Effect 2 target is texture modded", $"The game located at {target.TargetPath} has had textures modified. {MERUI.GetRandomizerName()} cannot randomize texture modified games, as it adds package files. If you want to texture mod your game, it must be done after randomization.", ContentWidthPercent: 75);
+                                                lock (o)
+                                                {
+                                                    Monitor.Pulse(o);
+                                                }
                                             }
+                                        });
+                                        lock (o)
+                                        {
+                                            Monitor.Wait(o);
                                         }
-                                    });
-                                    lock (o)
-                                    {
-                                        Monitor.Wait(o);
                                     }
-                                }
 
-                                // We still set target so we can restore game if necessary
-                                Locations.SetTarget(target, false);
+                                    // We still set target so we can restore game if necessary
+                                    Locations.SetTarget(target);
+                                }
                             }
                         }
                     }
-
 
                     pd.SetMessage("Performing startup checks");
                     MERStartupCheck.PerformStartupCheck((title, message) =>
@@ -332,28 +327,36 @@ namespace RandomizerUI.Classes.Controllers
                     {
                         mw.SetupTargetDescriptionText();
 
-
-                        var backupStatus = BackupService.GetBackupStatus(MERFileSystem.Game);
+                        /*
+                        var backupStatus = BackupService.GetBackupStatus(Sele);
                         mw.BackupRestoreText = backupStatus?.BackupActionText;
                         mw.BackupRestore_Button.ToolTip = backupStatus != null && backupStatus.BackedUp ? "Click to restore game/uninstall randomizer mod" : "Click to backup game";
-
+                        PeriodicRefresh.OnPeriodicRefresh += MERPeriodicRefresh;
+                        */
                         mw.FinalizeInterfaceLoad();
 
-                        /*
-                        if (!hasWorkingMEM)
-                        {
-                            await mw.ShowMessageAsync("Required components are not available",
-                                "Some components for installation are not available, likely due to network issues (blocking, no internet, etc). To install these components, folow the 'How to install the Installer Support Package' directions on any of the ALOT pages on NexusMods. The installer will not work without these files installed.",
-                                ContentWidthPercent: 75);
-                        }*/
-
-                        PeriodicRefresh.OnPeriodicRefresh += MERPeriodicRefresh;
                     }
                 });
             };
             bw.RunWorkerCompleted += async (a, b) =>
                 {
                     // Post critical startup
+                    window.SelectableTargets.AddRange(Locations.GetAllAvailableTargets());
+
+                    // Initial selected game
+                    if (Locations.GetTarget(true) != null)
+                    {
+                        window.LEGameRadioButton.IsChecked = true;
+                    }
+                    else if (Locations.GetTarget(false) != null)
+                    {
+                        window.OTGameRadioButton.IsChecked = true;
+                    }
+
+                    // Disable games not installed or found
+                    window.LEGameRadioButton.IsEnabled = Locations.GetTarget(true) != null;
+                    window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
+
                     Random random = new Random();
                     var preseed = random.Next();
                     window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
@@ -364,12 +367,11 @@ namespace RandomizerUI.Classes.Controllers
 #else
                     window.SeedTextBox.Text = preseed.ToString();
 #endif
-                    window.TextBlock_AssemblyVersion.Text = $"Version {App.AppVersion}";
-                    window.SelectedRandomizeMode = MainWindow.RandomizationMode.ERandomizationMode_SelectAny;
+                    window.TextBlock_AssemblyVersion.Text = $"Version {MLibraryConsumer.GetAppVersion()}";
+                    window.SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
 
 
-                    var hasFirstRun = RegistryHandler.GetRegistrySettingBool(MainWindow.SETTING_FIRSTRUN);
-                    if (hasFirstRun == null || !hasFirstRun.Value)
+                    if (MERSettings.GetSettingBool(ESetting.SETTING_FIRSTRUN))
                     {
                         window.FirstRunFlyoutOpen = true;
                     }
@@ -384,9 +386,10 @@ namespace RandomizerUI.Classes.Controllers
             {
                 if (Application.Current.MainWindow is MainWindow mw)
                 {
+                    Debug.WriteLine("PERIODIC REFRESH NOT IMPLEMENTED");
                     // Is DLC component installed?
-                    var dlcModPath = MERFileSystem.GetDLCModPath();
-                    mw.DLCComponentInstalled = dlcModPath != null ? Directory.Exists(dlcModPath) : false;
+                    //var dlcModPath = MERFileSystem.GetDLCModPath();
+                    //mw.DLCComponentInstalled = dlcModPath != null ? Directory.Exists(dlcModPath) : false;
                 }
             });
         }
@@ -412,7 +415,7 @@ namespace RandomizerUI.Classes.Controllers
                     else
                     {
                         MERLog.Information($@"Valid passthrough for game {game}. Assigning path.");
-                        Locations.SetTarget(gt, false);
+                        Locations.SetTarget(gt);
                     }
                 }
             }

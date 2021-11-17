@@ -5,8 +5,9 @@ using System.Linq;
 using System.Numerics;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 
-namespace RandomizerUI.Classes.Randomizers.Utility
+namespace Randomizer.Randomizers.Utility
 {
     /// <summary>
     /// Class version of Vector4. Easier to manipulate than a struct.
@@ -246,15 +247,15 @@ namespace RandomizerUI.Classes.Randomizers.Utility
             };
         }
 
-        internal StructProperty ToStructProperty()
+        internal StructProperty ToStructProperty(MEGame game)
         {
             PropertyCollection props = new PropertyCollection();
             props.Add(new FloatProperty(InVal, "InVal"));
             props.Add(OutVal.ToStructProperty("X", "Y", "Z", "OutVal"));
             props.Add(ArriveTangent.ToStructProperty("X", "Y", "Z", "ArriveTangent"));
             props.Add(LeaveTangent.ToStructProperty("X", "Y", "Z", "LeaveTangent"));
-            props.Add(new EnumProperty(InterpMode.ToString(), "EInterpCurveMode", MERFileSystem.Game, "InterpMode"));
-            return new StructProperty("nterpCurvePointVector", props);
+            props.Add(new EnumProperty(InterpMode.ToString(), "EInterpCurveMode", game, "InterpMode"));
+            return new StructProperty("InterpCurvePointVector", props);
         }
     }
 
@@ -287,7 +288,7 @@ namespace RandomizerUI.Classes.Randomizers.Utility
                 pointsA.Clear();
                 foreach (var p in points)
                 {
-                    pointsA.Add(p.ToStructProperty());
+                    pointsA.Add(p.ToStructProperty(export.Game));
                 }
                 export.WriteProperty(vt);
             }

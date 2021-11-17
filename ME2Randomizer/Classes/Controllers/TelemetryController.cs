@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 
@@ -16,19 +15,9 @@ namespace RandomizerUI.Classes.Controllers
             Analytics.TrackEvent(eventName, eventData);
         }
 
-        public static void TrackError(Exception exception)
-        {
-            Crashes.TrackError(exception);
-        }
-
-        public static void TrackError2(Exception exception, Dictionary<string, string> data)
+        public static void TrackError(Exception exception, Dictionary<string, string> data)
         {
             Crashes.TrackError(exception, data);
-        }
-
-        public static void TrackError3(Exception exception, Dictionary<string, string> data, CoreCrashes.ErrorAttachmentLog[] attachment)
-        {
-            Crashes.TrackError(exception, data, attachment.Select(x => ErrorAttachmentLog.AttachmentWithText(x.text, x.filename)).ToArray());
         }
     }
 }

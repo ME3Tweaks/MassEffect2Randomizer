@@ -6,11 +6,13 @@ using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.Misc;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -23,19 +25,19 @@ namespace Randomizer.Randomizers.Game2.Levels
         public const string SUBOPTIONKEY_MALESHEP_COLORS = "SUBOPTION_MALESHEP_COLORS";
         public const string SUBOPTIONKEY_CHARCREATOR_NO_COLORS = "SUBOPTION_CHARCREATOR_COLORS";
 
-        public static bool RandomizeIconicFemShep(RandomizationOption option)
+        public static bool RandomizeIconicFemShep(GameTarget target, RandomizationOption option)
         {
-            var femF = MERFileSystem.GetPackageFile("BIOG_Female_Player_C.pcc");
+            var femF = MERFileSystem.GetPackageFile(target, "BIOG_Female_Player_C.pcc");
             if (femF != null && File.Exists(femF))
             {
                 var femP = MEPackageHandler.OpenMEPackage(femF);
                 var femMorphFace = femP.GetUExport(682);
-                RBioMorphFace.RandomizeExportNonHench(femMorphFace, option);
+                RBioMorphFace.RandomizeExportNonHench(target, femMorphFace, option);
                 var matSetup = femP.GetUExport(681);
                 RBioMaterialOverride.RandomizeExport(matSetup, option);
 
                 // Copy this data into BioP_Char so you get accurate results
-                var biop_charF = MERFileSystem.GetPackageFile(@"BioP_Char.pcc");
+                var biop_charF = MERFileSystem.GetPackageFile(target, @"BioP_Char.pcc");
                 var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
                 EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, femMorphFace, biop_char, biop_char.GetUExport(3482), true, out IEntry _);
                 EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, matSetup, biop_char, biop_char.GetUExport(3472), true, out IEntry _);
@@ -47,7 +49,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             return true;
         }
 
-        public static bool RandomizePsychProfiles(RandomizationOption option)
+        public static bool RandomizePsychProfiles(GameTarget target, RandomizationOption option)
         {
             //Psych Profiles
             string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("psychprofiles.xml");
@@ -83,9 +85,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             return true;
         }
 
-        public static bool RandomizeIconicMaleShep(RandomizationOption option)
+        public static bool RandomizeIconicMaleShep(GameTarget target, RandomizationOption option)
         {
-            var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
+            var sfxgame = MERFileSystem.GetPackageFile(target, "SFXGame.pcc");
             if (sfxgame != null && File.Exists(sfxgame))
             {
                 var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
@@ -110,9 +112,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             return false;
         }
 
-        public static bool RandomizeCharacterCreator(RandomizationOption option)
+        public static bool RandomizeCharacterCreator(GameTarget target, RandomizationOption option)
         {
-            var biop_charF = MERFileSystem.GetPackageFile(@"BioP_Char.pcc");
+            var biop_charF = MERFileSystem.GetPackageFile(target, @"BioP_Char.pcc");
             var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
             var maleFrontEndData = biop_char.GetUExport(18753);
             var femaleFrontEndData = biop_char.GetUExport(18754);
@@ -172,7 +174,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 if (export.ClassName == "BioMorphFace" && !export.ObjectName.Name.Contains("Iconic"))
                 {
-                    RBioMorphFace.RandomizeExportNonHench(export, SuperRandomOption); //.3 default
+                    RBioMorphFace.RandomizeExportNonHench(target, export, SuperRandomOption); //.3 default
                 }
                 else if (export.ClassName == "MorphTarget")
                 {

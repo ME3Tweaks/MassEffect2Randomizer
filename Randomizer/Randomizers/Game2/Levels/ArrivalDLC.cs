@@ -4,16 +4,17 @@ using System.Linq;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
     public static class ArrivalDLC
     {
-        private static void RandomizeAsteroidRelayColor()
+        private static void RandomizeAsteroidRelayColor(GameTarget target)
         {
             // Relay at the end of the DLC
-            var shuttleFile = MERFileSystem.GetPackageFile(@"BioD_ArvLvl5_110_Asteroid.pcc", false);
+            var shuttleFile = MERFileSystem.GetPackageFile(target, @"BioD_ArvLvl5_110_Asteroid.pcc", false);
             if (shuttleFile != null && File.Exists(shuttleFile))
             {
                 var shuttleP = MEPackageHandler.OpenMEPackage(shuttleFile);
@@ -84,7 +85,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
 
             // Relay shown in the shuttle at the end of act 1
-            var asteroidf = MERFileSystem.GetPackageFile(@"BioD_ArvLvl1_710Shuttle.pcc", false);
+            var asteroidf = MERFileSystem.GetPackageFile(target, @"BioD_ArvLvl1_710Shuttle.pcc", false);
             if (asteroidf != null && File.Exists(asteroidf))
             {
                 var skhuttleP = MEPackageHandler.OpenMEPackage(asteroidf);
@@ -155,14 +156,14 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
         }
 
-        internal static bool PerformRandomization(RandomizationOption notUsed)
+        internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
-            RandomizeAsteroidRelayColor();
-            MakeKensonCool();
+            RandomizeAsteroidRelayColor(target);
+            MakeKensonCool(target);
             return true;
         }
 
-        private static void MakeKensonCool()
+        private static void MakeKensonCool(GameTarget target)
         {
             string[] files = new[]
             {
@@ -171,7 +172,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             };
             foreach (var f in files)
             {
-                var kensonFile = MERFileSystem.GetPackageFile(f, false);
+                var kensonFile = MERFileSystem.GetPackageFile(target, f, false);
                 if (kensonFile != null && File.Exists(kensonFile))
                 {
                     var kensonP = MEPackageHandler.OpenMEPackage(kensonFile);

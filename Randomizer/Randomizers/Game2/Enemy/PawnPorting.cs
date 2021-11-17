@@ -3,7 +3,9 @@ using System.Diagnostics;
 using System.IO;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Enemy
 {
@@ -219,7 +221,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             return targetPackage.FindExport(pawn.AssetToPortIn) != null;
         }
 
-        public static bool PortPawnIntoPackage(PortablePawn pawn, IMEPackage targetPackage)
+        public static bool PortPawnIntoPackage(GameTarget target, PortablePawn pawn, IMEPackage targetPackage)
         {
             if (IsPawnAssetInPackageAlready(pawn, targetPackage))
             {
@@ -242,7 +244,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             }
             else
             {
-                var pF = MERFileSystem.GetPackageFile(pawn.PackageFilename);
+                var pF = MERFileSystem.GetPackageFile(target, pawn.PackageFilename);
                 if (pF != null)
                 {
                     pawnPackage = MERFileSystem.OpenMEPackage(pF);
@@ -271,7 +273,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     foreach (var tu in pawn.TextureUpdates)
                     {
                         var targetTextureExp = targetPackage.FindExport(tu.TextureInstancedFullPath);
-                        TFCBuilder.InstallTexture(tu, targetTextureExp);
+                        TFCBuilder.InstallTexture(target, tu, targetTextureExp);
                     }
                 }
 

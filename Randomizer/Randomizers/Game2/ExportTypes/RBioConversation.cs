@@ -8,10 +8,11 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
-using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -68,7 +69,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             return false;
         }
 
-        public static bool RandomizePackageActorsInConversation(IMEPackage package, RandomizationOption option)
+        public static bool RandomizePackageActorsInConversation(GameTarget target, IMEPackage package, RandomizationOption option)
         {
             var conversationStartExports = package.Exports.Where(CanRandomizeSeqActStartConvo).ToList();
             if (!conversationStartExports.Any())
@@ -259,7 +260,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                             continue;
                         var interpData = convNode.Interpdata;
 
-                        InterpData id = new InterpData(interpData);
+                        InterpTools.InterpData id = new InterpTools.InterpData(interpData);
                         var convo = id.InterpGroups.FirstOrDefault(x => x.GroupName == "Conversation");
                         if (convo != null)
                         {
@@ -274,7 +275,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                                     findActor.Value = newInfo.FindActor;
                                     if (newInfo.FindMode != null)
                                     {
-                                        props.AddOrReplaceProp(new EnumProperty(newInfo.FindMode.ToString(), "EActorTrackFindActorMode", MERFileSystem.Game, "m_eFindActorMode"));
+                                        props.AddOrReplaceProp(new EnumProperty(newInfo.FindMode.ToString(), "EActorTrackFindActorMode", target.Game, "m_eFindActorMode"));
                                     }
                                     else
                                     {
@@ -297,7 +298,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                                             lookAt.Value = newInfoLA.FindActor;
                                             var lookatFindMode = newInfoLA.FindMode?.ToString();
                                             lookatFindMode ??= "ActorTrack_FindActorByTag"; // if it's null, set it to the default. As this is struct, the property must exist
-                                            lookAtS.Properties.AddOrReplaceProp(new EnumProperty(lookatFindMode, "EActorTrackFindActorMode", MERFileSystem.Game, "eFindActorMode"));
+                                            lookAtS.Properties.AddOrReplaceProp(new EnumProperty(lookatFindMode, "EActorTrackFindActorMode", target.Game, "eFindActorMode"));
                                         }
                                     }
                                 }
@@ -560,7 +561,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         }
 
 
-        public static bool RandomizeExportReplies(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeExportReplies(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
 

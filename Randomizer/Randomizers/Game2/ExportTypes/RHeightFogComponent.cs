@@ -1,12 +1,13 @@
 ﻿using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
     class RHeightFogComponent
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"HeightFogComponent";
-        public static bool RandomizeExport(ExportEntry export,RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry export,RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
             var properties = export.GetProperties();

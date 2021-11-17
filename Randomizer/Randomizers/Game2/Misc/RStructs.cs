@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using LegendaryExplorerCore.Unreal;
 using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {

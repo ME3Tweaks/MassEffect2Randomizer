@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.TextureAssets
 {
     public static class ME2Textures
     {
-        public static void SetupME2Textures()
+        public static void SetupME2Textures(GameTarget target)
         {
             var options = new List<RTexture2D>
             {
@@ -225,7 +227,7 @@ namespace Randomizer.Randomizers.Game2.TextureAssets
             };
 
             // Start the new TFC
-            TFCBuilder.StartNewTFCs(options);
+            TFCBuilder.StartNewTFCs(target, options);
         }
     }
 }

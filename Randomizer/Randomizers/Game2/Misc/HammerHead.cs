@@ -1,10 +1,11 @@
-﻿using Randomizer.Randomizers.Game2.Coalesced;
+﻿using ME3TweaksCore.Targets;
+using Randomizer.Randomizers.Game2.Coalesced;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
     class HammerHead
     {
-        public static bool PerformRandomization(RandomizationOption option)
+        public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
             var ini = CoalescedHandler.GetIniFile("BioGame.ini");
 

@@ -5,10 +5,11 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.ExportTypes;
+using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
-using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -17,9 +18,9 @@ namespace Randomizer.Randomizers.Game2.Levels
         private static string[] danceKeywords = new[] { "Dancing", "Dismiss", "Across_The_Throat", "Begging", "Sexy", "ROM", };
         public readonly static string[] notDanceKeywords = new[] { "Idle", "Base", "Standing", "Twitch", };
 
-        private static void RandomizeVIPShepDance()
+        private static void RandomizeVIPShepDance(GameTarget target)
         {
-            var vipLoungeLF = MERFileSystem.GetPackageFile(@"BioD_OmgHub_500DenVIP_LOC_INT.pcc");
+            var vipLoungeLF = MERFileSystem.GetPackageFile(target,@"BioD_OmgHub_500DenVIP_LOC_INT.pcc");
             if (vipLoungeLF != null && File.Exists(vipLoungeLF))
             {
                 var vipLounge = MEPackageHandler.OpenMEPackage(vipLoungeLF);
@@ -43,7 +44,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
 
             // make able to always talk to dancer
-            var vipLoungeF = MERFileSystem.GetPackageFile(@"BioD_OmgHub_500DenVIP.pcc");
+            var vipLoungeF = MERFileSystem.GetPackageFile(target,@"BioD_OmgHub_500DenVIP.pcc");
             if (vipLoungeF != null && File.Exists(vipLoungeF))
             {
                 var vipLounge = MEPackageHandler.OpenMEPackage(vipLoungeF);
@@ -54,9 +55,9 @@ namespace Randomizer.Randomizers.Game2.Levels
         }
 
 
-        private static void RandomizeAfterlifeShepDance()
+        private static void RandomizeAfterlifeShepDance(GameTarget target)
         {
-            var denDanceF = MERFileSystem.GetPackageFile(@"BioD_OmgHub_230DenDance.pcc");
+            var denDanceF = MERFileSystem.GetPackageFile(target,@"BioD_OmgHub_230DenDance.pcc");
             if (denDanceF != null)
             {
                 var loungeP = MEPackageHandler.OpenMEPackage(denDanceF);
@@ -147,65 +148,65 @@ namespace Randomizer.Randomizers.Game2.Levels
             return true;
         }
 
-        internal static bool PerformRandomization(RandomizationOption notUsed)
+        internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
-            RandomizeVIPShepDance();
-            RandomizeAfterlifeShepDance();
-            RandomizeALDancers();
+            RandomizeVIPShepDance(target);
+            RandomizeAfterlifeShepDance(target);
+            RandomizeALDancers(target);
             return true;
         }
 
-        private static void RandomizeALDancers()
+        private static void RandomizeALDancers(GameTarget target)
         {
             {
-                var denBar = MERFileSystem.GetPackageFile(@"BioD_OmgHub_220DenBar.pcc");
+                var denBar = MERFileSystem.GetPackageFile(target,@"BioD_OmgHub_220DenBar.pcc");
                 if (denBar != null)
                 {
                     var denBarP = MEPackageHandler.OpenMEPackage(denBar);
-                    RandomizeDancer(denBarP.GetUExport(1287));
-                    RandomizeDancer(denBarP.GetUExport(1288));
-                    RandomizeDancer(denBarP.GetUExport(1289));
-                    RandomizeDancer(denBarP.GetUExport(1292));
-                    RandomizeDancer(denBarP.GetUExport(1293));
+                    RandomizeDancer(target, denBarP.GetUExport(1287));
+                    RandomizeDancer(target, denBarP.GetUExport(1288));
+                    RandomizeDancer(target, denBarP.GetUExport(1289));
+                    RandomizeDancer(target, denBarP.GetUExport(1292));
+                    RandomizeDancer(target, denBarP.GetUExport(1293));
                     MERFileSystem.SavePackage(denBarP);
                 }
             }
 
-            var denDance = MERFileSystem.GetPackageFile(@"BioD_OmgHub_230DenDance.pcc");
+            var denDance = MERFileSystem.GetPackageFile(target, @"BioD_OmgHub_230DenDance.pcc");
             if (denDance != null)
             {
                 var denDanceP = MEPackageHandler.OpenMEPackage(denDance);
-                RandomizeDancer(denDanceP.GetUExport(1257)); //sit
-                RandomizeDancer(denDanceP.GetUExport(1250));
-                RandomizeDancer(denDanceP.GetUExport(1251));
+                RandomizeDancer(target, denDanceP.GetUExport(1257)); //sit
+                RandomizeDancer(target, denDanceP.GetUExport(1250));
+                RandomizeDancer(target, denDanceP.GetUExport(1251));
 
                 // shep sits at dancer. it uses different pawn.
                 var entertainerBPSKM = denDanceP.GetUExport(4322);
                 var newInfo = IlliumHub.DancerOptions.RandomElement();
-                while (newInfo.Location != null || newInfo.Rotation != null || newInfo.KeepHead == false || (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable()) || (newInfo.HeadAsset != null && !newInfo.HeadAsset.IsAssetFileAvailable()))
+                while (newInfo.Location != null || newInfo.Rotation != null || newInfo.KeepHead == false || (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable(target)) || (newInfo.HeadAsset != null && !newInfo.HeadAsset.IsAssetFileAvailable(target)))
                 {
                     // I don't want anything that requires specific positioning data, and I want to keep the head.
                     newInfo = IlliumHub.DancerOptions.RandomElement();
                 }
 
-                var newDancerMDL = PackageTools.PortExportIntoPackage(denDanceP, newInfo.BodyAsset.GetAsset());
+                var newDancerMDL = PackageTools.PortExportIntoPackage(denDanceP, newInfo.BodyAsset.GetAsset(target));
                 entertainerBPSKM.WriteProperty(new ObjectProperty(newDancerMDL,"SkeletalMesh"));
                 MERFileSystem.SavePackage(denDanceP);
             }
         }
 
-        private static void RandomizeDancer(ExportEntry skeletalMeshActorMatArchetype)
+        private static void RandomizeDancer(GameTarget target, ExportEntry skeletalMeshActorMatArchetype)
         {
             // Install new head and body assets
             var newInfo = IlliumHub.DancerOptions.RandomElement();
-            while (newInfo.Location != null || newInfo.Rotation != null || (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable()) || (newInfo.HeadAsset != null && !newInfo.HeadAsset.IsAssetFileAvailable()))
+            while (newInfo.Location != null || newInfo.Rotation != null || (newInfo.BodyAsset != null && !newInfo.BodyAsset.IsAssetFileAvailable(target)) || (newInfo.HeadAsset != null && !newInfo.HeadAsset.IsAssetFileAvailable(target)))
             {
                 // Make sure assets are available, if not, repick
                 // I don't want anything that requires specific positioning data
                 newInfo = IlliumHub.DancerOptions.RandomElement();
             }
 
-            var newBody = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.BodyAsset.GetAsset());
+            var newBody = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.BodyAsset.GetAsset(target));
 
             var bodySM = skeletalMeshActorMatArchetype.GetProperty<ObjectProperty>("SkeletalMeshComponent").ResolveToEntry(skeletalMeshActorMatArchetype.FileRef) as ExportEntry;
             var headSM = skeletalMeshActorMatArchetype.GetProperty<ObjectProperty>("HeadMesh").ResolveToEntry(skeletalMeshActorMatArchetype.FileRef) as ExportEntry;
@@ -214,7 +215,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             if (newInfo.HeadAsset != null)
             {
-                var newHead = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.HeadAsset.GetAsset());
+                var newHead = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.HeadAsset.GetAsset(target));
                 headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "SkeletalMesh"));
             }
             else if (!newInfo.KeepHead)
@@ -237,7 +238,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             if (newInfo.MorphFace != null)
             {
-                var newHead = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.MorphFace.GetAsset());
+                var newHead = PackageTools.PortExportIntoPackage(skeletalMeshActorMatArchetype.FileRef, newInfo.MorphFace.GetAsset(target));
                 headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "MorphHead"));
             }
         }

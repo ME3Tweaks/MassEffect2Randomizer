@@ -5,16 +5,23 @@ using System.Threading.Tasks;
 using System.Windows;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Packages;
 using MahApps.Metro.Controls.Dialogs;
+using ME3TweaksCore.GameFilesystem;
+using ME3TweaksCore.Helpers;
+using ME3TweaksCore.Services.Backup;
+using ME3TweaksCore.Services.Restore;
+using ME3TweaksCore.Targets;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Microsoft.WindowsAPICodePack.Taskbar;
+using Randomizer.MER;
 using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace RandomizerUI.Classes.Controllers
 {
     class RestoreController
     {
-        public static async void StartRestore(MainWindow mw, bool isQuick, Action postRestoreDelegate = null)
+        public static async void StartRestore(MainWindow mw, GameTarget target, bool isQuick, Action postRestoreDelegate = null)
         {
             var pd = await mw.ShowProgressAsync("Restoring game", "Preparing to restore game");
             pd.SetIndeterminate();
@@ -26,11 +33,11 @@ namespace RandomizerUI.Classes.Controllers
                     // Nuke the DLC
                     MERLog.Information(@"Quick restore started");
                     pd.SetMessage("Removing randomize DLC component");
-                    var dlcModPath = MERFileSystem.GetDLCModPath();
+                    var dlcModPath = MERFileSystem.GetDLCModPath(target);
                     if (Directory.Exists(dlcModPath))
                     {
                         MERLog.Information($@"Deleting {dlcModPath}");
-                        Utilities.DeleteFilesAndFoldersRecursively(dlcModPath);
+                        MUtilities.DeleteFilesAndFoldersRecursively(dlcModPath);
                     }
 
                     mw.DLCComponentInstalled = false;
@@ -38,11 +45,10 @@ namespace RandomizerUI.Classes.Controllers
 
                     // Restore basegame only files
                     pd.SetMessage("Restoring randomized basegame files");
-                    var isControllerModInstalled = SFXGame.IsControllerBasedInstall();
 
-                    var backupPath = BackupService.GetGameBackupPath(MERFileSystem.Game, out _, false);
-                    var gameCookedPath = M3Directories.GetCookedPath(Locations.GetTarget(MERFileSystem.Game));
-                    var backupCookedPath = MEDirectories.GetCookedPath(MERFileSystem.Game, backupPath);
+                    var backupPath = BackupService.GetGameBackupPath(target.Game, false);
+                    var gameCookedPath = M3Directories.GetCookedPath(target);
+                    var backupCookedPath = MEDirectories.GetCookedPath(target.Game, backupPath);
                     foreach (var bgf in MERFileSystem.alwaysBasegameFiles)
                     {
                         var srcPath = Path.Combine(backupCookedPath, bgf);
@@ -51,15 +57,17 @@ namespace RandomizerUI.Classes.Controllers
                         File.Copy(srcPath, destPath, true);
                     }
 
+#if __GAME2__
+                    var isControllerModInstalled = target.Game.IsOTGame() && Randomizer.Randomizers.Game2.Misc.SFXGame.IsControllerBasedInstall(target);
                     if (isControllerModInstalled)
                     {
                         // We must also restore Coalesced.ini or it will reference a UI that is no longer available and game will not boot
                         MERLog.Information(@"Controller based install detected, also restoring Coalesced.ini to prevent startup crash");
-                        File.Copy(Path.Combine(backupPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), Path.Combine(Locations.GetTarget(MERFileSystem.Game).TargetPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), true);
+                        File.Copy(Path.Combine(backupPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), Path.Combine(target.TargetPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), true);
                     }
-
+#endif
                     // Delete basegame TFC
-                    var baseTFC = MERFileSystem.GetTFCPath(false);
+                    var baseTFC = MERFileSystem.GetTFCPath(target, false);
                     if (File.Exists(baseTFC))
                     {
                         File.Delete(baseTFC);
@@ -71,11 +79,10 @@ namespace RandomizerUI.Classes.Controllers
                 {
 
                     // Full restore
-                    var target = Locations.GetTarget(MERFileSystem.Game);
                     MERLog.Information($@"Performing full game restore on {target.TargetPath} target after restore");
 
                     object syncObj = new object();
-                    BackupHandler.GameRestore gr = new BackupHandler.GameRestore(MERFileSystem.Game)
+                    var gr = new GameRestore(target.Game)
                     {
                         ConfirmationCallback = (title, message) =>
                         {
@@ -140,10 +147,10 @@ namespace RandomizerUI.Classes.Controllers
                             return selectedPath;
                         }
                     };
-                    gr.PerformRestore(target.TargetPath);
+                    gr.PerformRestore(target, target.TargetPath);
                     mw.DLCComponentInstalled = false;
                     MERLog.Information(@"Reloading target after restore");
-                    target.ReloadGameTarget(false,false);
+                    target.ReloadGameTarget(false, false);
                     mw.SetupTargetDescriptionText();
                 }
             }).ContinueWithOnUIThread(async x =>

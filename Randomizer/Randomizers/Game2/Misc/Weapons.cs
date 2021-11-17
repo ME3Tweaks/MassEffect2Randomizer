@@ -6,16 +6,19 @@ using System.IO;
 using System.Linq;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Misc;
+using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Helpers;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
+using Randomizer.Randomizers.Game2.Game2FileFormats;
 using Serilog;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
     public class Weapons
     {
-        public static bool RandomizeSquadmateWeapons(RandomizationOption option)
+        public static bool RandomizeSquadmateWeapons(GameTarget target, RandomizationOption option)
         {
             var bg = CoalescedHandler.GetIniFile("BIOGame.ini");
             var loadoutSection = bg.GetOrAddSection("SFXGame.SFXPlayerSquadLoadoutData");
@@ -116,21 +119,21 @@ namespace Randomizer.Randomizers.Game2.Misc
         }
 
 
-        public static bool RandomizeWeapons(RandomizationOption option)
+        public static bool RandomizeWeapons(GameTarget target, RandomizationOption option)
         {
             var me2rbioweapon = CoalescedHandler.GetIniFile("BIOWeapon.ini");
 
             // We must manually fetch game files cause MERFS will return the ini from the dlc mod instead.
-            ME2Coalesced me2basegamecoalesced = new ME2Coalesced(MERFileSystem.GetSpecificFile(@"BioGame\Config\PC\Cooked\Coalesced.ini"));
+            ME2Coalesced me2basegamecoalesced = new ME2Coalesced(MERFileSystem.GetSpecificFile(target,@"BioGame\Config\PC\Cooked\Coalesced.ini"));
 
             MERLog.Information("Randomizing basegame weapon ini");
             var bioweapon = me2basegamecoalesced.Inis.FirstOrDefault(x => Path.GetFileName(x.Key) == "BIOWeapon.ini").Value;
             RandomizeWeaponIni(bioweapon, me2rbioweapon);
 
-            var weaponInis = Directory.GetFiles(MEDirectories.GetDLCPath(MERFileSystem.Game), "BIOWeapon.ini", SearchOption.AllDirectories).ToList();
+            var weaponInis = Directory.GetFiles(M3Directories.GetDLCPath(target), "BIOWeapon.ini", SearchOption.AllDirectories).ToList();
             foreach (var wi in weaponInis)
             {
-                if (wi.Contains($"DLC_MOD_{MERFileSystem.Game}Randomizer"))
+                if (wi.Contains($"DLC_MOD_{target.Game}Randomizer"))
                     continue; // Skip randomizer folders
                 MERLog.Information($@"Randomizing weapon ini {wi}");
                 //Log.Information("Randomizing weapons in ini: " + wi);

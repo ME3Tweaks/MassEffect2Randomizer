@@ -4,7 +4,9 @@ using System.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -126,7 +128,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         // private static bool CanRandomizeNPCExport(ExportEntry export) => !export.IsDefaultObject && (export.IsA("BioPawn") || (export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && export.IsA("SFXSkeletalMeshActorMAT")));
         private static bool CanRandomizeNPCExport2(ExportEntry export) => !export.IsDefaultObject && (export.IsA("BioPawn") || export.IsA("SFXSkeletalMeshActorMAT"));
 
-        public static bool RandomizeNPCExport2(ExportEntry export, RandomizationOption randOption)
+        public static bool RandomizeNPCExport2(GameTarget target, ExportEntry export, RandomizationOption randOption)
         {
             if (!CanRandomizeNPCExport2(export)) return false;
 

@@ -3,16 +3,18 @@ using System.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Coalesced;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
     public class PawnMovementSpeed
     {
-        public static bool RandomizePlayerMovementSpeed(RandomizationOption option)
+        public static bool RandomizePlayerMovementSpeed(GameTarget target, RandomizationOption option)
         {
-            var femaleFile = MERFileSystem.GetPackageFile("BIOG_Female_Player_C.pcc");
-            var maleFile = MERFileSystem.GetPackageFile("BIOG_Male_Player_C.pcc");
+            var femaleFile = MERFileSystem.GetPackageFile(target,"BIOG_Female_Player_C.pcc");
+            var maleFile = MERFileSystem.GetPackageFile(target, "BIOG_Male_Player_C.pcc");
             var femalepackage = MEPackageHandler.OpenMEPackage(femaleFile);
             var malepackage = MEPackageHandler.OpenMEPackage(maleFile);
             SlightlyRandomizeMovementData(femalepackage.GetUExport(2917));
@@ -60,7 +62,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             return true;
         }
 
-        public static bool RandomizeMovementSpeed(ExportEntry export, RandomizationOption option)
+        public static bool RandomizeMovementSpeed(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomizeNPCSpeed(export)) return false;
             var movementInfo = export.GetProperty<ObjectProperty>("MovementInfo");
@@ -70,13 +72,13 @@ namespace Randomizer.Randomizers.Game2.Misc
                 // But it will be way less complicated to just add new ones
 
                 //MERLog.Information($@"Randomizing movement speed for {export.UIndex}");
-                movementInfo.Value = AddNewRandomizedMovementSpeed(export);
+                movementInfo.Value = AddNewRandomizedMovementSpeed(target, export);
                 export.WriteProperty(movementInfo);
             }
             return true;
         }
 
-        private static int AddNewRandomizedMovementSpeed(ExportEntry bio_appr_character)
+        private static int AddNewRandomizedMovementSpeed(GameTarget target, ExportEntry bio_appr_character)
         {
             ImportEntry sfxMovementData = bio_appr_character.FileRef.FindImport("SFXGame.SFXMovementData");
             if (sfxMovementData == null)
@@ -84,7 +86,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 // Import needs added
 
                 // ME2 SPECIFIC!
-                sfxMovementData = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile("SFXMovementData", MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("SFXGame.pcc")), bio_appr_character.FileRef) as ImportEntry;
+                sfxMovementData = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile("SFXMovementData", MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc")), bio_appr_character.FileRef) as ImportEntry;
             }
 
             PropertyCollection props = new PropertyCollection();

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Numerics;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Misc
@@ -34,7 +35,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             return false;
         }
 
-        public static bool RandomizeExport(ExportEntry exp, RandomizationOption option)
+        public static bool RandomizeExport(GameTarget target, ExportEntry exp, RandomizationOption option)
         {
             if (!CanRandomize(exp, out var coption)) return false;
             switch (coption)

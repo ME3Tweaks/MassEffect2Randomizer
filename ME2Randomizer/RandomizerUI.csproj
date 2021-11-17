@@ -15,6 +15,7 @@
     <None Remove="DebugTools\DebugWindow.xaml" />
     <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
     <None Remove="images\firstrun_bg.jpg" />
+    <None Remove="images\game2\lebackground.jpg" />
     <Resource Include="fonts\aerolight.ttf" />
   </ItemGroup>
 
@@ -87,7 +88,8 @@
   
   <ItemGroup>
     <Resource Include="images\game2\firstrun_bg.jpg" />
-    <Resource Include="images\game2\main_bg.jpg" />
+    <Resource Include="images\game2\lebackground.jpg" />
+    <Resource Include="images\game2\otbackground.jpg" />
     <Resource Include="images\shared\discord.png" />
     <Resource Include="images\shared\me3tweaks.png" />
     <Resource Include="images\shared\logscreen.jpg" />

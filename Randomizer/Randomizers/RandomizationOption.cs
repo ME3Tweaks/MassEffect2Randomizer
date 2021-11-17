@@ -3,14 +3,15 @@ using System.ComponentModel;
 using System.Linq;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
+using ME3TweaksCore.Targets;
 using PropertyChanged;
 
 namespace Randomizer.Randomizers
 {
     public enum RandomizationMode {
-        RANDSETTING_NONE,
-        RANDSETTING_RECOMMENDED,
-        RANDSETTING_SCREED,
+        ERandomizationMode_SelectAny,
+        ERandomizationMode_Common,
+        ERandomizationMode_Screed,
     }
     public class RandomizationOption : INotifyPropertyChanged
     {
@@ -138,15 +139,15 @@ namespace Randomizer.Randomizers
         /// <summary>
         /// The export-specific randomization method pointer. It takes an export entry, random, and returns a bool if the operation was run on the export.
         /// </summary>
-        public Func<ExportEntry, RandomizationOption, bool> PerformRandomizationOnExportDelegate { get; set; }
+        public Func<GameTarget, ExportEntry, RandomizationOption, bool> PerformRandomizationOnExportDelegate { get; set; }
         /// <summary>
         /// The callback to perform is this is not an export randomizer
         /// </summary>
-        public Func<RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
+        public Func<GameTarget, RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
         /// <summary>
         /// Randomization method that is invoked before a file's export delegate randomization occurs
         /// </summary>
-        public Func<IMEPackage, RandomizationOption, bool> PerformFileSpecificRandomization { get; set; }
+        public Func<GameTarget, IMEPackage, RandomizationOption, bool> PerformFileSpecificRandomization { get; set; }
 
         /// <summary>
         /// List of suboptions this option may have

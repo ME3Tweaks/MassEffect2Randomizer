@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Levels;
-using RandomizerUI.Classes.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -57,11 +57,11 @@ namespace Randomizer.Randomizers.Game2.Misc
         };
 
 
-        public static bool InstallOHKO(RandomizationOption arg)
+        public static bool InstallOHKO(GameTarget target, RandomizationOption option)
         {
             MERLog.Information("Installing One-Hit KO");
 
-            var sfxgame = MERFileSystem.GetPackageFile("SFXGame.pcc");
+            var sfxgame = MERFileSystem.GetPackageFile(target, "SFXGame.pcc");
             if (sfxgame != null && File.Exists(sfxgame))
             {
                 var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
@@ -83,15 +83,14 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             }
 
-
             // ProCer tutorials setting min1Health
-            SetupProCer();
+            SetupProCer(target);
 
             // Player classes - Remove shields, set maxhealth to 1
             string[] classes = new[] { "Adept", "Engineer", "Infiltrator", "Sentinel", "Soldier", "Vanguard" };
             foreach (var c in classes)
             {
-                var charClass = MERFileSystem.GetPackageFile($"SFXCharacterClass_{c}.pcc");
+                var charClass = MERFileSystem.GetPackageFile(target, $"SFXCharacterClass_{c}.pcc");
                 if (charClass != null && File.Exists(charClass))
                 {
                     var charClassP = MEPackageHandler.OpenMEPackage(charClass);
@@ -129,7 +128,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             MERPackageCache cache = new MERPackageCache();
             foreach (var asset in ZeroOutStatAssets)
             {
-                var statClass = asset.GetAsset(cache);
+                var statClass = asset.GetAsset(target, cache);
                 if (statClass != null)
                 {
                     foreach (var zos in asset.PropertiesToZeroOut)
@@ -172,21 +171,21 @@ namespace Randomizer.Randomizers.Game2.Misc
             return true;
         }
 
-        private static void SetupProCer()
+        private static void SetupProCer(GameTarget target)
         {
             /*
              * PLAYER
                 Min1Health in BioD_ProCer.pcc, export 1171, sequence TheWorld.PersistentLevel.Main_Sequence, target SeqVar_Player
                 Min1Health in BioD_ProCer_100RezRoom.pcc, export 3956, sequence TheWorld.PersistentLevel.Main_Sequence.LS0_LevelLoad, target SeqVar_Player
              */
-            var DPProCerF = MERFileSystem.GetPackageFile("BioD_ProCer.pcc");
+            var DPProCerF = MERFileSystem.GetPackageFile(target, "BioD_ProCer.pcc");
             if (DPProCerF != null && File.Exists(DPProCerF))
             {
                 var bpProCerP = MEPackageHandler.OpenMEPackage(DPProCerF);
                 bpProCerP.GetUExport(1171).WriteProperty(new IntProperty(0, "bValue"));
                 MERFileSystem.SavePackage(bpProCerP);
             }
-            var rezRoom = MERFileSystem.GetPackageFile("BioD_ProCer_100RezRoom.pcc");
+            var rezRoom = MERFileSystem.GetPackageFile(target, "BioD_ProCer_100RezRoom.pcc");
             if (rezRoom != null && File.Exists(rezRoom))
             {
                 var rezRoomP = MEPackageHandler.OpenMEPackage(rezRoom);

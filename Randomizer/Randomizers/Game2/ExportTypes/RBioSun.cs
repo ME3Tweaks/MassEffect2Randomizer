@@ -2,6 +2,7 @@
 using LegendaryExplorerCore.Unreal;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -21,9 +22,9 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 {
                     RStructs.RandomizeTint( tint, false);
                 }
-                RProperty.RandFloat( props, "Intensity", 0.0001f, 100f, false);
-                RProperty.RandFloat( props, "BrightPercent", 0.0001f, 0.1f, false);
-                RProperty.RandFloat( props, "Scale", 0.05f, 3f, false);
+                PropertyTools.RandFloat( props, "Intensity", 0.0001f, 100f, false);
+                PropertyTools.RandFloat( props, "BrightPercent", 0.0001f, 0.1f, false);
+                PropertyTools.RandFloat( props, "Scale", 0.05f, 3f, false);
             }
             else if (export.ClassName == "BioSunActor")
             {

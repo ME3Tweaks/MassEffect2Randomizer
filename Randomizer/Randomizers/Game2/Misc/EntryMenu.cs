@@ -1,15 +1,17 @@
 ﻿using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
     public class EntryMenu
     {
 
-        public static bool SetupFastStartup(RandomizationOption option)
+        public static bool SetupFastStartup(GameTarget target, RandomizationOption option)
         {
-            var entrymenuF = MERFileSystem.GetPackageFile("EntryMenu.pcc");
+            var entrymenuF = MERFileSystem.GetPackageFile(target, "EntryMenu.pcc");
             var entrymenuP = MEPackageHandler.OpenMEPackage(entrymenuF);
             var skipElem = entrymenuP.GetUExport(86); // should show splash
             if (!skipElem.ObjectFlags.HasFlag(UnrealFlags.EObjectFlags.DebugPostLoad))
