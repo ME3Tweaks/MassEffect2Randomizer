@@ -4,14 +4,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Misc;
 using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.Game2FileFormats;
+using Randomizer.Randomizers.Handlers;
 using Serilog;
 
 namespace Randomizer.Randomizers.Game2.Misc

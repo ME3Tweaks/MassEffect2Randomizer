@@ -13,7 +13,7 @@ using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Levels;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
@@ -363,11 +363,13 @@ namespace Randomizer.Randomizers.Game2.Misc
                 float shiftAmt = -10;
                 foreach (var lod in objBin.LODModels)
                 {
-                    foreach (var vertex in lod.VertexBufferGPUSkin.VertexData)
+                    for (int i = 0; i < lod.VertexBufferGPUSkin.VertexData.Length; i++)
                     {
-                        var pos = vertex.Position;
+                        // NEEDS TESTED THAT THIS WORKS.
+                        // CHANGED 11/17/2021 during refactor
+                        var pos = lod.VertexBufferGPUSkin.VertexData[i].Position;
                         pos.Z += shiftAmt;
-                        vertex.Position = pos;
+                        lod.VertexBufferGPUSkin.VertexData[i].Position = pos;
                     }
                 }
                 newHead.WriteBinary(objBin);
@@ -404,11 +406,13 @@ namespace Randomizer.Randomizers.Game2.Misc
                 float shiftAmt = 7;
                 foreach (var lod in objBin.LODModels)
                 {
-                    foreach (var vertex in lod.VertexBufferGPUSkin.VertexData)
+                    for (int i = 0; i < lod.VertexBufferGPUSkin.VertexData.Length; i++)
                     {
-                        var pos = vertex.Position;
+                        // NEEDS TESTED THAT THIS WORKS.
+                        // CHANGED 11/17/2021 during refactor
+                        var pos = lod.VertexBufferGPUSkin.VertexData[i].Position;
                         pos.Z += shiftAmt;
-                        vertex.Position = pos;
+                        lod.VertexBufferGPUSkin.VertexData[i].Position = pos;
                     }
                 }
                 newHead.WriteBinary(objBin);
@@ -500,7 +504,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 {
                     // Check for Jacob or Wilson. Not entirely sure how we can do this reliably...
                     // This seems to be coded to find embedded jacob/wilson pawns?
-                    if (parentObj.IsDefaultObject && export.ObjectName.Name.Contains("HeadMesh") && (parentObj.Class.InheritsFrom("SFXPawn_Jacob") || parentObj.Class.InheritsFrom("SFXPawn_Wilson")))
+                    if (parentObj.IsDefaultObject && export.ObjectName.Name.Contains("HeadMesh") && (parentObj.Class.IsA("SFXPawn_Jacob") || parentObj.Class.InheritsFrom("SFXPawn_Wilson")))
                     {
                         return true;
                     }
@@ -582,8 +586,8 @@ namespace Randomizer.Randomizers.Game2.Misc
                 var owningPawnIsClassDef = owningPawn.ClassName.StartsWith("SFXPawn_");
 
                 var newName = squadmateInfo.NamePrefix + newAsset.NameSuffix;
-                var newTlkId = TLKHandler.GetNewTLKID();
-                TLKHandler.ReplaceString(newTlkId, newName);
+                var newTlkId = TLKBuilder.GetNewTLKID();
+                TLKBuilder.ReplaceString(newTlkId, newName);
                 if (owningPawn.IsDefaultObject)
                 {
                     owningPawn.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
@@ -602,8 +606,8 @@ namespace Randomizer.Randomizers.Game2.Misc
                         if (strRefNode != null)
                         {
                             var morName = $"Morin{newAsset.NameSuffix}";
-                            var morTlk = TLKHandler.GetNewTLKID();
-                            TLKHandler.ReplaceString(morTlk, morName);
+                            var morTlk = TLKBuilder.GetNewTLKID();
+                            TLKBuilder.ReplaceString(morTlk, morName);
                             strRefNode.WriteProperty(new IntProperty(morTlk, "m_srStringID"));
                         }
                     }
@@ -799,8 +803,8 @@ namespace Randomizer.Randomizers.Game2.Misc
         //            headMeshExp.WriteProperty(skelMesh);
 
         //            var newName = squadmateInfo.NamePrefix + newAsset.NameSuffix;
-        //            var newTlkId = TLKHandler.GetNewTLKID();
-        //            TLKHandler.ReplaceString(newTlkId, newName);
+        //            var newTlkId = TLKBuilder.GetNewTLKID();
+        //            TLKBuilder.ReplaceString(newTlkId, newName);
         //            export.WriteProperty(new StringRefProperty(newTlkId, "PrettyName"));
         //            if (export.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(export.FileRef) is ExportEntry actorTypeExp)
         //            {

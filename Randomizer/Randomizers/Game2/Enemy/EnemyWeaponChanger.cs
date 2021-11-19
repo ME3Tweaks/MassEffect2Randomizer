@@ -13,7 +13,6 @@ using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Newtonsoft.Json;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Enemy

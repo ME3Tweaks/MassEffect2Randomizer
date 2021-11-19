@@ -16,14 +16,13 @@ using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.Levels;
 using Randomizer.Randomizers.Game2.Misc;
 using Randomizer.Randomizers.Game2.TextureAssets;
 using Randomizer.Randomizers.Game2.TextureAssets.LE2;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared;
 using Randomizer.Randomizers.Utility;
 using Serilog;
@@ -276,7 +275,7 @@ namespace Randomizer.Randomizers.Game2
             // Close out files and free memory
             TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
             CoalescedHandler.EndHandler();
-            TLKHandler.EndHandler();
+            TLKBuilder.EndHandler();
             MERFileSystem.Finalize(SelectedOptions);
             ResetClasses();
             MemoryManager.ResetMemoryManager();
@@ -339,7 +338,7 @@ namespace Randomizer.Randomizers.Game2
                             },
                         SliderTooltip = "Higher settings yield more extreme facial animation values. Default value is Sonic Adventure",
                         SliderValue = 3, // This must come after the converter
-                        PerformRandomizationOnExportDelegate = RFaceFXAnimSet.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RSharedFaceFXAnimSet.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
                     new RandomizationOption() {HumanName = "Squadmate heads",
@@ -385,7 +384,7 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {HumanName = "Eyes (excluding Illusive Man)",
                         Description="Changes the colors of eyes",
                         IsRecommended = true,
-                        PerformRandomizationOnExportDelegate = REyes.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RSharedEyes.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
                     new RandomizationOption() {HumanName = "Illusive Man eyes",
@@ -758,7 +757,7 @@ namespace Randomizer.Randomizers.Game2
                 {
                     // Doesn't seem to work
                     //                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RSharedHeightFogComponent.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {
                         HumanName = "Post Processing volumes",
                         Description = "Changes postprocessing. Likely will make some areas of game unplayable",
@@ -766,7 +765,7 @@ namespace Randomizer.Randomizers.Game2
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP
                     },
                     new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting",
-                        PerformRandomizationOnExportDelegate = RLighting.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RSharedLighting.RandomizeExport,
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {
@@ -794,14 +793,14 @@ namespace Randomizer.Randomizers.Game2
                 GroupName = "Text",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RTexts.RandomizeGameOverText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RTexts.RandomizeIntroText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RSharedTexts.RandomizeGameOverText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RSharedTexts.RandomizeOpeningCrawl, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption()
                     {
                         HumanName = "Vowels",
                         IsPostRun = true,
                         Description="Changes vowels in text in a consistent manner, making a 'new' language",
-                        PerformSpecificRandomizationDelegate = RTexts.RandomizeVowels,
+                        PerformSpecificRandomizationDelegate = RSharedTexts.RandomizeVowels,
                         RequiresTLK = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         MutualExclusiveSet="AllText",
@@ -810,7 +809,7 @@ namespace Randomizer.Randomizers.Game2
                         {
                             new RandomizationOption()
                             {
-                                SubOptionKey = RTexts.SUBOPTIONKEY_VOWELS_HARDMODE,
+                                SubOptionKey = RSharedTexts.SUBOPTIONKEY_VOWELS_HARDMODE,
                                 HumanName = "Hurd Medi",
                                 Description = "Adds an additional 2 consonants to swap (for a total of 4 letter changes). Can make text extremely challenging to read",
                                 Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
@@ -819,7 +818,7 @@ namespace Randomizer.Randomizers.Game2
                         }
                     },
                     new RandomizationOption() {HumanName = "UwU",
-                        Description="UwUifies all text in the game, often hilarious. Based on Jade's OwO mod", PerformSpecificRandomizationDelegate = RTexts.UwuifyText,
+                        Description="UwUifies all text in the game, often hilarious. Based on Jade's OwO mod", PerformSpecificRandomizationDelegate = RSharedTexts.UwuifyText,
                         RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText",
                         StateChangingDelegate=optionChangingDelegate,
                         IsPostRun = true,
@@ -830,7 +829,7 @@ namespace Randomizer.Randomizers.Game2
                                 IsOptionOnly = true,
                                 HumanName = "Keep casing",
                                 Description = "Keeps upper and lower casing.",
-                                SubOptionKey = RTexts.SUBOPTIONKEY_UWU_KEEPCASING,
+                                SubOptionKey = RSharedTexts.SUBOPTIONKEY_UWU_KEEPCASING,
                             },
                             new RandomizationOption()
                             {
@@ -838,7 +837,7 @@ namespace Randomizer.Randomizers.Game2
                                 HumanName = "Emoticons",
                                 Description = "Adds emoticons ^_^\n'Keep casing' recommended. Might break email or mission summaries, sowwy UwU",
                                 Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
-                                SubOptionKey = RTexts.SUBOPTIONKEY_REACTIONS_ENABLED
+                                SubOptionKey = RSharedTexts.SUBOPTIONKEY_REACTIONS_ENABLED
                             }
                         }
                     },
@@ -859,8 +858,8 @@ namespace Randomizer.Randomizers.Game2
                     },
                     new RandomizationOption() {
                             HumanName = "Animation data",
-                            PerformRandomizationOnExportDelegate = RAnimSequence.RandomizeExport,
-                            SliderToTextConverter = RAnimSequence.UIConverter,
+                            PerformRandomizationOnExportDelegate = RSharedAnimSequence.RandomizeExport,
+                            SliderToTextConverter = RSharedAnimSequence.UIConverter,
                             HasSliderOption = true,
                             SliderValue = 1,
                             Ticks = "1,2",
@@ -874,7 +873,7 @@ namespace Randomizer.Randomizers.Game2
                         HumanName = "Random interpolations",
                         Description = "Randomly fuzzes interpolation data. Can make game very dizzying on higher values!",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
-                        PerformRandomizationOnExportDelegate = RInterpTrackMove.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RSharedInterpTrackMove.RandomizeExport,
                         Ticks = "0.025,0.05,0.075,0.1,0.15,0.2,0.3,0.4,0.5",
                         HasSliderOption = true,
                         SliderTooltip = "Higher settings yield more extreme position and rotational changes to interpolations. Values above 0.05 are very likely to make the game unplayable. Default value is 0.05.",

@@ -8,10 +8,9 @@ using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.Misc;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
@@ -68,8 +67,8 @@ namespace Randomizer.Randomizers.Game2.Levels
             foreach (var pair in backgroundTlkPairs)
             {
                 var childHood = childhoods.PullFirstItem();
-                TLKHandler.ReplaceString(pair.nameId, childHood.Value);
-                TLKHandler.ReplaceString(pair.descriptionId, childHood.Item2.Trim());
+                TLKBuilder.ReplaceString(pair.nameId, childHood.Value);
+                TLKBuilder.ReplaceString(pair.descriptionId, childHood.Item2.Trim());
             }
 
             backgroundTlkPairs.Clear();
@@ -79,8 +78,8 @@ namespace Randomizer.Randomizers.Game2.Levels
             foreach (var pair in backgroundTlkPairs)
             {
                 var reputation = reputations.PullFirstItem();
-                TLKHandler.ReplaceString(pair.nameId, reputation.Value);
-                TLKHandler.ReplaceString(pair.descriptionId, reputation.Item2.Trim());
+                TLKBuilder.ReplaceString(pair.nameId, reputation.Value);
+                TLKBuilder.ReplaceString(pair.descriptionId, reputation.Item2.Trim());
             }
             return true;
         }
@@ -194,7 +193,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                     var colors = export.GetProperty<ArrayProperty<StructProperty>>("m_acColours");
                     foreach (var color in colors)
                     {
-                        RStructs.RandomizeColor(color, true, .5, 1.5);
+                        StructTools.RandomizeColor(color, true, .5, 1.5);
                     }
                     export.WriteProperty(colors);
                 }

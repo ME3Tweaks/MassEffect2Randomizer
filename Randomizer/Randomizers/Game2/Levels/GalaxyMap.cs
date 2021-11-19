@@ -5,9 +5,11 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Shared;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -76,12 +78,12 @@ namespace Randomizer.Randomizers.Game2.Levels
                             var starColor = props.GetProp<StructProperty>("StarColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
                             starColor = props.GetProp<StructProperty>("StarColor2");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
 
                             props.GetProp<IntProperty>("PosX").Value = ThreadSafeRandom.Next(800);
@@ -106,20 +108,20 @@ namespace Randomizer.Randomizers.Game2.Levels
                             var starColor = props.GetProp<StructProperty>("StarColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
 
                             starColor = props.GetProp<StructProperty>("FlareTint");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
 
 
                             starColor = props.GetProp<StructProperty>("SunColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
 
                             props.GetProp<IntProperty>("PosX").Value = ThreadSafeRandom.Next(1000);
@@ -139,20 +141,20 @@ namespace Randomizer.Randomizers.Game2.Levels
                             var starColor = props.GetProp<StructProperty>("SunColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
 
                             starColor = props.GetProp<StructProperty>("FlareTint");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
 
 
                             starColor = props.GetProp<StructProperty>("CloudColor");
                             if (starColor != null)
                             {
-                                RStructs.RandomizeTint(starColor, false);
+                                StructTools.RandomizeTint(starColor, false);
                             }
 
                             var resourceRichness = props.GetProp<FloatProperty>("ResourceRichness");
@@ -177,7 +179,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                         }
                         break;
                     case "MaterialInstanceConstant":
-                        RMaterialInstance.RandomizeExport(export, null);
+                        RSharedMaterialInstance.RandomizeExport(export, null);
                         break;
                 }
             }

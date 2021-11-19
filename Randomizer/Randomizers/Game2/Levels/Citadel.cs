@@ -8,7 +8,7 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.ExportTypes;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
 
@@ -125,7 +125,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 //UpdateFaceFXIDs(conversation, oldTlkId.ToString(), newTlkId.ToString());
 
                 // Just overwrite the TLK string instead
-                TLKHandler.ReplaceStringByRepoint(oldTlkId, newTlkId);
+                TLKBuilder.ReplaceStringByRepoint(oldTlkId, newTlkId);
             }
 
             MERFileSystem.SavePackage(package);

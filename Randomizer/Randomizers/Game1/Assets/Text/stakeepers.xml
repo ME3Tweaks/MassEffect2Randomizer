@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<keeperrandomizer>
+  <!-- Citadel Tower - Don’t randomize Chorbans (not shown below) -->
+  <keeper file="BIOA_STA70_02A_DSG.SFM" export="2516" teleportflagexport="8724"/>
+  <keeper file="BIOA_STA70_02A_DSG.SFM" export="2522" teleportflagexport="8703"/>
+
+  <!-- Chorbans Keeper - Do Not Randomize 
+  <keeper file="BIOA_STA70_02A_DSG.SFM" export="2504" teleportflagexport="0"/> -->
+
+  <!-- 0 cause we don't need it -->
+  <!-- Presidium - Don’t randomize keeper by Avina (not shown below)-->
+  <keeper file="BIOA_STA20_00_DSG.SFM" export="1350" teleportflagexport="3429"/>
+  <keeper file="BIOA_STA20_00_DSG.SFM" export="1352" teleportflagexport="3381"/>
+  <keeper file="BIOA_STA20_00_DSG.SFM" export="1353" teleportflagexport="3357"/>
+  <keeper file="BIOA_STA20_00_DSG.SFM" export="1354" teleportflagexport="3393"/>
+  <keeper file="BIOA_STA20_00_DSG.SFM" export="1355" teleportflagexport="3405"/>
+  <keeper file="BIOA_STA20_00_DSG.SFM" export="1356" teleportflagexport="3417"/>
+  <keeper file="BIOA_STA20_00_DSG.SFM" export="1357" teleportflagexport="3441"/>
+
+  <!-- Teleport not needed, already false -->
+  <!-- Normandy Area Do not randomize
+  <keeper file="BIOA_STA30_02A_DSG.SFM" export="517"/> -->
+
+
+  <!-- Teleporter export is in ActionStations for some reason -->
+  <!-- C-SEC Requesitions Room. too small to keep loaded in memory/ move keeper
+  <keeper file="BIOA_STA30_03A_DSG.SFM" export="881" teleportflagexport="2704"/>-->
+
+  <!-- C-SEC -->
+  <keeper file="BIOA_STA30_05a_DSG.SFM" export="1225" teleportflagexport="3644"/>
+
+  <!-- Wards STA60 -->
+  <keeper file="BIOA_STA60_02a_DSG.SFM" export="1275" teleportflagexport="4757"/>
+
+  <!-- Keeper in the room with the yellow hair dude who is your fan
+  <keeper file="BIOA_STA60_08B_DSG.SFM" export="546" teleportflagexport="2245"/> -->
+
+  <keeper file="BIOA_STA60_08_DSG.SFM" export="953" teleportflagexport="3845"/>
+  <keeper file="BIOA_STA60_09casino_DSG.SFM" export="1562" teleportflagexport="4833"/>
+
+  <keeper file="BIOA_STA60_11A_DSG.SFM" export="2274" teleportflagexport="6958"/>
+
+
+
+  <!-- Keeper in tower, streaming makes it hard to place so don’t bother 
+  <keeper file="BIOA_STA70_02side_DSG.SFM" export="1132" teleportflagexport="3839"/> -->
+
+  <!-- PRESIDIUM-->
+  <!-- Outside Barla Von's office by the skycar-->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="-1950" positiony="-3802" positionz="396" yaw="70"/>
+
+  <!-- Consort room. Unsure if this stays streamed in-->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="-6913" positiony="8343" positionz="680" yaw="1"/>
+
+  <!-- 2nd floor near the consort entrance-->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="-4942" positiony="7556" positionz="814" yaw="90"/>
+
+  <!-- Right next to Udinas office, on the inaccessible balcony-->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="4164" positiony="16087" positionz="1661" yaw="-110"/>
+
+  <!-- Barla Von's office -->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="-4026" positiony="-2119" positionz="374" yaw="15"/>
+
+  <!-- Balcony of bar thing next to executors office-->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="4130" positiony="6384" positionz="1340" yaw="-166"/>
+
+  <!-- Executors office-->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="4355" positiony="8574" positionz="1280" yaw="-77"/>
+
+  <!-- Grass field in middle area-->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="53" positiony="-3246" positionz="163" yaw="155"/>
+
+  <!--Next to first avina below udina -->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="4060" positiony="12201" positionz="880" yaw="90"/>
+
+  <!-- in front of c-sec elevator below udinas office -->
+  <keeperlocation file="BIOA_STA20_00_DSG.SFM" positionx="2936" positiony="6933" positionz="298" yaw="1"/>
+
+  <!-- normandy landing area. Do not randomize
+	<keeperlocation file="BIOA_STA30_02A_DSG.SFM" positionx="" positiony="" positionz="" yaw=""/> -->
+
+
+  <!-- C-SEC Requesitions Room. too small to keep loaded in memory/ move keeper-->
+  <!--<keeperlocation file="BIOA_STA30_03A_DSG.SFM" positionx="-2502" positiony="747" positionz="-21115" yaw=""/>-->
+
+  <!-- C-SEC room with the big firing range area thing. Go up 2 levels from C-Sec to reach -->
+  <keeperlocation file="BIOA_STA30_05a_DSG.SFM" positionx="-2502" positiony="747" positionz="-21140" yaw="180"/>
+
+  <!-- Near Conrad Verner in the Wards -->
+  <keeperlocation file="BIOA_STA60_02a_DSG.SFM" positionx="-12298" positiony="-1010" positionz="-30600" yaw="-120"/>
+
+  <!-- fan guy room. DO NOT RANDOMIZE 
+	<keeperlocation file="BIOA_STA60_08B_DSG.SFM" positionx="" positiony="" positionz="" yaw=""/> -->
+
+  <!-- Wards, in the hideaway by the stairs -->
+  <keeperlocation file="BIOA_STA60_08_DSG.SFM" positionx="-10876" positiony="8684" positionz="-30654" yaw="-160"/>
+  <!-- Casino - Upstairs by the chairs -->
+  <keeperlocation file="BIOA_STA60_09casino_DSG.SFM" positionx="-9285" positiony="1966" positionz="-29744" yaw="45"/>
+  <!-- Casino - behind the counter -->
+  <keeperlocation file="BIOA_STA60_09casino_DSG.SFM" positionx="-10729" positiony="186" positionz="-30132" yaw="-30"/>
+
+  <!-- Presidum/C-Sec elevator connecting room. This one is in the blue area-->
+  <keeperlocation file="BIOA_STA60_11A_DSG.SFM" positionx="562" positiony="2038" positionz="-15705" yaw="1"/>
+  <!-- Presidum/C-Sec elevator connecting room. This one is in the original area it is in but hidden behind the visibility wall hehe-->
+  <keeperlocation file="BIOA_STA60_11A_DSG.SFM" positionx="-105" positiony="4457" positionz="-15609" yaw="90"/>
+
+  <!--Citadel Tower - In the bushes, left side -->
+  <keeperlocation file="BIOA_STA70_02A_DSG.SFM" positionx="-6513" positiony="-4967" positionz="61630" yaw="90"/>
+
+  <!-- Left side corner keeper, near entrance to citadel council area-->
+  <keeperlocation file="BIOA_STA70_02A_DSG.SFM" positionx="-7599" positiony="-5179" positionz="62089" yaw="-30"/>
+  <!-- Right side corner keeper, near entrance to citadel council area-->
+  <keeperlocation file="BIOA_STA70_02A_DSG.SFM" positionx="-7751" positiony="-8960" positionz="62088" yaw="90"/>
+  <!-- Right side in starting area, in the planters -->
+  <keeperlocation file="BIOA_STA70_02A_DSG.SFM" positionx="894" positiony="-8326" positionz="61050" yaw="125"/>
+  <!-- Left side mid section, corner that you have to loop back for -->
+  <keeperlocation file="BIOA_STA70_02A_DSG.SFM" positionx="378" positiony="-6404" positionz="61564" yaw="-30"/>
+</keeperrandomizer>
+
+
+

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Windows.Media;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.TLK.ME1;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using Randomizer.Randomizers;
 

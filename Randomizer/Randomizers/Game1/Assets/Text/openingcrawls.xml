@@ -1,0 +1,70 @@
+﻿<!--
+The intro text only supports 8 lines of text. If you go over this, it won’t appear.
+-->
+<IntroCrawlTexts>
+  <CrawlText>
+    In the year 2148, explorers on Mars discovered the remains of an ancient spacefaring civilization. In the decades that followed, these mysterious artifacts revealed startling new technologies, enabling travel to the furthest stars. The basis for this incredible technology was a force that controlled the very fabric of space and time.
+
+    They called it the greatest discovery in human history.
+
+    The civilizations of the galaxy call it...
+  </CrawlText>
+  <CrawlText>
+    This series is a science fiction action role-playing third-person shooter video game series developed by the Canadian company BioWare and released for the Xbox 360, PlayStation 3, and Microsoft Windows, with the third installment also released on the Wii U.
+
+    The series is highly regarded for its narrative, character development, voice acting, the universe, and emphasis on player choice affecting the experience.
+
+    The fourth game was released on Windows, PlayStation 4 and Xbox One in March 2017, but you’re currently playing...
+  </CrawlText>
+  <CrawlText>
+    Hello there! Welcome to the galaxy of ALIENS and SPACE MAGIC! My name is UDINA! People call me the ALIEN PROF! This galaxy is inhabited by creatures called BATARIANS! And SALARIANS! For some people, ALIENS are friends. Others use them for committing war crimes against other species, like sterilization!
+
+    Myself...I study ALIEN POLITICS as a profession.
+
+    Shepard! Let's go!
+  </CrawlText>
+  <CrawlText>
+    A vorcha, a batarian and a quarian are in a skycar, who's driving?
+
+
+
+
+
+
+    C-Sec.
+  </CrawlText>
+  <CrawlText>
+    In 2027, explorers on the moon of the planet Earth discovered the remains of a vehicle left there 55 years before. 81 years later, unable to contain it’s needs for its populations, the people of Earth expanded into the Sol system. In 2144 nuclear war broke out over the last remaining resources of Earth, leaving humanity’s future in peril.
+
+    Then everything changed... We found that we’re just a drop in the bucket of life across the galaxy...
+  </CrawlText>
+  <CrawlText>
+    class Program
+    {
+    static void Main(string[] args)
+    {
+    Console.WriteLine("Hello World!");
+    }
+    }
+  </CrawlText>
+  <CrawlText>
+    [Record Scratch]
+    [Freeze Frame]
+
+    Yup, that’s me. You’re probably wondering how I ended up in this situation.
+
+    I was with a friend on this ship, and I asked to try on their N7 uniform. One unfortunate accident later, and now they think I’m Lieutenant Commander Shepard...
+  </CrawlText>
+  <CrawlText>
+    It is a period of civil war. Rebel spaceships, striking from a hidden base, have won their first victory against the evil Citadel Council. During the battle, Rebel spies managed to steal secret plans to the Council’s ultimate weapon, the DEATH STAR, an armored space station with enough power to destroy an entire planet.
+
+    Pursued by the Council’s sinister Spectre agents, Commander Anderson races home aboard his starship, custodian of the stolen plans that can save humanity and restore freedom to the galaxy.....
+  </CrawlText>
+  <CrawlText>
+    Captain's Log, October 7, 2183.
+
+    We have just come into orbit of Eden Prime to monitor progress on the Vernio particle fountain, a radically new mining technology. The project has been fraught with problems and is well behind schedule.
+
+    Mister Adams has been assigned to evaluate the situation.
+  </CrawlText>
+</IntroCrawlTexts>

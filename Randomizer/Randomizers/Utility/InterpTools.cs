@@ -5,7 +5,6 @@ using System.Linq;
 using System.Numerics;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
-using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Utility
 {

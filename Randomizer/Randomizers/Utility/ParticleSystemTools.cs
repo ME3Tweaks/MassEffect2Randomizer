@@ -5,7 +5,6 @@ using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
-using Randomizer.Randomizers.Game2.Misc;
 
 namespace Randomizer.Randomizers.Utility
 {

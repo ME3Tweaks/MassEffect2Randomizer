@@ -5,7 +5,7 @@ using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.Coalesced;
+using Randomizer.Randomizers.Handlers;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {

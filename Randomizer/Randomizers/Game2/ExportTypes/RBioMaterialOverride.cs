@@ -1,6 +1,7 @@
 ﻿using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {
@@ -17,7 +18,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 foreach (StructProperty colorParameter in colorOverrides)
                 {
                     //Debug.WriteLine("Randomizing Color Parameter");
-                    RStructs.RandomizeTint(colorParameter.GetProp<StructProperty>("cValue"), false);
+                    StructTools.RandomizeTint(colorParameter.GetProp<StructProperty>("cValue"), false);
                 }
             }
             var scalarOverrides = props.GetProp<ArrayProperty<StructProperty>>("m_aScalarOverrides");

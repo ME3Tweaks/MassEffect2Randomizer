@@ -10,7 +10,7 @@ using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
 
@@ -566,7 +566,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             if (!CanRandomize(export)) return false;
 
             var conv = new ConversationExtended(export);
-            conv.LoadConversation(TLKHandler.TLKLookup);
+            conv.LoadConversation(TLKBuilder.TLKLookup);
 
 
             // SHUFFLE THE NODES THE REPLIES CONNECT TO

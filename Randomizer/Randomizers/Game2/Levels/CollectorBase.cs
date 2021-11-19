@@ -8,7 +8,7 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Enemy;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
 
@@ -133,9 +133,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             ChangeFlyersInFiles(target, files);
 
             // Install names
-            TLKHandler.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
-            TLKHandler.ReplaceString(7892161, "Enthralled Batarian"); //Batarian Commando update
-            //TLKHandler.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
+            TLKBuilder.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
+            TLKBuilder.ReplaceString(7892161, "Enthralled Batarian"); //Batarian Commando update
+            //TLKBuilder.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
         }
 
         private static void ChangeFlyersInFiles(GameTarget target, string[] files)

@@ -1,0 +1,59 @@
+﻿<backgroundstrings>
+  <childhoods>
+    <childhood name="Child at heart">
+      You never really grew up in your mind. You've still got your favorite Lego set on your shelf in your room on the ship. Your toys helped distract you from the rough life you lived when you were younger, and you never really grew out of that.
+
+      Your crewmates make fun of you for it sometimes, but nobody can deny the tactical inventiveness you've gained from your experience with toys. Plus they don't have the ability to boast about building a 32,000 piece lego set.
+    </childhood>
+    <childhood name="Hipster">
+      You were too cool for school, and you let everyone know it. You're the ultimate hipster - if someone knows what you like, it was already too mainstream. You rode the wave of cool before it was cool, but your mother didn't approve, and you were kicked out and ended up in the military.
+
+      You're now a lieutenant commander, and your goal is to climb to the top because it's a rank achieved by few, and thus it's not popular among the masses.
+    </childhood>
+    <childhood name="Life of the party">
+      If there was a party, you were there. You partied so hard the local news would write stories about you. Your early twenties were so much fun, at least the pictures others took seem to indicate you had fun, because you actually can't remember most of it.
+
+      Being this esteemed in the military makes you the life of the party, but you're starting to learn that there's more to life than partying.
+    </childhood>
+    <childhood name="Imposter">
+      Your original career choice was influenced by the admiration of a popular chef. Joining a space transportation company as a young self proclaimed culinary wizard trying to get your food in the door, you were bounced around from ship to ship trying to find a suitable place of work.
+
+      It would have been devastating if anyone had learned that you actually couldn't cook. Maybe the ship occupants were trying to be courteous.
+    </childhood>
+    <childhood name="Introvert">
+      Your parents divorced when you were young, and ever since then, you've had trouble maintaining relationships with others. You found it uncomfortable to exert the energy required to hold up your end of the deal, causing many connections to others to wither away.
+
+      You spent a lot of time on your own, becoming independent and acquiring an ability to recognize the subtle non-verbal communications of others.
+    </childhood>
+  </childhoods>
+  <reputations>
+    <reputation name="Rough Rider">
+      A cowboy is how they used to call them back in the time before planes, your policy is shoot first and ask questions later. Known to lay down the law when necessary, you also know when to let up, and let people learn from their own mistakes.Some people think you're charming, while others can see through your bluff and try to call you out on it.
+
+      Most of those people end up six feet under.
+    </reputation>
+    <reputation name="Terrorist">Your enemies cringe when they hear your name. So do your allies. You are known to be an absolutely ruthless and brutal soldier, willing to do anything to get the job done, then kicking the enemy in the teeth while they're down. But that's not enough for you, desecrating the body and sending it back to the family and friends with a get well soon card attached is just one of your many horror stories.</reputation>
+    <reputation name="Pacifist (in name only)">
+      The kindest soul that there ever was, was how someone once described you. You wouldn't hurt a fly, and you'd surely let the spider out of the house rather than smashing it.
+
+      At least, if someone was around to see. When nobody is looking, anything is fair game; from putting down someone who threatens you to double dipping your chips, as long as everyone thinks you're the sweetest one of them all, it's all good.
+    </reputation>
+    <reputation name="Social Elite">
+      You don't need to wield guns to show your power, you have people willing to do it for you. You have friends in high places who owe you favors you intend to collect on someday, and you're at the top of the food chain. You may not be the best shot in your squad but you always know that your team knows who's in command.
+
+      That's not to say you rule with them under your boot; you just know how to pull all the right strings in people to get what you want.
+    </reputation>
+    <reputation name="Influencer">
+      I’m Commander Shepard, and this is my favorite department store on Earth.
+
+      You’re willing to sell your influence to the highest bidder. The merchants know you by name even if you’ve never stepped foot in their shop, and you always let them know when they don’t. You have a list of clients trying to get you to make the next review of their product on HanarTube, you’re kind of a big deal.
+
+      The current product you’re trying to sell is the most expensive product you’ve ever advertised to date: the SSV Normandy SR-1. This will be one for the history codex.
+    </reputation>
+    <reputation name="Streamer">
+      You’ve always been a performer; well, that’s what some people think, but you only started this “streaming” thing 3 years ago. The Alliance has seen the following you’ve cultivated and has granted you promotions you likely didn’t deserve as a way to promote enlistment into the service. You’re a bit too engrossed with your fanbase to see this, though your haters have tried to make it obvious to you that you’re just being used. They’re just jealous.
+
+      To your audience of 180,000 live viewers, they’re about to see the highest piece of technology humanity has ever created: The SSV Normandy SR-1.
+    </reputation>
+  </reputations>
+</backgroundstrings>

@@ -3,7 +3,6 @@ using System.Linq;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
-using Randomizer.Randomizers.Game2.Misc;
 using NameProperty = LegendaryExplorerCore.Unreal.NameProperty;
 
 namespace Randomizer.Randomizers.Utility
@@ -48,7 +47,7 @@ namespace Randomizer.Randomizers.Utility
             else
             {
                 props.Add(new FloatProperty(ParameterValue, "ParameterValue"));
-                props.Add(RStructs.ToFourPartIntStruct("Guid", true, 0, 0, 0, 0,
+                props.Add(StructTools.ToFourPartIntStruct("Guid", true, 0, 0, 0, 0,
                     "A", "B", "C", "D", "ExpressionGUID"));
                 return new StructProperty("ScalarParameterValue", props);
             }
@@ -86,7 +85,7 @@ namespace Randomizer.Randomizers.Utility
             {
                 Property = sp,
                 ParameterName = sp.GetProp<NameProperty>("ParameterName")?.Value,
-                ParameterValue = RStructs.FromLinearColorStructProperty(sp.GetProp<StructProperty>(sp.StructType == "SMAVectorParameter" ? "Parameter" : "ParameterValue")),
+                ParameterValue = StructTools.FromLinearColorStructProperty(sp.GetProp<StructProperty>(sp.StructType == "SMAVectorParameter" ? "Parameter" : "ParameterValue")),
                 Group = sp.GetProp<NameProperty>("Group")
             };
         }
@@ -98,16 +97,16 @@ namespace Randomizer.Randomizers.Utility
 
             if (Property.StructType == "SMAVectorParameter")
             {
-                props.Add(RStructs.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
+                props.Add(StructTools.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
                     "R", "G", "B", "A", "Parameter"));
                 props.Add(Group);
                 return new StructProperty("SMAVectorParameter", props);
             }
             else
             {
-                props.Add(RStructs.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
+                props.Add(StructTools.ToFourPartFloatStruct("LinearColor", true, ParameterValue.W, ParameterValue.X, ParameterValue.Y, ParameterValue.Z,
                     "R", "G", "B", "A", "ParameterValue"));
-                props.Add(RStructs.ToFourPartIntStruct("Guid", true, 0, 0, 0, 0,
+                props.Add(StructTools.ToFourPartIntStruct("Guid", true, 0, 0, 0, 0,
                     "A", "B", "C", "D", "ExpressionGUID"));
                 return new StructProperty("VectorParameterValue", props);
             }

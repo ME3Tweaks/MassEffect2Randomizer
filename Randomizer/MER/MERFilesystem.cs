@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
@@ -12,8 +11,8 @@ using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Targets;
 using Randomizer.Randomizers;
-using Randomizer.Randomizers.Game2.Coalesced;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.MER
 {
@@ -22,7 +21,17 @@ namespace Randomizer.MER
     /// </summary>
     public class MERFileSystem
     {
-#if __GAME2__
+#if __GAME1__
+        /// <summary>
+        /// List of games this build supports
+        /// </summary>
+        public static MEGame[] Games = new[] { MEGame.ME1, MEGame.LE1 };
+        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
+        /// <summary>
+        /// TODO: CHANGE TO NOT USE EXTENSIONS
+        /// </summary>
+        public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", "BIOG_Male_Player_C.pcc" };
+#elif __GAME2__
         /// <summary>
         /// List of games this build supports
         /// </summary>
@@ -57,14 +66,16 @@ namespace Randomizer.MER
             ReloadLoadedFiles(options.RandomizationTarget);
 
             // ME1 Randomizer does not use this feature
+#if !__GAME1__
             if (options.RandomizationTarget.Game.IsGame2() || options.RandomizationTarget.Game.IsGame3())
             {
                 CoalescedHandler.StartHandler();
             }
+#endif
 
             if (useTlk)
             {
-                TLKHandler.StartHandler(options.RandomizationTarget);
+                TLKBuilder.StartHandler(options.RandomizationTarget);
             }
         }
 

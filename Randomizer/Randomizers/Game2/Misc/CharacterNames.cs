@@ -10,7 +10,8 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Microsoft.Win32;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -203,8 +204,8 @@ namespace Randomizer.Randomizers.Game2.Misc
             {
                 var newPawnName = PawnNameListInstanced.PullFirstItem();
                 if (stringId == 0)
-                    stringId = TLKHandler.GetNewTLKID();
-                TLKHandler.ReplaceString(stringId, newPawnName);
+                    stringId = TLKBuilder.GetNewTLKID();
+                TLKBuilder.ReplaceString(stringId, newPawnName);
                 return stringId;
             }
 

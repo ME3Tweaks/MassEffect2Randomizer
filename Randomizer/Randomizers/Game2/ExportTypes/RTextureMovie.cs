@@ -2,7 +2,6 @@
 using System.Reflection;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
-using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
 {

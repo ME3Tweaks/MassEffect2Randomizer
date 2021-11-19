@@ -3,7 +3,25 @@
   <PropertyGroup>
     <TargetFramework>net5.0-windows8.0</TargetFramework>
     <Platforms>x64</Platforms>
-    <Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release</Configurations>
+    <Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release;Game3Debug;Game3Release</Configurations>
+    <Authors>Mgamerz</Authors>
+    <Company>ME3Tweaks</Company>
+    <Copyright>2017 - 2021 ME3Tweaks</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
+    <Product>Mass Effect Randomizer Core Library</Product>
+    <Description>Core randomization library for Mass Effect and Mass Effect (Legendary Edition)</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
+    <Product>Mass Effect 2 Randomizer Core Library</Product>
+    <Description>Core randomization library for Mass Effect 2 and Mass Effect 2 (Legendary Edition)</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
+    <Product>Mass Effect 3 Randomizer Core Library</Product>
+    <Description>Core randomization library for Mass Effect 3 and Mass Effect 3 (Legendary Edition)</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Debug|x64'">
@@ -35,6 +53,14 @@
 
 
 
+
+  <ItemGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
+    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.json" />
+    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.txt" />
+    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.xml" />
+    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.zip" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.json" />
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.txt" />
@@ -42,11 +68,11 @@
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.zip" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
-    <Folder Include="Randomizers\Game1\GalaxyMap\" />
-    <Folder Include="Randomizers\Game1\TextureAssetsLE1\" />
-    <Folder Include="Randomizers\Game3\" />
+  <ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.json" />
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.txt" />
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.xml" />
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.zip" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,5 +85,4 @@
     <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\ME3TweaksCore.csproj" />
     <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\submodules\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
   </ItemGroup>
-
 </Project>

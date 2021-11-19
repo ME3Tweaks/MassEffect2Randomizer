@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<clusternames>
+  <!-- The original names are here to tell randomizer these are also names that are suffixed and should be done as suffixed-->
+  <originalsuffixedname>Serpent Nebula</originalsuffixedname>
+  <originalsuffixedname>Horse Head Nebula</originalsuffixedname>
+  <originalsuffixedname>Armstrong Nebula</originalsuffixedname>
+  <originalsuffixedname>Kepler Verge</originalsuffixedname>
+  <originalsuffixedname>Exodus Cluster</originalsuffixedname>
+  <originalsuffixedname>Local Cluster</originalsuffixedname>
+  <originalsuffixedname>Voyage Cluster</originalsuffixedname>
+  <!-- Go to the XXX and find the enemy -->
+  <!-- Go find the enemy in the XXX. -->
+  <suffixedclustername>Zora’s Domain</suffixedclustername>
+  <suffixedclustername>Lanayru Verge</suffixedclustername>
+  <suffixedclustername>Zoltan Homeworlds</suffixedclustername>
+  <suffixedclustername>Forest of Redead</suffixedclustername>
+  <suffixedclustername>Indigo Plateau</suffixedclustername>
+  <suffixedclustername>Slug Homeworlds</suffixedclustername>
+  <suffixedclustername>Cluster o’ Hags</suffixedclustername>
+  <nonsuffixedclustername>Kamino</nonsuffixedclustername>
+  <nonsuffixedclustername>Akkala</nonsuffixedclustername>
+  <nonsuffixedclustername>Wily Castle</nonsuffixedclustername>
+  <nonsuffixedclustername>Kyramud</nonsuffixedclustername>
+  <nonsuffixedclustername>Tolase</nonsuffixedclustername>
+  <nonsuffixedclustername>Kirigiri</nonsuffixedclustername>
+  <nonsuffixedclustername>Ascension Sigma</nonsuffixedclustername>
+  <nonsuffixedclustername>Epsilon</nonsuffixedclustername>
+  <nonsuffixedclustername>Rodin</nonsuffixedclustername>
+  <nonsuffixedclustername>Gilgamesh</nonsuffixedclustername>
+  <nonsuffixedclustername>Enkidu</nonsuffixedclustername>
+  <nonsuffixedclustername>Ventus</nonsuffixedclustername>
+  <nonsuffixedclustername>Agrias</nonsuffixedclustername>
+  <nonsuffixedclustername>Canopus</nonsuffixedclustername>
+  <nonsuffixedclustername>Tartarose</nonsuffixedclustername>
+  <nonsuffixedclustername>Dorgalua</nonsuffixedclustername>
+  <nonsuffixedclustername>Losstarot</nonsuffixedclustername>
+  <nonsuffixedclustername>Onyx Tau</nonsuffixedclustername>
+  <nonsuffixedclustername>Himura</nonsuffixedclustername>
+  <nonsuffixedclustername>Arugula</nonsuffixedclustername>
+  <nonsuffixedclustername>Sculptor</nonsuffixedclustername>
+  <nonsuffixedclustername>Fornax</nonsuffixedclustername>
+  <nonsuffixedclustername>Sagan</nonsuffixedclustername>
+  <nonsuffixedclustername>Kakariko</nonsuffixedclustername>
+  <nonsuffixedclustername>Widowmaker</nonsuffixedclustername>
+</clusternames>
+
+

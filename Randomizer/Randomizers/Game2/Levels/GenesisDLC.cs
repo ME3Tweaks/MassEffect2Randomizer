@@ -4,7 +4,7 @@ using System.Linq;
 using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
@@ -51,9 +51,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                     // Repoint the TLK to match what's going to be said
                     var nTlk = WwiseTools.ExtractTLKIdFromExportName(audioChoice);
                     var oTlk = WwiseTools.ExtractTLKIdFromExportName(aExp);
-                    if (nTlk != -1 && oTlk != -1 && !string.IsNullOrWhiteSpace(TLKHandler.TLKLookupByLang(nTlk, "INT")))
+                    if (nTlk != -1 && oTlk != -1 && !string.IsNullOrWhiteSpace(TLKBuilder.TLKLookupByLang(nTlk, "INT")))
                     {
-                        TLKHandler.ReplaceString(oTlk, TLKHandler.TLKLookupByLang(nTlk, "INT"));
+                        TLKBuilder.ReplaceString(oTlk, TLKBuilder.TLKLookupByLang(nTlk, "INT"));
 
                         WwiseTools.RepointWwiseStream(audioChoice, aExp);
                         installed = true;

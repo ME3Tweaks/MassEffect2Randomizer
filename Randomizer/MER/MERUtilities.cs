@@ -73,25 +73,29 @@ namespace Randomizer.MER
             return folder;
         }
 
+        /// <summary>
+        /// Fetches a text file's contents from the Assets.Text directory
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <returns></returns>
         public static string GetEmbeddedStaticFilesTextFile(string filename)
         {
+            using var stream = GetEmbeddedAsset("Text", filename);
+            using StreamReader sr = new StreamReader(stream);
+            return sr.ReadToEnd();
+        }
+
+        public static Stream GetEmbeddedAsset(string assettype, string assetpath)
+        {
 #if __GAME1__
-            var assetBase = "Randomizer.Randomizers.Game1.Assets.Text.";
+            var assetBase = $"Randomizer.Randomizers.Game1.Assets.{assettype}.";
 #elif __GAME2__
-            var assetBase = "Randomizer.Randomizers.Game2.Assets.Text.";
+            var assetBase = $"Randomizer.Randomizers.Game2.Assets.{assettype}.";
 #elif __GAME3__
-            var assetBase = "Randomizer.Randomizers.Game3.Assets.Text.";
+            var assetBase = $"Randomizer.Randomizers.Game3.Assets.{assettype}.";
 #endif
-            string result = string.Empty;
             var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + filename))
-            {
-                using (StreamReader sr = new StreamReader(stream))
-                {
-                    result = sr.ReadToEnd();
-                }
-            }
-            return result;
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + assetpath);
         }
 
         /// <summary>

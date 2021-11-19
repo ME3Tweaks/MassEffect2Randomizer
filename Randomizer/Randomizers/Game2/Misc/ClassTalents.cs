@@ -9,9 +9,8 @@ using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.Coalesced;
 using Randomizer.Randomizers.Game2.Levels;
-using Randomizer.Randomizers.Game2.TLK;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
@@ -63,12 +62,12 @@ namespace Randomizer.Randomizers.Game2.Misc
                     superProps.GetProp<StringRefProperty>("DisplayName");
                     displayName = superProps.GetProp<StringRefProperty>("DisplayName");
                 }
-                PowerName = TLKHandler.TLKLookupByLang(displayName.Value, "INT");
+                PowerName = TLKBuilder.TLKLookupByLang(displayName.Value, "INT");
 
                 if (IsEvolution)
                 {
                     // Setup the blurb
-                    var blurbDesc = TLKHandler.TLKLookupByLang(displayNameProps.GetProp<StringRefProperty>("TalentDescription").Value, "INT").Split('\n')[0];
+                    var blurbDesc = TLKBuilder.TLKLookupByLang(displayNameProps.GetProp<StringRefProperty>("TalentDescription").Value, "INT").Split('\n')[0];
                     EvolvedBlurb = $"{PowerName}: {blurbDesc}";
                 }
 
@@ -434,12 +433,12 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                         var evolveRank = ranksSource[3];
                         var descriptionProp = evolveRank.Properties.GetProp<StringRefProperty>("Description");
-                        var description = TLKHandler.TLKLookupByLang(descriptionProp.Value, "INT");
+                        var description = TLKBuilder.TLKLookupByLang(descriptionProp.Value, "INT");
                         var descriptionLines = description.Split('\n');
                         descriptionLines[2] = $"1) {evolution1.EvolvedBlurb}";
                         descriptionLines[4] = $"2) {evolution2.EvolvedBlurb}";
-                        var newStringID = TLKHandler.GetNewTLKID();
-                        TLKHandler.ReplaceString(newStringID, string.Join('\n', descriptionLines));
+                        var newStringID = TLKBuilder.GetNewTLKID();
+                        TLKBuilder.ReplaceString(newStringID, string.Join('\n', descriptionLines));
                         descriptionProp.Value = newStringID;
 
                         props.AddOrReplaceProp(ranksSource); // copy the source rank info into our power with the modification
@@ -503,7 +502,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                     // Update the string ref for the class description
                     var tlkStrRef = ClasStrRefMap[kit];
-                    var existingStr = TLKHandler.TLKLookupByLang(tlkStrRef, "INT");
+                    var existingStr = TLKBuilder.TLKLookupByLang(tlkStrRef, "INT");
                     var existingLines = existingStr.Split('\n').ToList();
                     var powersLineIdx = existingLines.FindIndex(x => x.StartsWith("Power Training:"));
                     var weaponsLineIdx = existingLines.FindIndex(x => x.StartsWith("Weapon Training:"));
@@ -535,7 +534,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                         Debugger.Break();
                     }
 
-                    TLKHandler.ReplaceString(tlkStrRef, string.Join('\n', existingLines), "INT");
+                    TLKBuilder.ReplaceString(tlkStrRef, string.Join('\n', existingLines), "INT");
 
                     // Update the autolevel up s t ruct
 

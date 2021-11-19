@@ -124,19 +124,19 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
 
             foreach (var lm in morphTarget.MorphLODModels)
             {
-                foreach (var v in lm.Vertices)
+                for (int i = 0; i < lm.Vertices.Length; i++)
                 {
-                    var posDelta = v.PositionDelta;
+                    var posDelta = lm.Vertices[i].PositionDelta;
                     if (shiftDirection == 0) // IN OUT
-                                             //posDelta.X += shiftAmt;
+                        //posDelta.X += shiftAmt;
                         posDelta.X *= shiftAmt;
                     if (shiftDirection == 1) // LEFT RIGHT
-                                             //posDelta.Y += shiftAmt;
+                        //posDelta.Y += shiftAmt;
                         posDelta.Y *= shiftAmt;
                     if (shiftDirection == 2) // UP DOWN
-                                             //posDelta.Z += shiftAmt;
+                        //posDelta.Z += shiftAmt;
                         posDelta.Z *= shiftAmt;
-                    v.PositionDelta = posDelta; // Require reassignment
+                    lm.Vertices[i].PositionDelta = posDelta; // Require reassignment
                 }
             }
 
