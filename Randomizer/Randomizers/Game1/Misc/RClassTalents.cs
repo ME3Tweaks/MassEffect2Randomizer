@@ -80,7 +80,7 @@ namespace Randomizer.Randomizers.Game1.Misc
                 var talentList = playerPowersShuffled[classId];
                 for (int i = 0; i < talentList.Count; i++)
                 {
-                    Log.Information("Talent randomizer [PLAYER - CLASSID " + classId + "]: Setting row " + (assignmentStartRow + i) + " to " + talentList[i]);
+                    MERLog.Information("Talent randomizer [PLAYER - CLASSID " + classId + "]: Setting row " + (assignmentStartRow + i) + " to " + talentList[i]);
                     classtalents[assignmentStartRow + i, 1].IntValue = talentList[i];
                 }
             }
@@ -111,7 +111,7 @@ namespace Randomizer.Randomizers.Game1.Misc
 
                 int newPowerToAssign = currentList[0];
                 currentList.RemoveAt(0);
-                Log.Information("Talent randomizer [SQUAD - CLASSID " + currentClassId + "]: Setting row " + i + " to " + newPowerToAssign);
+                MERLog.Information("Talent randomizer [SQUAD - CLASSID " + currentClassId + "]: Setting row " + i + " to " + newPowerToAssign);
                 classtalents[i, 1].IntValue = newPowerToAssign;
             }
 
@@ -186,7 +186,7 @@ namespace Randomizer.Randomizers.Game1.Misc
             }*/
         /*
             //Patch out Destroyer Tutorial as it may cause a softlock as it checks for kaidan throw
-            var Pro10_08_Dsg = new ME1Package("BIOA_PRO10_08_DSG");
+            var Pro10_08_Dsg = MERFileSystem.OpenMEPackage("BIOA_PRO10_08_DSG");
             ExportEntry GDInvulnerabilityCounter = (ExportEntry)Pro10_08_Dsg.getEntry(13521);
             var invulnCount = GDInvulnerabilityCounter.GetProperty<IntProperty>("IntValue");
             if (invulnCount != null && invulnCount.Value != 0)
@@ -198,7 +198,7 @@ namespace Randomizer.Randomizers.Game1.Misc
 
 
             //REASSIGN UNLOCK REQUIREMENTS
-            Log.Information("Reassigned talents");
+            MERLog.Information("Reassigned talents");
             classtalents.Write2DAToExport();
 
             return true;
@@ -246,7 +246,7 @@ namespace Randomizer.Randomizers.Game1.Misc
             //}
 
             //bool randomizeLevels = false; //will use better later
-            Console.WriteLine("Randomizing Class talent list");
+            Debug.WriteLine("Randomizing Class talent list");
 
             int currentClassNum = -1;
             List<int> powersAssignedToThisClass = new List<int>();
@@ -280,7 +280,7 @@ namespace Randomizer.Randomizers.Game1.Misc
                             //powersAssignedAsPrereq.Add(prereq);
                             classtalents[prereqrow, 8].Data = BitConverter.GetBytes(prereq);
                             classtalents[prereqrow, 9].Data = BitConverter.GetBytes(ThreadSafeRandom.Next(5) + 4);
-                            Console.WriteLine("Class " + baseclassid + "'s power on row " + row + " now depends on " + classtalents[prereqrow, 8].IntValue + " at level " + classtalents[prereqrow, 9].IntValue);
+                            Debug.WriteLine("Class " + baseclassid + "'s power on row " + row + " now depends on " + classtalents[prereqrow, 8].IntValue + " at level " + classtalents[prereqrow, 9].IntValue);
                             //}
                         }
                     }
@@ -304,7 +304,7 @@ namespace Randomizer.Randomizers.Game1.Misc
 
                 if (classtalents[row, 1] != null) //talentid
                 {
-                    //Console.WriteLine("[" + row + "][" + 1 + "]  (" + classtalents.columnNames[1] + ") value originally is " + classtalents[row, 1].GetDisplayableValue());
+                    //Debug.WriteLine("[" + row + "][" + 1 + "]  (" + classtalents.columnNames[1] + ") value originally is " + classtalents[row, 1].GetDisplayableValue());
 
                     int randomindex = -1;
                     int talentindex = -1;
@@ -332,7 +332,7 @@ namespace Randomizer.Randomizers.Game1.Misc
                     talentidstoassign.RemoveAt(randomindex);
                     classtalents[row, 1].Data = BitConverter.GetBytes(talentindex);
                     powersAssignedToThisClass.Add(talentindex);
-                    //Console.WriteLine("[" + row + "][" + 1 + "]  (" + classtalents.columnNames[1] + ") value is now " + classtalents[row, 1].GetDisplayableValue());
+                    //Debug.WriteLine("[" + row + "][" + 1 + "]  (" + classtalents.columnNames[1] + ") value is now " + classtalents[row, 1].GetDisplayableValue());
                 }
                 //if (randomizeLevels)
                 //{

@@ -7,6 +7,7 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using Serilog;
 
 namespace Randomizer.Randomizers.Game1.Misc
@@ -46,7 +47,7 @@ namespace Randomizer.Randomizers.Game1.Misc
             for (int i = 0; i < points.Count; i++)
             {
                 float newVal = minOut + (stepping * i);
-                Log.Information($"Setting MakoTorque[{i}] to {newVal}");
+                MERLog.Information($"Setting MakoTorque[{i}] to {newVal}");
                 points[i].GetProp<FloatProperty>("OutVal").Value = newVal;
             }
 

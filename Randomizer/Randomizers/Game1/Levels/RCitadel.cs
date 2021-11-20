@@ -7,9 +7,13 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
+using Randomizer.MER;
+using Randomizer.Randomizers.Game1.ExportTypes;
+using Randomizer.Randomizers.Utility;
 using Serilog;
 
 namespace Randomizer.Randomizers.Levels
@@ -33,46 +37,47 @@ namespace Randomizer.Randomizers.Levels
     {
         private static void RandomizeCitadel(GameTarget target, RandomizationOption option)
         {
-            Log.Information("Randomizing BioWaypointSets for Citadel");
-            mainWindow.CurrentOperationText = "Randomizing Citadel";
+            MERLog.Information("Randomizing BioWaypointSets for Citadel");
+            option.CurrentOperation = "Randomizing Citadel";
 
             int numDone = 0;
-            var staDsg = Utilities.GetGameFile(@"BioGame\CookedPC\Maps\STA\DSG");
+            var staDsg = MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Maps\STA\DSG");
             var filesToProcess = Directory.GetFiles(staDsg, "*.SFM");
 
-            mainWindow.CurrentProgressValue = 0;
-            mainWindow.ProgressBar_Bottom_Max = filesToProcess.Length;
-            mainWindow.ProgressBarIndeterminate = false;
-
+            option.ProgressValue = 0;
+            option.ProgressMax = filesToProcess.Length;
+            option.ProgressIndeterminate = false;
             foreach (var packageFile in filesToProcess)
             {
-                ME1Package p = new ME1Package(packageFile);
+                var p = MERFileSystem.OpenMEPackage(packageFile);
                 var waypoints = p.Exports.Where(x => x.ClassName == "BioWaypointSet").ToList();
                 foreach (var waypoint in waypoints)
                 {
-                    RandomizeBioWaypointSet(waypoint, random);
+                    RBioWaypointSet.RandomizeExport(target, waypoint, option);
                 }
-                if (p.ShouldSave)
-                {
-                    p.save();
-                    ModifiedFiles[p.FileName] = p.FileName;
-                }
-                mainWindow.CurrentProgressValue++;
+                MERFileSystem.SavePackage(p);
+
+                option.ProgressValue++;
             }
 
-            mainWindow.CurrentProgressValue = 0;
-            mainWindow.ProgressBar_Bottom_Max = filesToProcess.Length;
-            mainWindow.ProgressBarIndeterminate = true;
+            option.ProgressValue = 0;
+            option.ProgressMax = filesToProcess.Length;
+            option.ProgressIndeterminate = true;
+
+
+            option.ProgressValue = 0;
+            option.ProgressMax = filesToProcess.Length;
+            option.ProgressIndeterminate = true;
 
             //Randomize Citadel Tower sky
-            ME1Package package = new ME1Package(Utilities.GetGameFile(@"BioGame\CookedPC\Maps\STA\LAY\BIOA_STA70_02_LAY.SFM"));
-            var skyMaterial = package.getUExport(347);
+            var package = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Maps\STA\LAY\BIOA_STA70_02_LAY.SFM"));
+            var skyMaterial = package.GetUExport(347);
             var data = skyMaterial.Data;
             data.OverwriteRange(0x168, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(-1.5, 1.5)));
             data.OverwriteRange(0x19A, BitConverter.GetBytes(ThreadSafeRandom.NextFloat(-1.5, 1.5)));
             skyMaterial.Data = data;
 
-            var volumeLighting = package.getUExport(859);
+            var volumeLighting = package.GetUExport(859);
             var props = volumeLighting.GetProperties();
 
             var vectors = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues");
@@ -80,24 +85,20 @@ namespace Randomizer.Randomizers.Levels
             {
                 foreach (var vector in vectors)
                 {
-                    RandomizeTint(random, vector.GetProp<StructProperty>("ParameterValue"), false);
+                    StructTools.RandomizeTint(vector.GetProp<StructProperty>("ParameterValue"), false);
                 }
             }
 
             volumeLighting.WriteProperties(props);
 
-            if (package.ShouldSave)
-            {
-                package.save();
-                ModifiedFiles[package.FileName] = package.FileName;
-            }
+            MERFileSystem.SavePackage(package);
 
             //Randomize Scan the Keepers
-            Log.Information("Randomizing Scan the Keepers");
-            string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("stakeepers.xml");
+            MERLog.Information("Randomizing Scan the Keepers");
+            string fileContents = MERUtilities.GetStaticTextFile("stakeepers.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var keeperDefinitions = (from e in rootElement.Elements("keeper")
-                                     select new Game1.Randomizer.KeeperDefinition
+                                     select new KeeperDefinition
                                      {
                                          STAFile = (string)e.Attribute("file"),
                                          KismetTeleportBoolUIndex = (int)e.Attribute("teleportflagexport"),
@@ -106,7 +107,7 @@ namespace Randomizer.Randomizers.Levels
 
 
             var keeperRandomizationInfo = (from e in rootElement.Elements("keeperlocation")
-                                           select new Game1.Randomizer.KeeperLocation
+                                           select new KeeperLocation
                                            {
                                                STAFile = (string)e.Attribute("file"),
                                                Position = new Vector3
@@ -117,15 +118,15 @@ namespace Randomizer.Randomizers.Levels
                                                },
                                                Yaw = string.IsNullOrEmpty((string)e.Attribute("yaw")) ? 0 : (int)e.Attribute("yaw")
                                            }).ToList();
-            keeperRandomizationInfo.Shuffle(random);
-            string STABase = Utilities.GetGameFile(@"BIOGame\CookedPC\Maps\STA\DSG");
+            keeperRandomizationInfo.Shuffle();
+            string STABase = MERFileSystem.GetPackageFile(target, @"BIOGame\CookedPC\Maps\STA\DSG");
             var uniqueFiles = keeperDefinitions.Select(x => x.STAFile).Distinct();
 
             foreach (string staFile in uniqueFiles)
             {
-                Log.Information("Randomizing Keepers in " + staFile);
+                MERLog.Information("Randomizing Keepers in " + staFile);
                 string filepath = Path.Combine(STABase, staFile);
-                ME1Package staPackage = new ME1Package(filepath);
+                var staPackage = MERFileSystem.OpenMEPackage(filepath);
                 var keepersToRandomize = keeperDefinitions.Where(x => x.STAFile == staFile).ToList();
                 var keeperRandomizationInfoForThisLevel = keeperRandomizationInfo.Where(x => x.STAFile == staFile).ToList();
                 foreach (var keeper in keepersToRandomize)
@@ -133,28 +134,23 @@ namespace Randomizer.Randomizers.Levels
                     //Set location
                     var newRandomizationInfo = keeperRandomizationInfoForThisLevel[0];
                     keeperRandomizationInfoForThisLevel.RemoveAt(0);
-                    ExportEntry bioPawn = staPackage.getUExport(keeper.PawnExportUIndex);
-                    Utilities.SetLocation(bioPawn, newRandomizationInfo.Position);
+                    ExportEntry bioPawn = staPackage.GetUExport(keeper.PawnExportUIndex);
+                    LocationTools.SetLocation(bioPawn, newRandomizationInfo.Position);
                     if (newRandomizationInfo.Yaw != 0)
                     {
-                        Utilities.SetRotation(bioPawn, newRandomizationInfo.Yaw);
+                        LocationTools.SetRotation(bioPawn, newRandomizationInfo.Yaw);
                     }
 
                     // Unset the "Teleport to ActionStation" bool
                     if (keeper.KismetTeleportBoolUIndex != 0)
                     {
                         //Has teleport bool
-                        ExportEntry teleportBool = staPackage.getUExport(keeper.KismetTeleportBoolUIndex);
+                        ExportEntry teleportBool = staPackage.GetUExport(keeper.KismetTeleportBoolUIndex);
                         teleportBool.WriteProperty(new IntProperty(0, "bValue")); //teleport false
                     }
                 }
 
-
-                if (staPackage.ShouldSave)
-                {
-                    staPackage.save();
-                    ModifiedFiles[staPackage.FileName] = staPackage.FileName;
-                }
+                MERFileSystem.SavePackage(staPackage);
             }
         }
 

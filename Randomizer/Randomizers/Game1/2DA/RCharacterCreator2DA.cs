@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.Classes;
+using ME3TweaksCore.Targets;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game1._2DA
 {
     class RCharacterCreator2DA
     {
         // Run on specific character creator 2DA types
+        public const string RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE = "RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE";
 
         /// <summary>
         /// Randomizes the character creator
         /// </summary>
         /// <param name="random">Random number generator</param>
-        private void RandomizeCharacterCreator2DA(Random random, ExportEntry export)
+        private void RandomizeCharacterCreator2DA(GameTarget target, RandomizationOption option, ExportEntry export)
         {
-            mainWindow.CurrentOperationText = "Randomizing Character Creator";
+            option.CurrentOperation = "Randomizing Character Creator";
             //if (headrandomizerclasses.Contains(export.ObjectName))
             //{
             //    RandomizePregeneratedHead(export, random);
@@ -37,26 +41,25 @@ namespace Randomizer.Randomizers.Game1._2DA
                     if (export2da.ColumnNames[col] == "Extent" || export2da.ColumnNames[col] == "Rand_Extent")
                     {
                         float multiplier = ThreadSafeRandom.NextFloat(0.5, 6);
-                        Console.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value originally is " + export2da[row, col].GetDisplayableValue());
+                        Debug.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value originally is " + export2da[row, col].DisplayableValue);
 
                         if (cell.Type == Bio2DACell.Bio2DADataType.TYPE_FLOAT)
                         {
-                            cell.Data = BitConverter.GetBytes(cell.GetFloatValue() * multiplier);
+                            cell.FloatValue = cell.FloatValue * multiplier;
                             hasChanges = true;
                         }
                         else
                         {
-                            cell.Data = BitConverter.GetBytes(cell.GetIntValue() * multiplier);
-                            cell.Type = Bio2DACell.Bio2DADataType.TYPE_FLOAT;
+                            cell.FloatValue = cell.IntValue * multiplier; // int to float
                             hasChanges = true;
                         }
 
-                        Console.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value now is " + cell.GetDisplayableValue());
+                        Debug.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value now is " + cell.DisplayableValue);
                         continue;
                     }
 
                     //Hair Scalars
-                    if (export.ObjectName.Contains("MorphHair") && row > 0 && col >= 4 && col <= 8)
+                    if (export.ObjectName.Name.Contains("MorphHair") && row > 0 && col >= 4 && col <= 8)
                     {
 
                         float scalarval = ThreadSafeRandom.NextFloat(0, 1);
@@ -70,10 +73,9 @@ namespace Randomizer.Randomizers.Game1._2DA
                         }
 
                         // Bio2DACell cellX = cell;
-                        Console.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value originally is " + cell.GetDisplayableValue());
-                        cell.Data = BitConverter.GetBytes(scalarval);
-                        cell.Type = Bio2DACell.Bio2DADataType.TYPE_FLOAT;
-                        Console.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value now is " + cell.GetDisplayableValue());
+                        Debug.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value originally is " + cell.DisplayableValue);
+                        cell.FloatValue = scalarval;
+                        Debug.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value now is " + cell.DisplayableValue);
                         hasChanges = true;
                         continue;
                     }
@@ -81,28 +83,26 @@ namespace Randomizer.Randomizers.Game1._2DA
                     //Skin Tone
                     if (cell != null && cell.Type == Bio2DACell.Bio2DADataType.TYPE_NAME)
                     {
-                        if (export.ObjectName.Contains("Skin_Tone") && !mainWindow.RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE)
+                        if (export.ObjectName.Name.Contains("Skin_Tone") && option.HasSubOptionSelected(RANDSETTING_CHARACTER_CHARCREATOR_SKINTONE))
                         {
                             continue; //skip
                         }
 
-                        string value = cell.GetDisplayableValue();
+                        string value = cell.DisplayableValue;
                         if (value.StartsWith("RGB("))
                         {
                             //Make new item
-                            string rgbNewName = GetRandomColorRBGStr(random);
-                            int newValue = export.FileRef.FindNameOrAdd(rgbNewName);
-                            cell.Data = BitConverter.GetBytes((ulong)newValue); //name is 8 bytes
+                            string rgbNewName = ColorTools.GetRandomColorRBGStr();
+                            cell.NameValue = rgbNewName;
                             hasChanges = true;
                         }
                     }
 
-                    string columnName = export2da.GetColumnNameByIndex(col);
+                    string columnName = export2da.ColumnNames[col];
                     if (columnName.Contains("Scalar") && cell != null && cell.Type != Bio2DACell.Bio2DADataType.TYPE_NAME)
                     {
-                        float currentValue = float.Parse(cell.GetDisplayableValue());
-                        cell.Data = BitConverter.GetBytes(currentValue * ThreadSafeRandom.NextFloat(0.5, 2));
-                        cell.Type = Bio2DACell.Bio2DADataType.TYPE_FLOAT;
+                        float currentValue = float.Parse(cell.DisplayableValue);
+                        cell.FloatValue = currentValue * ThreadSafeRandom.NextFloat(0.5, 2);
                         hasChanges = true;
                     }
 
@@ -137,5 +137,6 @@ namespace Randomizer.Randomizers.Game1._2DA
 
 
         }
+
     }
 }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.TLK.ME1;
 using LegendaryExplorerCore.TLK.ME2ME3;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.Classes;
@@ -66,7 +67,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             List<int> assignedImageIndexes = new List<int>(); //This is used to generate new indexes for items that vanilla share values with (like MSV ships)
             for (int i = 0; i < planets2DA.RowCount; i++)
             {
-                mainWindow.CurrentProgressValue = i;
+                option.ProgressValue = i;
                 if (planets2DA[i, descriptionCol] == null || planets2DA[i, descriptionCol].IntValue == 0)
                 {
                     Debug.WriteLine("Skipping tlk -1 or blank row: (0-indexed) " + i);
@@ -85,7 +86,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                     if (!hasImageResource)
                     {
                         hasImageResource = galaxyMapGroupResources.TryGetValue("generic", out newImagePool); //DEBUG ONLY! KIND OF?
-                        Log.Warning("WARNING: NO IMAGEGROUP FOR GROUP " + assignedRPI.ImageGroup);
+                        MERLog.Warning("WARNING: NO IMAGEGROUP FOR GROUP " + assignedRPI.ImageGroup);
                     }
                     if (hasImageResource)
                     {
@@ -134,14 +135,15 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                         {
                             //Create export and row first
                             matchingExport = mapImageExports[0].Clone();
-                            matchingExport.indexValue = 0;
                             string objectName = "galMapMER" + nextAddedImageIndex;
-                            matchingExport.idxObjectName = galaxyMapImagesPackage.FindNameOrAdd(objectName);
-                            galaxyMapImagesPackage.addExport(matchingExport);
-                            Log.Information("Cloning galaxy map SWF export. New export " + matchingExport.GetFullPath);
+                            matchingExport.ObjectName = objectName;
+                            matchingExport.indexValue = 0;
+                            galaxyMapImagesPackage.AddExport(matchingExport);
+                            MERLog.Information("Cloning galaxy map SWF export. New export " + matchingExport.InstancedFullPath);
                             int newRowIndex = galaxyMapImages2DA.AddRow(nextAddedImageIndex.ToString());
-                            int nameIndex = ui2DAPackage.FindNameOrAdd(Path.GetFileNameWithoutExtension(galaxyMapImagesPackage.FileName) + "." + objectName);
-                            galaxyMapImages2DA[newRowIndex, "imageResource"] = new Bio2DACell(Bio2DACell.Bio2DADataType.TYPE_NAME, BitConverter.GetBytes((long)nameIndex));
+                            //int nameIndex = ui2DAPackage.FindNameOrAdd(Path.GetFileNameWithoutExtension(galaxyMapImagesPackage.FileName) + "." + objectName);
+                            galaxyMapImages2DA[newRowIndex, "imageResource"].NameValue = Path.GetFileNameWithoutExtension(galaxyMapImagesPackage.FilePath) + "." + objectName;
+                            //new Bio2DACell(Bio2DACell.Bio2DADataType.TYPE_NAME, BitConverter.GetBytes((long)nameIndex));
                             if (didntIncrementNextImageIndex)
                             {
                                 Debug.WriteLine("Unused image? Row specified but doesn't exist in this table. Repointing to new image row for image value " + nextAddedImageIndex);
@@ -151,11 +153,11 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                         }
                         else
                         {
-                            string swfImageExportObjectName = galaxyMapImages2DA[rowIndex, "imageResource"].DisplayableValueIndexed;
+                            var swfImageExportObjectName = galaxyMapImages2DA[rowIndex, "imageResource"].NameValue.Name;
                             //get object name of export inside of GUI_SF_GalaxyMap
                             swfImageExportObjectName = swfImageExportObjectName.Substring(swfImageExportObjectName.IndexOf('.') + 1); //TODO: Need to deal with name instances for Pinnacle Station DLC. Because it's too hard for them to type a new name.
                                                                                                                                       //Fetch export
-                            matchingExport = mapImageExports.FirstOrDefault(x => x.ObjectNameIndexed == swfImageExportObjectName);
+                            matchingExport = mapImageExports.FirstOrDefault(x => x.ObjectName == swfImageExportObjectName);
                         }
 
                         if (matchingExport != null)
@@ -181,10 +183,8 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             }
 
             galaxyMapImages2DA.Write2DAToExport();
-            ui2DAPackage.save();
-            ModifiedFiles[ui2DAPackage.FileName] = ui2DAPackage.FileName;
-            galaxyMapImagesPackage.save();
-            ModifiedFiles[galaxyMapImagesPackage.FileName] = galaxyMapImagesPackage.FileName;
+            MERFileSystem.SavePackage(ui2DAPackage);
+            MERFileSystem.SavePackage(galaxyMapImagesPackage);
             planets2DA.Write2DAToExport(); //should save later
         }
 
@@ -207,10 +207,10 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                     if (imageRowReference == -1) continue; //We don't have enough images yet to pass this hurdle
                                                            //Use this value to find value in UI table
                     int rowIndex = galaxyMapImages2DA.GetRowIndexByName(imageRowReference.ToString());
-                    string exportName = galaxyMapImages2DA[rowIndex, 0].DisplayableValueIndexed;
+                    string exportName = galaxyMapImages2DA[rowIndex, 0].NameValue;
                     exportName = exportName.Substring(exportName.LastIndexOf('.') + 1);
                     //Use this value to find the export in GUI_SF file
-                    var export = galaxyMapImagesPackage.Exports.FirstOrDefault(x => x.ObjectNameIndexed == exportName);
+                    var export = galaxyMapImagesPackage.Exports.FirstOrDefault(x => x.ObjectName == exportName);
                     if (export == null)
                     {
                         Debugger.Break();
@@ -246,7 +246,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
 
         private void ReplaceSWFFromResource(ExportEntry exp, string swfResourcePath)
         {
-            Debug.WriteLine($"Replacing {Path.GetFileName(exp.FileRef.FileName)} {exp.UIndex} {exp.ObjectName} SWF with {swfResourcePath}");
+            Debug.WriteLine($"Replacing {Path.GetFileName(exp.FileRef.FilePath)} {exp.UIndex} {exp.ObjectName} SWF with {swfResourcePath}");
             var bytes = MERUtilities.GetEmbeddedStaticFilesBinaryFile(swfResourcePath, true);
             var props = exp.GetProperties();
 
@@ -265,191 +265,194 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
         {
             int currentTlkIndex = 0;
             currentTlkIndex++;
-            int max = TLKBuilder.BasegameTLK.StringRefs.Count();
-            int current = 0;
-            if (updateProgressbar)
+            var gameTlks = TLKBuilder.GetOfficialTLKs().ToList();
+            foreach (var tf in gameTlks)
             {
-                option.CurrentOperation = $"Applying entropy to galaxy map [{currentTlkIndex}/{Tlks.Count()}]";
-                option.ProgressMax = tf.StringRefs.Count;
-                option.ProgressIndeterminate = false;
-            }
-
-            if (basegame) //this will only be fired on basegame tlk's since they're the only ones that update the progerssbar.
-            {
-
-                //text fixes.
-                //TODO: CHECK IF ORIGINAL VALUE IS BIOWARE - IF IT ISN'T ITS ALREADY BEEN UPDATED.
-                string testStr = tf.findDataById(179694);
-                if (testStr == "")
-                {
-                    tf.replaceString(179694, "Head to the Armstrong Nebula to investigate what the geth are up to."); //Remove cluster after Nebula to ensure the text pass works without cluster cluster.
-
-                }
-                testStr = tf.findDataById(156006);
-                testStr = tf.findDataById(136011);
-
-                tf.replaceString(156006, "Go to the Newton System in the Kepler Verge and find the one remaining scientist assigned to the secret project.");
-                tf.replaceString(136011, "The geth have begun setting up a number of small outposts in the Armstrong Nebula of the Skyllian Verge. You must eliminate these outposts before the incursion becomes a full-scale invasion.");
-            }
-
-            //This is inefficient but not much I can do it about it.
-            foreach (var sref in tf.StringRefs)
-            {
-                current++;
-                if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
+                int current = 0;
                 if (updateProgressbar)
                 {
-                    mainWindow.CurrentProgressValue = current;
+                    option.CurrentOperation = $"Applying entropy to galaxy map [{currentTlkIndex}/{gameTlks.Count()}]";
+                    option.ProgressMax = tf.StringRefs.Count;
+                    option.ProgressIndeterminate = false;
                 }
 
-                if (!string.IsNullOrWhiteSpace(sref.Data))
+                if (basegame) //this will only be fired on basegame tlk's since they're the only ones that update the progerssbar.
                 {
-                    string originalString = sref.Data;
-                    string newString = sref.Data;
-                    foreach (var planetMapping in planetNameMapping)
+
+                    //text fixes.
+                    //TODO: CHECK IF ORIGINAL VALUE IS BIOWARE - IF IT ISN'T ITS ALREADY BEEN UPDATED.
+                    string testStr = tf.FindDataById(179694);
+                    if (testStr == "")
                     {
+                        tf.ReplaceString(179694, "Head to the Armstrong Nebula to investigate what the geth are up to."); //Remove cluster after Nebula to ensure the text pass works without cluster cluster.
 
-                        //Update TLK references to this planet.
-                        bool originalPlanetNameIsSingleWord = !planetMapping.Key.Contains(" ");
+                    }
+                    testStr = tf.FindDataById(156006);
+                    testStr = tf.FindDataById(136011);
 
-                        if (originalPlanetNameIsSingleWord)
-                        {
-                            //This is to filter out things like Inti resulting in Intimidate
-                            if (originalString.ContainsWord(planetMapping.Key) /*&& newString.ContainsWord(planetMapping.Key)*/) //second statement is disabled as its the same at this point in execution.
-                            {
-                                //Do a replace if the whole word is matched only (no partial matches on words).
-                                newString = newString.Replace(planetMapping.Key, planetMapping.Value);
-                            }
-                        }
-                        else
-                        {
-                            //Planets with spaces in the names won't (hopefully) match on Contains.
-                            if (originalString.Contains(planetMapping.Key) && newString.Contains(planetMapping.Key))
-                            {
-                                newString = newString.Replace(planetMapping.Key, planetMapping.Value);
-                            }
-                        }
+                    tf.ReplaceString(156006, "Go to the Newton System in the Kepler Verge and find the one remaining scientist assigned to the secret project.");
+                    tf.ReplaceString(136011, "The geth have begun setting up a number of small outposts in the Armstrong Nebula of the Skyllian Verge. You must eliminate these outposts before the incursion becomes a full-scale invasion.");
+                }
+
+                //This is inefficient but not much I can do it about it.
+                foreach (var sref in tf.StringRefs)
+                {
+                    current++;
+                    if (TLKBuilder.UpdatedTlkStrings.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
+                    if (updateProgressbar)
+                    {
+                        option.ProgressValue = current;
                     }
 
-
-                    foreach (var systemMapping in systemNameMapping)
+                    if (!string.IsNullOrWhiteSpace(sref.Data))
                     {
-                        //Update TLK references to this system.
-                        bool originalSystemNameIsSingleWord = !systemMapping.Key.Contains(" ");
-                        if (originalSystemNameIsSingleWord)
+                        string originalString = sref.Data;
+                        string newString = sref.Data;
+                        foreach (var planetMapping in planetNameMapping)
                         {
-                            //This is to filter out things like Inti resulting in Intimidate
-                            if (originalString.ContainsWord(systemMapping.Key) && newString.ContainsWord(systemMapping.Key))
+
+                            //Update TLK references to this planet.
+                            bool originalPlanetNameIsSingleWord = !planetMapping.Key.Contains(" ");
+
+                            if (originalPlanetNameIsSingleWord)
                             {
-                                //Do a replace if the whole word is matched only (no partial matches on words).
-                                newString = newString.Replace(systemMapping.Key, systemMapping.Value);
-                            }
-                        }
-                        else
-                        {
-                            //System with spaces in the names won't (hopefully) match on Contains.
-                            if (originalString.Contains(systemMapping.Key) && newString.Contains(systemMapping.Key))
-                            {
-                                newString = newString.Replace(systemMapping.Key, systemMapping.Value);
-                            }
-                        }
-                    }
-
-
-
-                    string test1 = "The geth must be stopped. Go to the Kepler Verge and stop them!";
-                    string test2 = "Protect the heart of the Artemis Tau cluster!";
-
-                    // >> test1 Detect types that end with Verge or Nebula, or types that end with an adjective.
-                    // >> >> Determine if new name ends with Verge or Nebula or other terms that have a specific ending type that is an adjective of the area. (Castle for example)
-                    // >> >> >> True: Do an exact replacement
-                    // >> >> >> False: Check if the match is 100% matching on the whole thing. If it is, just replace the string. If it is not, replace the string but append the word "cluster".
-
-                    // >> test 2 Determine if cluster follows the name of the item being replaced.
-                    // >> >> Scan for the original key + cluster appended.
-                    // >> >> >> True: If the new item includes an ending adjective, replace the whold thing with the word cluster included.
-                    // >> >> >> False: If the new item doesn't end with an adjective, replace only the exact original key.
-
-                    foreach (var clusterMapping in clusterNameMapping)
-                    {
-                        //Update TLK references to this cluster.
-                        bool originalclusterNameIsSingleWord = !clusterMapping.Key.Contains(" ");
-                        if (originalclusterNameIsSingleWord)
-                        {
-                            //Go to the Kepler Verge and end the threat.
-                            //Old = Kepler Verge, New = Zoltan Homeworlds
-                            if (originalString.ContainsWord(clusterMapping.Key) && newString.ContainsWord(clusterMapping.Key)) //
-                            {
-
-                                //Terribly inefficent
-                                if (originalString.Contains("I'm asking you because the Normandy can get on-site quickly and quietly."))
-                                    Debugger.Break();
-                                if (clusterMapping.Value.SuffixedWithCluster && !clusterMapping.Value.Suffixed)
+                                //This is to filter out things like Inti resulting in Intimidate
+                                if (originalString.ContainsWord(planetMapping.Key) /*&& newString.ContainsWord(planetMapping.Key)*/) //second statement is disabled as its the same at this point in execution.
                                 {
-                                    //Replacing string like Local Cluster
-                                    newString = newString.ReplaceInsensitive(clusterMapping.Key + " Cluster", clusterMapping.Value.ClusterName); //Go to the Voyager Cluster and... 
+                                    //Do a replace if the whole word is matched only (no partial matches on words).
+                                    newString = newString.Replace(planetMapping.Key, planetMapping.Value);
                                 }
-                                else
+                            }
+                            else
+                            {
+                                //Planets with spaces in the names won't (hopefully) match on Contains.
+                                if (originalString.Contains(planetMapping.Key) && newString.Contains(planetMapping.Key))
                                 {
-                                    //Replacing string like Artemis Tau
-                                    newString = newString.ReplaceInsensitive(clusterMapping.Key + " Cluster", clusterMapping.Value.ClusterName + " cluster"); //Go to the Voyager Cluster and... 
+                                    newString = newString.Replace(planetMapping.Key, planetMapping.Value);
                                 }
-
-                                newString = newString.Replace(clusterMapping.Key, clusterMapping.Value.ClusterName); //catch the rest of the items.
-                                Debug.WriteLine(newString);
                             }
                         }
-                        else
-                        {
-                            if (newString.Contains(clusterMapping.Key, StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                //Terribly inefficent
 
-                                if (clusterMapping.Value.SuffixedWithCluster || clusterMapping.Value.Suffixed)
+
+                        foreach (var systemMapping in systemNameMapping)
+                        {
+                            //Update TLK references to this system.
+                            bool originalSystemNameIsSingleWord = !systemMapping.Key.Contains(" ");
+                            if (originalSystemNameIsSingleWord)
+                            {
+                                //This is to filter out things like Inti resulting in Intimidate
+                                if (originalString.ContainsWord(systemMapping.Key) && newString.ContainsWord(systemMapping.Key))
                                 {
-                                    //Local Cluster
-                                    if (VanillaSuffixedClusterNames.Contains(clusterMapping.Key, StringComparer.InvariantCultureIgnoreCase))
+                                    //Do a replace if the whole word is matched only (no partial matches on words).
+                                    newString = newString.Replace(systemMapping.Key, systemMapping.Value);
+                                }
+                            }
+                            else
+                            {
+                                //System with spaces in the names won't (hopefully) match on Contains.
+                                if (originalString.Contains(systemMapping.Key) && newString.Contains(systemMapping.Key))
+                                {
+                                    newString = newString.Replace(systemMapping.Key, systemMapping.Value);
+                                }
+                            }
+                        }
+
+
+
+                        string test1 = "The geth must be stopped. Go to the Kepler Verge and stop them!";
+                        string test2 = "Protect the heart of the Artemis Tau cluster!";
+
+                        // >> test1 Detect types that end with Verge or Nebula, or types that end with an adjective.
+                        // >> >> Determine if new name ends with Verge or Nebula or other terms that have a specific ending type that is an adjective of the area. (Castle for example)
+                        // >> >> >> True: Do an exact replacement
+                        // >> >> >> False: Check if the match is 100% matching on the whole thing. If it is, just replace the string. If it is not, replace the string but append the word "cluster".
+
+                        // >> test 2 Determine if cluster follows the name of the item being replaced.
+                        // >> >> Scan for the original key + cluster appended.
+                        // >> >> >> True: If the new item includes an ending adjective, replace the whold thing with the word cluster included.
+                        // >> >> >> False: If the new item doesn't end with an adjective, replace only the exact original key.
+
+                        foreach (var clusterMapping in clusterNameMapping)
+                        {
+                            //Update TLK references to this cluster.
+                            bool originalclusterNameIsSingleWord = !clusterMapping.Key.Contains(" ");
+                            if (originalclusterNameIsSingleWord)
+                            {
+                                //Go to the Kepler Verge and end the threat.
+                                //Old = Kepler Verge, New = Zoltan Homeworlds
+                                if (originalString.ContainsWord(clusterMapping.Key) && newString.ContainsWord(clusterMapping.Key)) //
+                                {
+
+                                    //Terribly inefficent
+                                    if (originalString.Contains("I'm asking you because the Normandy can get on-site quickly and quietly."))
+                                        Debugger.Break();
+                                    if (clusterMapping.Value.SuffixedWithCluster && !clusterMapping.Value.Suffixed)
                                     {
-                                        newString = newString.ReplaceInsensitive(clusterMapping.Key, clusterMapping.Value.ClusterName); //Go to the Voyager Cluster and... 
-                                    }
-                                    else
-                                    {
+                                        //Replacing string like Local Cluster
                                         newString = newString.ReplaceInsensitive(clusterMapping.Key + " Cluster", clusterMapping.Value.ClusterName); //Go to the Voyager Cluster and... 
                                     }
-                                }
-                                else
-                                {
-                                    //Artemis Tau
-                                    if (VanillaSuffixedClusterNames.Contains(clusterMapping.Key.ToLower(), StringComparer.InvariantCultureIgnoreCase))
+                                    else
                                     {
-                                        newString = newString.ReplaceInsensitive(clusterMapping.Key, clusterMapping.Value.ClusterName + " cluster"); //Go to the Voyager Cluster and... 
+                                        //Replacing string like Artemis Tau
+                                        newString = newString.ReplaceInsensitive(clusterMapping.Key + " Cluster", clusterMapping.Value.ClusterName + " cluster"); //Go to the Voyager Cluster and... 
+                                    }
+
+                                    newString = newString.Replace(clusterMapping.Key, clusterMapping.Value.ClusterName); //catch the rest of the items.
+                                    Debug.WriteLine(newString);
+                                }
+                            }
+                            else
+                            {
+                                if (newString.Contains(clusterMapping.Key, StringComparison.InvariantCultureIgnoreCase))
+                                {
+                                    //Terribly inefficent
+
+                                    if (clusterMapping.Value.SuffixedWithCluster || clusterMapping.Value.Suffixed)
+                                    {
+                                        //Local Cluster
+                                        if (VanillaSuffixedClusterNames.Contains(clusterMapping.Key, StringComparer.InvariantCultureIgnoreCase))
+                                        {
+                                            newString = newString.ReplaceInsensitive(clusterMapping.Key, clusterMapping.Value.ClusterName); //Go to the Voyager Cluster and... 
+                                        }
+                                        else
+                                        {
+                                            newString = newString.ReplaceInsensitive(clusterMapping.Key + " Cluster", clusterMapping.Value.ClusterName); //Go to the Voyager Cluster and... 
+                                        }
                                     }
                                     else
                                     {
-                                        newString = newString.ReplaceInsensitive(clusterMapping.Key + " Cluster", clusterMapping.Value.ClusterName + " cluster"); //Go to the Voyager Cluster and... 
+                                        //Artemis Tau
+                                        if (VanillaSuffixedClusterNames.Contains(clusterMapping.Key.ToLower(), StringComparer.InvariantCultureIgnoreCase))
+                                        {
+                                            newString = newString.ReplaceInsensitive(clusterMapping.Key, clusterMapping.Value.ClusterName + " cluster"); //Go to the Voyager Cluster and... 
+                                        }
+                                        else
+                                        {
+                                            newString = newString.ReplaceInsensitive(clusterMapping.Key + " Cluster", clusterMapping.Value.ClusterName + " cluster"); //Go to the Voyager Cluster and... 
+                                        }
                                     }
-                                }
 
-                                newString = newString.ReplaceInsensitive(clusterMapping.Key, clusterMapping.Value.ClusterName); //catch the rest of the items.
-                                Debug.WriteLine(newString);
+                                    newString = newString.ReplaceInsensitive(clusterMapping.Key, clusterMapping.Value.ClusterName); //catch the rest of the items.
+                                    Debug.WriteLine(newString);
+                                }
                             }
                         }
-                    }
 
-                    if (originalString != newString)
-                    {
-                        tf.replaceString(sref.StringID, newString);
+                        if (originalString != newString)
+                        {
+                            tf.ReplaceString(sref.StringID, newString);
+                        }
                     }
                 }
             }
         }
 
 
-        private void RandomizePlanetText(Bio2DA planets2DA, int tableRow, string dlcName, List<TalkFile> Tlks, Dictionary<int, (SuffixedCluster clustername, string systemname)> systemIdToSystemNameMap,
+        private void RandomizePlanetText(GameTarget target, RandomizationOption option, Bio2DA planets2DA, int tableRow, string dlcName, Dictionary<int, (SuffixedCluster clustername, string systemname)> systemIdToSystemNameMap,
         List<RandomizedPlanetInfo> allMapRandomizationInfo, Dictionary<int, RandomizedPlanetInfo> rowRPIMap, List<RandomizedPlanetInfo> planetInfos, List<RandomizedPlanetInfo> msvInfos, List<RandomizedPlanetInfo> asteroidInfos,
         List<RandomizedPlanetInfo> asteroidBeltInfos, bool mustBePlayable = false)
         {
-            //mainWindow.CurrentProgressValue = i;
+            //option.ProgressValue = i;
             int systemId = planets2DA[tableRow, 1].IntValue;
             (SuffixedCluster clusterName, string systemName) systemClusterName = systemIdToSystemNameMap[systemId];
 
@@ -521,7 +524,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
 
                 rowRPIMap[tableRow] = rpi; //Map row in this table to the assigned RPI
                 string newPlanetName = rpi.PlanetName;
-                if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET && rpi.PlanetName2 != null)
+                if (option.HasSubOptionSelected(RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET) && rpi.PlanetName2 != null)
                 {
                     newPlanetName = rpi.PlanetName2;
                 }
@@ -543,10 +546,10 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                 int planetNameTlkId = planets2DA[tableRow, "Name"].IntValue;
 
                 //Replace planet description here, as it won't be replaced in the overall pass
-                foreach (TalkFile tf in Tlks)
+                foreach (var tf in TLKBuilder.GetOfficialTLKs())
                 {
                     //Debug.WriteLine("Setting planet name on row index (not rowname!) " + i + " to " + newPlanetName);
-                    string originalPlanetName = tf.findDataById(planetNameTlkId);
+                    string originalPlanetName = tf.FindDataById(planetNameTlkId);
 
                     if (originalPlanetName == "No Data")
                     {
@@ -562,7 +565,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                     //if (originalPlanetName == "Ilos") Debugger.Break();
                     if (descriptionReference != 0 && description != null)
                     {
-                        tf.TlksIdsToNotUpdate.Add(descriptionReference);
+                        TLKBuilder.AddUpdatedTlk(descriptionReference);
                         //Log.Information($"New planet: {newPlanetName}");
                         //if (descriptionReference == 138077)
                         //{
@@ -572,7 +575,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                         //    Debug.WriteLine("----------------------------------");
                         //    Debugger.Break(); //Xawin
                         //}
-                        tf.replaceString(descriptionReference, description);
+                        tf.ReplaceString(descriptionReference, description);
 
                         if (rpi.ButtonLabel != null)
                         {
@@ -580,21 +583,22 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                             if (actionLabelCell != null)
                             {
                                 var currentTlkId = actionLabelCell.IntValue;
-                                if (tf.findDataById(currentTlkId) != rpi.ButtonLabel)
+                                if (tf.FindDataById(currentTlkId) != rpi.ButtonLabel)
                                 {
                                     //Value is different
                                     //try to find existing value first
-                                    var tlkref = tf.findDataByValue(rpi.ButtonLabel);
-                                    if (tlkref.StringID != 0)
+                                    var tlkref = tf.FindIdByData(rpi.ButtonLabel);
+                                    if (tlkref >= 0)
                                     {
                                         //We found result
-                                        actionLabelCell.DisplayableValue = tlkref.StringID.ToString(); //Assign cell to this TLK ref
+                                        actionLabelCell.IntValue = tlkref;
                                     }
                                     else
                                     {
-                                        int newID = tf.getFirstNullString();
+                                        // Did not find a result. Add a new string
+                                        int newID = TLKBuilder.GetNewTLKID(); // WE PROBABLY NEED TO CHANGE THIS FOR DLC SYSTEM IN GAME 1.......
                                         if (newID == -1) Debugger.Break(); //hopefully we never see this, but if user runs it enough, i guess you could.
-                                        tf.replaceString(newID, rpi.ButtonLabel);
+                                        tf.ReplaceString(newID, rpi.ButtonLabel);
                                         actionLabelCell.DisplayableValue = newID.ToString(); //Assign cell to new TLK ref
                                     }
                                 }
@@ -609,20 +613,20 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                         //Since some asteroid names change and/or are shared amongst themselves, we have to add names if they don't exist.
                         if (originalPlanetName != rpi.PlanetName)
                         {
-                            var newTlkValue = tf.findDataByValue(rpi.PlanetName);
-                            if (newTlkValue.StringID == 0)
+                            var newTlkValue = tf.FindIdByData(rpi.PlanetName);
+                            if (newTlkValue == -1)
                             {
                                 //Doesn't exist
-                                var newId = tf.getFirstNullString();
-                                tf.replaceString(newId, rpi.PlanetName);
-                                planets2DA[tableRow, "Name"].DisplayableValue = newId.ToString();
-                                Log.Information("Assigned asteroid new TLK ID: " + newId);
+                                int newId = TLKBuilder.GetNewTLKID(); // WE PROBABLY NEED TO CHANGE THIS FOR DLC SYSTEM IN GAME 1.......
+                                tf.ReplaceString(newId, rpi.PlanetName);
+                                planets2DA[tableRow, "Name"].IntValue = newId;
+                                MERLog.Information("Assigned asteroid new TLK ID: " + newId);
                             }
                             else
                             {
                                 //Exists - repoint to that TLK value
-                                planets2DA[tableRow, "Name"].DisplayableValue = newTlkValue.StringID.ToString();
-                                Log.Information("Repointed asteroid new existing string ID: " + newTlkValue.StringID);
+                                planets2DA[tableRow, "Name"].IntValue = newTlkValue;
+                                MERLog.Information("Repointed asteroid new existing string ID: " + newTlkValue);
                             }
                         }
                     }
@@ -630,11 +634,13 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             }
             else
             {
-                Log.Error("No randomization data for galaxy map planet 2da, row id " + tableRow);
+                MERLog.Error("No randomization data for galaxy map planet 2da, row id " + tableRow);
             }
         }
 
-        private void BuildSystemClusterMap(GameTarget target, RandomizationOption option, Bio2DA systems2DA, List<TalkFile> Tlks, Dictionary<int, (SuffixedCluster clustername, string systemname)> systemIdToSystemNameMap, Dictionary<int, SuffixedCluster> clusterIdToClusterNameMap, List<string> shuffledSystemNames)
+        public const string RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET = "RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION_PLOTPLANET";
+
+        private void BuildSystemClusterMap(GameTarget target, RandomizationOption option, Bio2DA systems2DA, Dictionary<int, (SuffixedCluster clustername, string systemname)> systemIdToSystemNameMap, Dictionary<int, SuffixedCluster> clusterIdToClusterNameMap, List<string> shuffledSystemNames)
         {
             int nameColumnSystems = systems2DA.GetColumnIndexByName("Name");
             int clusterColumnSystems = systems2DA.GetColumnIndexByName("Cluster");
@@ -648,12 +654,12 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
 
 
                 string oldSystemName = "";
-                foreach (TalkFile tf in Tlks)
+                foreach (var tf in TLKBuilder.GetOfficialTLKs())
                 {
-                    oldSystemName = tf.findDataById(tlkRef);
+                    oldSystemName = tf.FindDataById(tlkRef);
                     if (oldSystemName != "No Data")
                     {
-                        //tf.replaceString(tlkRef, newSystemName);
+                        //tf.ReplaceString(tlkRef, newSystemName);
                         systemNameMapping[oldSystemName] = newSystemName;
                         systemIdToSystemNameMap[int.Parse(systems2DA.RowNames[i])] = (clusterIdToClusterNameMap[clusterTableRow], newSystemName);
                         break;
@@ -665,7 +671,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
         private void RandomizePlanetNameDescriptions(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             option.CurrentOperation = "Applying entropy to galaxy map";
-            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("planetinfo.xml");
+            string fileContents = MERUtilities.GetStaticTextFile("planetinfo.xml");
 
             XElement rootElement = XElement.Parse(fileContents);
             var allMapRandomizationInfo = (from e in rootElement.Elements("RandomizedPlanetInfo")
@@ -687,7 +693,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                                                Playable = !(e.Element("NotPlayable") != null && (bool)e.Element("NotPlayable")),
                                            }).ToList();
 
-            fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("galaxymapclusters.xml");
+            fileContents = MERUtilities.GetStaticTextFile("galaxymapclusters.xml");
             rootElement = XElement.Parse(fileContents);
             var suffixedClusterNames = rootElement.Elements("suffixedclustername").Select(x => x.Value).ToList(); //Used for assignments
             var suffixedClusterNamesForPreviousLookup = rootElement.Elements("suffixedclustername").Select(x => x.Value).ToList(); //Used to lookup previous assignments 
@@ -696,7 +702,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             suffixedClusterNames.Shuffle();
             nonSuffixedClusterNames.Shuffle();
 
-            fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("galaxymapsystems.xml");
+            fileContents = MERUtilities.GetStaticTextFile("galaxymapsystems.xml");
             rootElement = XElement.Parse(fileContents);
             var shuffledSystemNames = rootElement.Elements("systemname").Select(x => x.Value).ToList();
             shuffledSystemNames.Shuffle();
@@ -726,9 +732,9 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             var asteroidBeltInfos = allMapRandomizationInfo.Where(x => x.IsAsteroidBelt).ToList();
             var planetInfos = allMapRandomizationInfo.Where(x => !x.IsAsteroidBelt && !x.IsAsteroid && !x.IsMSV && !x.PreventShuffle).ToList();
 
-            msvInfos.Shuffle(random);
-            asteroidInfos.Shuffle(random);
-            planetInfos.Shuffle(random);
+            msvInfos.Shuffle();
+            asteroidInfos.Shuffle();
+            planetInfos.Shuffle();
 
             List<int> rowsToNotRandomlyReassign = new List<int>();
 
@@ -762,7 +768,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                 int tlkRef = clusters2DA[i, nameColumnClusters].IntValue;
 
                 string oldClusterName = "";
-                oldClusterName = TLKBuilder.TLKLookupByLang(tlkRef, "INT");
+                oldClusterName = TLKBuilder.TLKLookupByLang(tlkRef, MELocalization.INT);
                 if (oldClusterName != "No Data")
                 {
                     SuffixedCluster suffixedCluster = null;
@@ -789,24 +795,24 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             Dictionary<int, (SuffixedCluster clustername, string systemname)> systemIdToSystemNameMap = new Dictionary<int, (SuffixedCluster clustername, string systemname)>();
 
 
-            BuildSystemClusterMap(systems2DA, Tlks, systemIdToSystemNameMap, clusterIdToClusterNameMap, shuffledSystemNames);
+            BuildSystemClusterMap(target, option, systems2DA, systemIdToSystemNameMap, clusterIdToClusterNameMap, shuffledSystemNames);
 
 
             //BRING DOWN THE SKY (UNC) SYSTEM===================
             if (File.Exists(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_GalaxyMap_X")))
             {
-                var bdtsGalaxyMapX = new ME1Package(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_GalaxyMap_X"));
-                Bio2DA bdtsGalMapX_Systems2DA = new Bio2DA(bdtsGalaxyMapX.getUExport(6));
-                var bdtstalkfile = new ME1Package(MERFileSystem.GetPackageFile(target, @"DLC_UNC_GlobalTlk"));
-                var bdtsTlks = bdtstalkfile.Exports.Where(x => x.ClassName == "BioTlkFile").Select(x => new TalkFile(x)).ToList();
-                BuildSystemClusterMap(bdtsGalMapX_Systems2DA, bdtsTlks, systemIdToSystemNameMap, clusterIdToClusterNameMap, shuffledSystemNames);
+                var bdtsGalaxyMapX = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_GalaxyMap_X"));
+                Bio2DA bdtsGalMapX_Systems2DA = new Bio2DA(bdtsGalaxyMapX.GetUExport(6));
+                var bdtstalkfile = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"DLC_UNC_GlobalTlk"));
+                var bdtsTlks = bdtstalkfile.Exports.Where(x => x.ClassName == "BioTlkFile").Select(x => new ME1TalkFile(x)).ToList();
+                BuildSystemClusterMap(target, option, bdtsGalMapX_Systems2DA, systemIdToSystemNameMap, clusterIdToClusterNameMap, shuffledSystemNames);
             }
             //END BRING DOWN THE SKY=====================
 
             //PLANETS
-            //mainWindow.CurrentProgressValue = 0;37
-            //mainWindow.ProgressBar_Bottom_Max = planets2DA.RowCount;
-            //mainWindow.ProgressBarIndeterminate = false;
+            //option.ProgressValue = 0;37
+            //option.ProgressMax = planets2DA.RowCount;
+            //option.ProgressIndeterminate = false;
 
             Dictionary<string, List<string>> galaxyMapGroupResources = new Dictionary<string, List<string>>();
             var resourceItems = Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(x => x.StartsWith("MassEffectRandomizer.staticfiles.galaxymapimages.")).ToList();
@@ -839,7 +845,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                 if (mapCell.IntValue > 0)
                 {
                     //must be playable
-                    RandomizePlanetText(planets2DA, i, "", Tlks, systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMap, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos, mustBePlayable: true);
+                    RandomizePlanetText(target, option, planets2DA, i, "", systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMap, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos, mustBePlayable: true);
                     AlreadyAssignedMustBePlayableRows.Add(i);
                 }
             }
@@ -847,65 +853,65 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             for (int i = 0; i < planets2DA.RowCount; i++)
             {
                 if (AlreadyAssignedMustBePlayableRows.Contains(i)) continue;
-                RandomizePlanetText(target, option, planets2DA, i, "", Tlks, systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMap, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos);
+                RandomizePlanetText(target, option, planets2DA, i, "", systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMap, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos);
             }
-            var galaxyMapImagesBasegame = new ME1Package(MERFileSystem.GetPackageFile(target, @"GUI_SF_GalaxyMap")); //lol demiurge, what were you doing?
-            var ui2DAPackage = new ME1Package(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UI_X")); //lol demiurge, what were you doing?
-            ExportEntry galaxyMapImages2DAExport = ui2DAPackage.getUExport(8);
+            var galaxyMapImagesBasegame = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"GUI_SF_GalaxyMap")); //lol demiurge, what were you doing?
+            var ui2DAPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UI_X")); //lol demiurge, what were you doing?
+            ExportEntry galaxyMapImages2DAExport = ui2DAPackage.GetUExport(8);
             RandomizePlanetImages(target, option, rowRPIMap, planets2DA, galaxyMapImagesBasegame, galaxyMapImages2DAExport, galaxyMapGroupResources);
             UpdateGalaxyMapReferencesForTLKs(target, option, true, true); //Update TLKs.
             planets2DA.Write2DAToExport();
             //END BASEGAME===============================
 
             //BRING DOWN THE SKY (UNC)===================
-            if (File.Exists(MERFileSystem.GetPackageFile(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_GalaxyMap_X"))))
+            if (File.Exists(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_GalaxyMap_X")))
             {
-                var bdtsplanets = new ME1Package(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_GalaxyMap_X"));
-                var bdtstalkfile = new ME1Package(MERFileSystem.GetPackageFile(target, @"DLC_UNC_GlobalTlk"));
+                var bdtsplanets = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_GalaxyMap_X"));
+                var bdtstalkfile = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"DLC_UNC_GlobalTlk"));
 
-                Bio2DA bdtsGalMapX_Planets2DA = new Bio2DA(bdtsplanets.getUExport(3));
+                Bio2DA bdtsGalMapX_Planets2DA = new Bio2DA(bdtsplanets.GetUExport(3));
                 var rowRPIMapBdts = new Dictionary<int, RandomizedPlanetInfo>();
-                var bdtsTlks = bdtstalkfile.Exports.Where(x => x.ClassName == "BioTlkFile").Select(x => new TalkFile(x)).ToList();
+                var bdtsTlks = bdtstalkfile.Exports.Where(x => x.ClassName == "BioTlkFile").Select(x => new ME1TalkFile(x)).ToList();
 
                 for (int i = 0; i < bdtsGalMapX_Planets2DA.RowCount; i++)
                 {
-                    RandomizePlanetText(bdtsGalMapX_Planets2DA, i, "UNC", bdtsTlks, systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMapBdts, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos);
+                    RandomizePlanetText(target, option, bdtsGalMapX_Planets2DA, i, "UNC", systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMapBdts, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos);
                 }
-                var galaxyMapImagesBdts = new ME1Package(MERFileSystem.GetPackageFile(target, @"GUI_SF_DLC_GalaxyMap"));
-                ui2DAPackage = new ME1Package(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_UI_X"));
-                galaxyMapImages2DAExport = ui2DAPackage.getUExport(2);
-                RandomizePlanetImages(random, rowRPIMapBdts, bdtsGalMapX_Planets2DA, galaxyMapImagesBdts, galaxyMapImages2DAExport, galaxyMapGroupResources);
-                bdtsplanets.save();
-                UpdateGalaxyMapReferencesForTLKs(bdtsTlks, true, false); //Update TLKs
-                bdtsTlks.ForEach(x => x.saveToExport());
-                bdtstalkfile.save();
-                GalaxyMapValidationPass(rowRPIMapBdts, bdtsGalMapX_Planets2DA, new Bio2DA(galaxyMapImages2DAExport), galaxyMapImagesBdts);
+                var galaxyMapImagesBdts = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"GUI_SF_DLC_GalaxyMap"));
+                ui2DAPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_UNC_UI_X"));
+                galaxyMapImages2DAExport = ui2DAPackage.GetUExport(2);
+                RandomizePlanetImages(target, option, rowRPIMapBdts, bdtsGalMapX_Planets2DA, galaxyMapImagesBdts, galaxyMapImages2DAExport, galaxyMapGroupResources);
+                MERFileSystem.SavePackage(bdtsplanets);
+                UpdateGalaxyMapReferencesForTLKs(target, option, true, false); //Update TLKs
+                //bdtsTlks.ForEach(x => x.saveToExport(x.E)); // TODO: REIMPLEMENT
+                MERFileSystem.SavePackage(bdtstalkfile);
+                GalaxyMapValidationPass(target, option, rowRPIMapBdts, bdtsGalMapX_Planets2DA, new Bio2DA(galaxyMapImages2DAExport), galaxyMapImagesBdts);
             }
             //END BRING DOWN THE SKY=====================
 
             //PINNACE STATION (VEGAS)====================
             if (File.Exists(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_Vegas_GalaxyMap_X")))
             {
-                var vegasplanets = new ME1Package(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_Vegas_GalaxyMap_X"));
-                var vegastalkfile = new ME1Package(MERFileSystem.GetPackageFile(target, @"DLC_Vegas_GlobalTlk"));
+                var vegasplanets = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_Vegas_GalaxyMap_X"));
+                var vegastalkfile = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"DLC_Vegas_GlobalTlk"));
 
-                Bio2DA vegasGalMapX_Planets2DA = new Bio2DA(vegasplanets.getUExport(2));
+                Bio2DA vegasGalMapX_Planets2DA = new Bio2DA(vegasplanets.GetUExport(2));
                 var rowRPIMapVegas = new Dictionary<int, RandomizedPlanetInfo>();
-                var vegasTlks = vegastalkfile.Exports.Where(x => x.ClassName == "BioTlkFile").Select(x => new TalkFile(x)).ToList();
+                var vegasTlks = vegastalkfile.Exports.Where(x => x.ClassName == "BioTlkFile").Select(x => new ME1TalkFile(x)).ToList();
 
                 for (int i = 0; i < vegasGalMapX_Planets2DA.RowCount; i++)
                 {
-                    RandomizePlanetText(vegasGalMapX_Planets2DA, i, "Vegas", vegasTlks, systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMapVegas, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos);
+                    RandomizePlanetText(target, option, vegasGalMapX_Planets2DA, i, "Vegas", systemIdToSystemNameMap, allMapRandomizationInfo, rowRPIMapVegas, planetInfos, msvInfos, asteroidInfos, asteroidBeltInfos);
                 }
 
-                var galaxyMapImagesVegas = new ME1Package(MERFileSystem.GetPackageFile(target, @"GUI_SF_PRC2_GalaxyMap"));
-                ui2DAPackage = new ME1Package(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_Vegas_UI_X"));
-                galaxyMapImages2DAExport = ui2DAPackage.getUExport(2);
-                RandomizePlanetImages(random, rowRPIMapVegas, vegasGalMapX_Planets2DA, galaxyMapImagesVegas, galaxyMapImages2DAExport, galaxyMapGroupResources);
-                vegasplanets.save();
-                UpdateGalaxyMapReferencesForTLKs(vegasTlks, true, false); //Update TLKs.
-                vegasTlks.ForEach(x => x.saveToExport());
-                vegastalkfile.save();
+                var galaxyMapImagesVegas = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"GUI_SF_PRC2_GalaxyMap"));
+                ui2DAPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BIOG_2DA_Vegas_UI_X"));
+                galaxyMapImages2DAExport = ui2DAPackage.GetUExport(2);
+                RandomizePlanetImages(target, option, rowRPIMapVegas, vegasGalMapX_Planets2DA, galaxyMapImagesVegas, galaxyMapImages2DAExport, galaxyMapGroupResources);
+                MERFileSystem.SavePackage(vegasplanets);
+                UpdateGalaxyMapReferencesForTLKs(target, option, true, false); //Update TLKs.
+                //vegasTlks.ForEach(x => x.saveToExport()); //todo: renable
+                MERFileSystem.SavePackage(vegastalkfile);
             }
             //END PINNACLE STATION=======================
         }

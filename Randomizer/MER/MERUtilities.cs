@@ -74,18 +74,18 @@ namespace Randomizer.MER
         }
 
         /// <summary>
-        /// Fetches a text file's contents from the Assets.Text directory
+        /// Fetches a text file's contents from the Assets.Text directory.
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static string GetEmbeddedStaticFilesTextFile(string filename)
+        public static string GetStaticTextFile(string filename, bool shared = false)
         {
-            using var stream = GetEmbeddedAsset("Text", filename);
+            using var stream = GetEmbeddedAsset("Text", filename, shared);
             using StreamReader sr = new StreamReader(stream);
             return sr.ReadToEnd();
         }
 
-        public static Stream GetEmbeddedAsset(string assettype, string assetpath)
+        public static Stream GetEmbeddedAsset(string assettype, string assetpath, bool shared = false)
         {
 #if __GAME1__
             var assetBase = $"Randomizer.Randomizers.Game1.Assets.{assettype}.";
@@ -94,6 +94,8 @@ namespace Randomizer.MER
 #elif __GAME3__
             var assetBase = $"Randomizer.Randomizers.Game3.Assets.{assettype}.";
 #endif
+            if (shared)
+                assetBase = $"Randomizer.Randomizers.SharedAssets.{assettype}.";
             var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
             return Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + assetpath);
         }
@@ -591,20 +593,6 @@ namespace Randomizer.MER
             }
         }
 
-        public static void SetLocation(ExportEntry export, float x, float y, float z)
-        {
-            StructProperty prop = export.GetProperty<StructProperty>("location");
-            SetLocation(prop, x, y, z);
-            export.WriteProperty(prop);
-        }
-
-        public static void SetLocation(StructProperty prop, float x, float y, float z)
-        {
-            prop.GetProp<FloatProperty>("X").Value = x;
-            prop.GetProp<FloatProperty>("Y").Value = y;
-            prop.GetProp<FloatProperty>("Z").Value = z;
-        }
-
         private static void RepointAllVariableReferencesToNode(ExportEntry targetNode, ExportEntry newNode, List<ExportEntry> exceptions = null)
         {
             var sequence = targetNode.FileRef.GetUExport(targetNode.GetProperty<ObjectProperty>("ParentSequence").Value);
@@ -639,27 +627,6 @@ namespace Randomizer.MER
                     seqObj.WriteProperties(props);
                 }
             }
-        }
-
-        public static void SetRotation(ExportEntry export, float newDirectionDegrees)
-        {
-            StructProperty prop = export.GetProperty<StructProperty>("rotation");
-            if (prop == null)
-            {
-                PropertyCollection p = new PropertyCollection();
-                p.Add(new IntProperty(0, "Pitch"));
-                p.Add(new IntProperty(0, "Yaw"));
-                p.Add(new IntProperty(0, "Roll"));
-                prop = new StructProperty("Rotator", p, "Rotation", true);
-            }
-            SetRotation(prop, newDirectionDegrees);
-            export.WriteProperty(prop);
-        }
-
-        public static void SetRotation(StructProperty prop, float newDirectionDegrees)
-        {
-            int newYaw = (int)((newDirectionDegrees / 360) * 65535);
-            prop.GetProp<IntProperty>("Yaw").Value = newYaw;
         }
 
         private static void SetAttrSafe(XmlNode node, params XmlAttribute[] attrList)
@@ -781,11 +748,6 @@ namespace Randomizer.MER
                 var bytes = BitConverter.GetBytes(productVal);
                 MERLog.Information("Antivirus info: " + virusCheckerName + " with state " + bytes[1].ToString("X2") + " " + bytes[2].ToString("X2") + " " + bytes[3].ToString("X2"));
             }
-        }
-
-        internal static void SetLocation(ExportEntry bioPawn, Vector3 position)
-        {
-            SetLocation(bioPawn, position.X, position.Y, position.Z);
         }
 
         public static bool IsGameRunning(MEGame game)

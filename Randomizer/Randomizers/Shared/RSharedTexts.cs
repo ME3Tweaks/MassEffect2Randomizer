@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.Serialization;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.TLK;
 using LegendaryExplorerCore.TLK.ME1;
 using LegendaryExplorerCore.TLK.ME2ME3;
 using ME3TweaksCore.Targets;
@@ -36,7 +38,7 @@ namespace Randomizer.Randomizers.Shared
         /// <returns></returns>
         public static bool RandomizeOpeningCrawl(GameTarget target, RandomizationOption arg)
         {
-            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("openingcrawls.xml");
+            string fileContents = MERUtilities.GetStaticTextFile("openingcrawls.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var gameoverTexts = rootElement.Elements("CrawlText").Select(x => x.Value).ToList();
             // The trim calls here will remove first and last lines that are blank. The TrimForIntro() will remove whitespace per line.
@@ -72,7 +74,7 @@ namespace Randomizer.Randomizers.Shared
         /// <returns></returns>
         public static bool RandomizeGameOverText(GameTarget target, RandomizationOption arg)
         {
-            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("gameovertexts.xml");
+            string fileContents = MERUtilities.GetStaticTextFile("gameovertexts.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var gameoverTexts = rootElement.Elements("gameovertext").Select(x => x.Value).ToList();
             var gameOverText = gameoverTexts[ThreadSafeRandom.Next(gameoverTexts.Count)];
@@ -92,31 +94,30 @@ namespace Randomizer.Randomizers.Shared
             var nonMerTLKs = TLKBuilder.GetAllTLKs().Where(x => !MERTlks.Contains(x));
 
             option.ProgressValue = 0;
-            option.ProgressMax = nonMerTLKs.Where(x => x.name.EndsWith(@"INT.tlk")).Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
-            option.ProgressMax += MERTlks.Where(x => x.name.EndsWith(@"INT.tlk")).Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressMax = nonMerTLKs.Where(x => x.Localization == MELocalization.INT).Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
+            option.ProgressMax += MERTlks.Where(x => x.Localization == MELocalization.INT).Sum(x => x.StringRefs.Count(y => y.StringID > 0 && !string.IsNullOrWhiteSpace(y.Data)));
             option.ProgressIndeterminate = false;
 
 
             // UwUify MER TLK first
-            foreach (TalkFile tf in MERTlks)
+            foreach (var tf in MERTlks)
             {
                 UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, true, option);
             }
 
             // UwUify non MER TLK
-            foreach (TalkFile tf in nonMerTLKs)
+            foreach (var tf in nonMerTLKs)
             {
                 UwuifyTalkFile(tf, keepCasing, addReactions, skipIDs, false, option);
             }
             return true;
         }
 
-        private static void UwuifyTalkFile(TalkFile tf, bool keepCasing, bool addReactions, List<int> skipIDs, bool isMERTlk, RandomizationOption option)
+        private static void UwuifyTalkFile(ITalkFile tf, bool keepCasing, bool addReactions, List<int> skipIDs, bool isMERTlk, RandomizationOption option)
         {
-            var tfName = Path.GetFileNameWithoutExtension(tf.FilePath);
-            var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
-            if (langCode != "INT")
+            if (tf.Localization != MELocalization.INT)
                 return;
+
             foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)))
             {
                 option.IncrementProgressValue();
@@ -214,7 +215,7 @@ namespace Randomizer.Randomizers.Shared
                     str = str.Replace("fuck", keepCasing ? "UwU" : "uwu", StringComparison.InvariantCultureIgnoreCase);
                 }
 
-                TLKBuilder.ReplaceString(sref.StringID, str, langCode);
+                TLKBuilder.ReplaceString(sref.StringID, str, tf.Localization);
             }
         }
 
@@ -229,7 +230,7 @@ namespace Randomizer.Randomizers.Shared
             //initialize reactions/regex if this is first run
             if (ReactionList == null)
             {
-                string rawReactionDefinitions = MERUtilities.GetEmbeddedStaticFilesTextFile("reactiondefinitions.xml");
+                string rawReactionDefinitions = MERUtilities.GetStaticTextFile("reactiondefinitions.xml");
                 var reactionXml = new StringReader(rawReactionDefinitions);
                 XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
                 ReactionList = (List<Reaction>)serializer.Deserialize(reactionXml);
@@ -524,7 +525,7 @@ namespace Randomizer.Randomizers.Shared
             return finalString;
         }
 
-        private static void FindSkipRanges(ME1TalkFile.TLKStringRef sref, List<int> skipRanges)
+        private static void FindSkipRanges(TLKStringRef sref, List<int> skipRanges)
         {
             var str = sref.Data;
             int startPos = -1;
@@ -709,11 +710,8 @@ namespace Randomizer.Randomizers.Shared
             return true;
         }
 
-        private static void RandomizeVowelsInternal(TalkFile tf, List<int> skipIDs, Dictionary<char, char> translationMap, bool isMERTlk, RandomizationOption option)
+        private static void RandomizeVowelsInternal(ITalkFile tf, List<int> skipIDs, Dictionary<char, char> translationMap, bool isMERTlk, RandomizationOption option)
         {
-            var tfName = Path.GetFileNameWithoutExtension(tf.FilePath);
-            var langCode = tfName.Substring(tfName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase) + 1);
-
             foreach (var sref in tf.StringRefs.Where(x => x.StringID > 0 && !string.IsNullOrWhiteSpace(x.Data)).ToList())
             {
                 option.IncrementProgressValue();
@@ -752,7 +750,7 @@ namespace Randomizer.Randomizers.Shared
                         // Do not change the letter. It might be something like <.
                     }
 
-                    TLKBuilder.ReplaceString(sref.StringID, new string(newStr), langCode);
+                    TLKBuilder.ReplaceString(sref.StringID, new string(newStr), tf.Localization);
                 }
             }
         }

@@ -261,7 +261,7 @@ namespace RandomizerUI
             get
             {
 #if __GAME1__
-                return "/images/game3/firstrun_bg.jpg";
+                return "/images/game1/firstrun_bg.jpg";
 #elif __GAME2__
                 return "/images/game2/firstrun_bg.jpg";
 #elif __GAME3__
@@ -443,7 +443,7 @@ namespace RandomizerUI
             {
                 ShowProgressPanel = true;
 #if __GAME1__
-                var randomizer = new Randomizer.Randomizers.Game1.Randomizer();
+                var randomizer = new Randomizer.Randomizers.Game1.RandomizerV2();
 #elif __GAME2__
                 var randomizer = new Randomizer.Randomizers.Game2.Randomizer();
 #elif __GAME3__
@@ -482,7 +482,7 @@ namespace RandomizerUI
         public void FinalizeInterfaceLoad()
         {
 #if __GAME1__
-            Randomizer.Randomizers.Game1.Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
+            Randomizer.Randomizers.Game1.RandomizerV2.SetupOptions(RandomizationGroups, optionStateChanging);
 #elif __GAME2__
             Randomizer.Randomizers.Game2.Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
 #elif __GAME3__

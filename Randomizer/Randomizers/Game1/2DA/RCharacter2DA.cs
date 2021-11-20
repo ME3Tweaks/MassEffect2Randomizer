@@ -36,7 +36,7 @@ namespace Randomizer.Randomizers.Game1._2DA
             Bio2DA character2da = new Bio2DA(export);
             for (int row = 0; row < character2da.RowNames.Count(); row++)
             {
-                //Console.WriteLine("[" + row + "][" + colsToRandomize[i] + "] value is " + BitConverter.ToSingle(cluster2da[row, colsToRandomize[i]].Data, 0));
+                //Debug.WriteLine("[" + row + "][" + colsToRandomize[i] + "] value is " + BitConverter.ToSingle(cluster2da[row, colsToRandomize[i]].Data, 0));
 
 
                 if (option.HasSubOptionSelected(RANDSETTING_CHARACTER_HENCH_ARCHETYPES))
@@ -47,7 +47,7 @@ namespace Randomizer.Randomizers.Game1._2DA
                         int indexToChoose = ThreadSafeRandom.Next(actorTypes.Count);
                         var actorNameVal = actorTypes[indexToChoose];
                         actorTypes.RemoveAt(indexToChoose);
-                        Console.WriteLine("Character Randomizer HENCH ARCHETYPE [" + row + "][2] value is now " + actorNameVal);
+                        Debug.WriteLine("Character Randomizer HENCH ARCHETYPE [" + row + "][2] value is now " + actorNameVal);
                         character2da[row, 2].NameValue = new NameReference(actorNameVal);
                         hasChanges = true;
                     }
@@ -57,14 +57,14 @@ namespace Randomizer.Randomizers.Game1._2DA
                 {
                     int randvalue = ThreadSafeRandom.Next(humanLightArmorManufacturers.Length);
                     int manf = humanLightArmorManufacturers[randvalue];
-                    Console.WriteLine("Character Randomizer ARMOR [" + row + "][21] value is now " + manf);
+                    Debug.WriteLine("Character Randomizer ARMOR [" + row + "][21] value is now " + manf);
                     character2da[row, 21].IntValue = manf;
 
                     if (character2da[row, 24] != null)
                     {
                         randvalue = ThreadSafeRandom.Next(bioampManufacturers.Length);
                         manf = bioampManufacturers[randvalue];
-                        Console.WriteLine("Character Randomizer BIOAMP [" + row + "][24] value is now " + manf);
+                        Debug.WriteLine("Character Randomizer BIOAMP [" + row + "][24] value is now " + manf);
                         character2da[row, 24].IntValue = manf;
                         hasChanges = true;
                     }
@@ -73,7 +73,7 @@ namespace Randomizer.Randomizers.Game1._2DA
                     {
                         randvalue = ThreadSafeRandom.Next(omnitoolManufacturers.Length);
                         manf = omnitoolManufacturers[randvalue];
-                        Console.WriteLine("Character Randomizer OMNITOOL [" + row + "][29] value is now " + manf);
+                        Debug.WriteLine("Character Randomizer OMNITOOL [" + row + "][29] value is now " + manf);
                         character2da[row, 29].IntValue = manf;
                         hasChanges = true;
                     }

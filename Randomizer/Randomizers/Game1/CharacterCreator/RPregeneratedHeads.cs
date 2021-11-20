@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace Randomizer.Randomizers.Game1.CharacterCreator
             columnMaxDictionary[34] = 8; //haircolor
             columnMaxDictionary[35] = 8; //facialhaircolor
 
-            if (export.ObjectName.Contains("Female"))
+            if (export.ObjectName.Name.Contains("Female"))
             {
                 floatSliderIndexesToRandomize = new int[] { 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 19, 20, 21, 22, 24, 25, 26, 27, 29, 30 };
                 columnMaxDictionary.Clear();
@@ -56,7 +57,7 @@ namespace Randomizer.Randomizers.Game1.CharacterCreator
             {
                 foreach (int col in floatSliderIndexesToRandomize)
                 {
-                    export2da[row, col].Data = BitConverter.GetBytes(ThreadSafeRandom.NextFloat(0, 2));
+                    export2da[row, col].FloatValue = ThreadSafeRandom.NextFloat(0, 2);
                 }
             }
 
@@ -65,16 +66,15 @@ namespace Randomizer.Randomizers.Game1.CharacterCreator
                 foreach (KeyValuePair<int, int> entry in columnMaxDictionary)
                 {
                     int col = entry.Key;
-                    Console.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value originally is " + export2da[row, col].GetDisplayableValue());
+                    Debug.WriteLine("[" + row + "][" + col + "]  (" + export2da.ColumnNames[col] + ") value originally is " + export2da[row, col].DisplayableValue);
 
-                    export2da[row, col].Data = BitConverter.GetBytes(ThreadSafeRandom.Next(0, entry.Value) + 1);
-                    export2da[row, col].Type = Bio2DACell.Bio2DADataType.TYPE_INT;
-                    Console.WriteLine("Character Creator Randomizer [" + row + "][" + col + "] (" + export2da.ColumnNames[col] + ") value is now " + export2da[row, col].GetDisplayableValue());
+                    export2da[row, col].IntValue = ThreadSafeRandom.Next(0, entry.Value) + 1;
+                    Debug.WriteLine("Character Creator Randomizer [" + row + "][" + col + "] (" + export2da.ColumnNames[col] + ") value is now " + export2da[row, col].DisplayableValue);
 
                 }
             }
 
-            Console.WriteLine("Writing export " + export.ObjectName);
+            Debug.WriteLine("Writing export " + export.ObjectName);
             export2da.Write2DAToExport();
         }
 

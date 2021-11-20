@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using Serilog;
 
 namespace Randomizer.Randomizers.Levels
@@ -14,14 +15,14 @@ namespace Randomizer.Randomizers.Levels
     {
         private static void RandomizeEdenPrime(GameTarget target, RandomizationOption option)
         {
-            Log.Information("Randomizing Eden Prime");
+            MERLog.Information("Randomizing Eden Prime");
 
-            ME1Package p = new ME1Package(Utilities.GetGameFile(@"BioGame\CookedPC\Maps\PRO\DSG\BIOA_PRO10_08_DSG.SFM"));
-            Log.Information("Applying sovereign drawscale pre-randomization modifications");
-            p.getUExport(5640).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackFloatDrawScale_5640_PRO08DSG.bin");
-            p.getUExport(5643).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackMove_5643_PRO08DSG.bin");
+            var p = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Maps\PRO\DSG\BIOA_PRO10_08_DSG.SFM"));
+            MERLog.Information("Applying sovereign drawscale pre-randomization modifications");
+            p.GetUExport(5640).Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackFloatDrawScale_5640_PRO08DSG.bin");
+            p.GetUExport(5643).Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackMove_5643_PRO08DSG.bin");
 
-            ExportEntry drawScaleExport = p.getUExport(5640);
+            ExportEntry drawScaleExport = p.GetUExport(5640);
             var floatTrack = drawScaleExport.GetProperty<StructProperty>("FloatTrack");
             {
                 var points = floatTrack?.GetProp<ArrayProperty<StructProperty>>("Points");
@@ -41,7 +42,7 @@ namespace Randomizer.Randomizers.Levels
 
             drawScaleExport.WriteProperty(floatTrack);
 
-            ExportEntry movementExport = p.getUExport(5643);
+            ExportEntry movementExport = p.GetUExport(5643);
             var props = movementExport.GetProperties();
             var posTrack = props.GetProp<StructProperty>("PosTrack");
             if (posTrack != null)

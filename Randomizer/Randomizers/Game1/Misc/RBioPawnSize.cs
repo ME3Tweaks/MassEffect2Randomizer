@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using Randomizer.MER;
 using Serilog;
 
 namespace Randomizer.Randomizers.Game1.Misc
@@ -14,7 +15,7 @@ namespace Randomizer.Randomizers.Game1.Misc
     {
         private void RandomizeBioPawnSize(ExportEntry export, Random random, double amount)
         {
-            Log.Information("Randomizing pawn size for " + export.UIndex + ": " + export.InstancedFullPath);
+            MERLog.Information("Randomizing pawn size for " + export.UIndex + ": " + export.InstancedFullPath);
             var props = export.GetProperties();
             StructProperty sp = props.GetProp<StructProperty>("DrawScale3D");
             if (sp == null)

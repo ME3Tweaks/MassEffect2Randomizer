@@ -49,7 +49,7 @@ namespace Randomizer.MER
                         catch (IOException e)
                         {
                             // This is a cheap hack around potential multithreading issues
-                            Log.Warning($@"I/O Exception opening {file}: {e.Message}. We have {i} attempts remaining to open this package");
+                            MERLog.Warning($@"I/O Exception opening {file}: {e.Message}. We have {i} attempts remaining to open this package");
                             Thread.Sleep(1000);
                         }
                     }

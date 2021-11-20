@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text.RegularExpressions;
+using System.Windows.Input;
 using System.Windows.Media;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.TLK.ME1;
@@ -86,6 +88,55 @@ namespace Randomizer.MER
                 {
                     return true;
                 }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Trims each line of text and then reassembles the string.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        public static string TrimLines(this string s)
+        {
+            List<string> lines = s.Split('\n').ToList();
+
+            //Trim first empty lines
+            while (lines.Count > 0 && lines[0].Trim() == "")
+            {
+                lines.RemoveAt(0);
+            }
+
+            //Trim trailing newines
+            while (lines.Count > 0 && lines[lines.Count - 1].Trim() == "")
+            {
+                lines.RemoveAt(lines.Count - 1);
+            }
+
+            return string.Join("\n", lines.Select(x => x.Trim()));
+        }
+
+        /// <summary>
+        /// Replaces a string within another string, case insensitive.
+        /// </summary>
+        /// <param name="str">The input string</param>
+        /// <param name="from">What is being replaced</param>
+        /// <param name="to">The new string to replace with</param>
+        /// <returns></returns>
+        public static string ReplaceInsensitive(this string str, string from, string to)
+        {
+            str = Regex.Replace(str, from, to, RegexOptions.IgnoreCase);
+            return str;
+        }
+
+        public static bool ContainsWord(this string s, string word)
+        {
+            string[] ar = s.Split(' ', '.', ':'); //Split on space and periods
+
+            foreach (string str in ar)
+            {
+                if (str.ToLower() == word.ToLower())
+                    return true;
             }
             return false;
         }

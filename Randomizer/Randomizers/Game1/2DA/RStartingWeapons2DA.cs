@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace Randomizer.Randomizers.Game1._2DA
             // todo : see if LE has more guns we can give out
 
             bool randomizeLevels = true; //will use better later
-            Console.WriteLine("Randomizing Starting Weapons");
+            Debug.WriteLine("Randomizing Starting Weapons");
             Bio2DA startingitems2da = new Bio2DA(export);
             int[] rowsToRandomize = { 0, 1, 2, 3 };
             int[] manufacturers = { 324, 325, 326, 327, 412, 436, 502, 503, 504, 525, 582, 583, 584, 598, 599, 600, 601 };

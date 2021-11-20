@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using Randomizer.MER;
 using Serilog;
 
 namespace Randomizer.Randomizers.Game1.Misc
@@ -15,7 +16,7 @@ namespace Randomizer.Randomizers.Game1.Misc
 
         private void RandomizeHazard(ExportEntry export, Random random)
         {
-            Log.Information("Randomizing hazard sequence objects for " + export.UIndex + ": " + export.InstancedFullPath);
+            MERLog.Information("Randomizing hazard sequence objects for " + export.UIndex + ": " + export.InstancedFullPath);
             
             /*var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
             if (variableLinks != null)
@@ -23,7 +24,7 @@ namespace Randomizer.Randomizers.Game1.Misc
                 foreach (var variableLink in variableLinks)
                 {
                     var expectedType = export.FileRef.getEntry(variableLink.GetProp<ObjectProperty>("ExpectedType").Value).ObjectName;
-                    var linkedVariable = export.FileRef.getUExport(variableLink.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables")[0].Value); //hoochie mama that is one big statement.
+                    var linkedVariable = export.FileRef.GetUExport(variableLink.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables")[0].Value); //hoochie mama that is one big statement.
 
                     switch (expectedType)
                     {
@@ -31,13 +32,13 @@ namespace Randomizer.Randomizers.Game1.Misc
                             //Hazard type
                             var hazardTypeProp = linkedVariable.GetProperty<NameProperty>("NameValue");
                             hazardTypeProp.Value = hazardTypes[ThreadSafeRandom.Next(hazardTypes.Length)];
-                            Log.Information(" >> Hazard type: " + hazardTypeProp.Value);
+                            MERLog.Information(" >> Hazard type: " + hazardTypeProp.Value);
                             linkedVariable.WriteProperty(hazardTypeProp);
                             break;
                         case "SeqVar_Bool":
                             //Force helmet
                             var hazardHelmetProp = new IntProperty(ThreadSafeRandom.Next(2), "bValue");
-                            Log.Information(" >> Force helmet on: " + hazardHelmetProp.Value);
+                            MERLog.Information(" >> Force helmet on: " + hazardHelmetProp.Value);
                             linkedVariable.WriteProperty(hazardHelmetProp);
                             break;
                         case "SeqVar_Int":
@@ -48,7 +49,7 @@ namespace Randomizer.Randomizers.Game1.Misc
                                 hazardLevelProp.Value = 4;
                             }
 
-                            Log.Information(" >> Hazard level: " + hazardLevelProp.Value);
+                            MERLog.Information(" >> Hazard level: " + hazardLevelProp.Value);
                             linkedVariable.WriteProperty(hazardLevelProp);
                             break;
                     }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.TLK.ME2ME3;
@@ -40,12 +41,12 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             for (int i = 0; i < planets.RowNames.Count; i++)
             {
                 RandomizedPlanetInfo rpi = new RandomizedPlanetInfo();
-                rpi.PlanetName = tf.findDataById(planets[i, nameRefcolumn].GetIntValue());
+                rpi.PlanetName = tf.FindDataById(planets[i, nameRefcolumn].IntValue);
 
                 var descCell = planets[i, descColumn];
                 if (descCell != null)
                 {
-                    rpi.PlanetDescription = tf.findDataById(planets[i, 7].GetIntValue());
+                    rpi.PlanetDescription = tf.FindDataById(planets[i, 7].IntValue);
                 }
 
                 rpi.RowID = i;

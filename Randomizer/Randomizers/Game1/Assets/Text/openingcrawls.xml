@@ -43,7 +43,7 @@ The intro text only supports 8 lines of text. If you go over this, it won’t ap
     {
     static void Main(string[] args)
     {
-    Console.WriteLine("Hello World!");
+    Debug.WriteLine("Hello World!");
     }
     }
   </CrawlText>
@@ -61,7 +61,7 @@ The intro text only supports 8 lines of text. If you go over this, it won’t ap
     Pursued by the Council’s sinister Spectre agents, Commander Anderson races home aboard his starship, custodian of the stolen plans that can save humanity and restore freedom to the galaxy.....
   </CrawlText>
   <CrawlText>
-    Captain's Log, October 7, 2183.
+    Captain's MERLog, October 7, 2183.
 
     We have just come into orbit of Eden Prime to monitor progress on the Vernio particle fountain, a radically new mining technology. The project has been fraught with problems and is well behind schedule.
 

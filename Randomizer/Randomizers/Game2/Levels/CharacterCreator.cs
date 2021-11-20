@@ -51,7 +51,7 @@ namespace Randomizer.Randomizers.Game2.Levels
         public static bool RandomizePsychProfiles(GameTarget target, RandomizationOption option)
         {
             //Psych Profiles
-            string fileContents = MERUtilities.GetEmbeddedStaticFilesTextFile("psychprofiles.xml");
+            string fileContents = MERUtilities.GetStaticTextFile("psychprofiles.xml");
 
             XElement rootElement = XElement.Parse(fileContents);
             var childhoods = rootElement.Descendants("childhood").Where(x => x.Value != "").Select(x => (x.Attribute("name").Value, string.Join("\n", x.Value.Split('\n').Select(s => s.Trim())))).ToList();

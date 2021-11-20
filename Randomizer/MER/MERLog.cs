@@ -7,7 +7,7 @@ using Serilog.Sinks.RollingFile.Extension;
 namespace Randomizer.MER
 {
     /// <summary>
-    /// Interposer used to prefix log messages with their source component. Call only from MER code
+    /// Interposer used to prefix MERLog messages with their source component. Call only from MER code
     /// </summary>
     public static class MERLog
     {
@@ -23,7 +23,7 @@ namespace Randomizer.MER
             var prefix = $"[{Prefix}] ";
             Log.Error($"{prefix}{preMessage}");
 
-            // Log exception
+            // MERLog exception
             while (exception != null)
             {
                 var line1 = exception.GetType().Name + ": " + exception.Message;
@@ -82,7 +82,7 @@ namespace Randomizer.MER
         }
 
         /// <summary>
-        /// Creates an ILogger for the randomizer application. This does NOT assign it to Log.Logger.
+        /// Creates an ILogger for the randomizer application. This does NOT assign it to MERLog.Logger.
         /// </summary>
         /// <returns></returns>
         public static ILogger CreateLogger()

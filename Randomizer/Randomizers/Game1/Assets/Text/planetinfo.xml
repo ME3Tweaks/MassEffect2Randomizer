@@ -2947,7 +2947,7 @@
     <PlanetDescription>
       Marluxia is a largely unexplored planet that served as a staging area for the geth exodus after the conclusion of the Geth War. For the first century, it was too close to the Perseus Veil for safe exploration; several probes were detected and destroyed by the geth before retrieving any useful information. In 1898, a probe was able to pass the atmosphere, but was lost shortly after reaching the surface. A manned mission was sent by the Citadel Council in 1890, which was also successful in reaching the surface. Reported findings included a large, castle-like structure with sterile white corridors leading to everywhere and nowhere all at once.
 
-      The last recorded transmissions from Marluxia’s exploration team seem to suggest they either went mad or completely lost their memories. Several began to refer to the structure as ‘Castle Oblivion’ and several reports on shadow creatures, or ‘Heartless’ were filed in the mission logs before contact with the planet was lost.
+      The last recorded transmissions from Marluxia’s exploration team seem to suggest they either went mad or completely lost their memories. Several began to refer to the structure as ‘Castle Oblivion’ and several reports on shadow creatures, or ‘Heartless’ were filed in the mission MERLogs before contact with the planet was lost.
 
       Orbital Period: 352.7 Earth Years
       Radius: 8968 km
@@ -3229,7 +3229,7 @@
     <IsAsteroid>true</IsAsteroid>
     <PlanetName>Fragmented Asteroid</PlanetName>
     <PlanetDescription>
-      This asteroid appears to be a piece of a larger planet that was blasted away by firepower of unimaginable magnitude. Debris litters the area around it. Ships with high-grade sensor packages can pick up a weak, intermittent transmission that one ship log describes as ‘millions of voices crying out in terror.’
+      This asteroid appears to be a piece of a larger planet that was blasted away by firepower of unimaginable magnitude. Debris litters the area around it. Ships with high-grade sensor packages can pick up a weak, intermittent transmission that one ship MERLog describes as ‘millions of voices crying out in terror.’
       Radius: 71 km
     </PlanetDescription>
     <ImageGroup>Asteroid</ImageGroup>
@@ -3374,7 +3374,7 @@
     <IsAsteroidBelt>false</IsAsteroidBelt>
     <PlanetName>Thou Fan</PlanetName>
     <PlanetDescription>
-      Thou Fan is an insular world, cut off from the affairs of the galaxy at large. Accidental contact was made several thousand years ago when the crew of the courier ship Spirit Monk lost control and crash-landed on the surface. Its logs indicate that Thou Fan is dominated by the dynastic Jade Empire. Further notes mention a power struggle and a group known as the Lotus Assassins, but these appear to have been tampered with.
+      Thou Fan is an insular world, cut off from the affairs of the galaxy at large. Accidental contact was made several thousand years ago when the crew of the courier ship Spirit Monk lost control and crash-landed on the surface. Its MERLogs indicate that Thou Fan is dominated by the dynastic Jade Empire. Further notes mention a power struggle and a group known as the Lotus Assassins, but these appear to have been tampered with.
 
       The Spirit Monk was found floating adrift several years after its reported disappearance; no one was still alive on board. Upon inspection, the ship contained several additional skeletons that could not be matched to the crew manifest. Most suspect that the Emperor may have repaired the Spirit Monk with the intent of using it to banish his enemies.
 
@@ -3416,7 +3416,7 @@
     <IsAsteroidBelt>false</IsAsteroidBelt>
     <PlanetName>Skeldon</PlanetName>
     <PlanetDescription>
-      Skeldon is an uninhabited wasteland. The surface is a mix of sand desert encircling the equator and brush deserts flanking it at both poles. In the area between these deserts lies the only hospitable area; however, due to the harsh climate and limited resources of the planet, a logical conclusion is that nobody has ever chosen to live there.
+      Skeldon is an uninhabited wasteland. The surface is a mix of sand desert encircling the equator and brush deserts flanking it at both poles. In the area between these deserts lies the only hospitable area; however, due to the harsh climate and limited resources of the planet, a MERLogical conclusion is that nobody has ever chosen to live there.
 
       Orbital Period: 2.2 Earth Years
       Radius: 4453 km
@@ -4005,7 +4005,7 @@
     <PlanetDescription>
       Fuchsia, aptly named after its environment’s ugly haze, is an uninhabited world due to the thick layer of poisonous gas that swirls in the planet’s winds. At night, the toxic atmosphere is thick enough that even the reflection of light from other planets in the system is unable to pierce the fog.
 
-      In a move that leaves investors worried and defies all logic, a company named Safari Zone is attempting to set up a zoo on the planet’s surface. This zoo would show off the planet’s hardiest creatures that are able to survive the poisonous air.
+      In a move that leaves investors worried and defies all MERLogic, a company named Safari Zone is attempting to set up a zoo on the planet’s surface. This zoo would show off the planet’s hardiest creatures that are able to survive the poisonous air.
 
       Orbital Period: 284.2 Earth Years
       Radius: 57,948 km

@@ -17,14 +17,14 @@ namespace Randomizer.Randomizers.Levels
         private static void RandomizeBDTS(GameTarget target, RandomizationOption option)
         {
             //Randomize planet in the sky
-            var bdtsPlanetFile = new ME1Package(MERFileSystem.GetGameFile(@"DLC\DLC_UNC\CookedPC\Maps\UNC52\LAY\BIOA_UNC52_00_LAY.SFM"));
-            ExportEntry planetMaterial = bdtsPlanetFile.getUExport(1546); //BIOA_DLC_UNC52_T.GXM_EarthDup
+            var bdtsPlanetFile = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"DLC\DLC_UNC\CookedPC\Maps\UNC52\LAY\BIOA_UNC52_00_LAY.SFM"));
+            ExportEntry planetMaterial = bdtsPlanetFile.GetUExport(1546); //BIOA_DLC_UNC52_T.GXM_EarthDup
             PlanetMIC.RandomizePlanetMaterialInstanceConstant(target, planetMaterial, realistic: true);
-            bdtsPlanetFile.save();
+            MERFileSystem.SavePackage(bdtsPlanetFile);
 
             //Randomize the Bio2DA talent table for the turrets
-            var bdtsTalents = new ME1Package(MERFileSystem.GetGameFile(@"DLC\DLC_UNC\CookedPC\Packages\2DAs\BIOG_2DA_UNC_Talents_X.upk"));
-            Bio2DA talentEffectLevels = new Bio2DA(bdtsTalents.getUExport(2));
+            var bdtsTalents = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"DLC\DLC_UNC\CookedPC\Packages\2DAs\BIOG_2DA_UNC_Talents_X.upk"));
+            Bio2DA talentEffectLevels = new Bio2DA(bdtsTalents.GetUExport(2));
 
             for (int i = 0; i < talentEffectLevels.RowCount; i++)
             {
@@ -49,7 +49,7 @@ namespace Randomizer.Randomizers.Levels
             }
 
             talentEffectLevels.Write2DAToExport();
-            bdtsTalents.save();
+            MERFileSystem.SavePackage(bdtsTalents);
 
         }
 

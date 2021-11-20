@@ -51,9 +51,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                     // Repoint the TLK to match what's going to be said
                     var nTlk = WwiseTools.ExtractTLKIdFromExportName(audioChoice);
                     var oTlk = WwiseTools.ExtractTLKIdFromExportName(aExp);
-                    if (nTlk != -1 && oTlk != -1 && !string.IsNullOrWhiteSpace(TLKBuilder.TLKLookupByLang(nTlk, "INT")))
+                    if (nTlk != -1 && oTlk != -1 && !string.IsNullOrWhiteSpace(TLKBuilder.TLKLookupByLang(nTlk, MELocalization.INT)))
                     {
-                        TLKBuilder.ReplaceString(oTlk, TLKBuilder.TLKLookupByLang(nTlk, "INT"));
+                        TLKBuilder.ReplaceString(oTlk, TLKBuilder.TLKLookupByLang(nTlk, MELocalization.INT));
 
                         WwiseTools.RepointWwiseStream(audioChoice, aExp);
                         installed = true;

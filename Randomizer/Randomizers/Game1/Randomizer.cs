@@ -36,10 +36,10 @@
             Random random = new Random((int)e.Argument);
 
             //Load TLKs
-            mainWindow.CurrentOperationText = "Loading TLKs";
-            mainWindow.ProgressBarIndeterminate = true;
+            option.CurrentOperation = "Loading TLKs";
+            option.ProgressIndeterminate = true;
             string globalTLKPath = Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "Packages", "Dialog", "GlobalTlk.upk");
-            ME1Package globalTLK = new ME1Package(globalTLKPath);
+            ME1Package globalTLK = MERFileSystem.OpenMEPackage(globalTLKPath);
             List<TalkFile> Tlks = new List<TalkFile>();
             foreach (ExportEntry exp in globalTLK.Exports)
             {
@@ -52,7 +52,7 @@
             }
 
             ////Test
-            //ME1Package test = new ME1Package(@"D:\Origin Games\Mass Effect\BioGame\CookedPC\Maps\STA\DSG\BIOA_STA60_06_DSG.SFM");
+            //ME1Package test = MERFileSystem.OpenMEPackage(@"D:\Origin Games\Mass Effect\BioGame\CookedPC\Maps\STA\DSG\BIOA_STA60_06_DSG.SFM");
             //var morphFaces = test.Exports.Where(x => x.ClassName == "BioMorphFace").ToList();
             //morphFaces.ForEach(x => RandomizeBioMorphFace(x, random));
             //test.save();
@@ -61,7 +61,7 @@
             
 
             //Randomize BIOC_BASE
-            ME1Package bioc_base = new ME1Package(Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "BIOC_Base.u"));
+            ME1Package bioc_base = MERFileSystem.OpenMEPackage(Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "BIOC_Base.u"));
             bool bioc_base_changed = false;
             if (mainWindow.RANDSETTING_MOVEMENT_MAKO)
             {
@@ -79,7 +79,7 @@
 
 
             //Randomize ENGINE
-            ME1Package engine = new ME1Package(Utilities.GetEngineFile());
+            ME1Package engine = MERFileSystem.OpenMEPackage(Utilities.GetEngineFile());
             ExportEntry talentEffectLevels = null;
 
             foreach (ExportEntry export in engine.Exports)
@@ -167,7 +167,7 @@
             }
 
             //RANDOMIZE ENTRYMENU
-            ME1Package entrymenu = new ME1Package(Utilities.GetEntryMenuFile());
+            ME1Package entrymenu = MERFileSystem.OpenMEPackage(Utilities.GetEntryMenuFile());
             foreach (ExportEntry export in entrymenu.Exports)
             {
                 switch (export.ObjectName)
@@ -200,7 +200,7 @@
 
                 if (mainWindow.RANDSETTING_CHARACTER_ICONICFACE && export.ClassName == "BioMorphFace" && export.ObjectName.StartsWith("Player_"))
                 {
-                    Log.Information("Randomizing iconic female shepard face by " + mainWindow.RANDSETTING_CHARACTER_ICONICFACE_AMOUNT);
+                    MERLog.Information("Randomizing iconic female shepard face by " + mainWindow.RANDSETTING_CHARACTER_ICONICFACE_AMOUNT);
                     RandomizeBioMorphFace(export, random, mainWindow.RANDSETTING_CHARACTER_ICONICFACE_AMOUNT);
                 }
             }
@@ -261,16 +261,16 @@
             //RANDOMIZE FACES
             if (mainWindow.RANDSETTING_CHARACTER_HENCHFACE)
             {
-                RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\GameObjects\Characters\Faces\BIOG_Hench_FAC.upk"), random); //Henchmen
-                RandomizeBioMorphFaceWrapper(Utilities.GetGameFile(@"BioGame\CookedPC\Packages\BIOG_MORPH_FACE.upk"), random); //Iconic and player (Not sure if this does anything...
+                RandomizeBioMorphFaceWrapper(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Packages\GameObjects\Characters\Faces\BIOG_Hench_FAC.upk"), random); //Henchmen
+                RandomizeBioMorphFaceWrapper(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Packages\BIOG_MORPH_FACE.upk"), random); //Iconic and player (Not sure if this does anything...
             }
 
             //Map file randomizer
             if (RunMapRandomizerPass)
             {
-                mainWindow.CurrentOperationText = "Getting list of files...";
+                option.CurrentOperation = "Getting list of files...";
 
-                mainWindow.ProgressBarIndeterminate = true;
+                option.ProgressIndeterminate = true;
                 string path = Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "Maps");
                 string bdtspath = Path.Combine(Utilities.GetGamePath(), "DLC", "DLC_UNC", "CookedPC", "Maps");
                 string pspath = Path.Combine(Utilities.GetGamePath(), "DLC", "DLC_Vegas", "CookedPC", "Maps");
@@ -296,17 +296,17 @@
                     files = files.Concat(Directory.GetFiles(pspath, "*.sfm", SearchOption.AllDirectories)).ToArray();
                 }
 
-                mainWindow.ProgressBarIndeterminate = false;
-                mainWindow.ProgressBar_Bottom_Max = files.Count();
+                option.ProgressIndeterminate = false;
+                option.ProgressMax = files.Count();
                 mainWindow.ProgressBar_Bottom_Min = 0;
                 double morphFaceRandomizationAmount = mainWindow.RANDSETTING_MISC_MAPFACES_AMOUNT;
                 double faceFXRandomizationAmount = mainWindow.RANDSETTING_WACK_FACEFX_AMOUNT;
                 string[] mapBaseNamesToNotRandomize = { "entrymenu", "biog_uiworld" };
                 for (int i = 0; i < files.Length; i++)
                 {
-                    bool loggedFilename = false;
-                    mainWindow.CurrentProgressValue = i;
-                    mainWindow.CurrentOperationText = "Randomizing map files [" + i + "/" + files.Count() + "]";
+                    bool MERLoggedFilename = false;
+                    option.ProgressValue = i;
+                    option.CurrentOperation = "Randomizing map files [" + i + "/" + files.Count() + "]";
                     var mapBaseName = Path.GetFileNameWithoutExtension(files[i]).ToLower();
                     //Debug.WriteLine(mapBaseName);
                     //if (mapBaseName != "bioa_nor10_03_dsg") continue;
@@ -314,7 +314,7 @@
                     {
                         //if (!mapBaseName.StartsWith("bioa_sta")) continue;
                         bool hasLogged = false;
-                        ME1Package package = new ME1Package(files[i]);
+                        ME1Package package = MERFileSystem.OpenMEPackage(files[i]);
                         if (RunMapRandomizerPassAllExports)
                         {
                             foreach (ExportEntry exp in package.Exports)
@@ -324,8 +324,8 @@
                                     //Face randomizer
                                     if (!loggedFilename)
                                     {
-                                        Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilename = true;
+                                        MERLog.Information("Randomizing map file: " + files[i]);
+                                        MERLoggedFilename = true;
                                     }
 
                                     RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
@@ -337,14 +337,14 @@
                                     var seqRef = exp.GetProperty<ObjectProperty>("oSequenceReference");
                                     if (seqRef != null && exp.FileRef.isUExport(seqRef.Value))
                                     {
-                                        ExportEntry possibleHazSequence = exp.FileRef.getUExport(seqRef.Value);
+                                        ExportEntry possibleHazSequence = exp.FileRef.GetUExport(seqRef.Value);
                                         var objName = possibleHazSequence.GetProperty<StrProperty>("ObjName");
                                         if (objName != null && objName == "REF_HazardSystem")
                                         {
                                             if (!loggedFilename)
                                             {
-                                                Log.Information("Randomizing map file: " + files[i]);
-                                                loggedFilename = true;
+                                                MERLog.Information("Randomizing map file: " + files[i]);
+                                                MERLoggedFilename = true;
                                             }
 
                                             RandomizeHazard(exp, random);
@@ -356,8 +356,8 @@
                                 {
                                     if (!loggedFilename)
                                     {
-                                        Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilename = true;
+                                        MERLog.Information("Randomizing map file: " + files[i]);
+                                        MERLoggedFilename = true;
                                     }
                                     if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
                                     {
@@ -383,7 +383,7 @@
                                     if (!loggedFilename)
                                     {
                                         //Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilename = true;
+                                        MERLoggedFilename = true;
                                     }
                                     RandomizeInterpPawns(exp, random);
                                 }
@@ -392,7 +392,7 @@
                                     if (!loggedFilename)
                                     {
                                         //Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilename = true;
+                                        MERLoggedFilename = true;
                                     }
                                     RandomizeBioLookAtDefinition(exp, random);
                                 }
@@ -402,8 +402,8 @@
                                     {
                                         if (!loggedFilename)
                                         {
-                                            Log.Information("Randomizing map file: " + files[i]);
-                                            loggedFilename = true;
+                                            MERLog.Information("Randomizing map file: " + files[i]);
+                                            MERLoggedFilename = true;
                                         }
 
                                         //Pawn size randomizer
@@ -414,8 +414,8 @@
                                     {
                                         if (!loggedFilename)
                                         {
-                                            Log.Information("Randomizing map file: " + files[i]);
-                                            loggedFilename = true;
+                                            MERLog.Information("Randomizing map file: " + files[i]);
+                                            MERLoggedFilename = true;
                                         }
 
                                         RandomizePawnMaterialInstances(exp, random);
@@ -425,8 +425,8 @@
                                 {
                                     if (!loggedFilename)
                                     {
-                                        Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilename = true;
+                                        MERLog.Information("Randomizing map file: " + files[i]);
+                                        MERLoggedFilename = true;
                                     }
                                     RandomizeHeightFogComponent(exp, random);
                                 }
@@ -434,8 +434,8 @@
                                 {
                                     if (!loggedFilename)
                                     {
-                                        Log.Information("Randomizing map file: " + files[i]);
-                                        loggedFilename = true;
+                                        MERLog.Information("Randomizing map file: " + files[i]);
+                                        MERLoggedFilename = true;
                                     }
 
                                     //Interpolation randomizer
@@ -454,8 +454,8 @@
                         {
                             if (!loggedFilename)
                             {
-                                Log.Information("Randomizing map file: " + files[i]);
-                                loggedFilename = true;
+                                MERLog.Information("Randomizing map file: " + files[i]);
+                                MERLoggedFilename = true;
                             }
                             UpdateGalaxyMapReferencesForTLKs(package.LocalTalkFiles, false, false);
                         }
@@ -464,8 +464,8 @@
                         {
                             if (!loggedFilename)
                             {
-                                Log.Information("Randomizing map file: " + files[i]);
-                                loggedFilename = true;
+                                MERLog.Information("Randomizing map file: " + files[i]);
+                                MERLoggedFilename = true;
                             }
 
                             MakeTextPossiblyScottish(package.LocalTalkFiles, random, false);
@@ -474,8 +474,8 @@
                         {
                             if (!loggedFilename)
                             {
-                                Log.Information("Randomizing map file: " + files[i]);
-                                loggedFilename = true;
+                                MERLog.Information("Randomizing map file: " + files[i]);
+                                MERLoggedFilename = true;
                             }
 
                             UwuifyTalkFiles(package.LocalTalkFiles, random, false, mainWindow.RANDSETTING_WACK_UWU_KEEPCASING, mainWindow.RANDSETTING_WACK_UWU_EMOTICONS);
@@ -504,26 +504,26 @@
             if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION)
             {
                 // REMOVE FROM ME1R
-                Log.Information("Apply galaxy map background transparency fix");
-                ME1Package p = new ME1Package(Utilities.GetGameFile(@"BioGame\CookedPC\Maps\NOR\DSG\BIOA_NOR10_03_DSG.SFM"));
-                p.getUExport(1655).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.PC_GalaxyMap_BGFix_1655.bin");
+                MERLog.Information("Apply galaxy map background transparency fix");
+                ME1Package p = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Maps\NOR\DSG\BIOA_NOR10_03_DSG.SFM"));
+                p.GetUExport(1655).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.PC_GalaxyMap_BGFix_1655.bin");
                 p.save();
                 ModifiedFiles[p.FileName] = p.FileName;
             }
 
 
             bool saveGlobalTLK = false;
-            mainWindow.ProgressBarIndeterminate = true;
+            option.ProgressIndeterminate = true;
             foreach (TalkFile tf in Tlks)
             {
                 if (tf.Modified)
                 {
-                    //string xawText = tf.findDataById(138077); //Earth.
+                    //string xawText = tf.FindDataById(138077); //Earth.
                     //Debug.WriteLine($"------------AFTER REPLACEMENT----{tf.export.ObjectName}------------------");
                     //Debug.WriteLine("New description:\n" + xawText);
                     //Debug.WriteLine("----------------------------------");
                     //Debugger.Break(); //Xawin
-                    mainWindow.CurrentOperationText = "Saving TLKs";
+                    option.CurrentOperation = "Saving TLKs";
                     ModifiedFiles[tf.export.FileRef.FileName] = tf.export.FileRef.FileName;
                     tf.saveToExport();
                 }
@@ -535,13 +535,13 @@
             {
                 globalTLK.save();
             }
-            mainWindow.CurrentOperationText = "Finishing up";
+            option.CurrentOperation = "Finishing up";
             AddMERSplash(random);
         }
 
         private void UwuifyTalkFiles(List<TalkFile> talkfiles, Random random, bool updateProgressbar, bool keepCasing, bool addReactions)
         {
-            Log.Information("UwUifying text");
+            MERLog.Information("UwUifying text");
 
             int currentTlkIndex = 0;
             foreach (TalkFile tf in talkfiles)
@@ -551,9 +551,9 @@
                 int current = 0;
                 if (updateProgressbar)
                 {
-                    mainWindow.CurrentOperationText = $"UwUifying text [{currentTlkIndex}/{talkfiles.Count}]";
-                    mainWindow.ProgressBar_Bottom_Max = tf.StringRefs.Length;
-                    mainWindow.ProgressBarIndeterminate = false;
+                    option.CurrentOperation = $"UwUifying text [{currentTlkIndex}/{talkfiles.Count}]";
+                    option.ProgressMax = tf.StringRefs.Length;
+                    option.ProgressIndeterminate = false;
                 }
 
                 foreach (var sref in tf.StringRefs)
@@ -562,7 +562,7 @@
                     if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
                     if (updateProgressbar)
                     {
-                        mainWindow.CurrentProgressValue = current;
+                        option.ProgressValue = current;
                     }
 
                     if (!string.IsNullOrWhiteSpace(sref.Data))
@@ -789,7 +789,7 @@
             //initialize reactions/regex if this is first run
             if (ReactionList == null)
             {
-                string rawReactionDefinitions = Utilities.GetEmbeddedStaticFilesTextFile("reactiondefinitions.xml");
+                string rawReactionDefinitions = MERUtilities.GetStaticTextFile("reactiondefinitions.xml");
                 var reactionXml = new StringReader(rawReactionDefinitions);
                 XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
                 ReactionList = (List<Reaction>)serializer.Deserialize(reactionXml);
@@ -1106,7 +1106,7 @@
                     var linkedVariables = variableLink.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
                     foreach (var objRef in linkedVariables)
                     {
-                        var linkedObj = export.FileRef.getUExport(objRef.Value).GetProperty<ObjectProperty>("ObjValue");
+                        var linkedObj = export.FileRef.GetUExport(objRef.Value).GetProperty<ObjectProperty>("ObjValue");
                         if (linkedObj != null)
                         {
                             var linkedObjectEntry = export.FileRef.getEntry(linkedObj.Value);
@@ -1121,15 +1121,15 @@
                             }
                         }
 
-                        string className = export.FileRef.getUExport(objRef.Value).ClassName;
+                        string className = export.FileRef.GetUExport(objRef.Value).ClassName;
                         if (className == "SeqVar_Player")
                         {
-                            playerRefs.Add(export.FileRef.getUExport(objRef.Value));
+                            playerRefs.Add(export.FileRef.GetUExport(objRef.Value));
                             pawnsToShuffle.Add(objRef); //pointer to this node
                         }
                         else if (className == "BioSeqVar_ObjectFindByTag")
                         {
-                            var tagToFind = export.FileRef.getUExport(objRef.Value).GetProperty<StrProperty>("m_sObjectTagToFind")?.Value;
+                            var tagToFind = export.FileRef.GetUExport(objRef.Value).GetProperty<StrProperty>("m_sObjectTagToFind")?.Value;
                             if (tagToFind != null && acceptableTagsForPawnShuffling.Contains(tagToFind))
                             {
                                 pawnsToShuffle.Add(objRef); //pointer to this node
@@ -1141,7 +1141,7 @@
 
             if (pawnsToShuffle.Count > 1)
             {
-                Log.Information("Randomizing pawns in interp: " + export.GetFullPath);
+                MERLog.Information("Randomizing pawns in interp: " + export.GetFullPath);
                 foreach (var refx in playerRefs)
                 {
                     refx.WriteProperty(new BoolProperty(true, "bReturnsPawns")); //Ensure the object returns pawns. It should, but maybe it doesn't.
@@ -1161,7 +1161,7 @@
 /*
         private void scaleHeadMesh(ExportEntry meshRef, float headScale)
         {
-            Log.Information("Randomizing headmesh for " + meshRef.GetIndexedFullPath);
+            MERLog.Information("Randomizing headmesh for " + meshRef.GetIndexedFullPath);
             var drawScale = meshRef.GetProperty<FloatProperty>("Scale");
             var drawScale3D = meshRef.GetProperty<StructProperty>("Scale3D");
             if (drawScale != null)
@@ -1193,7 +1193,7 @@
         /*
         private void RandomizeInterpTrackMove(ExportEntry export, Random random, double amount)
         {
-            Log.Information("Randomizing movement interpolations for " + export.UIndex + ": " + export.GetIndexedFullPath);
+            MERLog.Information("Randomizing movement interpolations for " + export.UIndex + ": " + export.GetIndexedFullPath);
             var props = export.GetProperties();
             var posTrack = props.GetProp<StructProperty>("PosTrack");
             if (posTrack != null)
@@ -1298,7 +1298,7 @@
         ///// <param name="Tlks"></param>
         //private void MakeTextPossiblyScottish(List<TalkFile> Tlks, Random random, bool updateProgressbar)
         //{
-        //    Log.Information("Randomizing vowels");
+        //    MERLog.Information("Randomizing vowels");
         //    if (scottishVowelOrdering == null)
         //    {
         //        scottishVowelOrdering = new List<char>(new char[] { 'a', 'e', 'i', 'o', 'u' });
@@ -1318,9 +1318,9 @@
         //        int current = 0;
         //        if (updateProgressbar)
         //        {
-        //            mainWindow.CurrentOperationText = $"Randomizing vowels [{currentTlkIndex}/{Tlks.Count()}]";
-        //            mainWindow.ProgressBar_Bottom_Max = tf.StringRefs.Length;
-        //            mainWindow.ProgressBarIndeterminate = false;
+        //            option.CurrentOperation = $"Randomizing vowels [{currentTlkIndex}/{Tlks.Count()}]";
+        //            option.ProgressMax = tf.StringRefs.Length;
+        //            option.ProgressIndeterminate = false;
         //        }
 
         //        foreach (var sref in tf.StringRefs)
@@ -1329,7 +1329,7 @@
         //            if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
         //            if (updateProgressbar)
         //            {
-        //                mainWindow.CurrentProgressValue = current;
+        //                option.ProgressValue = current;
         //            }
 
         //            if (!string.IsNullOrWhiteSpace(sref.Data))
@@ -1414,7 +1414,7 @@
         //{
         //    if (File.Exists(file))
         //    {
-        //        ME1Package package = new ME1Package(file);
+        //        ME1Package package = MERFileSystem.OpenMEPackage(file);
         //        {
         //            foreach (ExportEntry export in package.Exports)
         //            {
@@ -1469,10 +1469,10 @@
         ///// <param name="random">Random number generator</param>
         //private void RandomizeWeaponStats(ExportEntry export, Random random)
         //{
-        //    mainWindow.CurrentOperationText = "Randomizing Item Levels (only partially implemented)";
+        //    option.CurrentOperation = "Randomizing Item Levels (only partially implemented)";
 
 
-        //    //Console.WriteLine("Randomizing Items - Item Effect Levels");
+        //    //Debug.WriteLine("Randomizing Items - Item Effect Levels");
         //    Bio2DA itemeffectlevels2da = new Bio2DA(export);
 
             
@@ -1482,7 +1482,7 @@
         //    //    Bio2DACell propertyCell = itemeffectlevels2da[row, 2];
         //    //    if (propertyCell != null)
         //    //    {
-        //    //        int gameEffect = propertyCell.GetIntValue();
+        //    //        int gameEffect = propertyCellIntValue;
         //    //        switch (gameEffect)
         //    //        {
         //    //            case 15:
@@ -1646,7 +1646,7 @@
                 if (aiTypes.Contains(n.Name))
                 {
                     string newAiType = forcedCharge ? "BioAI_Charge" : aiTypes[ThreadSafeRandom.Next(aiTypes.Length)];
-                    Log.Information("Reassigning AI type in " + Path.GetFileName(pacakge.FileName) + ", " + n + " -> " + newAiType);
+                    MERLog.Information("Reassigning AI type in " + Path.GetFileName(pacakge.FileName) + ", " + n + " -> " + newAiType);
                     pacakge.replaceName(i, newAiType);
                     pacakge.ShouldSave = true;
                 }

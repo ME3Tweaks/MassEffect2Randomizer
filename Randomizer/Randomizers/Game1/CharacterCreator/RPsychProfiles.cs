@@ -6,26 +6,29 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.TLK.ME1;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game1.CharacterCreator
 {
     class RPsychProfiles
     {
-        private void RandomizeCharacterCreatorSingular(Random random, List<ME1TalkFile> Tlks)
+        private void RandomizeCharacterCreatorSingular(GameTarget target, RandomizationOption option)
         {
             //non-2da character creator changes.
 
             //Randomize look at targets
-            ME1Package biog_uiworld = new ME1Package(Utilities.GetGameFile(@"BioGame\CookedPC\Maps\BIOG_UIWorld.sfm"));
+            var biog_uiworld = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Maps\BIOG_UIWorld.sfm"));
             var bioInerts = biog_uiworld.Exports.Where(x => x.ClassName == "BioInert").ToList();
-            foreach (ExportEntry ex in bioInerts)
+            foreach (var ex in bioInerts)
             {
-                RandomizeLocation(ex, random);
+                LocationTools.RandomizeLocation(ex);
             }
 
             //Randomize face-zoom in
-            //var zoomInOnFaceInterp = biog_uiworld.getUExport(385);
+            //var zoomInOnFaceInterp = biog_uiworld.GetUExport(385);
             //var eulerTrack = zoomInOnFaceInterp.GetProperty<StructProperty>("EulerTrack");
             //var points = eulerTrack?.GetProp<ArrayProperty<StructProperty>>("Points");
             //if (points != null)
@@ -44,10 +47,10 @@ namespace Randomizer.Randomizers.Game1.CharacterCreator
             //}
 
             //zoomInOnFaceInterp.WriteProperty(eulerTrack);
-            biog_uiworld.save();
+            MERFileSystem.SavePackage(biog_uiworld);
 
             //Psych Profiles
-            string fileContents = Utilities.GetEmbeddedStaticFilesTextFile("psychprofiles.xml");
+            string fileContents = MERUtilities.GetStaticTextFile("psychprofiles.xml");
 
             XElement rootElement = XElement.Parse(fileContents);
             var childhoods = rootElement.Descendants("childhood").Where(x => x.Value != "").Select(x => (x.Attribute("name").Value, string.Join("\n", x.Value.Split('\n').Select(s => s.Trim())))).ToList();
@@ -62,11 +65,8 @@ namespace Randomizer.Randomizers.Game1.CharacterCreator
             backgroundTlkPairs.Add((45478, 34971)); //Colonist
             for (int i = 0; i < 3; i++)
             {
-                foreach (var tlk in Tlks)
-                {
-                    tlk.ReplaceString(backgroundTlkPairs[i].nameId, childhoods[i].Item1);
-                    tlk.ReplaceString(backgroundTlkPairs[i].descriptionId, childhoods[i].Item2);
-                }
+                TLKBuilder.ReplaceString(backgroundTlkPairs[i].nameId, childhoods[i].Item1);
+                TLKBuilder.ReplaceString(backgroundTlkPairs[i].descriptionId, childhoods[i].Item2);
             }
 
             backgroundTlkPairs.Clear();
@@ -75,11 +75,8 @@ namespace Randomizer.Randomizers.Game1.CharacterCreator
             backgroundTlkPairs.Add((45484, 34938)); //Ruthless
             for (int i = 0; i < 3; i++)
             {
-                foreach (var tlk in Tlks)
-                {
-                    tlk.ReplaceString(backgroundTlkPairs[i].nameId, reputations[i].Item1);
-                    tlk.ReplaceString(backgroundTlkPairs[i].descriptionId, reputations[i].Item2);
-                }
+                TLKBuilder.ReplaceString(backgroundTlkPairs[i].nameId, reputations[i].Item1);
+                TLKBuilder.ReplaceString(backgroundTlkPairs[i].descriptionId, reputations[i].Item2);
             }
         }
     }

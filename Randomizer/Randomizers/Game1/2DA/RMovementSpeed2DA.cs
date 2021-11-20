@@ -21,7 +21,7 @@ namespace Randomizer.Randomizers.Game1._2DA
             {
                 for (int i = 0; i < colsToRandomize.Count(); i++)
                 {
-                    //Console.WriteLine("[" + row + "][" + colsToRandomize[i] + "] value is " + BitConverter.ToSingle(cluster2da[row, colsToRandomize[i]].Data, 0));
+                    //Debug.WriteLine("[" + row + "][" + colsToRandomize[i] + "] value is " + BitConverter.ToSingle(cluster2da[row, colsToRandomize[i]].Data, 0));
                     int randvalue = ThreadSafeRandom.Next(10, 1200);
                     Debug.WriteLine("Movement Speed Randomizer [" + row + "][" + colsToRandomize[i] + "] value is now " + randvalue);
                     movementSpeed2DA[row, colsToRandomize[i]].IntValue = randvalue;

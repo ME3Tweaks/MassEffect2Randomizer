@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LegendaryExplorerCore.Packages;
+﻿using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game1.GalaxyMap
 {
@@ -35,7 +31,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                 foreach (var vector in vectors)
                 {
                     var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                    RandomizeTint(paramValue, false);
+                    StructTools.RandomizeTint(paramValue, false);
                 }
             }
             planetMaterial.WriteProperties(props);

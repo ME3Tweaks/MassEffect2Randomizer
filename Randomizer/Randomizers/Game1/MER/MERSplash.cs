@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Unreal;
 
 namespace Randomizer.Randomizers.Game1.MER
 {
@@ -10,26 +12,27 @@ namespace Randomizer.Randomizers.Game1.MER
     {
         public void AddMERSplash(Random random)
         {
-            ME1Package entrymenu = new ME1Package(Utilities.GetEntryMenuFile());
+            /*
+            ME1Package entrymenu = MERFileSystem.OpenMEPackage(Utilities.GetEntryMenuFile());
 
             //Connect attract to BWLogo
-            var attractMovie = entrymenu.getUExport(729);
+            var attractMovie = entrymenu.GetUExport(729);
             var props = attractMovie.GetProperties();
             var movieName = props.GetProp<StrProperty>("m_sMovieName");
             movieName.Value = "merintro";
-            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[1].GetProp<ArrayProperty<StructProperty>>("Links")[0].GetProp<ObjectProperty>("LinkedOp").Value = 732; //Bioware logo
+            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[1].GetProp<ArrayProperty<StructProperty>>("Links")[0].GetProp<ObjectProperty>("LinkedOp").Value = 732; //Bioware MERLogo
             attractMovie.WriteProperties(props);
 
             //Rewrite ShowSplash to BWLogo to point to merintro instead
-            var showSplash = entrymenu.getUExport(736);
+            var showSplash = entrymenu.GetUExport(736);
             props = showSplash.GetProperties();
-            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[0].GetProp<ArrayProperty<StructProperty>>("Links")[1].GetProp<ObjectProperty>("LinkedOp").Value = 729; //attractmovie logo
+            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[0].GetProp<ArrayProperty<StructProperty>>("Links")[1].GetProp<ObjectProperty>("LinkedOp").Value = 729; //attractmovie MERLogo
             showSplash.WriteProperties(props);
 
             //Visual only (for debugging): Remove connection to 
 
             //Update inputs to point to merintro comparebool
-            var guiinput = entrymenu.getUExport(738);
+            var guiinput = entrymenu.GetUExport(738);
             props = guiinput.GetProperties();
             foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
             {
@@ -38,7 +41,7 @@ namespace Randomizer.Randomizers.Game1.MER
 
             guiinput.WriteProperties(props);
 
-            var playerinput = entrymenu.getUExport(739);
+            var playerinput = entrymenu.GetUExport(739);
             props = playerinput.GetProperties();
             foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
             {
@@ -52,7 +55,7 @@ namespace Randomizer.Randomizers.Game1.MER
             playerinput.WriteProperties(props);
 
             //Clear old unused inputs for attract
-            guiinput = entrymenu.getUExport(737);
+            guiinput = entrymenu.GetUExport(737);
             props = guiinput.GetProperties();
             foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
             {
@@ -61,7 +64,7 @@ namespace Randomizer.Randomizers.Game1.MER
 
             guiinput.WriteProperties(props);
 
-            playerinput = entrymenu.getUExport(740);
+            playerinput = entrymenu.GetUExport(740);
             props = playerinput.GetProperties();
             foreach (var outlink in props.GetProp<ArrayProperty<StructProperty>>("OutputLinks"))
             {
@@ -71,7 +74,7 @@ namespace Randomizer.Randomizers.Game1.MER
             playerinput.WriteProperties(props);
 
             //Connect CompareBool outputs
-            var mercomparebool = entrymenu.getUExport(2936);
+            var mercomparebool = entrymenu.GetUExport(2936);
             props = mercomparebool.GetProperties();
             var outlinks = props.GetProp<ArrayProperty<StructProperty>>("OutputLinks");
             //True
@@ -115,7 +118,7 @@ namespace Randomizer.Randomizers.Game1.MER
             mercomparebool.WriteProperties(props);
 
             //Update output of setbool to next comparebool, point to shared true value
-            var setBool = entrymenu.getUExport(2934);
+            var setBool = entrymenu.GetUExport(2934);
             props = setBool.GetProperties();
             props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[0].GetProp<ArrayProperty<StructProperty>>("Links")[0].GetProp<ObjectProperty>("LinkedOp").Value = 729; //CompareBool (step 2)
             props.GetProp<ArrayProperty<StructProperty>>("VariableLinks")[1].GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables")[0].Value = 2952; //Shared True
@@ -123,7 +126,7 @@ namespace Randomizer.Randomizers.Game1.MER
 
 
             //Default setbool should be false, not true
-            var boolValueForMERSkip = entrymenu.getUExport(2955);
+            var boolValueForMERSkip = entrymenu.GetUExport(2955);
             var bValue = boolValueForMERSkip.GetProperty<IntProperty>("bValue");
             bValue.Value = 0;
             boolValueForMERSkip.WriteProperty(bValue);
@@ -134,10 +137,10 @@ namespace Randomizer.Randomizers.Game1.MER
             {
                 var merIntros = Directory.GetFiles(merIntroDir, "*.bik").ToList();
                 string merToExtract = merIntros[ThreadSafeRandom.Next(merIntros.Count)];
-                File.Copy(merToExtract, Utilities.GetGameFile(@"BioGame\CookedPC\Movies\merintro.bik"), true);
+                File.Copy(merToExtract, MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Movies\merintro.bik"), true);
                 entrymenu.save();
                 //Add to fileindex
-                var fileIndex = Utilities.GetGameFile(@"BioGame\CookedPC\FileIndex.txt");
+                var fileIndex = MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\FileIndex.txt");
                 var filesInIndex = File.ReadAllLines(fileIndex).ToList();
                 if (filesInIndex.All(x => x != @"Movies\MERIntro.bik"))
                 {
@@ -145,7 +148,7 @@ namespace Randomizer.Randomizers.Game1.MER
                     File.WriteAllLines(fileIndex, filesInIndex);
                 }
                 ModifiedFiles[entrymenu.FileName] = entrymenu.FileName;
-            }
+            }*/
 
         }
 

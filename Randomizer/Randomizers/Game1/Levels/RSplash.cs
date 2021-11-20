@@ -6,6 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
+using Randomizer.Randomizers.Game1.GalaxyMap;
+using Randomizer.Randomizers.Utility;
 using Serilog;
 
 namespace Randomizer.Randomizers.Levels
@@ -14,7 +18,7 @@ namespace Randomizer.Randomizers.Levels
     {
         private void RandomizeBioLookAtDefinition(ExportEntry export, Random random)
         {
-            Log.Information("Randomizing BioLookAtDefinition " + export.UIndex);
+            MERLog.Information("Randomizing BioLookAtDefinition " + export.UIndex);
             var boneDefinitions = export.GetProperty<ArrayProperty<StructProperty>>("BoneDefinitions");
             if (boneDefinitions != null)
             {
@@ -96,7 +100,7 @@ namespace Randomizer.Randomizers.Levels
                                 foreach (var vector in vectors)
                                 {
                                     var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                                    RandomizeTint(random, paramValue, false);
+                                    StructTools.RandomizeTint( paramValue, false);
                                 }
                             }
                         }
@@ -107,33 +111,33 @@ namespace Randomizer.Randomizers.Levels
         }
 
 
-        private void RandomizeSplash(Random random, ME1Package entrymenu)
+        private void RandomizeSplash(GameTarget target, RandomizationOption option, IMEPackage entrymenu)
         {
-            ExportEntry planetMaterial = entrymenu.getUExport(1316);
-            RandomizePlanetMaterialInstanceConstant(planetMaterial, random);
+            ExportEntry planetMaterial = entrymenu.GetUExport(1316);
+            PlanetMIC.RandomizePlanetMaterialInstanceConstant(target, planetMaterial);
 
             //Corona
-            ExportEntry coronaMaterial = entrymenu.getUExport(1317);
+            ExportEntry coronaMaterial = entrymenu.GetUExport(1317);
             var props = coronaMaterial.GetProperties();
             {
                 var scalars = props.GetProp<ArrayProperty<StructProperty>>("ScalarParameterValues");
                 var vectors = props.GetProp<ArrayProperty<StructProperty>>("VectorParameterValues");
                 scalars[0].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(0.01, 0.05); //Bloom
                 scalars[1].GetProp<FloatProperty>("ParameterValue").Value = ThreadSafeRandom.NextFloat(1, 10); //Opacity
-                RandomizeTint(random, vectors[0].GetProp<StructProperty>("ParameterValue"), false);
+                StructTools.RandomizeTint(vectors[0].GetProp<StructProperty>("ParameterValue"), false);
             }
             coronaMaterial.WriteProperties(props);
 
             //CameraPan
-            ExportEntry cameraInterpData = entrymenu.getUExport(946);
+            ExportEntry cameraInterpData = entrymenu.GetUExport(946);
             var interpLength = cameraInterpData.GetProperty<FloatProperty>("InterpLength");
             float animationLength = ThreadSafeRandom.NextFloat(60, 120);
             ;
             interpLength.Value = animationLength;
             cameraInterpData.WriteProperty(interpLength);
 
-            ExportEntry cameraInterpTrackMove = entrymenu.getUExport(967);
-            cameraInterpTrackMove.Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.InterpTrackMove967_EntryMenu_CameraPan.bin");
+            ExportEntry cameraInterpTrackMove = entrymenu.GetUExport(967);
+            cameraInterpTrackMove.Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.InterpTrackMove967_EntryMenu_CameraPan.bin");
             props = cameraInterpTrackMove.GetProperties(forceReload: true);
             var posTrack = props.GetProp<StructProperty>("PosTrack");
             bool ZUp = false;
@@ -223,8 +227,8 @@ namespace Randomizer.Randomizers.Levels
 
             cameraInterpTrackMove.WriteProperties(props);
 
-            var fovCurve = entrymenu.getUExport(964);
-            fovCurve.Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.InterpTrackMove964_EntryMenu_CameraFOV.bin");
+            var fovCurve = entrymenu.GetUExport(964);
+            fovCurve.Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.InterpTrackMove964_EntryMenu_CameraFOV.bin");
             props = fovCurve.GetProperties(forceReload: true);
             //var pi = props.GetProp<ArrayProperty<StructProperty>>("Points");
             //var pi2 = props.GetProp<ArrayProperty<StructProperty>>("Points")[1].GetProp<FloatProperty>("OutVal");
@@ -233,7 +237,7 @@ namespace Randomizer.Randomizers.Levels
             props.GetProp<StructProperty>("FloatTrack").GetProp<ArrayProperty<StructProperty>>("Points")[2].GetProp<FloatProperty>("InVal").Value = animationLength;
             fovCurve.WriteProperties(props);
 
-            var menuTransitionAnimation = entrymenu.getUExport(968);
+            var menuTransitionAnimation = entrymenu.GetUExport(968);
             props = menuTransitionAnimation.GetProperties();
             props.AddOrReplaceProp(new EnumProperty("IMF_RelativeToInitial", "EInterpTrackMoveFrame", MEGame.ME1, "MoveFrame"));
             props.GetProp<StructProperty>("EulerTrack").GetProp<ArrayProperty<StructProperty>>("Points")[0].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("X").Value = 0;
@@ -246,9 +250,9 @@ namespace Randomizer.Randomizers.Levels
 
             menuTransitionAnimation.WriteProperties(props);
 
-            var dbStandard = entrymenu.getUExport(730);
+            var dbStandard = entrymenu.GetUExport(730);
             props = dbStandard.GetProperties();
-            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[1].GetProp<ArrayProperty<StructProperty>>("Links")[1].GetProp<ObjectProperty>("LinkedOp").Value = 2926; //Bioware logo
+            props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[1].GetProp<ArrayProperty<StructProperty>>("Links")[1].GetProp<ObjectProperty>("LinkedOp").Value = 2926; //Bioware MERLogo
             dbStandard.WriteProperties(props);
         }
     }

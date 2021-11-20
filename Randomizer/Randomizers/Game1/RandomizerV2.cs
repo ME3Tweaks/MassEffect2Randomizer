@@ -118,7 +118,7 @@ namespace Randomizer.Randomizers.Game1
         //            var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
         //            var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
 
-        //            // Log randomizers
+        //            // MERLog randomizers
         //            MERLog.Information("Randomizers used in this pass:");
         //            foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers).Distinct())
         //            {
@@ -240,7 +240,7 @@ namespace Randomizer.Randomizers.Game1
         //                        }
         //                        catch (Exception e)
         //                        {
-        //                            Log.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
+        //                            MERLog.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
         //                            TelemetryInterposer.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
         //                            Debugger.Break();
         //                        }
@@ -722,13 +722,14 @@ namespace Randomizer.Randomizers.Game1
                     //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                     //    PerformSpecificRandomizationDelegate = SFXGame.MakeShepardRagdollable,
                     //},
-                    new RandomizationOption()
-                    {
-                        HumanName = "Remove running camera shake",
-                        Description = "Removes the camera shake when running",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        PerformSpecificRandomizationDelegate = SFXGame.RemoveStormCameraShake,
-                    },
+                    // TODO: REIMPLEMENT
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "Remove running camera shake",
+                    //    Description = "Removes the camera shake when running",
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    //    PerformSpecificRandomizationDelegate = SFXGame.RemoveStormCameraShake,
+                    //},
                     //new RandomizationOption()
                     //{
                     //    HumanName = "One hit kill",
@@ -746,7 +747,7 @@ namespace Randomizer.Randomizers.Game1
                 {
                     // Doesn't seem to work
                     //                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
-                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RHeightFogComponent.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RSharedHeightFogComponent.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {
                         HumanName = "Post Processing volumes",
                         Description = "Changes postprocessing. Likely will make some areas of game unplayable",
@@ -754,7 +755,7 @@ namespace Randomizer.Randomizers.Game1
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP
                     },
                     new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting",
-                        PerformRandomizationOnExportDelegate = RLighting.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RSharedLighting.RandomizeExport,
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {

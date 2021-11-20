@@ -89,7 +89,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 var displayName = CondensedProperties.GetProp<StringRefProperty>("DisplayName");
                 if (displayName != null)
                 {
-                    PowerName = TLKBuilder.TLKLookupByLang(displayName.Value, "INT");
+                    PowerName = TLKBuilder.TLKLookupByLang(displayName.Value, MELocalization.INT);
                 }
 
                 ShowInCR = CondensedProperties.GetProp<BoolProperty>("DisplayInCharacterRecord")?.Value ?? true;
@@ -148,7 +148,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 if (IsEvolution)
                 {
                     // Setup the blurb
-                    var blurbDesc = TLKBuilder.TLKLookupByLang(CondensedProperties.GetProp<StringRefProperty>("TalentDescription").Value, "INT").Split('\n')[0];
+                    var blurbDesc = TLKBuilder.TLKLookupByLang(CondensedProperties.GetProp<StringRefProperty>("TalentDescription").Value, MELocalization.INT).Split('\n')[0];
                     EvolvedBlurb = $"{PowerName}: {blurbDesc}";
                 }
 
@@ -168,10 +168,10 @@ namespace Randomizer.Randomizers.Game2.Misc
                     }
                     else
                     {
-                        PassiveTalentDescriptionString = TLKBuilder.TLKLookupByLang(talentStrId, "INT");
+                        PassiveTalentDescriptionString = TLKBuilder.TLKLookupByLang(talentStrId, MELocalization.INT);
                     }
-                    PassiveDescriptionString ??= TLKBuilder.TLKLookupByLang(CondensedProperties.GetProp<StringRefProperty>("Description").Value, "INT");
-                    PassiveRankDescriptionString = TLKBuilder.TLKLookupByLang(CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks")[0].GetProp<StringRefProperty>("Description").Value, "INT");
+                    PassiveDescriptionString ??= TLKBuilder.TLKLookupByLang(CondensedProperties.GetProp<StringRefProperty>("Description").Value, MELocalization.INT);
+                    PassiveRankDescriptionString = TLKBuilder.TLKLookupByLang(CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks")[0].GetProp<StringRefProperty>("Description").Value, MELocalization.INT);
                 }
             }
 
@@ -959,7 +959,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                                           var descriptionProp = evolveRank.Properties.GetProp<StringRefProperty>("Description");
                                           if (!TLKBuilder.IsAssignedMERString(descriptionProp.Value))
                                           {
-                                              var description = TLKBuilder.TLKLookupByLang(descriptionProp.Value, "INT");
+                                              var description = TLKBuilder.TLKLookupByLang(descriptionProp.Value, MELocalization.INT);
                                               var descriptionLines = description.Split('\n');
                                               descriptionLines[2] = $"1) {loadoutInfo.GenderizeString(evolution1.EvolvedBlurb)}";
                                               descriptionLines[4] = $"2) {loadoutInfo.GenderizeString(evolution2.EvolvedBlurb)}";

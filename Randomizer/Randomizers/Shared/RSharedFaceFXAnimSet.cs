@@ -108,7 +108,7 @@ namespace Randomizer.Randomizers.Shared
                 //}
                 //else
                 //{
-                //    Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
+                //    MERLog.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomized FaceFX for export " + exp.UIndex);
                 // }
                 return true;
             }

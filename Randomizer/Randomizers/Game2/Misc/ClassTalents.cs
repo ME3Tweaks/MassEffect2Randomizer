@@ -62,12 +62,12 @@ namespace Randomizer.Randomizers.Game2.Misc
                     superProps.GetProp<StringRefProperty>("DisplayName");
                     displayName = superProps.GetProp<StringRefProperty>("DisplayName");
                 }
-                PowerName = TLKBuilder.TLKLookupByLang(displayName.Value, "INT");
+                PowerName = TLKBuilder.TLKLookupByLang(displayName.Value, MELocalization.INT);
 
                 if (IsEvolution)
                 {
                     // Setup the blurb
-                    var blurbDesc = TLKBuilder.TLKLookupByLang(displayNameProps.GetProp<StringRefProperty>("TalentDescription").Value, "INT").Split('\n')[0];
+                    var blurbDesc = TLKBuilder.TLKLookupByLang(displayNameProps.GetProp<StringRefProperty>("TalentDescription").Value, MELocalization.INT).Split('\n')[0];
                     EvolvedBlurb = $"{PowerName}: {blurbDesc}";
                 }
 
@@ -433,7 +433,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                         var evolveRank = ranksSource[3];
                         var descriptionProp = evolveRank.Properties.GetProp<StringRefProperty>("Description");
-                        var description = TLKBuilder.TLKLookupByLang(descriptionProp.Value, "INT");
+                        var description = TLKBuilder.TLKLookupByLang(descriptionProp.Value, MELocalization.INT);
                         var descriptionLines = description.Split('\n');
                         descriptionLines[2] = $"1) {evolution1.EvolvedBlurb}";
                         descriptionLines[4] = $"2) {evolution2.EvolvedBlurb}";
@@ -502,7 +502,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                     // Update the string ref for the class description
                     var tlkStrRef = ClasStrRefMap[kit];
-                    var existingStr = TLKBuilder.TLKLookupByLang(tlkStrRef, "INT");
+                    var existingStr = TLKBuilder.TLKLookupByLang(tlkStrRef, MELocalization.INT);
                     var existingLines = existingStr.Split('\n').ToList();
                     var powersLineIdx = existingLines.FindIndex(x => x.StartsWith("Power Training:"));
                     var weaponsLineIdx = existingLines.FindIndex(x => x.StartsWith("Weapon Training:"));
@@ -534,7 +534,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                         Debugger.Break();
                     }
 
-                    TLKBuilder.ReplaceString(tlkStrRef, string.Join('\n', existingLines), "INT");
+                    TLKBuilder.ReplaceString(tlkStrRef, string.Join('\n', existingLines), MELocalization.INT);
 
                     // Update the autolevel up s t ruct
 

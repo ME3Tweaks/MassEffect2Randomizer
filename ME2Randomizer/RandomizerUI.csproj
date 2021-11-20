@@ -9,13 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="images\*.png" />
-    <Resource Include="images\*.jpg" />
     <None Remove="Classes\ME2SaveEdit\UI\SaveSelectorUI.xaml" />
     <None Remove="DebugTools\DebugWindow.xaml" />
     <None Remove="DebugTools\MemoryAnalyzerUI.xaml" />
-    <None Remove="images\firstrun_bg.jpg" />
-    <None Remove="images\game2\lebackground.jpg" />
     <Resource Include="fonts\aerolight.ttf" />
   </ItemGroup>
 
@@ -55,8 +51,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Resource Include="images\shared\*.png" />
+    <Resource Include="images\shared\*.jpg" />
+    <Resource Include="masseffectrandomizer.ico" />
     <EmbeddedResource Include="staticfiles\**\*" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
+    <Resource Include="images\game1\*.jpg" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
+    <Resource Include="images\game2\*.jpg" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
+    <Resource Include="images\game3\*.jpg" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="AuthenticodeExaminer" Version="0.3.0" />
@@ -84,16 +94,6 @@
     <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\ME3TweaksCore.csproj" />
     <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\submodules\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
     <ProjectReference Include="..\Randomizer\Randomizer.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Resource Include="images\game2\firstrun_bg.jpg" />
-    <Resource Include="images\game2\lebackground.jpg" />
-    <Resource Include="images\game2\otbackground.jpg" />
-    <Resource Include="images\shared\discord.png" />
-    <Resource Include="images\shared\me3tweaks.png" />
-    <Resource Include="images\shared\logscreen.jpg" />
-    <Resource Include="masseffectrandomizer.ico" />
   </ItemGroup>
   
   <ItemGroup>

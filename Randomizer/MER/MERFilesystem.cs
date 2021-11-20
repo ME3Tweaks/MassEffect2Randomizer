@@ -171,7 +171,7 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="packagename"></param>
         /// <returns></returns>
-        public static string GetPackageFile(GameTarget target, string packagename, bool logIfNotFound = true)
+        public static string GetPackageFile(GameTarget target, string packagename, bool MERLogIfNotFound = true)
         {
             if (LoadedFiles == null)
             {
@@ -192,7 +192,7 @@ namespace Randomizer.MER
             }
 
             var retFile = LoadedFiles.TryGetValue(packagename, out var result);
-            if (!retFile && logIfNotFound)
+            if (!retFile && MERLogIfNotFound)
             {
                 MERLog.Warning($"Could not find package file: {packagename}! Loaded files count: {LoadedFiles.Count}");
             }
