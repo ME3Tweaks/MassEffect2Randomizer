@@ -6,6 +6,10 @@
     <UseWPF>true</UseWPF>
     <Platforms>x64</Platforms>
     <Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release;Game3Debug;Game3Release</Configurations>
+    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
+    <Company>ME3Tweaks</Company>
+    <Authors>ME3Tweaks</Authors>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,6 +54,28 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
+  <!--VERSION INFO-->
+  <PropertyGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
+    <ApplicationIcon>masseffectrandomizer.ico</ApplicationIcon>
+    <Product>Mass Effect Randomizer</Product>
+    <Description>Randomizer for Mass Effect (Original and Legendary Edition)</Description>
+    <Copyright>2018-2021 ME3Tweaks</Copyright>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
+    <ApplicationIcon>masseffectrandomizer.ico</ApplicationIcon>
+    <Product>Mass Effect 2 Randomizer</Product>
+    <Description>Randomizer for Mass Effect 2 (Original and Legendary Edition)</Description>
+    <Copyright>2019-2021 ME3Tweaks</Copyright>
+    <Version>0.9.50</Version>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
+    <ApplicationIcon>masseffectrandomizer.ico</ApplicationIcon>
+    <Product>Mass Effect 3 Randomizer</Product>
+    <Description>Randomizer for Mass Effect 3 Legendary Edition</Description>
+    <Copyright>2021-2021 ME3Tweaks</Copyright>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
   <ItemGroup>
     <Resource Include="images\shared\*.png" />
     <Resource Include="images\shared\*.jpg" />
@@ -80,7 +106,7 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="4.4.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="4.4.0" />
     <PackageReference Include="Octokit" Version="0.50.0" />
-    <PackageReference Include="PropertyChanged.Fody" Version="4.0.0" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
@@ -103,17 +129,6 @@
     <Folder Include="staticfiles\game1\" />
     <Folder Include="staticfiles\game3\" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
-    <ApplicationIcon>masseffectrandomizer.ico</ApplicationIcon>
-    <Company>ME3Tweaks</Company>
-    <Product>Mass Effect 2 Randomizer</Product>
-    <Description>Randomizer for Mass Effect 2</Description>
-    <Copyright>2019-2021 ME3Tweaks</Copyright>
-    <Version>0.9.50</Version>
-    <Authors>ME3Tweaks</Authors>
-  </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Debug|x64'">
     <Optimize>false</Optimize>

@@ -59,6 +59,7 @@
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.txt" />
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.xml" />
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.zip" />
+    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.pcc" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
@@ -66,6 +67,8 @@
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.txt" />
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.xml" />
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.zip" />
+    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.pcc" />
+
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
@@ -73,6 +76,7 @@
     <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.txt" />
     <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.xml" />
     <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.zip" />
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.pcc" />
   </ItemGroup>
 
   <ItemGroup>
@@ -83,6 +87,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fody" Version="6.6.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.RollingFile.Extension" Version="2.0.2" />
   </ItemGroup>
@@ -91,5 +100,9 @@
     <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCoreWPF\ME3TweaksCoreWPF.csproj" />
     <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\ME3TweaksCore.csproj" />
     <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\submodules\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Randomizers\Game1\Assets\StarterKit\" />
   </ItemGroup>
 </Project>

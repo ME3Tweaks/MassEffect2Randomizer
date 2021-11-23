@@ -68,7 +68,7 @@ namespace RandomizerUI
         public App() : base()
         {
             handleCommandLine();
-
+            Log.Logger = MERLog.CreateLogger();
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
             POST_STARTUP = true;
         }

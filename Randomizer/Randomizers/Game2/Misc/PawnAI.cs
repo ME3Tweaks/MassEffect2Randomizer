@@ -82,8 +82,9 @@ namespace Randomizer.Randomizers.Game2.Misc
                         if (newAi != aiImp.ObjectName.Name)
                         {
                             // AI is changing.
+                            // TODO: Change to EnsureClassIsInFile()
                             var sfxgame = NonSharedPackageCache.Cache.GetCachedPackage("SFXGame.pcc");
-                            var newAIImp = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile(newAi, sfxgame, exp.FileRef);
+                            var newAIImp = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile(newAi, sfxgame, exp.FileRef, new RelinkerOptionsPackage());
                             currentAi.Value = newAIImp.UIndex;
                             exp.WriteProperty(currentAi);
                             MERLog.Information($@"AI Changing: {aiImp.FullPath} => {newAi}");

@@ -86,10 +86,10 @@ namespace RandomizerUI
         public ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ObservableCollectionExtended<RandomizationGroup>();
         public bool AllowOptionsChanging { get; set; } = true;
         public bool PerformReroll { get; set; } = true;
-        public int CurrentProgressValue { get; set; }
+        public long CurrentProgressValue { get; set; }
         public string CurrentOperationText { get; set; }
-        public double ProgressBar_Bottom_Min { get; set; }
-        public double ProgressBar_Bottom_Max { get; set; }
+        public long ProgressBar_Bottom_Min { get; set; }
+        public long ProgressBar_Bottom_Max { get; set; }
         public bool ProgressBarIndeterminate { get; set; }
         public bool ShowUninstallButton { get; set; }
         public bool DLCComponentInstalled { get; set; }
@@ -441,7 +441,6 @@ namespace RandomizerUI
         {
             if (!MERUtilities.IsGameRunning(SelectedTarget.Game))
             {
-                ShowProgressPanel = true;
 #if __GAME1__
                 var randomizer = new Randomizer.Randomizers.Game1.RandomizerV2();
 #elif __GAME2__
@@ -450,14 +449,26 @@ namespace RandomizerUI
                 var randomizer = new Randomizer.Randomizers.Game3.Randomizer();
 #endif
 
-                AllowOptionsChanging = false;
-
                 var op = new OptionsPackage()
                 {
                     Seed = int.Parse(SeedTextBox.Text),
                     SelectedOptions = RandomizationGroups.SelectMany(x => x.Options.Where(x => x.OptionIsSelected)).ToList(),
                     UseMultiThread = UseMultiThreadRNG,
-                    Reroll = PerformReroll
+                    Reroll = PerformReroll,
+                    RandomizationTarget = SelectedTarget,
+                    SetCurrentOperationText = x => CurrentOperationText = x,
+                    SetOperationProgressBarIndeterminate = x => ProgressBarIndeterminate = x,
+                    NotifyDLCComponentInstalled = x => DLCComponentInstalled = x,
+                    SetOperationProgressBarProgress = (x, y) =>
+                    {
+                        CurrentProgressValue = x;
+                        ProgressBar_Bottom_Max = y;
+                    },
+                    SetRandomizationInProgress = x =>
+                    {
+                        ShowProgressPanel = x;
+                        AllowOptionsChanging = !x;
+                    }
                 };
                 randomizer.Randomize(op);
             }
@@ -507,11 +518,7 @@ namespace RandomizerUI
 
                 if (SelectedTarget.TextureModded)
                 {
-                    var restore = new GameRestore(SelectedTarget.Game)
-                    {
-                        // ENTER CALLBACKS
-                    };
-                    restore.PerformRestore(SelectedTarget, SelectedTarget.TargetPath);
+                    RestoreController.StartRestore(this, SelectedTarget, false);
                 }
                 else
                 {
@@ -715,6 +722,11 @@ namespace RandomizerUI
             if (SelectedTarget != null)
             {
                 GameLocationTextbox.Text = SelectedTarget.TargetPath;
+                var backupStatus = BackupService.GetBackupStatus(SelectedTarget.Game);
+                BackupRestoreText = backupStatus?.BackupActionText;
+                BackupRestore_Button.ToolTip = backupStatus != null && backupStatus.BackedUp ? "Click to restore game/uninstall randomizer mod" : "Click to backup game";
+                //MERPeriodicRefresh();.OnPeriodicRefresh += MERPeriodicRefresh;
+
             }
         }
     }

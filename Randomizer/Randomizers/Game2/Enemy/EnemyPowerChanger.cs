@@ -373,9 +373,8 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     if ((powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
                     {
                         // Faster this way, without having to check imports
-                        Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. SHould probably just be part of the method
                         relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
-                            newParent, true, out newEntry, crossPCCObjectMap);
+                            newParent, true, new RelinkerOptionsPackage(), out newEntry); // TODO: CACHE?
                     }
                     else
                     {

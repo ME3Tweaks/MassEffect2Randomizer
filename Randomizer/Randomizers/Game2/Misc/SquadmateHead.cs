@@ -452,7 +452,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             // Get version
             var lastIndex = isHenchFile ? fName.LastIndexOf("_") : 0;
-            if (lastIndex > 0) 
+            if (lastIndex > 0)
             {
                 int.TryParse(fName.Substring(lastIndex + 1), out henchVersion);
             }
@@ -702,7 +702,8 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                     // Technically this should work
                     //EntryImporter.ReplaceExportDataWithAnother(newMDL, targetMesh);
-                    var relinkFailures = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, newMDL, targetMesh.FileRef, targetMesh, true, out _, errorOccuredCallback: x => Debugger.Break());
+                    // TODO: CACHE?
+                    var relinkFailures = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, newMDL, targetMesh.FileRef, targetMesh, true, new RelinkerOptionsPackage() { ErrorOccurredCallback = x => Debugger.Break() }, out _);
                     if (relinkFailures.Any())
                     {
                         MERLog.Fatal(@"FAILURE RELINKING THANE'S NO-EYELID MESH");

@@ -13,7 +13,8 @@ namespace Randomizer.Randomizers
         ERandomizationMode_Common,
         ERandomizationMode_Screed,
     }
-    public class RandomizationOption : INotifyPropertyChanged
+    [AddINotifyPropertyChangedInterface]
+    public class RandomizationOption
     {
         /// <summary>
         /// Used for forcing binding updates when the binded object is this object
@@ -184,9 +185,6 @@ namespace Randomizer.Randomizers
         /// </summary>
         public string SetupRandomizerButtonToolTip { get; set; }
 
-#pragma warning disable
-        public event PropertyChangedEventHandler PropertyChanged;
-#pragma warning restore
         /// <summary>
         /// Check if this option has a suboption that is selected with the specified key
         /// </summary>

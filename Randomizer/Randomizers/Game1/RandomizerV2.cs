@@ -20,6 +20,7 @@ using Randomizer.Randomizers.Game1._2DA;
 using Randomizer.Randomizers.Game1.ExportTypes;
 using Randomizer.Randomizers.Game1.Levels;
 using Randomizer.Randomizers.Game1.Misc;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Levels;
 using Randomizer.Randomizers.Shared;
 using Randomizer.Randomizers.Utility;
@@ -79,14 +80,10 @@ namespace Randomizer.Randomizers.Game1
             op.SetTaskbarState?.Invoke(MTaskbarState.Indeterminate);
         }
 
-        private void PerformRandomization(object? sender, DoWorkEventArgs e)
-        {
-            // not implemented
-        }
-
         private void Randomization_Completed(object? sender, RunWorkerCompletedEventArgs e)
         {
             // not implemented
+            SelectedOptions?.SetRandomizationInProgress?.Invoke(false);
         }
 
 
@@ -108,191 +105,197 @@ namespace Randomizer.Randomizers.Game1
         //            SelectedOptions.SetRandomizationInProgress?.Invoke(false);
         //        }
 
-        //        private void PerformRandomization(object sender, DoWorkEventArgs e)
-        //        {
-        //            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
-        //            ResetClasses();
-        //            SelectedOptions.SetCurrentOperationText?.Invoke("Initializing randomizer");
-        //            SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
-        //            var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
-        //            var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
-        //            var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
+        private void PerformRandomization(object sender, DoWorkEventArgs e)
+        {
+            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
+            //ResetClasses();
+            SelectedOptions.SetRandomizationInProgress?.Invoke(true);
+            SelectedOptions.SetCurrentOperationText?.Invoke("Initializing randomizer");
+            SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+            var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
+            var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
+            var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
 
-        //            // MERLog randomizers
-        //            MERLog.Information("Randomizers used in this pass:");
-        //            foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers).Distinct())
-        //            {
-        //                MERLog.Information($" - {sr.HumanName}");
-        //                if (sr.SubOptions != null)
-        //                {
-        //                    foreach (var subR in sr.SubOptions)
-        //                    {
-        //                        MERLog.Information($"   - {subR.HumanName}");
-        //                    }
-        //                }
-        //            }
+            // MERLog randomizers
+            MERLog.Information("Randomizers used in this pass:");
+            foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers).Distinct())
+            {
+                MERLog.Information($" - {sr.HumanName}");
+                if (sr.SubOptions != null)
+                {
+                    foreach (var subR in sr.SubOptions)
+                    {
+                        MERLog.Information($"   - {subR.HumanName}");
+                    }
+                }
+            }
 
-        //            Exception rethrowException = null;
-        //            try
-        //            {
-        //                MERFileSystem.InitMERFS(SelectedOptions);
-        //                Stopwatch sw = new Stopwatch();
-        //                sw.Start();
+            Exception rethrowException = null;
+            try
+            {
+                MERFileSystem.InitMERFS(SelectedOptions);
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
 
-        //                // Prepare the textures
-        //                if (SelectedOptions.RandomizationTarget.Game == MEGame.ME2)
-        //                {
-        //                    ME2Textures.SetupME2Textures(SelectedOptions.RandomizationTarget);
-        //                }
-        //                else
-        //                {
-        //                    LE2Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
-        //                }
+                // Prepare the textures
+                //if (SelectedOptions.RandomizationTarget.Game == MEGame.ME2)
+                //{
+                //    ME2Textures.SetupME2Textures(SelectedOptions.RandomizationTarget);
+                //}
+                //else
+                //{
+                //    LE2Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
+                //}
 
-        //                void srUpdate(object? o, EventArgs eventArgs)
-        //                {
-        //                    if (o is RandomizationOption option)
-        //                    {
-        //                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(option.ProgressIndeterminate);
-        //                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(option.ProgressValue, option.ProgressMax);
-        //                        if (option.CurrentOperation != null)
-        //                        {
-        //                            SelectedOptions.SetCurrentOperationText?.Invoke(option.CurrentOperation);
-        //                        }
-        //                    }
-        //                }
+                void srUpdate(object? o, EventArgs eventArgs)
+                {
+                    if (o is RandomizationOption option)
+                    {
+                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(option.ProgressIndeterminate);
+                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(option.ProgressValue, option.ProgressMax);
+                        if (option.CurrentOperation != null)
+                        {
+                            SelectedOptions.SetCurrentOperationText?.Invoke(option.CurrentOperation);
+                        }
+                    }
+                }
 
-        //                // Pass 1: All randomizers that are file specific and are not post-run
-        //                foreach (var sr in specificRandomizers.Where(x => !x.IsPostRun))
-        //                {
-        //                    sr.OnOperationUpdate += srUpdate;
-        //                    MERLog.Information($"Running specific randomizer {sr.HumanName}");
-        //                    SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
-        //                    sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
-        //                    sr.OnOperationUpdate -= srUpdate;
-        //                }
+                // Pass 1: All randomizers that are file specific and are not post-run
+                foreach (var sr in specificRandomizers.Where(x => !x.IsPostRun))
+                {
+                    sr.OnOperationUpdate += srUpdate;
+                    MERLog.Information($"Running specific randomizer {sr.HumanName}");
+                    SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
+                    sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
+                    sr.OnOperationUpdate -= srUpdate;
+                }
 
-        //                // Pass 2: All exports
-        //                if (perExportRandomizers.Any() || perFileRandomizers.Any())
-        //                {
-        //                    SelectedOptions.SetCurrentOperationText?.Invoke("Getting list of files...");
-        //                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+                // Pass 2: All exports
+                if (perExportRandomizers.Any() || perFileRandomizers.Any())
+                {
+                    SelectedOptions.SetCurrentOperationText?.Invoke("Getting list of files...");
+                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
 
-        //                    // we only want pcc files (me2/me3). no upks
-        //                    var files = MELoadedFiles.GetFilesLoadedInGame(SelectedOptions.RandomizationTarget.Game, true, false, false, SelectedOptions.RandomizationTarget.TargetPath).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
+                    // we only want pcc files (me2/me3). no upks
+                    var files = MELoadedFiles.GetFilesLoadedInGame(SelectedOptions.RandomizationTarget.Game, true, false, false, SelectedOptions.RandomizationTarget.TargetPath).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
 
-        //                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(false);
+                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(false);
 
-        //                    var currentFileNumber = 0;
-        //                    var totalFilesCount = files.Count;
+                    var currentFileNumber = 0;
+                    var totalFilesCount = files.Count;
 
-        //#if DEBUG
-        //                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
-        //#else
-        //                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
-        //#endif
-        //                    {
+#if !DEBUG
+                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
+#else
+                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
+#endif
+                    {
 
-        //                        var name = Path.GetFileNameWithoutExtension(file);
-        //                        if (SpecializedFiles.Contains(name, StringComparer.InvariantCultureIgnoreCase)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
+                        var name = Path.GetFileNameWithoutExtension(file);
+                        if (SpecializedFiles.Contains(name, StringComparer.InvariantCultureIgnoreCase)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
 
-        //                        Interlocked.Increment(ref currentFileNumber);
-        //                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(currentFileNumber, totalFilesCount);
+                        Interlocked.Increment(ref currentFileNumber);
+                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(currentFileNumber, totalFilesCount);
+                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing game files [{currentFileNumber}/{files.Count}]");
 
-        //                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing game files [{currentFileNumber}/{files.Count}]");
+#if DEBUG
+                        if (true
+                //&& false //uncomment to disable filtering
+                //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
+                && !file.Contains("STA", StringComparison.InvariantCultureIgnoreCase)
+                )
+                            return;
+#endif
+                        // Skip NON INT
+                        var localization = MEDirectories.GetLocalizationFromFileName(name);
+                        if (localization != MELocalization.None && localization != MELocalization.INT)
+                            return;
 
-        //#if DEBUG
-        //                        if (true
-        //                        //&& false //uncomment to disable filtering
-        //                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-        //                        //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-        //                        //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-        //                        && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
-        //                        )
-        //                            return;
-        //#endif
-        //                        try
-        //                        {
-        //                            Debug.WriteLine($"Opening package {file}");
-        //                            //Log.Information($@"Opening package {file}");
-        //                            var package = MERFileSystem.OpenMEPackage(file);
-        //                            //Debug.WriteLine(file);
-        //                            foreach (var rp in perFileRandomizers)
-        //                            {
-        //                                // Specific randomization pass before the exports are processed
-        //                                rp.PerformFileSpecificRandomization(SelectedOptions.RandomizationTarget, package, rp);
-        //                            }
+                        try
+                        {
+                            //Log.Information($@"Opening package {file}");
+                            var package = MERFileSystem.OpenMEPackage(file);
+                            //Debug.WriteLine(file);
+                            foreach (var rp in perFileRandomizers)
+                            {
+                                // Specific randomization pass before the exports are processed
+                                rp.PerformFileSpecificRandomization(SelectedOptions.RandomizationTarget, package, rp);
+                            }
 
-        //                            if (perExportRandomizers.Any())
-        //                            {
-        //                                for (int i = 0; i < package.ExportCount; i++)
-        //                                //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
-        //                                {
-        //                                    var exp = package.Exports[i];
-        //                                    foreach (var r in perExportRandomizers)
-        //                                    {
-        //                                        r.PerformRandomizationOnExportDelegate(SelectedOptions.RandomizationTarget, exp, r);
-        //                                    }
-        //                                }
-        //                            }
+                            if (perExportRandomizers.Any())
+                            {
+                                for (int i = 0; i < package.ExportCount; i++)
+                                //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
+                                {
+                                    var exp = package.Exports[i];
+                                    foreach (var r in perExportRandomizers)
+                                    {
+                                        r.PerformRandomizationOnExportDelegate(SelectedOptions.RandomizationTarget, exp, r);
+                                    }
+                                }
+                            }
 
-        //                            MERFileSystem.SavePackage(package);
-        //                        }
-        //                        catch (Exception e)
-        //                        {
-        //                            MERLog.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
-        //                            TelemetryInterposer.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
-        //                            Debugger.Break();
-        //                        }
-        //                    });
-        //                }
+                            MERFileSystem.SavePackage(package);
+                        }
+                        catch (Exception e)
+                        {
+                            MERLog.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
+                            TelemetryInterposer.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
+                            Debugger.Break();
+                        }
+                    });
+                }
 
 
-        //                // Pass 3: All randomizers that are file specific and are not post-run
-        //                foreach (var sr in specificRandomizers.Where(x => x.IsPostRun))
-        //                {
-        //                    try
-        //                    {
-        //                        sr.OnOperationUpdate += srUpdate;
-        //                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
-        //                        MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
-        //                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
-        //                        sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
-        //                        sr.OnOperationUpdate -= srUpdate;
-        //                    }
-        //                    catch (Exception ex)
-        //                    {
-        //                        TelemetryInterposer.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
-        //                    }
-        //                }
+                // Pass 3: All randomizers that are file specific and are not post-run
+                foreach (var sr in specificRandomizers.Where(x => x.IsPostRun))
+                {
+                    try
+                    {
+                        sr.OnOperationUpdate += srUpdate;
+                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+                        MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
+                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
+                        sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
+                        sr.OnOperationUpdate -= srUpdate;
+                    }
+                    catch (Exception ex)
+                    {
+                        TelemetryInterposer.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
+                    }
+                }
 
-        //                sw.Stop();
-        //                MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
+                sw.Stop();
+                MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
 
-        //                SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
-        //                SelectedOptions.SetCurrentOperationText?.Invoke("Finishing up");
-        //                SelectedOptions.NotifyDLCComponentInstalled?.Invoke(true);
-        //            }
-        //            catch (Exception exception)
-        //            {
-        //                MERLog.Exception(exception, "Unhandled Exception in randomization thread:");
-        //                rethrowException = exception;
-        //            }
+                SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+                SelectedOptions.SetCurrentOperationText?.Invoke("Finishing up");
+                SelectedOptions.NotifyDLCComponentInstalled?.Invoke(true);
+            }
+            catch (Exception exception)
+            {
+                MERLog.Exception(exception, "Unhandled Exception in randomization thread:");
+                rethrowException = exception;
+            }
 
-        //            // Close out files and free memory
-        //            TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
-        //            CoalescedHandler.EndHandler();
-        //            TLKHandler.EndHandler();
-        //            MERFileSystem.Finalize(SelectedOptions);
-        //            ResetClasses();
-        //            MemoryManager.ResetMemoryManager();
-        //            MemoryManager.SetUsePooledMemory(false);
-        //            NonSharedPackageCache.Cache.ReleasePackages();
+            // Close out files and free memory
+            TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
+            CoalescedHandler.EndHandler();
+            TLKBuilder.EndHandler();
+            MERFileSystem.Finalize(SelectedOptions);
+            //ResetClasses();
+            MemoryManager.ResetMemoryManager();
+            MemoryManager.SetUsePooledMemory(false);
+            NonSharedPackageCache.Cache.ReleasePackages();
 
-        //            // Re-throw the unhandled exception after MERFS has closed
-        //            if (rethrowException != null)
-        //                throw rethrowException;
-        //        }
+
+
+            // Re-throw the unhandled exception after MERFS has closed
+            if (rethrowException != null)
+                throw rethrowException;
+        }
 
         //        /// <summary>
         //        /// Ensures things are set back to normal before first run
@@ -713,6 +716,13 @@ namespace Randomizer.Randomizers.Game1
                         HumanName = "Enable basic friendly fire",
                         PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
                         Description = "Enables weapons to damage non hostile enemies. You can't directly aim at friendly NPCs.",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Battle Royale Mode",
+                        PerformFileSpecificRandomization = RBattleRoyale.RandomizeFile,
+                        Description = "Everyone that isn't important to the plot wakes up on the wrong side of the bed",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                     },
                     //new RandomizationOption()

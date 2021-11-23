@@ -29,7 +29,7 @@ namespace Randomizer.Randomizers.Handlers
         public static void EndHandler()
         {
             // Commit
-            CurrentHandler.Commit();
+            CurrentHandler?.Commit();
             CurrentHandler = null;
         }
 

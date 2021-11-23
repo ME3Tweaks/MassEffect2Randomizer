@@ -38,8 +38,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                 // Copy this data into BioP_Char so you get accurate results
                 var biop_charF = MERFileSystem.GetPackageFile(target, @"BioP_Char.pcc");
                 var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
-                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, femMorphFace, biop_char, biop_char.GetUExport(3482), true, out IEntry _);
-                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, matSetup, biop_char, biop_char.GetUExport(3472), true, out IEntry _);
+                // TODO: CACHE?
+                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, femMorphFace, biop_char, biop_char.GetUExport(3482), true, new RelinkerOptionsPackage(),out IEntry _);
+                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, matSetup, biop_char, biop_char.GetUExport(3472), true, new RelinkerOptionsPackage(), out IEntry _);
                 //biop_char.GetUExport(3482).WriteProperties(femMorphFace.GetProperties()); // Copy the morph face
                 //biop_char.GetUExport(3472).WriteProperties(matSetup.GetProperties()); // Copy the material setups
                 MERFileSystem.SavePackage(biop_char);

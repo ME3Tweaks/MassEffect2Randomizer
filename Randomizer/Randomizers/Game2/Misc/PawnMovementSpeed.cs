@@ -13,7 +13,7 @@ namespace Randomizer.Randomizers.Game2.Misc
     {
         public static bool RandomizePlayerMovementSpeed(GameTarget target, RandomizationOption option)
         {
-            var femaleFile = MERFileSystem.GetPackageFile(target,"BIOG_Female_Player_C.pcc");
+            var femaleFile = MERFileSystem.GetPackageFile(target, "BIOG_Female_Player_C.pcc");
             var maleFile = MERFileSystem.GetPackageFile(target, "BIOG_Male_Player_C.pcc");
             var femalepackage = MEPackageHandler.OpenMEPackage(femaleFile);
             var malepackage = MEPackageHandler.OpenMEPackage(maleFile);
@@ -86,7 +86,10 @@ namespace Randomizer.Randomizers.Game2.Misc
                 // Import needs added
 
                 // ME2 SPECIFIC!
-                sfxMovementData = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile("SFXMovementData", MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc")), bio_appr_character.FileRef) as ImportEntry;
+                sfxMovementData = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile("SFXMovementData",
+                    MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc")), bio_appr_character.FileRef,
+                    new RelinkerOptionsPackage() // Todo: CACHE?                    
+                    ) as ImportEntry;
             }
 
             PropertyCollection props = new PropertyCollection();

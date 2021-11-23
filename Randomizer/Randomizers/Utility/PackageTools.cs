@@ -125,9 +125,8 @@ namespace Randomizer.Randomizers.Utility
             IEntry newEntry;
             if (!useMemorySafeImport)
             {
-                Dictionary<IEntry, IEntry> crossPCCObjectMap = new Dictionary<IEntry, IEntry>(); // Not sure what this is used for these days. Should probably just be part of the method
                 var relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
-                    newParent, true, out newEntry, crossPCCObjectMap);
+                    newParent, true, new RelinkerOptionsPackage(), out newEntry); // TODO: CACHE?
                 if (relinkResults.Any())
                 {
                     Debugger.Break();

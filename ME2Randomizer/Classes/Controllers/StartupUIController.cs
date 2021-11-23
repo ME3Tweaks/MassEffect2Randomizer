@@ -117,7 +117,7 @@ namespace RandomizerUI.Classes.Controllers
                 TelemetryInterposer.SetErrorCallback(TelemetryController.TrackError);
 
                 // Initialize core libraries
-                ME3TweaksCoreLib.Initialize(RunOnUIThread);
+                ME3TweaksCoreLib.Initialize(RunOnUIThread, MERLog.CreateLogger);
                 //ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, $"Mass Effect 2 Randomizer {App.AppVersion} starting up", false);
                 // Logger is now available
 
@@ -129,10 +129,10 @@ namespace RandomizerUI.Classes.Controllers
                 AppUpdateInteropPackage interopPackage = new AppUpdateInteropPackage()
                 {
                     // TODO: UPDATE THIS
-                    GithubOwner = "Mgamerz",
-                    GithubReponame = "MassEffect2Randomizer",
-                    UpdateAssetPrefix = "ME2Randomizer",
-                    UpdateFilenameInArchive = "ME2Randomizer.exe",
+                    GithubOwner = MERUpdater.GetGithubOwner(),
+                    GithubReponame = MERUpdater.GetGithubRepoName(),
+                    UpdateAssetPrefix = MERUpdater.GetGithubAssetPrefix(),
+                    UpdateFilenameInArchive = MERUpdater.GetExpectedExeName(),
                     ShowUpdatePromptCallback = (title, text, updateButtonText, declineButtonText) =>
                     {
                         bool response = false;
@@ -209,8 +209,8 @@ namespace RandomizerUI.Classes.Controllers
                         pd.SetCancelable(false);
                     },
                     cancellationTokenSource = ct,
-                    ApplicationName = "Mass Effect 2 Randomizer",
-                    RequestHeader = "ME2Randomizer",
+                    ApplicationName = MERUI.GetRandomizerName(),
+                    RequestHeader = MERUI.GetRandomizerName().Replace(" ",""),
                     ForcedUpgradeMaxReleaseAge = 3
                 };
 
@@ -326,15 +326,7 @@ namespace RandomizerUI.Classes.Controllers
                     if (Application.Current.MainWindow is MainWindow mw)
                     {
                         mw.SetupTargetDescriptionText();
-
-                        /*
-                        var backupStatus = BackupService.GetBackupStatus(Sele);
-                        mw.BackupRestoreText = backupStatus?.BackupActionText;
-                        mw.BackupRestore_Button.ToolTip = backupStatus != null && backupStatus.BackedUp ? "Click to restore game/uninstall randomizer mod" : "Click to backup game";
-                        PeriodicRefresh.OnPeriodicRefresh += MERPeriodicRefresh;
-                        */
                         mw.FinalizeInterfaceLoad();
-
                     }
                 });
             };
@@ -346,10 +338,12 @@ namespace RandomizerUI.Classes.Controllers
                     // Initial selected game
                     if (Locations.GetTarget(true) != null)
                     {
+                        window.SelectedTarget = Locations.GetTarget(true);
                         window.LEGameRadioButton.IsChecked = true;
                     }
                     else if (Locations.GetTarget(false) != null)
                     {
+                        window.SelectedTarget = Locations.GetTarget(false);
                         window.OTGameRadioButton.IsChecked = true;
                     }
 

@@ -236,9 +236,7 @@ namespace Randomizer.MER
         private static void CreateRandomizerDLCMod(GameTarget target, string dlcpath)
         {
             Directory.CreateDirectory(dlcpath);
-
-            MemoryStream zipMemory = new MemoryStream();
-            MERUtilities.ExtractInternalFileToMemory($"starterkit.{target.Game.ToString().ToLower()}starterkit.zip", false, zipMemory);
+            var zipMemory = MERUtilities.GetEmbeddedAsset("StarterKit", $"{target.Game.ToString().ToLower()}starterkit.zip");
             using ZipArchive archive = new ZipArchive(zipMemory);
             archive.ExtractToDirectory(dlcpath);
         }
