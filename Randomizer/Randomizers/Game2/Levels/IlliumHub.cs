@@ -240,12 +240,12 @@ namespace Randomizer.Randomizers.Game2.Levels
                     MERLog.Information($@"Asset {newInfo.BodyAsset.AssetPath} in {newInfo.BodyAsset.PackageFile} not available, repicking...");
                     newInfo = DancerOptions.RandomElement();
                 }
-                var newBody = PackageTools.PortExportIntoPackage(package, newInfo.BodyAsset.GetAsset(target));
+                var newBody = PackageTools.PortExportIntoPackage(target, package, newInfo.BodyAsset.GetAsset(target));
                 bodySM.WriteProperty(new ObjectProperty(newBody.UIndex, "SkeletalMesh"));
 
                 if (newInfo.HeadAsset != null)
                 {
-                    var newHead = PackageTools.PortExportIntoPackage(package, newInfo.HeadAsset.GetAsset(target));
+                    var newHead = PackageTools.PortExportIntoPackage(target, package, newInfo.HeadAsset.GetAsset(target));
                     headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "SkeletalMesh"));
                 }
                 else if (!newInfo.KeepHead)
@@ -279,7 +279,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
                 if (newInfo.MorphFace != null)
                 {
-                    var newHead = PackageTools.PortExportIntoPackage(package, newInfo.MorphFace.GetAsset(target));
+                    var newHead = PackageTools.PortExportIntoPackage(target, package, newInfo.MorphFace.GetAsset(target));
                     headSM.WriteProperty(new ObjectProperty(newHead.UIndex, "MorphHead"));
                 }
                 MERFileSystem.SavePackage(package);

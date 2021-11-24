@@ -32,10 +32,10 @@ namespace Randomizer.Randomizers.Game2.Enemy
         {
             if (AllAvailableWeapons == null)
             {
-                string fileContents = MERUtilities.GetStaticTextFile("weaponloadoutrules.json");
+                string fileContents = MERUtilities.GetEmbeddedTextAsset("weaponloadoutrules.json");
                 LoadoutSupportsVisibleMapping = JsonConvert.DeserializeObject<ConcurrentDictionary<string, bool>>(fileContents);
 
-                fileContents = MERUtilities.GetStaticTextFile("weaponlistme2.json");
+                fileContents = MERUtilities.GetEmbeddedTextAsset("weaponlistme2.json");
                 var allGuns = JsonConvert.DeserializeObject<List<GunInfo>>(fileContents).ToList();
                 AllAvailableWeapons = new List<GunInfo>();
                 VisibleAvailableWeapons = new List<GunInfo>();

@@ -30,20 +30,22 @@ namespace Randomizer.Randomizers.Game2.Levels
         /// <summary>
         /// Going into male room as female
         /// </summary>
-        private static List<(string packageName, int uindex)> MaleWashroomAudioSources = new List<(string packageName, int uindex)>()
+        private static List<(string packageName, string IFP)> MaleWashroomAudioSources = new()
         {
-            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 609 ), // SHEPARD, SUBMIT NOW
-            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 603 ), // shitshitshitshitshit
-            ( "BioD_Nor_250Henchmen_LOC_INT.pcc", 4227 ), // More food less ass
+            ("BioD_Nor_CR3_200_LOC_INT.pcc", "ss_collector_general_S.en_us_global_collector_general_ss_collector_general_00332542_m_wav"), // SHEPARD, SUBMIT NOW
+            ("BioD_Nor_CR3_200_LOC_INT.pcc", "norcr3_jokershit_a_S.en_us_hench_joker_norcr3_jokershit_a_00312051_m_wav"), // shitshitshitshitshit
+            ("BioD_Nor_250Henchmen_LOC_INT.pcc", "nor_cook_a_S.en_us_norcr3_crew_scout_nor_cook_a_00302097_m_wav"), // More food less ass
+            ("BioD_TwrAsA_201LowerOffices_LOC_INT.pcc", "twrasa_surprisedguard_d_S.en_us_twrasa_merc_plummets_twrasa_surprisedguard_d_00189094_m_wav"), // merc falling scream
+            ("BioD_CitHub_100Dock_LOC_INT.pcc", "cithub_tp_garrus_a_S.en_us_hench_garrus_cithub_tp_garrus_a_00277957_m_wav") // garrus: thought i might come back to see how its changed
         };
 
         /// <summary>
         /// Going into female room as male
         /// </summary>
-        private static List<(string packageName, int uindex)> FemaleWashroomAudioSources = new List<(string packageName, int uindex)>()
+        private static List<(string packageName, string IFP)> FemaleWashroomAudioSources = new()
         {
-            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 609 ), // SHEPARD, SUBMIT NOW
-            ( "BioD_Nor_CR3_200_LOC_INT.pcc", 597 ), // AUGH!
+            ("BioD_Nor_CR3_200_LOC_INT.pcc", "ss_collector_general_S.en_us_global_collector_general_ss_collector_general_00332542_m_wav"), // SHEPARD, SUBMIT NOW
+            ("BioD_Nor_CR3_200_LOC_INT.pcc", "norcr3_ensign_threesome_a_S.en_us_nor_yeoman_norcr3_ensign_threesome_a_00218997_m_wav"), // AUGH!
         };
 
         private static void RandomizeWrongWashroomSFX(GameTarget target)
@@ -54,14 +56,14 @@ namespace Randomizer.Randomizers.Game2.Levels
             if (henchmenLOCInt250 != null && File.Exists(henchmenLOCInt250))
             {
                 var washroomP = MEPackageHandler.OpenMEPackage(henchmenLOCInt250);
-                MERPackageCache pc = new MERPackageCache();
+                using MERPackageCache pc = new MERPackageCache(target);
                 var randomMale = MaleWashroomAudioSources.RandomElement();
                 var randomFemale = FemaleWashroomAudioSources.RandomElement();
 
                 var mPackage = pc.GetCachedPackage(randomMale.packageName);
                 var fPackage = pc.GetCachedPackage(randomFemale.packageName);
-                WwiseTools.RepointWwiseStream(mPackage.GetUExport(randomMale.uindex), washroomP.GetUExport(4195)); //male into female
-                WwiseTools.RepointWwiseStream(fPackage.GetUExport(randomFemale.uindex), washroomP.GetUExport(4196)); //female into male
+                WwiseTools.RepointWwiseStream(mPackage.FindExport(randomMale.IFP), washroomP.FindExport("nor_ai_restroom_a_S.en_us_hench_ai_nor_ai_restroom_a_00325703_m_wav")); //male into female
+                WwiseTools.RepointWwiseStream(fPackage.FindExport(randomFemale.IFP), washroomP.FindExport("nor_ai_restroom_a_S.en_us_hench_ai_nor_ai_restroom_a_00325702_m_wav")); //female into male
 
                 MERFileSystem.SavePackage(washroomP);
             }
@@ -84,14 +86,14 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 var nor250Henchmen = MEPackageHandler.OpenMEPackage(cookingAreaF);
 
-                var packageBin = MERUtilities.GetEmbeddedStaticFilesBinaryFile("Delux2go_Edmonton_Burger.pcc");
-                var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
+                var packageBin = MERUtilities.GetEmbeddedPackage(target.Game,"Delux2go_EdmontonBurger.pcc");
+                var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(packageBin);
 
                 List<ExportEntry> addedBurgers = new List<ExportEntry>();
 
                 // 1. Add the burger package by porting in the first skeletal mesh.
                 var world = nor250Henchmen.FindExport("TheWorld.PersistentLevel");
-                var firstBurgerSKM = PackageTools.PortExportIntoPackage(nor250Henchmen, burgerPackage.FindExport("BurgerSKMA"), world.UIndex, false);
+                var firstBurgerSKM = PackageTools.PortExportIntoPackage(target, nor250Henchmen, burgerPackage.FindExport("BurgerSKMA"), world.UIndex, false);
 
                 // Setup the object for cloning, add to list of new actors
                 firstBurgerSKM.WriteProperty(new BoolProperty(true, "bHidden")); // Make burger hidden by default. It's unhidden in kismet
@@ -106,9 +108,10 @@ namespace Randomizer.Randomizers.Game2.Levels
                 firstBurgerSKM.WriteProperty(ds);
 
                 // 2. Link up the textures
-                TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
-                TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
-                TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
+                // ME2R OT/LE build now does this as package stored to make this simpler.
+                //TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
+                //TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
+                //TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
 
                 // 3. Clone 3 more burgers
                 addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
@@ -119,7 +122,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var plateFile = MERFileSystem.GetPackageFile(target, "BioA_OmgHub800_Marketplace.pcc");
                 var platePackage = MEPackageHandler.OpenMEPackage(plateFile);
                 List<ExportEntry> plateExports = new List<ExportEntry>();
-                var plateSMA1 = PackageTools.PortExportIntoPackage(nor250Henchmen, platePackage.GetUExport(3280), world.UIndex, false);
+                var plateSMA1 = PackageTools.PortExportIntoPackage(target, nor250Henchmen, platePackage.GetUExport(3280), world.UIndex, false);
                 plateSMA1.WriteProperty(new BoolProperty(true, "bHidden")); //make hidden by default
 
                 // Update the textures to remove that god awful original design and use something less ugly
@@ -155,7 +158,10 @@ namespace Randomizer.Randomizers.Game2.Levels
                     burger.WriteProperty(lp.rot.ToRotatorStructProperty("Rotation"));
 
                     // Add burger object to kismet unhide
-                    var clonedSeqObj = MERSeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
+                    var cookSeq = nor250Henchmen.FindExport(@"TheWorld.PersistentLevel.Main_Sequence.Cook");
+
+
+                    var clonedSeqObj = SequenceObjectCreator.CreateSequenceObject(nor250Henchmen, "SeqVar_Object");
                     clonedSeqObj.WriteProperty(new ObjectProperty(burger.UIndex, "ObjValue"));
                     KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObj);
 

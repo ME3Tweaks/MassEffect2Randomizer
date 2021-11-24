@@ -14,8 +14,11 @@ using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
 
-namespace Randomizer.Randomizers.Game2.ExportTypes
+namespace Randomizer.Randomizers.Game1.ExportTypes
 {
+    /// <summary>
+    /// Game 1 specific class for randomizing conversations.
+    /// </summary>
     class RBioConversation
     {
         private enum EActorTrackFindActorMode
@@ -34,7 +37,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         }
 
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioConversation";
-        private static bool CanRandomizeSeqActStartConvo(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"SFXSeqAct_StartConversation";
+        private static bool CanRandomizeSeqActStartConvo(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioSeqAct_StartConversation";
 
         private static string[] Localizations = new[] { "INT" }; // Add more later, maybe.
 
@@ -208,7 +211,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 // Update the localizations
                 foreach (var loc in Localizations)
                 {
-                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERFileSystem.GetGlobalCache(target), localCache, loc);
+                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERFileSystem.GetGlobalCache(), localCache, loc);
                     var conv = new ConversationExtended(bioConversation);
                     conv.LoadConversation(null, true);
 

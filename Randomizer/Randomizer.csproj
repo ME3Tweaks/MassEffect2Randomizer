@@ -104,5 +104,8 @@
 
   <ItemGroup>
     <Folder Include="Randomizers\Game1\Assets\StarterKit\" />
+    <Folder Include="Randomizers\Game2\Assets\Binary\ME2\" />
+    <Folder Include="Randomizers\Game2\Assets\Binary\LE2\" />
+    <Folder Include="Randomizers\Game2\Assets\Texture2D\" />
   </ItemGroup>
 </Project>

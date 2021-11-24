@@ -217,7 +217,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
 
                 // Link up the random choice it makes
-                var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(sequence, 3);
+                var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(target, sequence, 3);
                 KismetHelper.CreateOutputLink(randSw, "Link 1", interp1);
                 KismetHelper.CreateOutputLink(randSw, "Link 2", interp2);
                 KismetHelper.CreateOutputLink(randSw, "Link 3", interp3);
@@ -232,7 +232,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 foreach (var id in interpDatas)
                 {
                     var danceTrack = id.InterpGroups[0].Tracks[0];
-                    OmegaHub.InstallShepardDanceGesture(danceTrack.Export, cache);
+                    OmegaHub.InstallShepardDanceGesture(target, danceTrack.Export, cache);
                 }
 
                 MERFileSystem.SavePackage(loungeP);
@@ -248,7 +248,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 MERPackageCache cache = new MERPackageCache();
 
                 var convoE = embassyInt.GetUExport(94);
-                RandomizeCouncilConvoSingle(convoE, cache);
+                RandomizeCouncilConvoSingle(target, convoE, cache);
 
                 MERFileSystem.SavePackage(embassyInt);
             }
@@ -257,7 +257,7 @@ namespace Randomizer.Randomizers.Game2.Levels
         private static string[] councilKeywords = new[] { "Dancing", "Angry", "Cursing", "Fearful", "ROM", "Drunk" };
         private static string[] councilAnimPackages = new[] { "BIOG_HMF_AM_A" }; //Towny
 
-        private static void RandomizeCouncilConvoSingle(ExportEntry convoE, MERPackageCache cache)
+        private static void RandomizeCouncilConvoSingle(GameTarget target, ExportEntry convoE, MERPackageCache cache)
         {
             var convoInfo = new ConversationExtended(convoE);
             convoInfo.LoadConversation(detailedLoad: true);
@@ -290,7 +290,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                                 {
                                     for (int i = 0; i < gestures.Count; i++)
                                     {
-                                        var newGesture = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, OmegaHub.notDanceKeywords, councilAnimPackages, true, cache);
+                                        var newGesture = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
                                         gestures[i] = newGesture;
                                     }
 
@@ -300,7 +300,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                                 var defaultPose = RBioEvtSysTrackGesture.GetDefaultPose(gestTrack.Export);
                                 if (defaultPose != null)
                                 {
-                                    var newPose = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(gestTrack.Export.FileRef, 5, councilKeywords, OmegaHub.notDanceKeywords, councilAnimPackages, true, cache);
+                                    var newPose = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
                                     if (newPose != null)
                                     {
                                         RBioEvtSysTrackGesture.WriteDefaultPose(gestTrack.Export, newPose);
@@ -323,7 +323,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 var citHubTP = MEPackageHandler.OpenMEPackage(citHubTF);
 
-                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lockedUpAsset.BodyAsset.GetAsset(target));
+                var newMdl = PackageTools.PortExportIntoPackage(target, citHubTP, lockedUpAsset.BodyAsset.GetAsset(target));
                 citHubTP.GetUExport(670).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
                 if (!lockedUpAsset.KeepHead)
                 {
@@ -348,7 +348,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 var citHubTP = MEPackageHandler.OpenMEPackage(citHubASLTF);
 
-                var newMdl = PackageTools.PortExportIntoPackage(citHubTP, lawyerAsset.BodyAsset.GetAsset(target));
+                var newMdl = PackageTools.PortExportIntoPackage(target, citHubTP, lawyerAsset.BodyAsset.GetAsset(target));
                 citHubTP.GetUExport(822).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
                 if (!lawyerAsset.KeepHead)
                 {

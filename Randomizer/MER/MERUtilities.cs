@@ -78,7 +78,7 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static string GetStaticTextFile(string filename, bool shared = false)
+        public static string GetEmbeddedTextAsset(string filename, bool shared = false)
         {
             using var stream = GetEmbeddedAsset("Text", filename, shared);
             using StreamReader sr = new StreamReader(stream);
@@ -829,6 +829,17 @@ namespace Randomizer.MER
 #else
             return originalTrilogy ? "Mass Effect 3" : "Mass Effect 3 (Legendary Editon)";
 #endif
+        }
+
+        /// <summary>
+        /// Gets the stream data for a game-specific package.
+        /// </summary>
+        /// <param name="targetGame"></param>
+        /// <param name="packageName"></param>
+        /// <returns></returns>
+        public static Stream GetEmbeddedPackage(MEGame targetGame, string packageName)
+        {
+            return GetEmbeddedAsset("Binary", $"Packages.{targetGame}.{packageName}");
         }
     }
 }

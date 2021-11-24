@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
@@ -11,12 +13,16 @@ using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Utility;
 
-namespace Randomizer.Randomizers.Game2.ExportTypes
+namespace Randomizer.Randomizers.Game1.Misc
 {
-    class RSFXSkeletalMeshActorMAT
+
+    class RBioPawnGestures
     {
+
+
         private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && exp.ClassName == "SFXSkeletalMeshActorMAT" && !exp.ObjectName.Name.Contains("Dead", StringComparison.InvariantCultureIgnoreCase);
         private static string[] smaKeywords = new[] { "Dancing", "Dance", "Angry", "Cursing", "Fearful", "ROM", "Drunk", "Kiss", "Headbutt", "Hugging", "Consoling", "Come_Here", "Cough", "Count", "Bhand_Slapped" };
+
 
         public static bool RandomizeBasicGestures(GameTarget target, ExportEntry export, RandomizationOption option)
         {
@@ -165,11 +171,12 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                     currentObjs.Add(new ObjectProperty(gesture.Entry));
                     var bin = ObjectBinary.From<BioDynamicAnimSet>(skmBioDynamicAnimSet);
                     bin.SequenceNamesToUnkMap[gesture.GestureAnim] = 1; // Not sure what the value should be, or if game actually reads this
-                    // FIX IT IF WE EVER FIGURE IT OUT!
+                                                                        // FIX IT IF WE EVER FIGURE IT OUT!
                     skmBioDynamicAnimSet.WriteProperty(currentObjs);
                     skmBioDynamicAnimSet.WriteBinary(bin);
                 }
             }
         }
     }
+
 }

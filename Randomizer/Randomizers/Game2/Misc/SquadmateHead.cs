@@ -20,11 +20,11 @@ namespace Randomizer.Randomizers.Game2.Misc
 {
     class SquadmateHead
     {
-        private static MERPackageCache HeadAssetCache = new MERPackageCache();
+        private static MERPackageCache HeadAssetCache;
 
         public static void ResetClass()
         {
-            HeadAssetCache.ReleasePackages();
+            HeadAssetCache?.ReleasePackages();
         }
 
         class SquadMate
@@ -568,7 +568,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                 // Port in the new asset.
                 var sourceExp = newAsset.GetAsset(target);
-                var newMdl = PackageTools.PortExportIntoPackage(headMeshExp.FileRef, sourceExp, useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
+                var newMdl = PackageTools.PortExportIntoPackage(target, headMeshExp.FileRef, sourceExp, useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
 
                 // Write the properties.
                 skelMesh.Value = newMdl.UIndex;
@@ -646,7 +646,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 if (newAsset.HairAssetPath != null)
                 {
                     // Port in hair
-                    var hairMDL = PackageTools.PortExportIntoPackage(headMeshExp.FileRef, newAsset.GetHairAsset(target), useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
+                    var hairMDL = PackageTools.PortExportIntoPackage(target, headMeshExp.FileRef, newAsset.GetHairAsset(target), useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
 
                     // Clone existing mesh
                     var hairMeshExp = EntryCloner.CloneEntry(headMeshExp);
@@ -963,7 +963,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                 classPath += "0";
                 var exportToPortIn = mirandaSourcePackage.FindExport(classPath);
-                var newMirandaPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
+                var newMirandaPawn = PackageTools.PortExportIntoPackage(target, package, exportToPortIn, world.UIndex, false);
                 newMirandaPawn.ObjectName = new NameReference("SFXPawn_Miranda", 2);
 
                 CopyPawnInstanceProps(oldMirandaProps, newMirandaPawn);
@@ -1018,7 +1018,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                 classPath += "0";
                 var exportToPortIn = mirandaSourcePackage.FindExport(classPath);
-                var newMirandaPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
+                var newMirandaPawn = PackageTools.PortExportIntoPackage(target, package, exportToPortIn, world.UIndex, false);
                 newMirandaPawn.ObjectName = new NameReference("SFXPawn_Miranda", 2);
 
                 // Jacob
@@ -1035,7 +1035,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 }
 
                 exportToPortIn = jacobSourcePackage.FindExport(classPath);
-                var newJacobPawn = PackageTools.PortExportIntoPackage(package, exportToPortIn, world.UIndex, false);
+                var newJacobPawn = PackageTools.PortExportIntoPackage(target, package, exportToPortIn, world.UIndex, false);
                 newJacobPawn.ObjectName = new NameReference("SFXPawn_Jacob", 1);
 
                 // Update the properties to match the old ones

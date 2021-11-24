@@ -19,7 +19,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             var hmmHir = NonSharedPackageCache.Cache.GetCachedPackage("BIOG_HMM_HIR_PRO_R.pcc");
             var hmfHir = NonSharedPackageCache.Cache.GetCachedPackage("BIOG_HMF_HIR_PRO.pcc");
             //var jenyaHairP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.JenyaHair.pcc")));
-            
+
             // Prepare items for porting in by forcing all items to use the correct idxLink for relinker
             EntryExporter.PrepareGlobalFileForPorting(hmmHir, "BIOG_HMM_HIR_PRO_R");
             EntryExporter.PrepareGlobalFileForPorting(hmfHir, "BIOG_HMF_HIR_PRO");
@@ -47,11 +47,11 @@ namespace Randomizer.Randomizers.Game2.Misc
 
         public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
-            if (!CanRandomize(export, false, out var hairMeshExp)) return false;
-            return ForcedRun(hairMeshExp);
+            if (!CanRandomize(target, export, false, out var hairMeshExp)) return false;
+            return ForcedRun(target, hairMeshExp);
         }
 
-        private static bool ForcedRun(ExportEntry hairMeshExport)
+        private static bool ForcedRun(GameTarget target, ExportEntry hairMeshExport)
         {
             if (hairMeshExport.GetProperty<ObjectProperty>("SkeletalMesh") is ObjectProperty obj && obj.Value != 0 && obj.ResolveToEntry(hairMeshExport.FileRef) is IEntry entry)
             {
@@ -60,7 +60,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 if (newHair.ObjectName.Name == entry.ObjectName.Name)
                     return false; // We are not changing this
                 MERLog.Information($"{Path.GetFileName(hairMeshExport.FileRef.FilePath)} Changing hair mesh: {entry.ObjectName} -> {newHair.ObjectName}, object {hairMeshExport.FullPath}, class {entry.ClassName}");
-                var newHairMdl = PackageTools.PortExportIntoPackage(hairMeshExport.FileRef, newHair);
+                var newHairMdl = PackageTools.PortExportIntoPackage(target, hairMeshExport.FileRef, newHair);
                 var mdlBin = ObjectBinary.From<SkeletalMesh>(newHairMdl);
                 obj.Value = newHairMdl.UIndex;
                 hairMeshExport.WriteProperty(obj);
@@ -120,7 +120,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             return false;
         }
 
-        private static bool CanRandomize(ExportEntry export, bool isArchetypeCheck, out ExportEntry hairMeshExp)
+        private static bool CanRandomize(GameTarget target, ExportEntry export, bool isArchetypeCheck, out ExportEntry hairMeshExp)
         {
             hairMeshExp = null;
             if (export.IsDefaultObject) return false;
@@ -150,10 +150,10 @@ namespace Randomizer.Randomizers.Game2.Misc
                             if (export.Archetype is ImportEntry imp)
                             {
                                 // oof
-                                arch = EntryImporter.ResolveImport(imp, MERFileSystem.GetGlobalCache());
+                                arch = EntryImporter.ResolveImport(imp, MERFileSystem.GetGlobalCache(target));
                             }
                             hairMeshExp = hairExpSKM;
-                            var result = export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) == isArchetypeCheck && CanRandomize(arch, true, out _); // look at archetype
+                            var result = export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) == isArchetypeCheck && CanRandomize(target, arch, true, out _); // look at archetype
                             if (result && !isArchetypeCheck)
                             {
                                 Debug.WriteLine($"Running on {export.ObjectName.Instanced}");

@@ -8,6 +8,7 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Utility
@@ -73,7 +74,7 @@ namespace Randomizer.Randomizers.Utility
         /// <param name="createParentPackages">If the export should be ported in the same way as it was cooked into the package natively, e.g. create the parent package paths. The export must directly sit under a Package or an exception will be thrown.</param>
         /// <param name="ensureMemoryUniqueness">If this object is an instance, such as a sequence object, and should be made memory-unique so it is properly used</param>
         /// <returns></returns>
-        public static ExportEntry PortExportIntoPackage(IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false, bool useMemorySafeImport = false, PackageCache cache = null)
+        public static ExportEntry PortExportIntoPackage(GameTarget target, IMEPackage targetPackage, ExportEntry sourceExport, int targetLink = 0, bool createParentPackages = true, bool ensureMemoryUniqueness = false, bool useMemorySafeImport = false, PackageCache cache = null)
         {
 #if DEBUG
             // in preprocessor to prevent this from running in release mode
@@ -135,7 +136,7 @@ namespace Randomizer.Randomizers.Utility
             else
             {
                 // Memory safe, fixes upstream
-                var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, MERFileSystem.GetGlobalCache(), cache);
+                var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, MERFileSystem.GetGlobalCache(target), cache);
                 if (relinkedResults.Any())
                 {
                     Debugger.Break();

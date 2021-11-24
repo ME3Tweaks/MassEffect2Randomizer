@@ -37,7 +37,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 // Open tubes on kills to start the attack (post platforms)----------------------
                 var seq = preReaperP.GetUExport(15190);
 
-                var attackSw = MERSeqTools.InstallRandomSwitchIntoSequence(seq, 2); //50% chance
+                var attackSw = MERSeqTools.InstallRandomSwitchIntoSequence(target, seq, 2); //50% chance
 
                 // killed squad member -> squad still exists to 50/50 sw
                 KismetHelper.CreateOutputLink(preReaperP.GetUExport(15298), "SquadStillExists", attackSw);
@@ -200,7 +200,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                     if (newPawnsInThisSeq.Any())
                     {
                         // install the switch
-                        var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(flySeq, numEnemies);
+                        var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(target, flySeq, numEnemies);
                         outbound[0][0].LinkedOp = randSw;
                         SeqTools.WriteOutboundLinksToNode(preGate, outbound);
 
@@ -226,7 +226,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
 
                 // 1. Add the burger package
-                var burgerMDL = PackageTools.PortExportIntoPackage(biopEndGm3, burgerPackage.FindExport("Edmonton_Burger_Delux2go.Burger_MDL"));
+                var burgerMDL = PackageTools.PortExportIntoPackage(target, biopEndGm3, burgerPackage.FindExport("Edmonton_Burger_Delux2go.Burger_MDL"));
 
                 // 2. Link up the textures
                 TFCBuilder.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
@@ -298,7 +298,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 KismetHelper.RemoveAllLinks(activated);
 
                 // install new logic
-                var randSwitch = MERSeqTools.InstallRandomSwitchIntoSequence(bioticTeamSeq, 13); // don't include theif or veteran as dlc might not be installed
+                var randSwitch = MERSeqTools.InstallRandomSwitchIntoSequence(target, bioticTeamSeq, 13); // don't include theif or veteran as dlc might not be installed
                 KismetHelper.CreateOutputLink(activated, "Out", randSwitch);
 
                 // Outputs of random choice

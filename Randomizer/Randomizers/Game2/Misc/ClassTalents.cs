@@ -406,7 +406,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                             ammoPowers.Add(basePower.PowerName);
                         else if (basePower.IsCombatPower)
                             combatPowers.Add(basePower.PowerName);
-                        var portedPower = PackageTools.PortExportIntoPackage(loadout.FileRef, basePower.PowerExport);
+                        var portedPower = PackageTools.PortExportIntoPackage(target, loadout.FileRef, basePower.PowerExport);
                         powersList.Add(new ObjectProperty(portedPower.UIndex));
 
                         if (basePower.BaseName != null)
@@ -420,8 +420,8 @@ namespace Randomizer.Randomizers.Game2.Misc
                         var evolution1 = talentSet.EvolvedPowers[powIndex * 2];
                         var evolution2 = talentSet.EvolvedPowers[(powIndex * 2) + 1];
                         configuredPowers.Add(new MappedPower() { BaseTalent = basePower, EvolvedTalent1 = evolution1, EvolvedTalent2 = evolution2 });
-                        props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution1.PowerExport), "EvolvedPowerClass1"));
-                        props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution2.PowerExport), "EvolvedPowerClass2"));
+                        props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(target, portedPower.FileRef, evolution1.PowerExport), "EvolvedPowerClass1"));
+                        props.AddOrReplaceProp(new ObjectProperty(PackageTools.PortExportIntoPackage(target, portedPower.FileRef, evolution2.PowerExport), "EvolvedPowerClass2"));
 
                         // Update the evolution text via override
                         var ranksSource = basePower.BasePower.GetDefaults().GetProperty<ArrayProperty<StructProperty>>("Ranks");
@@ -545,7 +545,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             return true;
         }
 
-        private static ExportEntry GetEvolution(IMEPackage package, List<ExportEntry> kitPowers, List<ExportEntry> evolvedPowersInKit, List<ExportEntry> powerEvolutions)
+        private static ExportEntry GetEvolution(GameTarget target, IMEPackage package, List<ExportEntry> kitPowers, List<ExportEntry> evolvedPowersInKit, List<ExportEntry> powerEvolutions)
         {
             var power = powerEvolutions.PullFirstItem();
             int ix = 20;
@@ -556,7 +556,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 ix--; //give up if we have to
             }
 
-            return PackageTools.PortExportIntoPackage(package, power);
+            return PackageTools.PortExportIntoPackage(target, package, power);
         }
 
         /// <summary>

@@ -16,6 +16,7 @@ using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
 using Randomizer.MER;
+using Randomizer.Randomizers.Game1.Misc;
 using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.Levels;
@@ -85,6 +86,8 @@ namespace Randomizer.Randomizers.Game2
 
         private void Randomization_Completed(object sender, RunWorkerCompletedEventArgs e)
         {
+            SelectedOptions.SetRandomizationInProgress?.Invoke(false);
+
             if (e.Error != null)
             {
                 MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
@@ -105,6 +108,7 @@ namespace Randomizer.Randomizers.Game2
         {
             MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
             ResetClasses();
+            SelectedOptions.SetRandomizationInProgress?.Invoke(true);
             SelectedOptions.SetCurrentOperationText?.Invoke("Initializing randomizer");
             SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
@@ -173,7 +177,7 @@ namespace Randomizer.Randomizers.Game2
 
                     // we only want pcc files (me2/me3). no upks
                     var files = MELoadedFiles.GetFilesLoadedInGame(SelectedOptions.RandomizationTarget.Game, true, false, false, SelectedOptions.RandomizationTarget.TargetPath).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
-                    
+
                     SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(false);
 
                     var currentFileNumber = 0;
@@ -280,7 +284,7 @@ namespace Randomizer.Randomizers.Game2
             ResetClasses();
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
-            NonSharedPackageCache.Cache.ReleasePackages();
+            NonSharedPackageCache.Cache?.Dispose();
 
             // Re-throw the unhandled exception after MERFS has closed
             if (rethrowException != null)
@@ -767,6 +771,12 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting",
                         PerformRandomizationOnExportDelegate = RSharedLighting.RandomizeExport,
                         IsRecommended = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Mission rewards", Description = "Randomizes the tech and weapons given to you at the end of a mission. You can still get all the tech and weapons if you complete all the missions that award them.",
+                        //PerformSpecificRandomizationDelegate = MissionRewards.Inventory,
+                        PerformSpecificRandomizationDelegate = MissionRewards.PerformRandomization,
+                        IsRecommended = true,
+                        ProgressIndeterminate = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {
                         HumanName = "Galaxy Map",

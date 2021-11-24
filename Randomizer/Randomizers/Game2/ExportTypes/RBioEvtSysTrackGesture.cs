@@ -6,6 +6,7 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Utility;
 
@@ -16,7 +17,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
     /// </summary>
     class RBioEvtSysTrackGesture
     {
-        public static Gesture InstallRandomGestureAsset(IMEPackage package, float minSequenceLength = 0, MERPackageCache cache = null)
+        public static Gesture InstallRandomGestureAsset(GameTarget target, IMEPackage package, float minSequenceLength = 0, MERPackageCache cache = null)
         {
             var gestureFiles = MERUtilities.ListStaticAssets("binary.gestures");
             var randGestureFile = gestureFiles.RandomElement();
@@ -36,7 +37,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 numRetries--;
             }
 
-            var portedInExp = PackageTools.PortExportIntoPackage(package, randomGestureExport);
+            var portedInExp = PackageTools.PortExportIntoPackage(target, package, randomGestureExport);
 
             return new Gesture(portedInExp);
         }
@@ -581,7 +582,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             };
         }
 
-        public static Gesture InstallRandomFilteredGestureAsset(IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
+        public static Gesture InstallRandomFilteredGestureAsset(GameTarget target, IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
         {
             var gestureFiles = MERUtilities.ListStaticAssets("binary.gestures", includeSpecial);
 
@@ -651,7 +652,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                     numRetries--;
                 }
 
-                var portedInExp = PackageTools.PortExportIntoPackage(targetPackage, randomGestureExport);
+                var portedInExp = PackageTools.PortExportIntoPackage(target, targetPackage, randomGestureExport);
                 if (!hasCache)
                 {
                     cache.ReleasePackages();

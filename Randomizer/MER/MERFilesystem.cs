@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace Randomizer.MER
         private static object openSavePackageSyncObj = new object();
 
         /// <summary>
-        /// Opens packages in a memory safe fashion using a lock.
+        /// Opens packages in a memory safe fashion using a lock. Takes the full path of the package.
         /// </summary>
         /// <param name="path"></param>
         /// <param name="forceLoadFromDisk"></param>
@@ -248,11 +249,12 @@ namespace Randomizer.MER
         /// Gets the global cache of files that can be used for looking up imports
         /// </summary>
         /// <returns></returns>
-        public static MERPackageCache GetGlobalCache()
+        public static MERPackageCache GetGlobalCache(GameTarget target)
         {
             if (GlobalCache == null)
             {
-                GlobalCache = new MERPackageCache();
+                Debug.WriteLine("Loading global cache");
+                GlobalCache = new MERPackageCache(target);
                 GlobalCache.GetCachedPackage("Core.pcc");
                 GlobalCache.GetCachedPackage("SFXGame.pcc");
                 GlobalCache.GetCachedPackage("Startup_INT.pcc");

@@ -850,6 +850,13 @@ namespace Randomizer.Randomizers.Game1
                         IsRecommended = true
                     },
                     new RandomizationOption() {
+                        HumanName = "Actors in conversations",
+                        Description="Swaps pawns around in conversations that have more than 2 participants.",
+                        PerformFileSpecificRandomization = RBioConversation.RandomizePackageActorsInConversation,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true
+                    },
+                    new RandomizationOption() {
                             HumanName = "Animation data",
                             PerformRandomizationOnExportDelegate = RSharedAnimSequence.RandomizeExport,
                             SliderToTextConverter = RSharedAnimSequence.UIConverter,
