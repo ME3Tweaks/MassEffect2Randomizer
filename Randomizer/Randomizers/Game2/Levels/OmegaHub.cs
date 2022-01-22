@@ -8,6 +8,7 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.ExportTypes;
+using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
 
@@ -127,7 +128,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             cache ??= new MERPackageCache();
 
             var danceGestureData = RBioEvtSysTrackGesture.GetGestures(danceTrackExp);
-            var newGestures = new List<RBioEvtSysTrackGesture.Gesture>();
+            var newGestures = new List<Gesture>();
 
             int i = danceGestureData.Count + 1; // The default pose is the +1
             while (i > 0)

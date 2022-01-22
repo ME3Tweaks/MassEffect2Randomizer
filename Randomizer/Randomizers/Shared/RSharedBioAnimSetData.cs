@@ -6,9 +6,9 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
-namespace Randomizer.Randomizers.Game2.ExportTypes
+namespace Randomizer.Randomizers.Shared
 {
-    class RBioAnimSetData
+    class RSharedBioAnimSetData
     {
         /// <summary>
         /// Group names of bones that can be swapped around. For example any element that contains 'Finger' can be swapped to any other element that contains 'Finger'.
@@ -88,7 +88,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         private const double ALL_RANDOM = 5;
 
         // Do not randomize camera animsets as this will make game impossible to play
-        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioAnimSetData" && !export.ObjectName.Name.Contains("CAM", StringComparison.InvariantCultureIgnoreCase);
+        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioAnimSetData" && !export.ObjectName.Name.Contains("CAM", StringComparison.InvariantCultureIgnoreCase) && !export.ObjectName.Name.Contains("door", StringComparison.InvariantCultureIgnoreCase);
 
 
         public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)

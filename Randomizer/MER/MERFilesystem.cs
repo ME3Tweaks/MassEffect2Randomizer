@@ -27,11 +27,8 @@ namespace Randomizer.MER
         /// List of games this build supports
         /// </summary>
         public static MEGame[] Games = new[] { MEGame.ME1, MEGame.LE1 };
-        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
-        /// <summary>
-        /// TODO: CHANGE TO NOT USE EXTENSIONS
-        /// </summary>
-        public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", "BIOG_Male_Player_C.pcc" };
+        public static readonly string[] filesToSkip = { "Core", "PlotManagerMap", "RefShaderCache-PC-D3D-SM3", "RefShaderCache-PC-D3D-SM5", "IpDrv", "WwiseAudio", "SFXOnlineFoundation", "GFxUI" };
+        public static readonly string[] alwaysBasegameFiles = { "Startup", "Engine", "GameFramework", "SFXGame", "EntryMenu", "BIOG_Male_Player_C", "BIOC_Materials", "SFXStrategicAI" };
 #elif __GAME2__
         /// <summary>
         /// List of games this build supports
@@ -39,6 +36,13 @@ namespace Randomizer.MER
         public static MEGame[] Games = new[] { MEGame.ME2, MEGame.LE2 };
         public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
         public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", "BIOG_Male_Player_C.pcc" };
+#elif __GAME3__
+        /// <summary>
+        /// List of games this build supports
+        /// </summary>
+        public static MEGame[] Games = new[] { MEGame.LE3 };
+        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
+        public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", /*"BIOG_Male_Player_C.pcc"*/ };
 #endif
 
 
@@ -208,19 +212,26 @@ namespace Randomizer.MER
         {
             if (package.IsModified || forceSave)
             {
-                if (!alwaysBasegameFiles.Contains(Path.GetFileName(package.FilePath), StringComparer.InvariantCultureIgnoreCase))
+                var packageName = package.FileNameNoExtension;
+                if (package.Localization != MELocalization.None)
+                {
+                    packageName = packageName.Substring(0, packageName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase));
+                }
+
+
+                if (!alwaysBasegameFiles.Contains(packageName, StringComparer.InvariantCultureIgnoreCase))
                 {
                     var fname = Path.GetFileName(package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
                     lock (openSavePackageSyncObj)
                     {
-                        MERLog.Information($"Saving package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
+                        MERLog.Information($"Saving DLC package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
                         package.Save(packageNewPath, true);
                     }
                 }
                 else
                 {
-                    MERLog.Information($"Saving package {Path.GetFileName(package.FilePath)} => {package.FilePath}");
+                    MERLog.Information($"Saving basegame package {Path.GetFileName(package.FilePath)} => {package.FilePath}");
                     lock (openSavePackageSyncObj)
                     {
                         package.Save(compress: true);

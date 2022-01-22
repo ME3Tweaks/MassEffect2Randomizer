@@ -9,6 +9,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.TLK;
 using LegendaryExplorerCore.TLK.ME2ME3;
 using LegendaryExplorerCore.Unreal.Classes;
 
@@ -30,7 +31,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             }
         }
 
-        public static void DumpPlanetTexts(ExportEntry export, TalkFile tf)
+        public static void DumpPlanetTexts(ExportEntry export, ITalkFile tf)
         {
             Bio2DA planets = new Bio2DA(export);
             var planetInfos = new List<RandomizedPlanetInfo>();

@@ -14,6 +14,7 @@ using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Levels;
 using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Shared;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
@@ -385,7 +386,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             {
                 var data = newHolo.Data;
                 //RandomizeRGBA(data, 0x70C, false);
-                RHolograms.RandomizeRGBA(data, 0x54E, false);
+                RSharedHolograms.RandomizeRGBA(data, 0x54E, false);
                 MERLog.Information($@"Randomized Garrus DLC head material {newHolo.InstancedFullPath} in {newHolo.FileRef.FilePath}");
                 newHolo.Data = data;
             }

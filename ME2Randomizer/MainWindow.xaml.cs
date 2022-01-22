@@ -299,6 +299,12 @@ namespace RandomizerUI
             }
         }
 
+        public string IntroTitleText => $"Welcome to {MERUtilities.GetGameUIName(true)} Randomizer";
+        public string IntroTitleSubText => $"Please read the following information to help ensure you have the best experience\nwith {MERUtilities.GetGameUIName(true)} Randomizer ({MERUtilities.GetRandomizerShortName()}).";
+
+
+        
+
         private bool CanStartRandomization()
         {
             if (SeedTextBox == null || !int.TryParse(SeedTextBox.Text, out var value) || value == 0)

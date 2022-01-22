@@ -211,7 +211,8 @@ namespace Randomizer.Randomizers.Game1.ExportTypes
                 // Update the localizations
                 foreach (var loc in Localizations)
                 {
-                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERFileSystem.GetGlobalCache(), localCache, loc);
+                    // todo: Global Cache
+                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, null, localCache, loc);
                     var conv = new ConversationExtended(bioConversation);
                     conv.LoadConversation(null, true);
 

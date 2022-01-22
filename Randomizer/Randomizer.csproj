@@ -87,6 +87,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Randomizers\Game3\Assets\Starterkit\le3starterkit.zip" />
+    <None Remove="Randomizers\Game3\Assets\Text\imagecredits.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Fody" Version="6.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -106,6 +111,11 @@
     <Folder Include="Randomizers\Game1\Assets\StarterKit\" />
     <Folder Include="Randomizers\Game2\Assets\Binary\ME2\" />
     <Folder Include="Randomizers\Game2\Assets\Binary\LE2\" />
+    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE2\Gestures\" />
+    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME2\Gestures\" />
+    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE1\" />
+    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE3\" />
+    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME1\" />
     <Folder Include="Randomizers\Game2\Assets\Texture2D\" />
   </ItemGroup>
 </Project>

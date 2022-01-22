@@ -178,8 +178,8 @@
                     <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Orientation="Vertical" UseLayoutRounding="True" Margin="0,95,0,0" Width="700">
                         <StackPanel Margin="0,0,0,40">
                             <Image Source="masseffectrandomizer.ico" Height="128" Margin="4" ToolTip="Hello!" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Welcome to Mass Effect 2 Randomizer" FontSize="30" FontWeight="Light" TextAlignment="Center"/>
-                            <TextBlock TextWrapping="Wrap" Text="Please read the following information to help ensure you have the best experience&#10;with Mass Effect 2 Randomizer (ME2R)." FontSize="13" TextAlignment="Center"/>
+                            <TextBlock Text="{Binding IntroTitleText}" FontSize="30" FontWeight="Light" TextAlignment="Center"/>
+                            <TextBlock TextWrapping="Wrap" Text="{Binding IntroTitleSubText}" FontSize="13" TextAlignment="Center"/>
                         </StackPanel>
                         <StackPanel x:Name="FirstRun_MainContent">
                             <TextBlock Text="Why do I need a game backup?" Margin="0,10,0,0" FontSize="20"/>

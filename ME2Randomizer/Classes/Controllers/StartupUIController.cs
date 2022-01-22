@@ -112,12 +112,19 @@ namespace RandomizerUI.Classes.Controllers
             NamedBackgroundWorker bw = new NamedBackgroundWorker("StartupThread");
             bw.DoWork += (a, b) =>
             {
-                // Setup telemetry handlers
-                TelemetryInterposer.SetEventCallback(TelemetryController.TrackEvent);
-                TelemetryInterposer.SetErrorCallback(TelemetryController.TrackError);
+                ME3TweaksCoreLibInitPackage package = new ME3TweaksCoreLibInitPackage()
+                {
+                    TrackErrorCallback = TelemetryController.TrackError,
+                    TrackEventCallback = TelemetryController.TrackEvent,
+                    CreateLogger = MERLog.CreateLogger,
+                    RunOnUiThreadDelegate = RunOnUIThread,
+                    LoadAuxillaryServices = true,
+                    LECPackageSaveFailedCallback = x => MERLog.Error($@"Failed to save package: {x}"),
+                };
+
 
                 // Initialize core libraries
-                ME3TweaksCoreLib.Initialize(RunOnUIThread, MERLog.CreateLogger);
+                ME3TweaksCoreLib.Initialize(package);
                 //ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, $"Mass Effect 2 Randomizer {App.AppVersion} starting up", false);
                 // Logger is now available
 
@@ -163,8 +170,8 @@ namespace RandomizerUI.Classes.Controllers
                     },
                     ShowUpdateProgressDialogCallback = (title, initialmessage, canCancel) =>
                     {
-                        // We don't use this as we are already in a progress dialog
-                        pd.SetCancelable(canCancel);
+                    // We don't use this as we are already in a progress dialog
+                    pd.SetCancelable(canCancel);
                         pd.SetMessage(initialmessage);
                         pd.SetTitle(title);
                     },
@@ -210,7 +217,7 @@ namespace RandomizerUI.Classes.Controllers
                     },
                     cancellationTokenSource = ct,
                     ApplicationName = MERUI.GetRandomizerName(),
-                    RequestHeader = MERUI.GetRandomizerName().Replace(" ",""),
+                    RequestHeader = MERUI.GetRandomizerName().Replace(" ", ""),
                     ForcedUpgradeMaxReleaseAge = 3
                 };
 
@@ -331,46 +338,46 @@ namespace RandomizerUI.Classes.Controllers
                 });
             };
             bw.RunWorkerCompleted += async (a, b) =>
-                {
+                    {
                     // Post critical startup
                     window.SelectableTargets.AddRange(Locations.GetAllAvailableTargets());
 
                     // Initial selected game
                     if (Locations.GetTarget(true) != null)
-                    {
-                        window.SelectedTarget = Locations.GetTarget(true);
-                        window.LEGameRadioButton.IsChecked = true;
-                    }
-                    else if (Locations.GetTarget(false) != null)
-                    {
-                        window.SelectedTarget = Locations.GetTarget(false);
-                        window.OTGameRadioButton.IsChecked = true;
-                    }
+                        {
+                            window.SelectedTarget = Locations.GetTarget(true);
+                            window.LEGameRadioButton.IsChecked = true;
+                        }
+                        else if (Locations.GetTarget(false) != null)
+                        {
+                            window.SelectedTarget = Locations.GetTarget(false);
+                            window.OTGameRadioButton.IsChecked = true;
+                        }
 
                     // Disable games not installed or found
                     window.LEGameRadioButton.IsEnabled = Locations.GetTarget(true) != null;
-                    window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
+                        window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
 
-                    Random random = new Random();
-                    var preseed = random.Next();
-                    window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
-                    window.ContributorCredits.ReplaceAll(window.GetContributorCredits());
-                    window.LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
+                        Random random = new Random();
+                        var preseed = random.Next();
+                        window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
+                        window.ContributorCredits.ReplaceAll(window.GetContributorCredits());
+                        window.LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
 #if DEBUG
                     window.SeedTextBox.Text = 529572808.ToString();
 #else
                     window.SeedTextBox.Text = preseed.ToString();
 #endif
                     window.TextBlock_AssemblyVersion.Text = $"Version {MLibraryConsumer.GetAppVersion()}";
-                    window.SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
+                        window.SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
 
 
-                    if (MERSettings.GetSettingBool(ESetting.SETTING_FIRSTRUN))
-                    {
-                        window.FirstRunFlyoutOpen = true;
-                    }
-                    await pd.CloseAsync();
-                };
+                        if (MERSettings.GetSettingBool(ESetting.SETTING_FIRSTRUN))
+                        {
+                            window.FirstRunFlyoutOpen = true;
+                        }
+                        await pd.CloseAsync();
+                    };
             bw.RunWorkerAsync();
         }
 
@@ -381,10 +388,10 @@ namespace RandomizerUI.Classes.Controllers
                 if (Application.Current.MainWindow is MainWindow mw)
                 {
                     Debug.WriteLine("PERIODIC REFRESH NOT IMPLEMENTED");
-                    // Is DLC component installed?
-                    //var dlcModPath = MERFileSystem.GetDLCModPath();
-                    //mw.DLCComponentInstalled = dlcModPath != null ? Directory.Exists(dlcModPath) : false;
-                }
+            // Is DLC component installed?
+            //var dlcModPath = MERFileSystem.GetDLCModPath();
+            //mw.DLCComponentInstalled = dlcModPath != null ? Directory.Exists(dlcModPath) : false;
+        }
             });
         }
 
