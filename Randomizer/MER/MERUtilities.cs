@@ -123,33 +123,43 @@ namespace Randomizer.MER
             return items.Where(x => x.StartsWith(assetBase + assetFolderPath)).ToList();
         }
 
-        /// <summary>
-        /// Fetches a file from the staticfiles resource folder
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="fullName"></param>
-        /// <returns></returns>
-        public static byte[] GetEmbeddedStaticFile(string filename, bool fullName = false)
-        {
-            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "ME2Randomizer.staticfiles." + filename))
-            {
-                byte[] ba = new byte[stream.Length];
-                stream.Read(ba, 0, ba.Length);
-                return ba;
-            }
-        }
+//        /// <summary>
+//        /// Fetches a file from the staticfiles resource folder
+//        /// </summary>
+//        /// <param name="filename"></param>
+//        /// <param name="fullName"></param>
+//        /// <returns></returns>
+//        public static byte[] GetEmbeddedStaticFile(string filename, bool fullName = false)
+//        {
+//            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+//#if __GAME1__
+//// NEEDS GENERATION
+//            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game1.staticfiles." + filename))
+//#elif __GAME2__
+//// NEEDS GENERATION
+//            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game2.staticfiles." + filename))
+//#elif __GAME3__
+//            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game3.Assets." + filename))
+//#endif
+//            {
+//                byte[] ba = new byte[stream.Length];
+//                stream.Read(ba, 0, ba.Length);
+//                return ba;
+//            }
+//        }
 
-        /// <summary>
-        /// Fetches a file from the staticfiles/binary resource folder
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <param name="fullName"></param>
-        /// <returns></returns>
-        public static byte[] GetEmbeddedStaticFilesBinaryFile(string filename, bool fullName = false)
-        {
-            return GetEmbeddedStaticFile(fullName ? filename : ("binary." + filename), fullName);
-        }
+        ///// <summary>
+        ///// Fetches a file from the staticfiles/binary resource folder
+        ///// </summary>
+        ///// <param name="filename"></param>
+        ///// <param name="fullName"></param>
+        ///// <returns></returns>
+        //public static byte[] GetEmbeddedBinaryFile(string filename, bool fullName = false)
+        //{
+        //    return GetEmbeddedAsset("Binary", $"{targetGame}.{packageName}");
+
+        //    return GetEmbeddedAsset("Binary", fullName ? filename : ("Binary." + filename), fullName);
+        //}
 
         public static string ExtractInternalFile(string internalResourceName, bool fullname, string destination, bool overwrite)
         {
@@ -877,7 +887,7 @@ namespace Randomizer.MER
 #elif __GAME2__
             return originalTrilogy ? "Mass Effect 2" : "Mass Effect 2 (Legendary Editon)";
 #else
-            return originalTrilogy ? "Mass Effect 3" : "Mass Effect 3 (Legendary Editon)";
+            return "Mass Effect 3 Legendary Edition"; // We don't support OT for MER.
 #endif
         }
 

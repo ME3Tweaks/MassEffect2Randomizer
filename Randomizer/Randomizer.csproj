@@ -117,5 +117,6 @@
     <Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE3\" />
     <Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME1\" />
     <Folder Include="Randomizers\Game2\Assets\Texture2D\" />
+    <Folder Include="Randomizers\Game3\Assets\Binary\Packages\LE3\" />
   </ItemGroup>
 </Project>

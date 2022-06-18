@@ -2,19 +2,19 @@
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.ExportTypes;
-using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Game3.ExportTypes;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared;
 using Randomizer.Randomizers.Utility;
 
-namespace Randomizer.Randomizers.Game2.Levels
+namespace Randomizer.Randomizers.Game3.Levels
 {
     /// <summary>
     /// Randomizer for BioP_Char.pcc
@@ -27,26 +27,26 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         public static bool RandomizeIconicFemShep(GameTarget target, RandomizationOption option)
         {
-            var femF = MERFileSystem.GetPackageFile(target, "BIOG_Female_Player_C.pcc");
-            if (femF != null && File.Exists(femF))
-            {
-                var femP = MEPackageHandler.OpenMEPackage(femF);
-                var femMorphFace = femP.GetUExport(682);
-                RBioMorphFace.RandomizeExportNonHench(target, femMorphFace, option);
-                var matSetup = femP.GetUExport(681);
-                RBioMaterialOverride.RandomizeExport(matSetup, option);
+            //var femF = MERFileSystem.GetPackageFile(target, "BIOG_Female_Player_C.pcc");
+            //if (femF != null && File.Exists(femF))
+            //{
+            //    var femP = MEPackageHandler.OpenMEPackage(femF);
+            //    var femMorphFace = femP.GetUExport(682);
+            //    RBioMorphFace.RandomizeExportNonHench(target, femMorphFace, option);
+            //    var matSetup = femP.GetUExport(681);
+            //    RBioMaterialOverride.RandomizeExport(matSetup, option);
 
-                // Copy this data into BioP_Char so you get accurate results
-                var biop_charF = MERFileSystem.GetPackageFile(target, @"BioP_Char.pcc");
-                var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
-                // TODO: CACHE?
-                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, femMorphFace, biop_char, biop_char.GetUExport(3482), true, new RelinkerOptionsPackage(),out IEntry _);
-                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, matSetup, biop_char, biop_char.GetUExport(3472), true, new RelinkerOptionsPackage(), out IEntry _);
-                //biop_char.GetUExport(3482).WriteProperties(femMorphFace.GetProperties()); // Copy the morph face
-                //biop_char.GetUExport(3472).WriteProperties(matSetup.GetProperties()); // Copy the material setups
-                MERFileSystem.SavePackage(biop_char);
-                MERFileSystem.SavePackage(femP);
-            }
+            //    // Copy this data into BioP_Char so you get accurate results
+            //    var biop_charF = MERFileSystem.GetPackageFile(target, @"BioP_Char.pcc");
+            //    var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
+            //    // TODO: CACHE?
+            //    EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, femMorphFace, biop_char, biop_char.GetUExport(3482), true, new RelinkerOptionsPackage(), out IEntry _);
+            //    EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, matSetup, biop_char, biop_char.GetUExport(3472), true, new RelinkerOptionsPackage(), out IEntry _);
+            //    //biop_char.GetUExport(3482).WriteProperties(femMorphFace.GetProperties()); // Copy the morph face
+            //    //biop_char.GetUExport(3472).WriteProperties(matSetup.GetProperties()); // Copy the material setups
+            //    MERFileSystem.SavePackage(biop_char);
+            //    MERFileSystem.SavePackage(femP);
+            //}
             return true;
         }
 
@@ -117,57 +117,47 @@ namespace Randomizer.Randomizers.Game2.Levels
         {
             var biop_charF = MERFileSystem.GetPackageFile(target, @"BioP_Char.pcc");
             var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
-            var maleFrontEndData = biop_char.GetUExport(18753);
-            var femaleFrontEndData = biop_char.GetUExport(18754);
+            var maleFrontEndData = biop_char.FindExport(@"BioChar_Player.FrontEnd.SFXMorphFaceFrontEnd_Male");
+            var femaleFrontEndData = biop_char.FindExport(@"BioChar_Player.FrontEnd.SFXMorphFaceFrontEnd_Female");
 
             var codeMapMale = CalculateCodeMap(maleFrontEndData);
             var codeMapFemale = CalculateCodeMap(femaleFrontEndData);
 
             var bioUI = CoalescedHandler.GetIniFile("BIOUI.ini");
-            var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
-            var charCreatorPCS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
-            var charCreatorControllerS = bioUI.GetOrAddSection("SFXGame.BioSFHandler_NewCharacter");
+            //var bgr = CoalescedHandler.GetIniFile("BIOGuiResources.ini");
+            var charCreatorControllerS = bioUI.GetOrAddSection("sfxgame.biosfhandler_newcharacter");
 
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
-            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
 
             int numToMake = 20;
             int i = 0;
 
-            // Male: 34 chars
+            // Male: 35 chars
+            charCreatorControllerS.AddEntry(new CoalesceProperty("malepregeneratedheadcodes", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
             while (i < numToMake)
             {
                 i++;
-                charCreatorPCS.Entries.Add(GenerateHeadCode(codeMapMale, false));
-                charCreatorControllerS.Entries.Add(GenerateHeadCode(codeMapMale, false));
+                charCreatorControllerS.AddEntry(new CoalesceProperty("malepregeneratedheadcodes", new CoalesceValue(GenerateHeadCode(codeMapMale, false), CoalesceParseAction.AddUnique)));
             }
 
-
-
-            // Female: 36 chars
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
-            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
-            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
-
+            // Female: 37 chars
             i = 0;
+            charCreatorControllerS.AddEntry(new CoalesceProperty("femalepregeneratedheadcodes", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
             while (i < numToMake)
             {
                 i++;
-                charCreatorPCS.Entries.Add(GenerateHeadCode(codeMapFemale, true));
-                charCreatorControllerS.Entries.Add(GenerateHeadCode(codeMapFemale, true));
+                charCreatorControllerS.AddEntry(new CoalesceProperty("femalepregeneratedheadcodes", new CoalesceValue(GenerateHeadCode(codeMapFemale, true), CoalesceParseAction.AddUnique)));
             }
 
 
             randomizeFrontEnd(maleFrontEndData);
             randomizeFrontEnd(femaleFrontEndData);
-
-
-            //Copy the final skeleton from female into male.
-            var femBase = biop_char.GetUExport(3480);
-            var maleBase = biop_char.GetUExport(3481);
-            maleBase.WriteProperty(femBase.GetProperty<ArrayProperty<StructProperty>>("m_aFinalSkeleton"));
+            if (false)
+            {
+                //Copy the final skeleton from female into male.
+                var femBase = biop_char.GetUExport(3480);
+                var maleBase = biop_char.GetUExport(3481);
+                maleBase.WriteProperty(femBase.GetProperty<ArrayProperty<StructProperty>>("m_aFinalSkeleton"));
+            }
 
             var randomizeColors = !option.HasSubOptionSelected(CharacterCreator.SUBOPTIONKEY_CHARCREATOR_NO_COLORS);
 
@@ -180,12 +170,12 @@ namespace Randomizer.Randomizers.Game2.Levels
                 else if (export.ClassName == "MorphTarget")
                 {
                     if (
-                         export.ObjectName.Name.StartsWith("jaw") || export.ObjectName.Name.StartsWith("mouth")
-                                                                  || export.ObjectName.Name.StartsWith("eye")
-                                                                  || export.ObjectName.Name.StartsWith("cheek")
-                                                                  || export.ObjectName.Name.StartsWith("nose")
-                                                                  || export.ObjectName.Name.StartsWith("teeth")
-                        )
+                        export.ObjectName.Name.StartsWith("jaw") || export.ObjectName.Name.StartsWith("mouth")
+                                                                 || export.ObjectName.Name.StartsWith("eye")
+                                                                 || export.ObjectName.Name.StartsWith("cheek")
+                                                                 || export.ObjectName.Name.StartsWith("nose")
+                                                                 || export.ObjectName.Name.StartsWith("teeth")
+                    )
                     {
                         RSharedMorphTarget.RandomizeExport(export, option);
                     }
@@ -197,6 +187,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                     {
                         StructTools.RandomizeColor(color, true, .5, 1.5);
                     }
+
                     export.WriteProperty(colors);
                 }
                 else if (export.ClassName == "BioMorphFaceFESliderMorph")
@@ -223,10 +214,12 @@ namespace Randomizer.Randomizers.Game2.Levels
                         }
 
                     }
+
                     foreach (var floatval in floats)
                     {
                         floatval.Value = ThreadSafeRandom.NextFloat(minfloat, maxfloat);
                     }
+
                     export.WriteProperty(floats);
                 }
                 else if (export.ClassName == "BioMorphFaceFESliderTexture")
@@ -234,12 +227,13 @@ namespace Randomizer.Randomizers.Game2.Levels
 
                 }
             }
+
             MERFileSystem.SavePackage(biop_char);
             return true;
         }
 
 
-        private static string unnotchedSliderCodeChars = "123456789ABCDEFGHIJKLMNOPQRSTUVW";
+        private static string unnotchedSliderCodeChars = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         /// <summary>
         /// Builds a map of position => allowable values (as a string)
@@ -274,7 +268,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             return map;
         }
 
-        private static DuplicatingIni.IniEntry GenerateHeadCode(Dictionary<int, char[]> codeMap, bool female)
+        private static string GenerateHeadCode(Dictionary<int, char[]> codeMap, bool female)
         {
             // Doubt this will actually work but whatevers.
             int numChars = female ? 36 : 34;
@@ -286,14 +280,14 @@ namespace Randomizer.Randomizers.Game2.Levels
                 i++;
             }
 
-            return new DuplicatingIni.IniEntry(female ? "+FemalePregeneratedHeadCodes" : "+MalePregeneratedHeadCodes", new string(headCode));
+            return new string(headCode);
         }
 
         private static void randomizeFrontEnd(ExportEntry frontEnd)
         {
             var props = frontEnd.GetProperties();
 
-            //read categories
+            // read categories
             var morphCategories = props.GetProp<ArrayProperty<StructProperty>>("MorphCategories");
             var sliders = new Dictionary<string, StructProperty>();
             foreach (var cat in morphCategories)

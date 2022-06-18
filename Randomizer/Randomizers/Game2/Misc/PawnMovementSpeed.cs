@@ -86,7 +86,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 // Import needs added
 
                 // ME2 SPECIFIC!
-                sfxMovementData = EntryImporter.GetOrAddCrossImportOrPackageFromGlobalFile("SFXMovementData",
+                sfxMovementData = EntryImporter.GenerateEntryForGlobalFileExport("SFXMovementData",
                     MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc")), bio_appr_character.FileRef,
                     new RelinkerOptionsPackage() // Todo: CACHE?                    
                     ) as ImportEntry;

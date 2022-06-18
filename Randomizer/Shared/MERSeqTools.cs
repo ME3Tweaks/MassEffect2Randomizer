@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,8 +17,8 @@ namespace Randomizer.Shared
     {
         public static ExportEntry InstallRandomSwitchIntoSequence(GameTarget target, ExportEntry sequence, int numLinks)
         {
-            var packageBin = MERUtilities.GetEmbeddedStaticFilesBinaryFile("PremadeSeqObjs.pcc");
-            var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
+            var packageBin = MERUtilities.GetEmbeddedPackage(target.Game, "PremadeSeqObjs.pcc");
+            var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(packageBin);
 
             // 1. Add the switch object and link it to the sequence
             var nSwitch = PackageTools.PortExportIntoPackage(target, sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false, true);
@@ -217,6 +218,42 @@ namespace Randomizer.Shared
         public static ExportEntry GetNextNode(ExportEntry node, int outputLinkIdx)
         {
             return SeqTools.GetOutboundLinksOfNode(node)[outputLinkIdx][0].LinkedOp as ExportEntry;
+        }
+
+        public static ExportEntry FindSequenceObjectByClassAndPosition(ExportEntry sequence, string className, int posX = int.MinValue, int posY = int.MinValue)
+        {
+            var seqObjs = sequence.GetProperty<ArrayProperty<ObjectProperty>>("SequenceObjects")
+                .Select(x => x.ResolveToEntry(sequence.FileRef)).OfType<ExportEntry>().ToList();
+            return FindSequenceObjectByClassAndPosition(seqObjs, className, posX, posY);
+        }
+
+        public static ExportEntry FindSequenceObjectByClassAndPosition(List<ExportEntry> seqObjs, string className, int posX = int.MinValue, int posY = int.MinValue)
+        {
+            seqObjs = seqObjs.Where(x => x.ClassName == className).ToList();
+            foreach (var obj in seqObjs)
+            {
+                if (posX != int.MinValue && posY != int.MinValue)
+                {
+                    var props = obj.GetProperties();
+                    var foundPosX = props.GetProp<IntProperty>("ObjPosX")?.Value;
+                    var foundPosY = props.GetProp<IntProperty>("ObjPosY")?.Value;
+                    if (foundPosX != null && foundPosY != null &&
+                        foundPosX == posX && foundPosY == posY)
+                    {
+                        return obj;
+                    }
+                }
+                else if (seqObjs.Count == 1)
+                {
+                    return obj; // First object
+                }
+                else
+                {
+                    throw new Exception($"COULD NOT FIND OBJECT OF TYPE {className}");
+                }
+            }
+
+            return null;
         }
     }
 }

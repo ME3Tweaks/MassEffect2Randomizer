@@ -81,7 +81,7 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="packageName"></param>
         /// <returns></returns>
-        public IMEPackage GetCachedPackageEmbedded(string embeddedPath, bool openIfNotInCache = true, bool isFullPath = false)
+        public IMEPackage GetCachedPackageEmbedded(MEGame game, string embeddedPath, bool openIfNotInCache = true)
         {
             // May need way to set maximum size of dictionary so we don't hold onto too much memory.
             if (Cache.TryGetValue(embeddedPath, out var package))
@@ -91,10 +91,10 @@ namespace Randomizer.MER
 
             if (openIfNotInCache)
             {
-                var embeddedData = MERUtilities.GetEmbeddedStaticFilesBinaryFile(embeddedPath, isFullPath);
+                var embeddedData = MERUtilities.GetEmbeddedPackage(game, embeddedPath);
                 if (embeddedData != null)
                 {
-                    package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(embeddedData));
+                    package = MEPackageHandler.OpenMEPackageFromStream(embeddedData);
                     Cache[embeddedPath] = package;
                     return package;
                 }

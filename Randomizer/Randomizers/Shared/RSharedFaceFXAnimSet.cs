@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using LegendaryExplorerCore.Packages;
@@ -10,7 +11,11 @@ namespace Randomizer.Randomizers.Shared
 {
     public class RSharedFaceFXAnimSet
     {
+#if __GAME1__ || __GAME2__
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == "FaceFXAnimSet";
+#elif __GAME3__
+        private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName is "FaceFXAnimSet" or "FaceFXAsset";
+#endif
         public static bool RandomizeExport(GameTarget target, ExportEntry exp,RandomizationOption option)
         {
             if (!CanRandomize(exp)) return false;
@@ -19,10 +24,24 @@ namespace Randomizer.Randomizers.Shared
             {
                 //Log.Information($"[{Path.GetFileNameWithoutExtension(exp.FileRef.FilePath)}] Randomizing FaceFX export {exp.UIndex}");
                 //var d = exp.Data;
-                var animSet = ObjectBinary.From<FaceFXAnimSet>(exp);
-                for (int i = 0; i < animSet.Lines.Count(); i++)
+      
+                List<FaceFXLine> lines = null;
+                ObjectBinary facefx = ObjectBinary.From(exp);
+                if (facefx is FaceFXAsset fxa)
                 {
-                    var faceFxline = animSet.Lines[i];
+                    lines = fxa.Lines;
+                }
+                else if (facefx is FaceFXAnimSet fxas)
+                {
+                    lines = fxas.Lines;
+                }
+                else
+                {
+                    throw new Exception("How did this happen? Invalid object bin for FaceFX");
+                }
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    var faceFxline = lines[i];
                     //if (true)
 
                     bool randomizedBoneList = false;
@@ -100,7 +119,7 @@ namespace Randomizer.Randomizers.Shared
                 }
 
                 //var dataBefore = exp.Data;
-                exp.WriteBinary(animSet);
+                exp.WriteBinary(facefx);
                 //var dataAfter = exp.Data;
                 //if (dataBefore.SequenceEqual(dataAfter))
                 //{

@@ -260,7 +260,7 @@ namespace Randomizer.Randomizers.Game2.Levels
         private static void RandomizeCouncilConvoSingle(GameTarget target, ExportEntry convoE, MERPackageCache cache)
         {
             var convoInfo = new ConversationExtended(convoE);
-            convoInfo.LoadConversation(detailedLoad: true);
+            convoInfo.LoadConversation(detailedParse: true);
 
             //var turianIdx = convoInfo.Speakers.First(x => x.SpeakerName == "citprs_turian_council").SpeakerID;
             //var salarianIdx = convoInfo.Speakers.First(x => x.SpeakerName == "citprs_salarian_council").SpeakerID;

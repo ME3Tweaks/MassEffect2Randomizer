@@ -81,10 +81,10 @@ namespace RandomizerUI.Classes.ME2SaveEdit.UI
                 path ??= MERUtilities.ListStaticAssets("saveimages", includemerPrefix: true).FirstOrDefault(x => x.EndsWith("unknown.png")); // could not find asset
                 csi = path;
                 SelectedLevelText = LevelNameStringConverter.StaticConvert(SelectedSaveFile.BaseLevelName);
-
             }
 
-            CurrentSaveImage = MERUtilities.LoadImage(MERUtilities.GetEmbeddedStaticFilesBinaryFile(csi, true));
+            throw new Exception("Gotta figure this out I guess. Maybe load from disk");
+            //CurrentSaveImage = MERUtilities.LoadImage(MERUtilities.GetEmbeddedAsset("Binary",csi, true));
 
         }
 

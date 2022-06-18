@@ -30,7 +30,13 @@ namespace Randomizer.Randomizers.Shared
             }
             else
 #endif
+
+#if __GAME1__ || __GAME2__
             if (export.ClassName == "MaterialInstanceConstant" && export.ObjectName.Name.StartsWith("Holo"))
+#elif __GAME3__
+            // There's a lot more holos in 3
+            if (export.ClassName == "MaterialInstanceConstant" && export.ObjectName.Name.Contains("Holo"))
+#endif
             {
                 option = option_hologram;
                 return true;

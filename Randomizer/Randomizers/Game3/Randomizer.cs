@@ -13,12 +13,15 @@ using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Memory;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
 using Randomizer.MER;
 //using Randomizer.Randomizers.Game1.Misc;
 //using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Game3.ExportTypes;
+using Randomizer.Randomizers.Game3.Framework;
+using Randomizer.Randomizers.Game3.Levels;
 //using Randomizer.Randomizers.Game2.Levels;
 //using Randomizer.Randomizers.Game2.Misc;
 //using Randomizer.Randomizers.Game2.TextureAssets;
@@ -197,8 +200,8 @@ namespace Randomizer.Randomizers.Game3
                         //&& false //uncomment to disable filtering
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("ProEar", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("Nor", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -269,6 +272,11 @@ namespace Randomizer.Randomizers.Game3
                 MERLog.Exception(exception, "Unhandled Exception in randomization thread:");
                 rethrowException = exception;
             }
+
+            // TOC game
+            var dlcFolder = MERFileSystem.GetDLCModPath(SelectedOptions.RandomizationTarget);
+            var toc = TOCCreator.CreateDLCTOCForDirectory(dlcFolder, SelectedOptions.RandomizationTarget.Game);
+            toc.WriteToFile(Path.Combine(dlcFolder, "PCConsoleTOC.bin"));
 
             // Close out files and free memory
             TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
@@ -417,11 +425,20 @@ namespace Randomizer.Randomizers.Game3
                     //    PerformRandomizationOnExportDelegate = NPCHair.RandomizeExport,
                     //    PerformSpecificRandomizationDelegate = NPCHair.Init,
                     //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
-                    //new RandomizationOption() {
-                    //    HumanName = "Romance",
-                    //    Description="Randomizes which romance you will get",
-                    //    PerformSpecificRandomizationDelegate = Romance.PerformRandomization,
-                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
+                    new RandomizationOption() {
+                        HumanName = "Romance",
+                        Description="Randomizes which romance you will get. Randomization is done at runtime so every romance is different",
+                        PerformSpecificRandomizationDelegate = Romance.PerformRandomization,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true
+
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "NPCs (requires LE3 Framework)",
+                        PerformSpecificRandomizationDelegate = RNPC.RandomizeNPCs,
+                        Description = "Shuffles the NPCs that the LE3 Framework provides.",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    },
                     new RandomizationOption() {
                         HumanName = "Look At Definitions",
                         Description="Changes how pawns look at things",
@@ -441,24 +458,24 @@ namespace Randomizer.Randomizers.Game3
                 GroupName = "Character Creator",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    //new RandomizationOption() {
-                    //    HumanName = "Premade faces",
-                    //    IsRecommended = true,
-                    //    Description = "Completely randomizes settings including skin tones and slider values. Adds extra premade faces",
-                    //    PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator,
-                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                    //    SubOptions = new ObservableCollectionExtended<RandomizationOption>()
-                    //    {
-                    //        new RandomizationOption()
-                    //        {
-                    //            SubOptionKey = CharacterCreator.SUBOPTIONKEY_CHARCREATOR_NO_COLORS,
-                    //            HumanName = "Don't randomize colors",
-                    //            Description = "Prevents changing colors such as skin tone, teeth, eyes, etc",
-                    //            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                    //            IsOptionOnly = true
-                    //        }
-                    //    }
-                    //},
+                    new RandomizationOption() {
+                        HumanName = "Premade faces",
+                        IsRecommended = true,
+                        Description = "Completely randomizes settings including skin tones and slider values. Adds extra premade faces",
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = CharacterCreator.SUBOPTIONKEY_CHARCREATOR_NO_COLORS,
+                                HumanName = "Don't randomize colors",
+                                Description = "Prevents changing colors such as skin tone, teeth, eyes, etc",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                                IsOptionOnly = true
+                            }
+                        }
+                    },
                     //new RandomizationOption()
                     //{
                     //    HumanName = "Iconic FemShep face",

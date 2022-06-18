@@ -20,7 +20,7 @@ namespace RandomizerUI
 #elif __GAME2__
         public static readonly MEGame[] SupportedGames = new[] { MEGame.ME2, MEGame.LE2 };
 #elif __GAME3__
-        public static readonly MEGame[] SupportedGames = new[] { MEGame.ME3, MEGame.LE3}; // Support ME3?
+        public static readonly MEGame[] SupportedGames = new[] { MEGame.LE3};
 #endif
         internal static void LoadTargets()
         {

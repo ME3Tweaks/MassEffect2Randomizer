@@ -119,7 +119,7 @@ namespace Randomizer.MER
         public static IMEPackage GetStartupPackage(GameTarget target)
         {
             var startupDestName = $"Startup_DLC_MOD_{target.Game}Randomizer_INT.pcc";
-            return MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(MERUtilities.GetEmbeddedStaticFilesBinaryFile(startupDestName)), startupDestName);
+            return MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedPackage(target.Game, startupDestName), startupDestName);
         }
 
         public static void Finalize(OptionsPackage selectedOptions)
@@ -208,20 +208,20 @@ namespace Randomizer.MER
         /// Saves an open package, if it is modified. Saves it to the correct location.
         /// </summary>
         /// <param name="package"></param>
-        public static void SavePackage(IMEPackage package, bool forceSave = false)
+        public static void SavePackage(IMEPackage package, bool forceSave = false, string forcedFileName = null)
         {
             if (package.IsModified || forceSave)
             {
-                var packageName = package.FileNameNoExtension;
+                var packageNameNoLocalization = forcedFileName != null ? Path.GetFileNameWithoutExtension(forcedFileName) : package.FileNameNoExtension;
                 if (package.Localization != MELocalization.None)
                 {
-                    packageName = packageName.Substring(0, packageName.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase));
+                    packageNameNoLocalization = packageNameNoLocalization.Substring(0, packageNameNoLocalization.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase));
                 }
 
 
-                if (!alwaysBasegameFiles.Contains(packageName, StringComparer.InvariantCultureIgnoreCase))
+                if (!alwaysBasegameFiles.Contains(packageNameNoLocalization, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    var fname = Path.GetFileName(package.FilePath);
+                    var fname = Path.GetFileName(forcedFileName ?? package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
                     lock (openSavePackageSyncObj)
                     {

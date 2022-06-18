@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Misc;
 using Randomizer.Randomizers.Handlers;
 
@@ -22,9 +23,7 @@ namespace Randomizer.Randomizers.Utility
             {
                 var engine = CoalescedHandler.GetIniFile("BIOEngine.ini");
                 var sp = engine.GetOrAddSection("Engine.StartupPackages");
-                if (sp.Entries.Any(x => x.Key == "+DLCStartupPackage" && x.Value == packagename))
-                    return true; //It's already been added.
-                sp.Entries.Add(new DuplicatingIni.IniEntry("+DLCStartupPackage", packagename));
+                sp.AddEntryIfUnique(new CoalesceProperty("DLCStartupPackage", new CoalesceValue(packagename, CoalesceParseAction.AddUnique)));
                 return true;
             }
         }

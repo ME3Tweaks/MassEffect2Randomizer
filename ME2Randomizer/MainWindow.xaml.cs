@@ -40,10 +40,13 @@ namespace RandomizerUI
     {
 #if __GAME1__
         private static string FaqLink = "https://me3tweaks.com/masseffectrandomizer/faq";
+        public bool ShowGenerationSelector => true;
 #elif __GAME2__
         private static string FaqLink = "https://me3tweaks.com/masseffect2randomizer/faq";
+        public bool ShowGenerationSelector => true;
 #elif __GAME3__
         private static string FaqLink = "https://me3tweaks.com/masseffect3randomizer/faq";
+        public bool ShowGenerationSelector => false;
 #endif
 
         /// <summary>
@@ -303,7 +306,7 @@ namespace RandomizerUI
         public string IntroTitleSubText => $"Please read the following information to help ensure you have the best experience\nwith {MERUtilities.GetGameUIName(true)} Randomizer ({MERUtilities.GetRandomizerShortName()}).";
 
 
-        
+
 
         private bool CanStartRandomization()
         {
@@ -423,18 +426,18 @@ namespace RandomizerUI
                     else
                     {
 #endif
-                        // no backup, can't quick restore
-                        var settings = new MetroDialogSettings()
-                        {
-                            AffirmativeButtonText = "Continue anyways",
-                            NegativeButtonText = "Cancel",
-                        };
-                        var result = await this.ShowMessageAsync("Existing randomization already installed", "An existing randomization is already installed. Some basegame only randomized files may remain after the DLC component is removed, and if options that modify these files are selected, the effects will stack. It is recommended you 'Remove Randomization' in the bottom left window, then repair your game to ensure you have a fresh installation for a re-roll.\n\nAn ME3Tweaks-based backup is recommended to avoid this procedure, which can be created in the bottom left of the application. It enables the quick restore feature, which only takes a few seconds.", MessageDialogStyle.AffirmativeAndNegative, settings);
-                        if (result == MessageDialogResult.Negative)
-                        {
-                            // Do nothing. User canceled
-                            return;
-                        }
+                    // no backup, can't quick restore
+                    var settings = new MetroDialogSettings()
+                    {
+                        AffirmativeButtonText = "Continue anyways",
+                        NegativeButtonText = "Cancel",
+                    };
+                    var result = await this.ShowMessageAsync("Existing randomization already installed", "An existing randomization is already installed. Some basegame only randomized files may remain after the DLC component is removed, and if options that modify these files are selected, the effects will stack. It is recommended you 'Remove Randomization' in the bottom left window, then repair your game to ensure you have a fresh installation for a re-roll.\n\nAn ME3Tweaks-based backup is recommended to avoid this procedure, which can be created in the bottom left of the application. It enables the quick restore feature, which only takes a few seconds.", MessageDialogStyle.AffirmativeAndNegative, settings);
+                    if (result == MessageDialogResult.Negative)
+                    {
+                        // Do nothing. User canceled
+                        return;
+                    }
 #if __GAME2__
                     }
 #endif
@@ -744,6 +747,7 @@ namespace RandomizerUI
                     ThemeManager.Current.ChangeTheme(this, "Dark.Violet");
                 }
 #elif __GAME3__
+                ThemeManager.Current.ChangeTheme(this, "Dark.Green");
 #endif
             }
         }

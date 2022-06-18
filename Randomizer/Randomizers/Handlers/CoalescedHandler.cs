@@ -1,7 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Xml.Linq;
+using LegendaryExplorerCore.Coalesced;
+using LegendaryExplorerCore.Coalesced.Xml;
+using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
 using Randomizer.MER;
+using Randomizer.Randomizers.Shared.Classes;
 
 namespace Randomizer.Randomizers.Handlers
 {
@@ -9,8 +14,7 @@ namespace Randomizer.Randomizers.Handlers
     {
         #region Static Access
         private static CoalescedHandler CurrentHandler { get; set; }
-
-        private SortedDictionary<string, DuplicatingIni> IniFiles { get; set; }
+        private SortedDictionary<string, CoalesceAsset> IniFiles { get; set; }
         /// <summary>
         /// Starts up the Coalesced.ini subsystem. These methods should not be across multiple threads as they are not thread safe!
         /// </summary>
@@ -21,7 +25,7 @@ namespace Randomizer.Randomizers.Handlers
             CurrentHandler.Start();
         }
 
-        public static DuplicatingIni GetIniFile(string filename)
+        public static CoalesceAsset GetIniFile(string filename)
         {
             return CurrentHandler.GetFile(filename);
         }
@@ -38,20 +42,27 @@ namespace Randomizer.Randomizers.Handlers
         #region Private members
         private void Start()
         {
-            IniFiles = new SortedDictionary<string, DuplicatingIni>();
+            IniFiles = new SortedDictionary<string, CoalesceAsset>();
 
-            // Load BioEngine.ini as it already exists.
 #if __GAME2__
-            IniFiles["BIOEngine.ini"] = DuplicatingIni.LoadIni(Path.Combine(MERFileSystem.DLCModCookedPath, @"BIOEngine.ini"));
+            // Load BioEngine.ini as it already exists.
+            IniFiles["BIOEngine.ini"] = ConfigFileProxy.LoadIni(Path.Combine(MERFileSystem.DLCModCookedPath, @"BIOEngine.ini"));
+#elif __GAME3__
+            // Load the Coalesced file
+            using var cf = File.OpenRead(Path.Combine(MERFileSystem.DLCModCookedPath, @"Default_DLC_MOD_LE3Randomizer.bin"));
+            var decompiled = CoalescedConverter.DecompileGame3ToMemory(cf);
+            foreach (var f in decompiled)
+            {
+                IniFiles[f.Key] = XmlCoalesceAsset.LoadFromMemory(f.Value);
+            }
 #endif
-            // TODO: ME3 STUFF
         }
 
-        private DuplicatingIni GetFile(string filename)
+        private CoalesceAsset GetFile(string filename)
         {
             if (!IniFiles.TryGetValue(filename, out var dupIni))
             {
-                dupIni = new DuplicatingIni();
+                dupIni = new CoalesceAsset(filename);
                 IniFiles[filename] = dupIni;
             }
 
@@ -61,11 +72,25 @@ namespace Randomizer.Randomizers.Handlers
 
         private void Commit()
         {
+#if __GAME2__
             foreach (var ini in IniFiles)
             {
                 // Write it out to disk. Might need to check BOM
                 File.WriteAllText(Path.Combine(MERFileSystem.DLCModCookedPath, ini.Key), ini.Value.ToString());
             }
+#elif __GAME3__
+            foreach (var f in IniFiles)
+            {
+                var assetTexts = new Dictionary<string, string>();
+                foreach (var asset in IniFiles)
+                {
+                    assetTexts[asset.Key] = asset.Value.ToXmlString();
+                }
+
+                var outBin = CoalescedConverter.CompileFromMemory(assetTexts);
+                outBin.WriteToFile(Path.Combine(MERFileSystem.DLCModCookedPath, @"Default_DLC_MOD_LE3Randomizer.bin"));
+            }
+#endif
         }
         #endregion
     }

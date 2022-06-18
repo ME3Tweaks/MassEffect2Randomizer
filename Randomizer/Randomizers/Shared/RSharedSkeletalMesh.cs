@@ -2,9 +2,9 @@
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 
-namespace Randomizer.Randomizers.Game2.ExportTypes
+namespace Randomizer.Randomizers.Shared
 {
-    class RSkeletalMesh
+    class RSharedSkeletalMesh
     {
 
         public static SkeletalMesh FuzzSkeleton(ExportEntry export, RandomizationOption option)

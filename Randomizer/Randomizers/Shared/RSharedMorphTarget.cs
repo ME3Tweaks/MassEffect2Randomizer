@@ -4,9 +4,9 @@ using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 
-namespace Randomizer.Randomizers.Game2.ExportTypes
+namespace Randomizer.Randomizers.Shared
 {
-    class RMorphTarget
+    class RSharedMorphTarget
     {
         public static void ResetClass()
         {

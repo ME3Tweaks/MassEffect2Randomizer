@@ -219,27 +219,50 @@ namespace Randomizer.Randomizers.Handlers
             {
                 if (tlkFile.Contains("DLC_440")) // Change if our module number changes
                 {
-                    var tf = new LegendaryExplorerCore.TLK.ME2ME3.TalkFile();
+                    var tf = new ME2ME3TalkFile();
                     tf.LoadTlkData(tlkFile);
                     MERTalkFiles.Add(tf);
                     if (tlkFile.Contains("_INT"))
                         MERTalkFile = tf;
                     var fname = Path.GetFileNameWithoutExtension(tlkFile);
-                    loadedLanguages.Add(MEDirectories.GetLocalizationFromFileName(fname));
+                    loadedLanguages.Add(fname.GetUnrealLocalization());
                 }
                 else
                 {
-                    var tf = new LegendaryExplorerCore.TLK.ME2ME3.TalkFile();
+                    var tf = new ME2ME3TalkFile();
                     tf.LoadTlkData(tlkFile);
                     LoadedOfficialTalkFiles.Add(tf);
                     var fname = Path.GetFileNameWithoutExtension(tlkFile);
-                    loadedLanguages.Add(MEDirectories.GetLocalizationFromFileName(fname));
+                    loadedLanguages.Add(fname.GetUnrealLocalization());
                 }
             }
 #elif __GAME3__
-            throw new Exception("TLK SYSTEM NOT IMPLEMENTED");
+            // Load the basegame TLKs
+            var bgPath = M3Directories.GetBioGamePath(target);
+            // ME3 specific - ignore ME3Randomizer TLKs, we do not want to modify those
+            var tlkFiles = Directory.GetFiles(bgPath, "*.tlk", SearchOption.AllDirectories);
+            foreach (var tlkFile in tlkFiles)
+            {
+                if (tlkFile.Contains("LE3Randomizer")) 
+                {
+                    var tf = new ME2ME3TalkFile();
+                    tf.LoadTlkData(tlkFile);
+                    MERTalkFiles.Add(tf);
+                    if (tlkFile.Contains("_INT"))
+                        MERTalkFile = tf;
+                    var fname = Path.GetFileNameWithoutExtension(tlkFile);
+                    loadedLanguages.Add(fname.GetUnrealLocalization());
+                }
+                else
+                {
+                    var tf = new ME2ME3TalkFile();
+                    tf.LoadTlkData(tlkFile);
+                    LoadedOfficialTalkFiles.Add(tf);
+                    var fname = Path.GetFileNameWithoutExtension(tlkFile);
+                    loadedLanguages.Add(fname.GetUnrealLocalization());
+                }
+            }
 #endif
-
         }
 
         private void Commit()

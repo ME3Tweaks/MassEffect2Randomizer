@@ -1,0 +1,1259 @@
+<ReactionDefinitions>
+  <!--
+    face: 
+      - each reaction can have multiple faces. they will be chosen at random.
+    keyword: 
+      - matches will be added to the reaction score. matches are done using contains() so partial words work fine.
+        this means that 'hate' will match 'whatever'. that didn't take me multiple hours to realize. i'm not bitter at all uwu
+      - matches will be case insensitive unless the keyword is defined with a capital letter, in which case it is case sensitive.
+    property:
+      nolower - does not support lowercase option
+      dangerous - can break stuff, notably the '<' character is known to break email
+      doublescore - each keyword match scores double. use sparingly.
+      question - can potentially show up in any line with a question mark
+      exclamation - can potentially show up in any line with an exclamation point
+      easteregg - will not be applied at end of sentence, needs special handling
+      comparetomodified - keyword checks will be run against modified string instead of vanilla string
+      lowpriority - automatically loses in event of a tie
+  -->
+  <reaction name="owo">
+    <face>OwO</face>
+    <property>lowpriority</property>
+    <keyword>large</keyword>
+    <keyword>big for</keyword>
+    <keyword>huge</keyword>
+    <keyword>blow</keyword>
+    <keyword> covered</keyword>
+    <keyword>tight</keyword>
+    <keyword>exposed</keyword>
+    <keyword>male</keyword>
+    <keyword>strong</keyword>
+    <keyword>powerful</keyword>
+    <keyword>alone with</keyword>
+    <keyword>probe</keyword>
+    <keyword>bodies</keyword>
+    <keyword>smooth</keyword>
+    <keyword>naked</keyword>
+    <keyword>sexy</keyword>
+    <keyword>saw you</keyword>
+    <keyword>show you</keyword>
+    <keyword>watch</keyword>
+    <keyword>breed</keyword>
+    <keyword>reproduc</keyword>
+    <keyword>curious</keyword>
+    <keyword>score</keyword>
+    <keyword>heat</keyword>
+    <keyword>interested</keyword>
+    <keyword>flesh</keyword>
+    <keyword>muscle</keyword>
+    <keyword>pressure</keyword>
+    <keyword>pleasure</keyword>
+    <keyword> domina</keyword>
+    <!--<keyword>punish </keyword>-->
+    <keyword>in charge</keyword>
+    <keyword>do more</keyword>
+    <keyword>night</keyword>
+    <keyword> nuts</keyword>
+    <keyword>commando</keyword>
+    <keyword> mate</keyword>
+    <keyword>both sides</keyword>
+    <keyword>back that up</keyword>
+    <keyword>hold you</keyword>
+    <keyword>distract</keyword>
+    <keyword>embrace</keyword>
+    <keyword> a look</keyword>
+    <keyword>I look</keyword>
+    <keyword>sweat</keyword>
+    <keyword>interspecies</keyword>
+    <keyword>another species</keyword>
+    <keyword>under th</keyword>
+    <keyword>feel you</keyword>
+    <keyword>stimulat</keyword>
+    <keyword>wear this</keyword>
+    <keyword>really hard</keyword>
+    <keyword>been hard</keyword>
+    <keyword>interesting</keyword>
+    <keyword>strip</keyword>
+    <keyword>touch</keyword>
+    <keyword>Hardcore</keyword>
+    <keyword>flexibility</keyword>
+    <keyword>reach</keyword>
+    <keyword>really hard</keyword>
+    <keyword>private quarters</keyword>
+    <keyword> go in</keyword>
+    <keyword> going in</keyword>
+    <keyword>DNA</keyword>
+    <keyword>seen it</keyword>
+    <keyword>eager to</keyword>
+    <keyword> do it.</keyword>
+    <keyword>eye on</keyword>
+    <keyword>under you</keyword>
+    <keyword>maneuver</keyword>
+    <keyword>need anything</keyword>
+    <keyword>seen more of</keyword>
+    <keyword>reflexes</keyword>
+    <keyword>occasion</keyword>
+    <keyword>this is </keyword>
+    <keyword>sloppy</keyword>
+    <keyword>me down</keyword>
+    <keyword>on top</keyword>
+    <keyword>on their knees</keyword>
+    <keyword>monitor</keyword>
+    <keyword>keep an eye out</keyword>
+    <keyword>back ranks</keyword>
+    <keyword>getting up close</keyword>
+    <keyword>in action</keyword>
+    <keyword>you and me</keyword>
+    <keyword>check in</keyword>
+    <keyword>fascinat</keyword>
+    <keyword>listen</keyword>
+    <keyword>tension</keyword>
+    <keyword>intense</keyword>
+    <keyword>secret</keyword>
+    <keyword>ecstasy</keyword>
+    <keyword>swallow</keyword>
+    <keyword>in the middle</keyword>
+    <keyword>to see us</keyword>
+    <keyword>twin</keyword>
+    <keyword>too close</keyword>
+    <keyword> twin</keyword>
+    <keyword>saw me</keyword>
+    <keyword>harder</keyword>
+    <keyword>coming in</keyword>
+    <keyword>i showed</keyword>
+    <keyword>personal attention</keyword>
+    <keyword>follow you</keyword>
+    <keyword>your skill</keyword>
+    <keyword>hard choice</keyword>
+    <keyword>hard data</keyword>
+    <keyword>in and out</keyword>
+    <keyword>massive</keyword>
+    <keyword>reveal</keyword>
+    <keyword>know you better</keyword>
+    <keyword>i noticed</keyword>
+    <keyword>anything else</keyword>
+    <keyword>dirty</keyword>
+    <keyword> in my </keyword>
+    <keyword>notice</keyword>
+    <keyword>bulge</keyword>
+    <keyword>intercourse</keyword>
+    <keyword>popping the heat sink</keyword>
+    <keyword>very supportive</keyword>
+    <keyword>the vid</keyword>
+    <keyword>that vid</keyword>
+    <keyword>observe</keyword>
+    <keyword>come here</keyword>
+    <keyword>doing it</keyword>
+    <keyword>full access</keyword>
+    <keyword>the bottom</keyword>
+    <keyword>presented</keyword>
+    <keyword>like that</keyword>
+    <keyword>physical</keyword>
+    <keyword>take care of you</keyword>
+    <keyword>far end</keyword>
+    <keyword> hole</keyword>
+    <keyword>on you</keyword>
+    <keyword>feel h</keyword>
+    <keyword>our coming</keyword>
+    <keyword>want this</keyword>
+    <keyword>intima</keyword>
+    <keyword>a relationship</keyword>
+    <keyword>against m</keyword>
+    <keyword>Feel t</keyword>
+    <keyword>not clean</keyword>
+    <keyword>euphemism</keyword>
+    <keyword>want to see</keyword>
+    <keyword>attract</keyword>
+    <keyword>through you</keyword>
+    <keyword>enticing</keyword>
+    <keyword>inside it</keyword>
+    <keyword>exchange of data</keyword>
+  </reaction>
+  <reaction name="uwu">
+    <face>UwU</face>
+    <keyword>sorry</keyword>
+    <keyword>apolog</keyword>
+    <keyword>unless</keyword>
+    <keyword>worry</keyword>
+    <keyword>worried</keyword>
+    <keyword>nervous</keyword>
+    <keyword>danger</keyword>
+    <keyword>hurt</keyword>
+    <keyword>painful</keyword>
+    <keyword>survive</keyword>
+    <keyword>exit game</keyword>
+    <keyword>excuse</keyword>
+    <keyword>harsh</keyword>
+    <keyword>pardon</keyword>
+    <keyword>mistake</keyword>
+    <keyword> pity</keyword>
+    <keyword>pitiful</keyword>
+    <keyword>stupid</keyword>
+    <keyword>ignorant</keyword>
+    <keyword>accident</keyword>
+    <keyword>hungry</keyword>
+    <keyword>weak</keyword>
+    <keyword>abandon</keyword>
+    <keyword> lost</keyword>
+    <keyword>please</keyword>
+    <keyword>capture</keyword>
+    <keyword>no time</keyword>
+    <keyword>wrong</keyword>
+    <keyword>incorrect</keyword>
+    <keyword>unpleasant</keyword>
+    <keyword> sick</keyword>
+    <keyword> so bad</keyword>
+    <keyword>hopefully</keyword>
+    <keyword>illiterate</keyword>
+    <keyword>Casual</keyword>
+    <keyword>don't have</keyword>
+    <keyword>will never</keyword>
+    <!--<keyword>encounter</keyword>didn't fit-->
+    <keyword> hope </keyword>
+    <keyword>simple</keyword>
+    <keyword>feelings</keyword>
+    <keyword>afraid</keyword>
+    <keyword>i didn't</keyword>
+    <keyword>we did not</keyword>
+    <keyword>concern</keyword>
+    <keyword>downside</keyword>
+    <keyword>downer</keyword>
+    <keyword>t trust</keyword>
+    <keyword>not much</keyword>
+    <keyword>so little</keyword>
+    <keyword>i wish</keyword>
+    <keyword>regret</keyword>
+    <keyword>complain</keyword>
+    <keyword>let them</keyword>
+    <keyword>creep</keyword>
+    <keyword>unfortunat</keyword>
+    <keyword>forget</keyword>
+    <keyword>violence</keyword>
+    <keyword>doubt</keyword>
+    <keyword>i would never</keyword>
+    <keyword>it shouldn't</keyword>
+    <keyword>too high</keyword>
+    <keyword>wasn't my</keyword>
+    <keyword>distrust</keyword>
+    <keyword>never mind</keyword>
+    <keyword>anxious</keyword>
+    <keyword>not likely</keyword>
+    <keyword>tension</keyword>
+    <keyword>i need a</keyword>
+    <keyword>i need to</keyword>
+    <keyword>lonely</keyword>
+    <keyword>denial</keyword>
+    <keyword>horrible</keyword>
+    <keyword>disappoint</keyword>
+    <keyword>just want</keyword>
+    <keyword>leaving</keyword>
+    <keyword>deserve</keyword>
+    <keyword>miss you</keyword>
+    <keyword>couldn't have</keyword>
+    <keyword>shouldn't have</keyword>
+    <keyword>not healthy</keyword>
+    <keyword>very few</keyword>
+    <keyword>can't believe</keyword>
+    <keyword>less than</keyword>
+    <keyword>didn't last</keyword>
+    <keyword>help me</keyword>
+    <keyword>needs time</keyword>
+    <keyword>usually</keyword>
+    <keyword>begging</keyword>
+    <keyword>hesitate</keyword>
+    <keyword> a little</keyword>
+    <keyword>poorly</keyword>
+    <keyword>were gone</keyword>
+    <keyword>was gone</keyword>
+    <keyword>i wanted</keyword>
+    <keyword>pathetic</keyword>
+    <keyword>disagree</keyword>
+    <keyword>too bad</keyword>
+    <keyword>only thing</keyword>
+    <keyword>mercy</keyword>
+    <keyword>victim</keyword>
+    <keyword>not big</keyword>
+    <keyword>not easy</keyword>
+    <keyword>defect</keyword>
+    <keyword>forgive</keyword>
+    <keyword>a waste</keyword>
+    <keyword>start over</keyword>
+    <keyword>guilty</keyword>
+    <keyword>accus</keyword>
+    <keyword>have no</keyword>
+    <keyword>against</keyword>
+    <keyword>brutal</keyword>
+    <keyword>awkward</keyword>
+    <keyword>burden</keyword>
+    <keyword>falter</keyword>
+    <keyword>crumble</keyword>
+    <keyword>not loyal</keyword>
+    <keyword>surrender</keyword>
+    <keyword>unwilling</keyword>
+    <keyword>shame</keyword>
+    <keyword>atone</keyword>
+    <keyword>t fired</keyword>
+    <keyword> too slow</keyword>
+    <keyword>doesn't look</keyword>
+    <keyword>doesn't sound</keyword>
+    <keyword>too many</keyword>
+    <keyword>too much</keyword>
+    <keyword>let me</keyword>
+    <keyword>headache</keyword>
+    <keyword>too late</keyword>
+    <keyword>inevitable</keyword>
+    <keyword>walk away</keyword>
+    <keyword>put me</keyword>
+    <keyword>no longer</keyword>
+    <keyword>calm down</keyword>
+    <keyword>t intend</keyword>
+    <keyword> obey</keyword>
+    <keyword>idiot</keyword>
+    <keyword> had a</keyword>
+    <keyword> shy</keyword>
+    <keyword>flee</keyword>
+    <keyword>we know</keyword>
+    <keyword>trying to</keyword>
+    <keyword>primitive</keyword>
+    <keyword>not ready</keyword>
+    <keyword>broken</keyword>
+    <keyword>haunt</keyword>
+    <keyword>made me</keyword>
+    <keyword>can't get</keyword>
+    <keyword> poor </keyword>
+    <keyword>difficult</keyword>
+    <keyword>anti-</keyword>
+    <keyword>now how</keyword>
+    <keyword>should have</keyword>
+    <keyword> fear</keyword>
+    <keyword>i remember</keyword>
+    <keyword> loss</keyword>
+    <keyword>isolated</keyword>
+    <keyword>tragic</keyword>
+    <keyword>fall back</keyword>
+    <keyword>innocent</keyword>
+    <keyword>aren't any</keyword>
+    <keyword>abuse</keyword>
+    <keyword>hard ass</keyword><!-- seems to always be calling someone else a hard ass, so it works here -->
+    <keyword> bad</keyword>
+    <keyword> lack</keyword>
+    <keyword>withdraw</keyword>
+    <keyword>i'm not</keyword>
+    <keyword>backing up</keyword>
+    <keyword>leave you</keyword>
+    <keyword>his fault</keyword><!-- seems to always refer to father problems -->
+    <keyword>not safe</keyword>
+  </reaction>
+  <reaction name="angry">
+    <face>ÒwÓ</face>
+    <keyword>shoot</keyword>
+    <keyword>killing</keyword>
+    <keyword> kill </keyword>
+    <keyword>destroy</keyword>
+    <keyword>damn</keyword>
+    <keyword> hate</keyword>
+    <keyword>problem</keyword>
+    <keyword>conflict</keyword>
+    <keyword>piss</keyword>
+    <keyword>asshole</keyword>
+    <keyword>crap</keyword>
+    <keyword>angry</keyword>
+    <keyword>anger</keyword>
+    <keyword>fight</keyword>
+    <keyword>warned</keyword>
+    <keyword>enemies</keyword>
+    <keyword>enemy</keyword>
+    <keyword>attack</keyword>
+    <keyword>bosh'tet</keyword>
+    <keyword>how dare</keyword>
+    <keyword>you dare</keyword>
+    <keyword>stomp</keyword>
+    <keyword>bitch</keyword>
+    <keyword>disobey</keyword>
+    <keyword>Veteran</keyword>
+    <keyword>you shouldn't</keyword>
+    <keyword>sucked</keyword>
+    <keyword>battle</keyword>
+    <keyword>keep them off</keyword>
+    <keyword>to protect</keyword>
+    <keyword>M-920 Cain</keyword>
+    <keyword>heavy fire</keyword>
+    <keyword>weapons</keyword>
+    <keyword>firing</keyword>
+    <keyword>insulting</keyword>
+    <keyword>grenade</keyword>
+    <keyword>agitat</keyword>
+    <keyword>don't like</keyword>
+    <keyword>no matter what</keyword>
+    <keyword>you took</keyword>
+    <keyword>deserve</keyword>
+    <keyword>kill h</keyword>
+    <keyword>hell if</keyword>
+    <keyword>intruder</keyword>
+    <keyword>screw you</keyword>
+    <keyword>back off</keyword>
+    <keyword>cross the line</keyword>
+    <keyword>aggress</keyword>
+    <keyword>stop them</keyword>
+    <keyword>target</keyword>
+    <keyword>words for</keyword>
+    <keyword>at war</keyword>
+    <keyword>fuck you</keyword>
+    <keyword>this isn't</keyword>
+    <keyword>, no.</keyword>
+    <keyword>not running</keyword>
+    <keyword>don't get</keyword>
+    <keyword>step aside</keyword>
+    <keyword>in my way</keyword>
+    <keyword>annoy</keyword>
+    <keyword>finish this</keyword>
+    <keyword>Renegade</keyword>
+    <keyword> no!</keyword>
+    <keyword>farce</keyword>
+  </reaction>
+  <reaction name="determined">
+    <face>òwó</face>
+    <keyword>sneak</keyword>
+    <keyword>hidden</keyword>
+    <keyword>heist</keyword>
+    <keyword>the back</keyword>
+    <keyword>steal</keyword>
+    <keyword>stole</keyword>
+    <keyword>thief</keyword>
+    <keyword>useful</keyword>
+    <keyword>try me</keyword>
+    <keyword>conceal</keyword>
+    <keyword>for now</keyword>
+    <keyword>reserve</keyword>
+    <keyword>precaution</keyword>
+    <keyword>i told you</keyword>
+    <keyword>right up.</keyword>
+    <keyword> hide </keyword>
+    <keyword>sworn to</keyword>
+    <keyword> demo</keyword>
+    <keyword>havoc</keyword>
+    <keyword>working for me</keyword>
+    <keyword> our side</keyword> <!-- might want to check this one-->
+    <keyword>be ready</keyword>
+    <keyword> tense</keyword>
+    <keyword>won't be</keyword>
+    <!--<keyword>the plan</keyword> false positive galore-->
+    <!-- <keyword>you're not</keyword> didn't fit -->
+    <keyword>couldn't let</keyword>
+    <keyword>handle h</keyword>
+    <keyword>handled it</keyword>
+    <keyword> owes me</keyword>
+    <keyword> owe me</keyword>
+    <keyword>deal with it</keyword>
+    <keyword>let's get</keyword>
+    <keyword>let's go</keyword>
+    <keyword>escape</keyword>
+    <!--<keyword>know you</keyword>-->
+    <keyword>my weapon</keyword>
+    <keyword>in progress</keyword>
+    <keyword>strap in</keyword>
+    <keyword>crush you</keyword>
+    <keyword>a lead</keyword>
+    <keyword>i plan to</keyword>
+    <keyword>we need to</keyword>
+    <keyword>must be</keyword>
+    <keyword>period</keyword>
+    <keyword>keeping them</keyword>
+    <keyword>follow orders</keyword>
+    <keyword>stop it</keyword>
+    <keyword>i should</keyword>
+    <keyword>my ship</keyword>
+    <keyword>we should</keyword>
+    <keyword>we gotta</keyword>
+    <keyword>we must</keyword>
+    <keyword>conquest</keyword>
+    <keyword>soon as possible</keyword>
+    <keyword>e it happen</keyword>
+  </reaction>
+  <reaction name="happy">
+    <face>^_^</face>
+    <keyword>good</keyword>
+    <keyword>hello</keyword>
+    <keyword>greeting</keyword>
+    <keyword>happy</keyword>
+    <keyword>glad</keyword>
+    <keyword>nice</keyword>
+    <keyword> save</keyword>
+    <keyword>friend</keyword>
+    <keyword>favorite</keyword>
+    <keyword>great</keyword>
+    <keyword>thank</keyword>
+    <keyword>award</keyword>
+    <keyword>sunny</keyword>
+    <keyword>play</keyword>
+    <keyword>dance</keyword>
+    <keyword>waltz</keyword>
+    <keyword>music</keyword>
+    <keyword> band </keyword>
+    <keyword>love</keyword>
+    <keyword>i have a</keyword>
+    <keyword>i've got</keyword>
+    <keyword>i got a</keyword>
+    <keyword>i like</keyword>
+    <!--<keyword> like t</keyword>-->
+    <keyword>positive</keyword>
+    <keyword>appreciate</keyword>
+    <keyword>benefit</keyword>
+    <keyword>glory</keyword>
+    <keyword>i'm commander shepard</keyword>
+    <keyword>my name is</keyword>
+    <keyword>awesome</keyword>
+    <keyword>enjoy</keyword>
+    <keyword>new game</keyword>
+    <keyword>help you</keyword>
+    <keyword>giving you</keyword>
+    <keyword>gave you</keyword>
+    <keyword>flower</keyword>
+    <keyword>old times</keyword>
+    <keyword>feel you</keyword>
+    <keyword>together</keyword>
+    <keyword> advantage</keyword>
+    <keyword>perfect</keyword>
+    <keyword>reliable</keyword>
+    <keyword>welcome</keyword>
+    <keyword>delicacy</keyword>
+    <keyword>amazing</keyword>
+    <keyword>confident</keyword>
+    <keyword>accomplished</keyword>
+    <keyword>spectacular</keyword>
+    <keyword>party</keyword>
+    <keyword>useful</keyword>
+    <!--<keyword>there is</keyword>false positives in samara loyalty-->
+    <keyword>simple</keyword>
+    <keyword>the best</keyword>
+    <keyword>ose you</keyword>
+    <keyword>respect</keyword>
+    <keyword>impressed</keyword>
+    <keyword>convenient</keyword>
+    <keyword>comfort</keyword>
+    <!--<keyword>i can </keyword>-->
+    <keyword>i can bring</keyword>
+    <keyword>with you</keyword>
+    <keyword>superior</keyword>
+    <keyword>have faith</keyword>
+    <keyword>lucky</keyword>
+    <keyword>pamper</keyword>
+    <keyword>faster than any organic</keyword>
+    <keyword>impressive</keyword>
+    <keyword> hero</keyword>
+    <keyword>proud</keyword>
+    <keyword>salvation</keyword>
+    <keyword>hamster</keyword>
+    <keyword>my pet</keyword>
+    <keyword>se'lai</keyword>
+    <keyword>keelah se'lai</keyword>
+    <keyword>i'm here</keyword>
+    <keyword>sworn to</keyword>
+    <keyword>Arc Projector</keyword>
+    <keyword>means a lot</keyword>
+    <keyword>beautiful</keyword>
+    <keyword>sent me</keyword>
+    <keyword>a gift</keyword>
+    <keyword>silly</keyword>
+    <keyword> chat</keyword>
+    <keyword>polite</keyword>
+    <keyword>i believe</keyword>
+    <keyword>can help</keyword>
+    <keyword>trust</keyword>
+    <keyword>rescue</keyword>
+    <keyword>peaceful</keyword>
+    <keyword>i'm going to</keyword>
+    <keyword>funny</keyword>
+    <keyword>getting close</keyword>
+    <keyword>rebuild</keyword>
+    <keyword>that's easy</keyword>
+    <keyword>did the right thing</keyword>
+    <keyword>i have</keyword>
+    <keyword>makes sense</keyword>
+    <keyword>big hug</keyword>
+    <keyword>feed your fish</keyword>
+    <keyword>with me</keyword>
+    <keyword>was worth</keyword>
+    <keyword>I'm fine</keyword>
+    <keyword>better</keyword>
+    <keyword>game</keyword>
+    <keyword>stylish</keyword>
+    <keyword>definitely</keyword>
+    <!--<keyword>t let</keyword>sucked-->
+    <keyword>joke.</keyword>
+    <keyword>is loyal</keyword>
+    <keyword>safer place</keyword>
+    <keyword>Yes.</keyword>
+    <keyword>Too slow</keyword>
+    <keyword>congratulat</keyword>
+    <keyword>I'll send</keyword>
+    <keyword>jealous</keyword> <!--digging through logs this is always used jovially?-->
+    <keyword>admire</keyword>
+    <keyword> fun</keyword> <!--will double up with "funny" but meh-->
+    <keyword>opportun</keyword>
+    <keyword>Understood</keyword>
+    <keyword>Affirm</keyword>
+    <keyword>pretty</keyword>
+    <keyword>smile</keyword>
+    <keyword>dancing</keyword>
+    <keyword> cute</keyword>
+    <keyword>my kind</keyword>
+    <keyword>i agree</keyword>
+    <keyword>Paragon</keyword>
+    <keyword>settle down</keyword>
+    <keyword>absolutely</keyword>
+    <keyword> gift</keyword>
+    <keyword>pleasant</keyword>
+    <keyword>easy to</keyword>
+    <keyword>be easy</keyword>
+    <keyword>No messages for you</keyword>
+    <keyword>received a new message</keyword>
+    <keyword>promot</keyword>
+    <keyword>smiling</keyword>
+    <keyword>wonderful</keyword>
+    <keyword>cleared of</keyword>
+  </reaction>
+  <reaction name="ohno">
+    <face>&gt;_&lt;</face>
+    <face>&gt;.&lt;</face>
+    <property>dangerous</property>
+    <keyword>oh no</keyword>
+    <keyword>disaster</keyword>
+    <keyword>shit</keyword>
+    <keyword>drugs</keyword>
+    <keyword>against</keyword>
+    <keyword>trouble</keyword>
+    <keyword>stress</keyword>
+    <keyword>conflict</keyword>
+    <keyword>without</keyword>
+    <keyword>traitor</keyword>
+    <keyword>ugh.</keyword>
+    <keyword>aaa</keyword>
+    <keyword>embarass</keyword>
+    <keyword>cramp</keyword>
+    <keyword>screw-up</keyword>
+    <keyword>screw up</keyword>
+    <keyword>screwed-up</keyword>
+    <keyword>screwed up</keyword>
+    <keyword>toxic</keyword>
+    <keyword>fractured</keyword>
+    <keyword>side effect</keyword>
+    <keyword>careful</keyword>
+    <keyword>delicate</keyword>
+    <keyword>fragil</keyword>
+    <keyword>violent</keyword>
+    <keyword>brutal</keyword>
+    <keyword>abduct</keyword>
+    <keyword>missing</keyword>
+    <keyword>kidnap</keyword>
+    <keyword> risk</keyword>
+    <keyword>need my help</keyword>
+    <keyword>up to you</keyword>
+    <keyword>side of the ship</keyword>
+    <keyword>emergency</keyword>
+    <keyword>keelah</keyword>
+    <keyword>incoming</keyword>
+    <keyword>need backup</keyword>
+    <keyword>send support</keyword>
+    <keyword>found us</keyword>
+    <keyword>move it</keyword>
+    <!--<keyword>locked</keyword> broke on mission summaries "power unlocked"-->
+    <keyword>worst</keyword>
+    <keyword>reinforcement</keyword>
+    <keyword>infect</keyword>
+    <keyword>complicat</keyword>
+    <keyword>you took</keyword>
+    <keyword>impossibl</keyword>
+    <keyword>only one</keyword>
+    <keyword>the only</keyword>
+    <keyword>your fault</keyword>
+    <keyword> prison</keyword>
+    <keyword>disappear</keyword>
+    <keyword>help me</keyword>
+    <keyword>escape</keyword>
+    <keyword>scream</keyword>
+    <keyword>rampage</keyword>
+    <keyword>but then</keyword>
+    <keyword>xenophob</keyword>
+    <keyword>not true</keyword>
+    <keyword>garbage</keyword>
+    <keyword>disease</keyword>
+    <keyword>ardat-yakshi</keyword>
+    <keyword>addict</keyword>
+    <keyword>creature</keyword>
+    <keyword>wiped out</keyword>
+    <keyword>oh god</keyword>
+    <keyword>a trap</keyword>
+    <keyword>not here</keyword>
+    <keyword> hell </keyword>
+    <keyword>out of time</keyword>
+    <keyword>fatal </keyword>
+    <keyword>crazy</keyword>
+    <keyword>convict me</keyword>
+    <keyword>won't know</keyword>
+    <keyword>hemorrhage</keyword>
+    <keyword>overwhelming</keyword>
+    <keyword>orphan</keyword>
+    <keyword>watch out</keyword>
+    <keyword>as we speak</keyword>
+    <keyword>don't agree</keyword>
+    <keyword>I can't</keyword>
+    <keyword>I cannot</keyword>
+    <keyword>under fire</keyword>
+    <keyword>don't make</keyword>
+    <keyword>unsafe</keyword>
+    <keyword>rampag</keyword>
+    <keyword>warning</keyword>
+    <keyword>hideous</keyword>
+    <keyword>sacrifice</keyword>
+    <keyword>t fired</keyword>
+    <keyword>No.</keyword>
+    <keyword>resist</keyword>
+    <keyword>leave a mark</keyword>
+    <keyword>don't believe</keyword>
+    <keyword>clench</keyword>
+    <keyword>time to think</keyword>
+    <keyword>immune system</keyword>
+    <keyword>fever</keyword>
+    <keyword>cough</keyword>
+    <keyword> bomb</keyword>
+    <keyword>stare at</keyword>
+    <keyword>peril</keyword>
+    <keyword>oh, no</keyword>
+    <keyword>oh, god</keyword>
+    <keyword>goddess</keyword>
+    <keyword>disconnect</keyword>
+    <keyword>bad news</keyword>
+    <keyword>stall</keyword>
+    <keyword>restrain</keyword>
+    <keyword>run!</keyword>
+    <keyword>can't hold</keyword>
+    <keyword>detected</keyword>
+    <keyword>shackled</keyword>
+    <keyword>toxin</keyword>
+    <keyword>have to hurry</keyword>
+    <keyword>n't work</keyword>
+    <keyword>the hunter</keyword>
+    <keyword> mutin</keyword>
+    <keyword>freak</keyword>
+    <keyword>insane</keyword>
+  </reaction>
+  <reaction name="confused">
+    <face>O_o</face>
+    <face>o_O</face>
+    <face>O.o</face>
+    <face>o.O</face>
+    <property>nolower</property>
+    <property>question</property>
+    <keyword>What </keyword>
+    <keyword>What's</keyword>
+    <keyword>How</keyword>
+    <keyword>Why</keyword>
+    <keyword>problem</keyword>
+    <keyword>wonder</keyword>
+    <keyword>surprise</keyword>
+    <keyword>guess</keyword>
+    <keyword>don't know</keyword>
+    <keyword>question</keyword>
+    <keyword>i think</keyword>
+    <keyword>i thought</keyword>
+    <keyword>you think</keyword>
+    <keyword>n't think</keyword>
+    <keyword>assume</keyword>
+    <keyword>anything else</keyword>
+    <keyword>unknown</keyword>
+    <keyword>might have</keyword>
+    <keyword>do you </keyword>
+    <keyword>tell me</keyword>
+    <keyword>find out</keyword>
+    <keyword>have you </keyword>
+    <keyword>re you doing</keyword>
+    <keyword>no idea</keyword>
+    <keyword>interpret</keyword>
+    <keyword>strange</keyword>
+    <keyword>maybe</keyword>
+    <keyword>figure out</keyword>
+    <keyword>how this</keyword>
+    <keyword>appears to be</keyword>
+    <keyword>unclear</keyword>
+    <keyword>no sign</keyword>
+    <keyword>think about</keyword>
+    <keyword>what the</keyword>
+    <keyword>weird</keyword>
+    <keyword>remember how</keyword>
+  </reaction>
+  <reaction name="bored">
+    <face>-_-</face>
+    <keyword>elcor</keyword>
+    <keyword>asleep</keyword>
+    <keyword>tired</keyword>
+    <keyword>standard</keyword>
+    <keyword>bored</keyword>
+    <keyword>boring</keyword>
+    <keyword>n't care</keyword>
+    <keyword>n't matter</keyword>
+    <keyword>no time</keyword>
+    <keyword>notify</keyword>
+    <keyword>notified</keyword>
+    <keyword> official</keyword>
+    <keyword>regular</keyword>
+    <keyword>regulat</keyword>
+    <keyword>legal</keyword>
+    <keyword>contract</keyword>
+    <!-- <keyword> work</keyword>false positive galore -->
+    <keyword>business</keyword>
+    <keyword>wait</keyword>
+    <keyword>task</keyword>
+    <keyword>standard</keyword>
+    <keyword>clinical</keyword>
+    <keyword>politics</keyword>
+    <keyword>finally</keyword>
+    <keyword>professional</keyword>
+    <keyword>article</keyword>
+    <keyword>talk too much</keyword>
+    <keyword>protocol</keyword>
+    <keyword>assignment</keyword>
+    <keyword>pointless</keyword>
+    <keyword>red tape</keyword>
+    <keyword>bureaucracy</keyword>
+    <keyword>Normal</keyword>
+    <keyword>formal</keyword>
+    <keyword>paperwork</keyword>
+    <keyword>droned</keyword>
+    <keyword>eventual</keyword>
+    <keyword>clinical</keyword>
+    <keyword> just a </keyword>
+    <keyword>discuss</keyword>
+    <keyword>conversation</keyword>
+    <keyword> predict</keyword>
+    <keyword>a lot to</keyword>
+    <keyword>the details</keyword>
+    <keyword>stand by</keyword>
+    <keyword> test </keyword>
+  </reaction>
+  <reaction name="cry">
+    <face>T_T</face>
+    <face>T-T</face>
+    <property>nolower</property>
+    <keyword>father</keyword>
+    <keyword>mother</keyword>
+    <keyword>parent</keyword>
+    <keyword>family</keyword>
+    <keyword>daughter</keyword>
+    <keyword>children</keyword>
+    <keyword>alone</keyword>
+    <keyword>apart</keyword>
+    <keyword>nobody</keyword>
+    <keyword>failed</keyword>
+    <keyword>terrified</keyword>
+    <keyword>killed</keyword>
+    <keyword>scared</keyword>
+    <keyword>gunfire</keyword>
+    <keyword>threat</keyword>
+    <keyword>conflict</keyword>
+    <keyword>racist</keyword>
+    <keyword>traitor</keyword>
+    <keyword>betray</keyword>
+    <keyword>dark</keyword>
+    <keyword>evil</keyword>
+    <keyword>lost it</keyword>
+    <keyword>aaa</keyword>
+    <keyword>the end</keyword>
+    <keyword>don't have</keyword>
+    <keyword>harvest</keyword>
+    <!--<keyword>reaper</keyword>-->
+    <keyword>need help</keyword>
+    <keyword>come on, rupert</keyword>
+    <keyword>cancer</keyword>
+    <keyword>Argh</keyword>
+    <keyword>crawling through</keyword>
+    <keyword>need backup</keyword>
+    <keyword>send support</keyword>
+    <keyword>radiation</keyword>
+    <keyword> to die</keyword>
+    <keyword>throw your</keyword>
+    <keyword>threw your</keyword>
+    <keyword>toss aside</keyword>
+    <keyword>throw away</keyword>
+    <keyword>threw away</keyword>
+    <keyword>no one</keyword>
+    <keyword>don't want to</keyword>
+    <keyword> sad </keyword>
+    <keyword>trapped</keyword>
+    <keyword>defeated</keyword>
+    <keyword>exit game</keyword>
+    <keyword>deserve</keyword>
+    <keyword>impossibl</keyword>
+    <keyword>scream</keyword>
+    <keyword> cry</keyword>
+    <keyword>genophage</keyword>
+    <keyword>destruction</keyword>
+    <keyword>monster</keyword>
+    <keyword>taken away</keyword>
+    <keyword>terrible</keyword>
+    <keyword>two years</keyword>
+    <keyword>someone else</keyword>
+    <keyword>do this to us</keyword>
+    <keyword>distraught</keyword>
+    <keyword>expendable</keyword>
+    <keyword>gunned down</keyword>
+    <keyword>overwhelming</keyword>
+    <keyword>bad place</keyword>
+    <keyword>exile</keyword>
+    <keyword>injured</keyword>
+    <keyword>arguing</keyword>
+    <keyword>is gone</keyword>
+    <keyword>refund</keyword>
+    <keyword>the hunters</keyword>
+    <keyword>cruel</keyword>
+    <keyword>abuse</keyword>
+    <keyword> cried</keyword>
+    <keyword>leave me</keyword>
+  </reaction>
+  <reaction name="dead">
+    <face>X_X</face>
+    <face>x_x</face>
+    <face>X.X</face>
+    <face>x.x</face>
+    <keyword>dead</keyword>
+    <keyword>death</keyword>
+    <keyword>plague</keyword>
+    <keyword>killed</keyword>
+    <keyword>corpse</keyword>
+    <keyword>burial</keyword>
+    <keyword>skull</keyword>
+    <keyword> died</keyword>
+    <keyword> die </keyword>
+    <keyword>Insanity</keyword>
+    <keyword>casualty</keyword>
+    <keyword>terminate</keyword>
+    <keyword>morgue</keyword>
+    <keyword>exit game</keyword>
+    <keyword>cemeter</keyword>
+    <keyword>delete save</keyword>
+    <keyword>delete save</keyword>
+    <keyword> dies</keyword>
+  </reaction>
+  <reaction name="leave">
+    <face>(&gt;'.')&gt;</face>
+    <face>&lt;('.'&lt;)</face>
+    <property>dangerous</property>
+    <keyword>I should go</keyword>
+    <keyword>I need to go</keyword>
+    <keyword>all for now</keyword>
+    <keyword>that'll be all</keyword>
+    <keyword>that's it for now</keyword>
+    <keyword>i have to go</keyword>
+    <!--<keyword>talk to you later</keyword> tali says this-->
+    <keyword>see you later</keyword>
+  </reaction>
+  <reaction name="wink">
+    <face>^_~</face>
+    <face>^.~</face>
+    <property>doublescore</property>
+    <keyword>feminin</keyword>
+    <keyword>masculin</keyword>
+    <keyword>admirable</keyword>
+    <keyword>dashing</keyword>
+    <keyword> siha</keyword>
+    <keyword>the prize</keyword>
+    <keyword>flirt</keyword>
+    <keyword> charming</keyword>
+    <keyword> babe</keyword>
+    <keyword>liaison</keyword>
+    <keyword> charm</keyword>
+    <keyword>feeling is mutual</keyword>
+    <keyword>we go natural</keyword>
+    <keyword>treat you</keyword>
+    <keyword>What about me</keyword>
+    <keyword>Let's have dinner</keyword>
+    <keyword>work off stress</keyword>
+    <keyword>help you get rid of it</keyword>
+    <keyword>your reach and my</keyword>
+    <keyword>alive with me</keyword>
+    <keyword>admired my body</keyword>
+    <keyword>into bed</keyword>
+    <keyword>gets me off</keyword>
+    <keyword>totally worth it</keyword>
+    <keyword>possibly be suggesting</keyword>
+    <keyword>plenty of motivation</keyword>
+    <keyword>blue children</keyword>
+    <keyword>i want you alone</keyword>
+    <keyword>tell me you want me</keyword>
+  </reaction>
+  <reaction name="awkward">
+    <face>&lt;.&lt;</face>
+    <face>&gt;.&gt;</face>
+    <property>dangerous</property>
+    <keyword>father</keyword>
+    <keyword>mother</keyword>
+    <keyword>parent</keyword>
+    <keyword>family</keyword>
+    <keyword>daughter</keyword>
+    <keyword>children</keyword>
+    <keyword>sister</keyword>
+    <keyword>awkward</keyword>
+    <keyword>really need</keyword>
+    <keyword>might help</keyword>
+    <keyword>need your</keyword>
+    <keyword>another reason</keyword>
+    <keyword>t mention</keyword>
+    <keyword>didn't seem</keyword>
+    <keyword>never want</keyword>
+    <keyword>your fault</keyword>
+    <keyword>you're right</keyword>
+    <keyword>only time</keyword>
+    <keyword>permission</keyword>
+    <keyword>supposed to</keyword>
+    <keyword>blame your</keyword>
+    <keyword>i want to</keyword>
+    <keyword>i wanted</keyword>
+    <keyword>like you</keyword>
+    <keyword>give me a</keyword>
+    <keyword>knew you</keyword>
+    <keyword>too bad</keyword>
+    <keyword>bring that up</keyword>
+    <keyword>brought that up</keyword>
+    <keyword>what it's like</keyword>
+    <keyword>don't expect</keyword>
+    <keyword>getting stuck</keyword>
+    <keyword>ask for </keyword>
+    <keyword> for me</keyword>
+    <keyword>most important</keyword>
+    <keyword>addict</keyword>
+    <keyword>do anything</keyword>
+    <keyword>are you</keyword>
+    <keyword>i do not</keyword>
+    <keyword>might want to</keyword>
+    <keyword>could have</keyword>
+    <keyword>suspicion</keyword>
+    <keyword>lied to</keyword>
+    <keyword>can't be</keyword>
+    <keyword>n't mean</keyword>
+    <keyword>can't afford</keyword>
+    <keyword>cannot afford</keyword>
+    <keyword>restroom</keyword>
+    <keyword>been through</keyword>
+    <keyword>never go</keyword>
+    <keyword>recuse</keyword>
+    <keyword>caught</keyword>
+    <keyword>my cell</keyword>
+    <keyword>a cell</keyword>
+    <keyword>feel like</keyword>
+    <keyword>orphan</keyword>
+    <keyword>same thing</keyword>
+    <keyword>but then</keyword>
+    <keyword>not worth</keyword>
+    <keyword>argue</keyword>
+    <keyword>whenever</keyword>
+    <keyword>was one</keyword>
+    <keyword>being there</keyword>
+    <keyword>i miss</keyword>
+    <keyword>unharmed</keyword>
+    <keyword>don't think</keyword>
+    <keyword>a draw</keyword>
+    <keyword>a weakness</keyword>
+    <keyword>make it work</keyword>
+    <keyword>if we can</keyword>
+    <keyword>closer to home</keyword>
+    <keyword>not comfort</keyword>
+    <keyword>if you're</keyword>
+    <keyword>talked about</keyword>
+    <keyword>talk about</keyword>
+    <keyword>cause i</keyword>
+    <keyword>don't make</keyword>
+    <keyword>pretend</keyword>
+    <keyword>you were</keyword>
+    <keyword>would have</keyword>
+    <keyword>not that</keyword>
+    <keyword>departed</keyword>
+    <keyword>important to</keyword>
+    <keyword>you need</keyword>
+    <keyword>the truth</keyword>
+    <keyword>can never</keyword>
+    <keyword>not for</keyword>
+    <keyword>would like</keyword>
+    <keyword>t trust</keyword>
+    <keyword>cut corners</keyword>
+    <keyword>didn't know</keyword>
+    <keyword>withheld</keyword>
+    <keyword>tried to</keyword>
+    <keyword>it's just</keyword>
+    <keyword>suggest</keyword>
+    <keyword>No.</keyword>
+    <keyword>unstable</keyword>
+    <keyword>another</keyword>
+    <keyword>sounds like</keyword>
+    <keyword>pureblood</keyword>
+    <keyword>the time</keyword>
+    <keyword>must have</keyword>
+    <keyword>survivor</keyword>
+    <keyword>i would</keyword>
+    <keyword>delayed</keyword>
+    <keyword>cautio</keyword>
+    <keyword>the others</keyword>
+    <keyword>i mean</keyword>
+    <keyword>not always</keyword>
+    <keyword>of course not</keyword>
+    <keyword>i never</keyword>
+    <keyword>away from</keyword>
+    <!--<keyword>return</keyword> "return to normandy"-->
+    <keyword>we wish to</keyword>
+    <keyword>unpredict</keyword>
+    <keyword>they don't</keyword>
+    <keyword>quiet</keyword>
+    <keyword>trash</keyword>
+    <keyword>until I</keyword>
+    <keyword>was never</keyword>
+    <keyword>too long</keyword>
+    <keyword>dramatic</keyword>
+    <keyword>i left</keyword>
+    <keyword>he knows</keyword>
+    <keyword>probably not</keyword>
+    <keyword>didn't tell</keyword>
+    <keyword>didn't say</keyword>
+    <keyword>selfish</keyword>
+    <keyword>blind eye</keyword>
+    <keyword>seem like</keyword>
+    <keyword>seems like</keyword>
+    <keyword>not like</keyword>
+    <keyword>soul</keyword>
+    <keyword>not him</keyword>
+    <keyword>but this</keyword>
+    <keyword>unlikely</keyword>
+    <keyword>never met</keyword>
+    <keyword>not available</keyword>
+    <keyword>don't ask</keyword>
+    <keyword>not ask</keyword>
+    <keyword>fought</keyword>
+    <keyword>wasn't for</keyword>
+  </reaction>
+  <reaction name="shock">
+    <face>O_O</face>
+    <face>o_o</face>
+    <face>O.O</face>
+    <face>o.o</face>
+    <keyword>drug</keyword>
+    <keyword>slave</keyword>
+    <keyword>black market</keyword>
+    <keyword>smuggl</keyword>
+    <keyword>not what i expected</keyword>
+    <keyword>treason</keyword>
+    <keyword>odds</keyword>
+    <keyword>illegal</keyword>
+    <keyword>kidnap</keyword>
+    <keyword> prison</keyword>
+    <keyword>disappear</keyword>
+    <keyword>went rogue</keyword>
+    <keyword>pirate</keyword>
+    <keyword>piracy</keyword>
+    <keyword>murder</keyword>
+    <keyword>narcotic</keyword>
+    <keyword>assassinat</keyword>
+    <keyword>extort</keyword>
+    <keyword>criminal</keyword>
+    <keyword>found guilty</keyword>
+    <keyword>secret project</keyword>
+    <keyword>fugitive</keyword>
+    <keyword>hallex</keyword>
+    <keyword>crime</keyword>
+    <keyword>trespass</keyword>
+    <keyword>interrog</keyword>
+  </reaction>
+  <reaction name="kitty">
+    <!-- injects itself after a word containya =^.^= a match -->
+    <face>=^_^=</face>
+    <face>=^.^=</face>
+    <property>comparetomodified</property>
+    <property>easteregg</property>
+    <property>lowpriority</property>
+    <keyword>nya</keyword>
+    <keyword>meow</keyword>
+  </reaction>
+  <reaction name="reee">
+    <!-- SAREN REEEEE -->
+    <property>doublescore</property>
+    <property>easteregg</property>
+    <keyword>Saren</keyword>
+    <keyword>Saren</keyword>
+    <keyword>Saren</keyword>
+  </reaction>
+  <reaction name="finger">
+    <!-- Sovereign t('.'t) -->
+    <property>doublescore</property>
+    <property>easteregg</property>
+    <keyword>Sovereign</keyword>
+    <keyword>Sovereign</keyword>
+    <keyword>Sovereign</keyword>
+  </reaction>
+  <reaction name="shitpost">
+    <!-- We ArE hArBiNgEr -->
+    <property>doublescore</property>
+    <property>easteregg</property>
+    <property>nolower</property>
+    <keyword>e Harbinger</keyword>
+    <keyword>e Harbinger</keyword>
+    <keyword>are the harbinger</keyword>
+    <keyword>are the harbinger</keyword>
+    <keyword>am Harbinger</keyword>
+    <keyword>am Harbinger</keyword>
+    <keyword>this form</keyword>
+    <keyword>this form</keyword>
+    <keyword>You have failed.</keyword>
+    <keyword>You have failed.</keyword>
+    <keyword>We will find another way.</keyword>
+    <keyword>We will find another way.</keyword>
+    <keyword>Take these forms</keyword>
+    <keyword>Take these forms</keyword>
+    <keyword>You are short-sighted</keyword>
+    <keyword>You are short-sighted</keyword>
+  </reaction>
+  <reaction name="jason">
+    <!-- Jacob? Oh, you mean Jason. -->
+    <face>Jason</face>
+    <face>Jonah</face>
+    <face>Jaden</face>
+    <!-- <face>Jared</face> -->
+    <face>Jawed</face>
+    <face>Johan</face>
+    <!-- <face>Jamal</face> -->
+    <face>Jamaw</face>
+    <face>Jesse</face>
+    <face>Jayce</face>
+    <!-- <face>Jerry</face> -->
+    <face>Jewwy</face>
+    <!-- <face>Jalen</face> -->
+    <face>Jawen</face>
+    <property>doublescore</property>
+    <property>easteregg</property>
+    <keyword>Jacob</keyword>
+    <keyword>Jacob</keyword>
+    <keyword>Jacob</keyword>
+  </reaction>
+  <reaction name="stonks">
+    <face>$_$</face>
+    <keyword>more credits</keyword>
+    <keyword>credits earn</keyword>
+    <keyword>profit</keyword>
+    <keyword>market</keyword>
+    <keyword>purchase my</keyword>
+    <keyword> purchase</keyword>
+    <keyword>% off</keyword>
+    <keyword>on sale</keyword>
+    <keyword>discount</keyword>
+    <keyword>credits.</keyword>
+    <keyword>salary</keyword>
+    <keyword>I'm sold</keyword>
+    <keyword>invest in</keyword>
+    <keyword>investing</keyword>
+  </reaction>
+  <reaction name="love">
+    <face>&lt;3</face>
+    <property>dangerous</property>
+    <keyword>you liked</keyword>
+  </reaction>
+  <reaction name="debug">
+    <face></face>
+    <keyword>Resume</keyword>
+  </reaction>
+</ReactionDefinitions>

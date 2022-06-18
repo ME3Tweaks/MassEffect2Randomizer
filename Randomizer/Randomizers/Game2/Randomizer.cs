@@ -296,7 +296,7 @@ namespace Randomizer.Randomizers.Game2
         /// </summary>
         private void ResetClasses()
         {
-            RMorphTarget.ResetClass();
+            RSharedMorphTarget.ResetClass();
             SquadmateHead.ResetClass();
             PawnPorting.ResetClass();
             NPCHair.ResetClass();

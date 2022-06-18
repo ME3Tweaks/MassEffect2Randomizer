@@ -52,6 +52,8 @@ namespace Randomizer.Randomizers.Shared
             TLKBuilder.ReplaceString(348756, TrimForIntro(gameoverTexts.RandomElement().Trim()));
             // Genesis DLC uses this extra string for some reason
             TLKBuilder.ReplaceString(391285, TrimForIntro(gameoverTexts.RandomElement().Trim())); 
+#elif __GAME3__
+            MERLog.Warning(@"RandomizeOpeningCrawl not implemented for this game!");
 #endif
             return true;
         }
