@@ -1,0 +1,790 @@
+[
+  {
+    "TreasurePlotBoolIdx": 1054,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyPistol_BchLmL",
+    "TreasureIDIdx": 1054,
+    "TreasureIDSrefName": "Tre_Tec_HeavyPistol_BchLmL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_BchLmL_303TempleInterior.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_BchLmL_301TemplePath.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1059,
+    "TreasurePlotBoolSrefName": "Tre_Tec_LegionUpgrade_BlbGtL",
+    "TreasureIDIdx": 1059,
+    "TreasureIDSrefName": "Tre_Tec_LegionUpgrade_BlbGtL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_BlbGtl_206Epilogue.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Exit_Reached.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_BlbGtl_106Hall3.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1298,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyPistol_CitAsL",
+    "TreasureIDIdx": 1298,
+    "TreasureIDSrefName": "Tre_Tec_HeavyPistol_CitAsL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_CitAsL.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.End_Mission_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_CitAsL_200StartPoint.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1027,
+    "TreasurePlotBoolSrefName": "Tre_TecSniperRifle_CitGrL",
+    "TreasureIDIdx": 1027,
+    "TreasureIDSrefName": "Tre_TecSniperRifle_CitGrL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_CitGrL_300MeetTheMole.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_CitGrL_210Entrance.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 909,
+    "TreasurePlotBoolSrefName": "Tre_Tec_BioticUpgrade_HorCr1",
+    "TreasureIDIdx": 909,
+    "TreasureIDSrefName": "Tre_Tec_BioticUpgrade_HorCr1",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_HorCr1_302SpacePortCin.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Aftermath_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_HorCr1_301IndustrialArea.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 908,
+    "TreasurePlotBoolSrefName": "Tre_Tec_ShepardHealth_HorCr1",
+    "TreasureIDIdx": 908,
+    "TreasureIDSrefName": "Tre_Tec_ShepardHealth_HorCr1",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_HorCr1_302SpacePortCin.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Aftermath_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_HorCr1_102Farm_B.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 912,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_ParticleBeam_HorCr1",
+    "TreasureIDIdx": 912,
+    "TreasureIDSrefName": null,
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_HorCr1_302SpacePortCin.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Aftermath_Conversation.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_HorCr1_201Village_B.pcc",
+      "BioD_HorCr1_202Warehouse.pcc",
+      "BioD_HorCr1_301IndustrialArea.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1042,
+    "TreasurePlotBoolSrefName": "Tre_Tec_GruntUpgrade_JnkKgA",
+    "TreasureIDIdx": 1042,
+    "TreasureIDSrefName": "Tre_Tec_GruntUpgrade_JnkKgA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_JnkKgA_300Labs.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.BioD_JnkKgA_300Labs_Conversations.Biologist_Okeer.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_0",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 1793,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_Shotgun2_JnkKgA",
+    "TreasureIDIdx": 1793,
+    "TreasureIDSrefName": "Tre_Wpn_Shotgun2_JnkKgA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_JnkKgA_300Labs.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.BioD_JnkKgA_300Labs_Conversations.Biologist_Okeer.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_JnkKgA_220Ship1Lower.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1300,
+    "TreasurePlotBoolSrefName": "Tre_Tec_BioticUpgrade_JunCvL",
+    "TreasureIDIdx": 1300,
+    "TreasureIDSrefName": "Tre_Tec_BioticUpgrade_JunCvL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_JunCvL_204MainCell.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.BioD_JunCvL_204maincell_Conversations.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_JunCvL_202HoldingCells.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1050,
+    "TreasurePlotBoolSrefName": "Tre_Tec_Shotgun_KroKgL",
+    "TreasureIDIdx": 1050,
+    "TreasureIDSrefName": "Tre_Tec_Shotgun_KroKgL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_KroHub_110GruntLoyalty.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Shaman_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 1301,
+    "TreasurePlotBoolSrefName": "Tre_Tec_GruntUpgrade_KroPrL",
+    "TreasureIDIdx": 1301,
+    "TreasureIDSrefName": "Tre_Tec_GruntUpgrade_KroPrL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_KroPrL_450HospMorg.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Meet_Protege.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_0",
+    "PickupPackages": [
+      "BioD_KroPrL_350HospHall.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 5683,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyAmmo_KroPrL",
+    "TreasureIDIdx": 5683,
+    "TreasureIDSrefName": "Tre_Tec_HeavyAmmo_KroPrL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_KroPrL_450HospMorg.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Meet_Protege.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_KroPrL_425trans.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 4470,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyAmmo_N7BldInv2",
+    "TreasureIDIdx": 4470,
+    "TreasureIDSrefName": "Tre_Tec_HeavyAmmo_N7BldInv2",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_N7BldInv1_100.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.MessageBoxes.IMPORT_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_N7BldInv2_100.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 4470,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyAmmo_N7BldInv2",
+    "TreasureIDIdx": 4470,
+    "TreasureIDSrefName": "Tre_Tec_HeavyAmmo_N7BldInv2",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_N7BldInv2_100.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 4472,
+    "TreasurePlotBoolSrefName": "Tre_Tec_Shield_N7Geth2",
+    "TreasureIDIdx": 4472,
+    "TreasureIDSrefName": "Tre_Tec_Shield_N7Geth2",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_N7Geth2_100.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Geth_Console.IMPORT_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 4474,
+    "TreasurePlotBoolSrefName": "Tre_Tec_ShepardHealth_N7Spdr2",
+    "TreasureIDIdx": 4474,
+    "TreasureIDSrefName": "Tre_Tec_ShepardHealth_N7Spdr2",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_N7Spdr2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_0",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 899,
+    "TreasurePlotBoolSrefName": "Tre_Tec_AutoPistol_OmgGra",
+    "TreasureIDIdx": 899,
+    "TreasureIDSrefName": "Tre_Tec_AutoPistol_OmgGra",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_OmgGrA_203Wave3.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_OmgGrA_108WorkRoom.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 4481,
+    "TreasurePlotBoolSrefName": "Tre_Tec_TechUpgrade_OmgGra",
+    "TreasureIDIdx": 4481,
+    "TreasureIDSrefName": "Tre_Tec_TechUpgrade_OmgGra",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_OmgGrA_203Wave3.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_OmgGrA_200Alamo.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 898,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_AssaultRifle2_OmgGra",
+    "TreasureIDIdx": 898,
+    "TreasureIDSrefName": "Tre_Wpn_AssaultRifle2_OmgGra",
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_OmgGrA_203Wave3.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_OmgGrA_200Alamo.pcc",
+      "BioD_ShpCr2_130TurnIntoHusk.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1045,
+    "TreasurePlotBoolSrefName": "Tre_Tec_AssaultRifle_MwL",
+    "TreasureIDIdx": 1045,
+    "TreasureIDSrefName": "Tre_Tec_AssaultRifle_MwL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_OmgHub_500DenVIP.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Exit_VIP_Room.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 902,
+    "TreasurePlotBoolSrefName": "Tre_Tec_AssaultRifle_OmgPrA",
+    "TreasureIDIdx": 902,
+    "TreasureIDSrefName": "Tre_Tec_AssaultRifle_OmgPrA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_OmgPrA_201Clinic.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.Mordin_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_OmgPrA_103BlueSuns.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 903,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyAmmo_OmgPra",
+    "TreasureIDIdx": 903,
+    "TreasureIDSrefName": "Tre_Tec_HeavyAmmo_OmgPra",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_OmgPrA_201Clinic.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.Mordin_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_3",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 1798,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_HeavyPistol2_OmgPrA",
+    "TreasureIDIdx": 1798,
+    "TreasureIDSrefName": "Tre_Wpn_HeavyPistol2_OmgPrA",
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_OmgPrA_201Clinic.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.Mordin_Conversation.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_0",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 1191,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_GrenadeLauncher_ProCer",
+    "TreasureIDIdx": 1191,
+    "TreasureIDSrefName": "Tre_War_WargearA_ProCer",
+    "CodexImageIFP": "gui_codex_images.GrenadeLauncher_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_Procer_350BriefRoom.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Level_Exit.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_0",
+    "PickupPackages": [
+      "BioD_ProCer_150ServerRoom.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1075,
+    "TreasurePlotBoolSrefName": "Tre_Tec_MediGel_ProFre",
+    "TreasureIDIdx": 1075,
+    "TreasureIDSrefName": "Tre_Prj_MediGel_OmgPro",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_ProFre_501Veetor.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Illusive_Man_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_ProFre_500Warhouse.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1795,
+    "TreasurePlotBoolSrefName": "Tre_Tec_Shield_PrsCvA",
+    "TreasureIDIdx": 1795,
+    "TreasureIDSrefName": "Tre_Tec_Shield_PrsCvA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_PrsCvA_401Confrontation.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Convict_Confrontation_and_Aquisition.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_PrsCvA_202JacksCell.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1048,
+    "TreasurePlotBoolSrefName": "Tre_Tec_Shotgun_PrsCvA",
+    "TreasureIDIdx": 1048,
+    "TreasureIDSrefName": "Tre_Tec_Shotgun_PrsCvA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_PrsCvA_401Confrontation.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Convict_Confrontation_and_Aquisition.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_PrsCvA_301Block03.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1799,
+    "TreasurePlotBoolSrefName": "Tre_Tec_LegionUpgrade_QuaTlL",
+    "TreasureIDIdx": 1799,
+    "TreasureIDSrefName": "Tre_Tec_LegionUpgrade_QuaTlL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_QuaTlL.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Mission_Complete_Stuff.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_N7NorCrash.pcc",
+      "BioD_QuaTlL_505LifeBoat.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1043,
+    "TreasurePlotBoolSrefName": "Tre_Tec_TechUpgrade_QuaTlL",
+    "TreasureIDIdx": 1043,
+    "TreasureIDSrefName": "Tre_Tec_TechUpgrade_QuaTlL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_QuaTlL.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Mission_Complete_Stuff.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_N7NorCrash.pcc",
+      "BioD_QuaTlL_313PostTrial2.pcc",
+      "BioD_QuaTlL_500TheAlarei.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1040,
+    "TreasurePlotBoolSrefName": "Tre_Tec_ShepardHealth_RprGtA",
+    "TreasureIDIdx": 1040,
+    "TreasureIDSrefName": "Tre_Tec_ShepardHealth_RprGtA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_RprGtA_430Resolution.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_RprGtA_230Chrysalis.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1794,
+    "TreasurePlotBoolSrefName": "Tre_Tec_Shotgun_RprGtA",
+    "TreasureIDIdx": 1794,
+    "TreasureIDSrefName": "Tre_Tec_Shotgun_RprGtA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_RprGtA_430Resolution.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_0",
+    "PickupPackages": [
+      "BioD_RprGtA_330StealWind.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1039,
+    "TreasurePlotBoolSrefName": "Tre_Tec_SniperRifle_RprGtA",
+    "TreasureIDIdx": 1039,
+    "TreasureIDSrefName": "Tre_Tec_SniperRifle_RprGtA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_RprGtA_430Resolution.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_RprGtA_220WorkSite.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1303,
+    "TreasurePlotBoolSrefName": "Tre_Tec_Shield_ShpCr2",
+    "TreasureIDIdx": 1303,
+    "TreasureIDSrefName": "Tre_Tec_Shield_ShpCr2",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_ShpCr2_135TubeStart.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1036,
+    "TreasurePlotBoolSrefName": "Tre_Tec_TechUpgrade_ShpCr2",
+    "TreasureIDIdx": 1036,
+    "TreasureIDSrefName": "Tre_Tec_TechUpgrade_ShpCr2",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_ShpCr2_165EscapeHall3.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1278,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_BonusAssaultRifle",
+    "TreasureIDIdx": 1278,
+    "TreasureIDSrefName": "Tre_Wpn_BonusAssaultRifle",
+    "CodexImageIFP": "GUI_Codex_Images.AssaultRifle_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_0",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1030,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_SuperAssaultRifle",
+    "TreasureIDIdx": 1030,
+    "TreasureIDSrefName": "Tre_Wpn_SuperAssaultRifle",
+    "CodexImageIFP": "GUI_Codex_Images.Machinegun_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1280,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_BonusShotgun",
+    "TreasureIDIdx": 1280,
+    "TreasureIDSrefName": "Tre_Wpn_BonusShotgun",
+    "CodexImageIFP": "GUI_Codex_Images.Shotgun_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_3",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1277,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_SuperShotgun",
+    "TreasureIDIdx": 1277,
+    "TreasureIDSrefName": "Tre_Wpn_SuperShotgun",
+    "CodexImageIFP": "GUI_Codex_Images.FlakCannon_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_4",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1279,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_BonusSniperRifle",
+    "TreasureIDIdx": 1279,
+    "TreasureIDSrefName": "Tre_Wpn_BonusSniperRifle",
+    "CodexImageIFP": "GUI_Codex_Images.SniperRifle_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_5",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1276,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_SuperSniperRifle",
+    "TreasureIDIdx": 1276,
+    "TreasureIDSrefName": "Tre_Wpn_SuperSniperRifle",
+    "CodexImageIFP": "GUI_Codex_Images.MassCannon_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_ShpCr2_170HubRoom2.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Enable_Map_Ending.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1077,
+    "TreasurePlotBoolSrefName": "Tre_Tec_AssaultRifle_SunTlA",
+    "TreasureIDIdx": 1077,
+    "TreasureIDSrefName": "Tre_Tec_AssaultRifle_SunTlA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_SunTlA_301Observatory.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_SunTlA_202BaseCamp.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1800,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyPistol_SunTlA",
+    "TreasureIDIdx": 1800,
+    "TreasureIDSrefName": "Tre_Tec_HeavyPistol_SunTlA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_SunTlA_301Observatory.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_SunTlA_102Gatehouse.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 690,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_AutoPistol2_SunTlA",
+    "TreasureIDIdx": 690,
+    "TreasureIDSrefName": "Tre_Wpn_AutoPistol2_SunTlA",
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_SunTlA_301Observatory.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_0",
+    "PickupPackages": [
+      "BioD_SunTlA_102Gatehouse.pcc",
+      "BioD_SunTlA_202BaseCamp.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 5239,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_GethPulseRifle_SunTlA",
+    "TreasureIDIdx": 5239,
+    "TreasureIDSrefName": "Tre_Wpn_GethPulseRifle",
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_SunTlA_301Observatory.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_3",
+    "PickupPackages": []
+  },
+  {
+    "TreasurePlotBoolIdx": 1796,
+    "TreasurePlotBoolSrefName": "Tre_Tec_AutoPistol_TwrAsA",
+    "TreasureIDIdx": 1796,
+    "TreasureIDSrefName": "Tre_Tec_AutoPistol_TwrAsA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_TwrAsA_302Pinnacle.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversation_with_Nissanna.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_TwrAsA_202UpperOffices.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 916,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_SniperRIfle2_TwrAsA",
+    "TreasureIDIdx": 916,
+    "TreasureIDSrefName": "Tre_Wpn_SniperRIfle2_TwrAsA",
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_TwrAsA_302Pinnacle.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversation_with_Nissanna.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc",
+      "BioD_TwrAsA_104UpperMez.pcc",
+      "BioD_TwrAsA_201LowerOffices.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1797,
+    "TreasurePlotBoolSrefName": "Tre_Tec_BioticUpgrade_TwrMwA",
+    "TreasureIDIdx": 1797,
+    "TreasureIDSrefName": "Tre_Tec_BioticUpgrade_TwrMwA",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_TwrMwA_101Spaceport.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.Detective_in_office.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_TwrMwA_202HangarALoad1.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 889,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_AssaultRifle2_TwrMwA",
+    "TreasureIDIdx": 889,
+    "TreasureIDSrefName": "Tre_Wpn_AssaultRifle2_TwrMwA",
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_TwrMwA_101Spaceport.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Conversations.Detective_in_office.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_0",
+    "PickupPackages": [
+      "BioD_ShpCr2_130TurnIntoHusk.pcc",
+      "BioD_TwrMwA_201HangarAFight1.pcc",
+      "BioD_TwrMwA_208Offices.pcc",
+      "BioD_TwrMwA_302HangarBLoad.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1053,
+    "TreasurePlotBoolSrefName": "Tre_Tec_AutoPistol_TwrVxL",
+    "TreasureIDIdx": 1053,
+    "TreasureIDSrefName": "Tre_Tec_AutoPistol_TwrVxL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_TwrVxL_400Terminal.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Final_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_0",
+    "PickupPackages": [
+      "BioD_TwrVxL_203MazeCombat01.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 5682,
+    "TreasurePlotBoolSrefName": "Tre_Tec_MediGel_TwrVxL",
+    "TreasureIDIdx": 5682,
+    "TreasureIDSrefName": "Tre_Tec_MediGel_TwrVxL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_TwrVxL_400Terminal.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Final_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_TwrVxL_204MazeCombat02.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1799,
+    "TreasurePlotBoolSrefName": "Tre_Tec_LegionUpgrade_QuaTlL",
+    "TreasureIDIdx": 1799,
+    "TreasureIDSrefName": "Tre_Tec_LegionUpgrade_QuaTlL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_N7NorCrash.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.EXIT_LEVEL.IMPORT_MC_Mission_Complete_0.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_QuaTlL_505LifeBoat.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 1043,
+    "TreasurePlotBoolSrefName": "Tre_Tec_TechUpgrade_QuaTlL",
+    "TreasureIDIdx": 1043,
+    "TreasureIDSrefName": "Tre_Tec_TechUpgrade_QuaTlL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_N7NorCrash.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.EXIT_LEVEL.IMPORT_MC_Mission_Complete_0.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_QuaTlL_313PostTrial2.pcc",
+      "BioD_QuaTlL_500TheAlarei.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 6275,
+    "TreasurePlotBoolSrefName": "Tre_Tec_AssaultRifle_ZyaVtL",
+    "TreasureIDIdx": 6275,
+    "TreasureIDSrefName": "Tre_Tec_AssaultRifle_ZyaVtL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_ZyaVTL_630Revenge.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Revenge_Convo.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_ZyaVTL_520Conveyor.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 6276,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyAmmo_ZyaVtL",
+    "TreasureIDIdx": 6276,
+    "TreasureIDSrefName": "Tre_Tec_HeavyAmmo_ZyaVtL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_ZyaVTL_630Revenge.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Revenge_Convo.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_ZyaVTL_500Refinery.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 6277,
+    "TreasurePlotBoolSrefName": "Tre_Tec_FlameThrower_ZyaVtL",
+    "TreasureIDIdx": 6277,
+    "TreasureIDSrefName": "Tre_Tec_FlameThrower_ZyaVtL",
+    "CodexImageIFP": "Zaeed_Codex_Images.FlameThrower_512",
+    "IsWeapon": true,
+    "SourcePackage": "BioD_ZyaVTL_630Revenge.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Revenge_Convo.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_ZyaVTL_610trans.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 6708,
+    "TreasurePlotBoolSrefName": "Tre_Tec_TechUpgrade_PtyMtL",
+    "TreasureIDIdx": 6708,
+    "TreasureIDSrefName": "Tre_Tec_TechUpgrade_PtyMtL",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_PtyMtL_510CDResolution.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_PtyMtL_330RoadB.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 6710,
+    "TreasurePlotBoolSrefName": "Tre_Wpn_Locust_PtyMtL",
+    "TreasureIDIdx": 6710,
+    "TreasureIDSrefName": "Tre_Wpn_Locust_PtyMtL",
+    "CodexImageIFP": null,
+    "IsWeapon": true,
+    "SourcePackage": "BioD_PtyMtL_510CDResolution.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.New_Weapon_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_PtyMtL_300Vault.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 6733,
+    "TreasurePlotBoolSrefName": "Tre_Tec_ShepardHealth_Unc1Base4",
+    "TreasureIDIdx": 6733,
+    "TreasureIDSrefName": "Tre_Tec_ShepardHealth_Unc1Base4",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_Unc1Base4_310BossFight.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.Post_Boss_Fight_Wrapup_Cutscene_and_Conversation.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_Unc1Base4_130Server.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 7031,
+    "TreasurePlotBoolSrefName": "Tre_Tec_HeavyPistol_Exp1",
+    "TreasureIDIdx": 7031,
+    "TreasureIDSrefName": "Tre_Tec_HeavyPistol_Exp1",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_Exp1Lvl4_Stage2_Out.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_1",
+    "PickupPackages": [
+      "BioD_Exp1Lvl1_500Upstairs.pcc"
+    ]
+  },
+  {
+    "TreasurePlotBoolIdx": 7210,
+    "TreasurePlotBoolSrefName": "Tre_Tec_Shield_Exp1",
+    "TreasureIDIdx": 7210,
+    "TreasureIDSrefName": "Tre_Tec_Shield_Exp1",
+    "CodexImageIFP": null,
+    "IsWeapon": false,
+    "SourcePackage": "BioD_Exp1Lvl4_Stage2_Out.pcc",
+    "SequenceObjectIFP": "TheWorld.PersistentLevel.Main_Sequence.IMPORT_MC_Mission_Complete.Research_Tech_Found.SequenceReference_2",
+    "PickupPackages": [
+      "BioD_Exp1Lvl2_300Corridors.pcc"
+    ]
+  }
+]

@@ -16,6 +16,7 @@ using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
 using Randomizer.MER;
+using Randomizer.Randomizers.Game1.Misc;
 using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Game2.Levels;
@@ -85,6 +86,8 @@ namespace Randomizer.Randomizers.Game2
 
         private void Randomization_Completed(object sender, RunWorkerCompletedEventArgs e)
         {
+            SelectedOptions.SetRandomizationInProgress?.Invoke(false);
+
             if (e.Error != null)
             {
                 MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
@@ -105,6 +108,7 @@ namespace Randomizer.Randomizers.Game2
         {
             MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
             ResetClasses();
+            SelectedOptions.SetRandomizationInProgress?.Invoke(true);
             SelectedOptions.SetCurrentOperationText?.Invoke("Initializing randomizer");
             SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
             var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
@@ -173,7 +177,7 @@ namespace Randomizer.Randomizers.Game2
 
                     // we only want pcc files (me2/me3). no upks
                     var files = MELoadedFiles.GetFilesLoadedInGame(SelectedOptions.RandomizationTarget.Game, true, false, false, SelectedOptions.RandomizationTarget.TargetPath).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
-                    
+
                     SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(false);
 
                     var currentFileNumber = 0;
@@ -280,7 +284,7 @@ namespace Randomizer.Randomizers.Game2
             ResetClasses();
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
-            NonSharedPackageCache.Cache.ReleasePackages();
+            NonSharedPackageCache.Cache?.Dispose();
 
             // Re-throw the unhandled exception after MERFS has closed
             if (rethrowException != null)
@@ -403,8 +407,8 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption()
                     {
                         HumanName = "Animation Set Bones",
-                        PerformRandomizationOnExportDelegate = RBioAnimSetData.RandomizeExport,
-                        SliderToTextConverter = RBioAnimSetData.UIConverter,
+                        PerformRandomizationOnExportDelegate = RSharedBioAnimSetData.RandomizeExport,
+                        SliderToTextConverter = RSharedBioAnimSetData.UIConverter,
                         HasSliderOption = true,
                         SliderValue = 1,
                         Ticks = "1,2,3,4,5",
@@ -427,12 +431,12 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {
                         HumanName = "Look At Definitions",
                         Description="Changes how pawns look at things",
-                        PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RSharedBioLookAtDefinition.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {
                         HumanName = "Look At Targets",
                         Description="Changes where pawns look",
-                        PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport,
+                        PerformRandomizationOnExportDelegate = RSharedBioLookAtTarget.RandomizeExport,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
                 }
@@ -515,7 +519,7 @@ namespace Randomizer.Randomizers.Game2
                 GroupName = "Miscellaneous",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RHolograms.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RSharedHolograms.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
@@ -768,6 +772,12 @@ namespace Randomizer.Randomizers.Game2
                         PerformRandomizationOnExportDelegate = RSharedLighting.RandomizeExport,
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {HumanName = "Mission rewards", Description = "Randomizes the tech and weapons given to you at the end of a mission. You can still get all the tech and weapons if you complete all the missions that award them.",
+                        //PerformSpecificRandomizationDelegate = MissionRewards.Inventory,
+                        PerformSpecificRandomizationDelegate = MissionRewards.PerformRandomization,
+                        IsRecommended = true,
+                        ProgressIndeterminate = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     new RandomizationOption() {
                         HumanName = "Galaxy Map",
                         Description = "Moves things around the map, speeds up normandy",
@@ -863,7 +873,7 @@ namespace Randomizer.Randomizers.Game2
                             HasSliderOption = true,
                             SliderValue = 1,
                             Ticks = "1,2",
-                            Description="Shifts rigged bone positions",
+                            Description="Fuzzes rigged bone positions and rotations",
                             IsRecommended = true,
                             SliderTooltip = "Value determines which bones are used in the remapping. Default value is basic bones only.",
                             Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
@@ -894,7 +904,7 @@ namespace Randomizer.Randomizers.Game2
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
                     },
-                    // TelemetryInterposer game too often :/
+                    // Crashes game too often :/
                     //new RandomizationOption()
                     //{
                     //    HumanName = "Music",

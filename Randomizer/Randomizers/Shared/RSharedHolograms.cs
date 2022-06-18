@@ -7,9 +7,9 @@ using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
-namespace Randomizer.Randomizers.Game2.Misc
+namespace Randomizer.Randomizers.Shared
 {
-    class RHolograms
+    class RSharedHolograms
     {
         private const int option_avina = 2;
         private const int option_hologram = 1;
@@ -18,6 +18,8 @@ namespace Randomizer.Randomizers.Game2.Misc
         {
             option = 0;
             if (export.IsDefaultObject) return false;
+
+#if __GAME2__
             if (export.ClassName == "Material")
             {
                 if (export.ObjectName.Name == "VI_ARM_NKD_Master_Mat")
@@ -26,7 +28,9 @@ namespace Randomizer.Randomizers.Game2.Misc
                     return true;
                 }
             }
-            else if (export.ClassName == "MaterialInstanceConstant" && export.ObjectName.Name.StartsWith("Holo"))
+            else
+#endif
+            if (export.ClassName == "MaterialInstanceConstant" && export.ObjectName.Name.StartsWith("Holo"))
             {
                 option = option_hologram;
                 return true;
@@ -41,7 +45,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             switch (coption)
             {
                 case option_hologram:
-                    //RMaterialInstance.RandomizeExport(exp, option);
+                    RSharedMaterialInstance.RandomizeExport(exp, option);
                     return true;
                 case option_avina:
                     RandomizeVIMaterial(exp);

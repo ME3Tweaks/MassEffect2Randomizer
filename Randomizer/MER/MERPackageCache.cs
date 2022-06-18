@@ -19,7 +19,18 @@ namespace Randomizer.MER
         /// <summary>
         /// Target to fetch packages out of for MER. This must be set or an exception will be thrown.
         /// </summary>
-        public GameTarget Target { get; set; }
+        private readonly GameTarget Target;
+
+        [Obsolete]
+        public MERPackageCache()
+        {
+            throw new Exception("MERPackageCache must use the constructor that takes a gametarget!");
+        }
+
+        public MERPackageCache(GameTarget target)
+        {
+            Target = target;
+        }
 
         /// <summary>
         /// Returns a cached package. Ensure this cache is synchronized if across threads or you may end up saving two different instances of files to the same location

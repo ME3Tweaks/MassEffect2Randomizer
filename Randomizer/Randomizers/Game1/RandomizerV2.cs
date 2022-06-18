@@ -15,11 +15,13 @@ using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
+using ME3TweaksCore.NativeMods;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game1._2DA;
 using Randomizer.Randomizers.Game1.ExportTypes;
 using Randomizer.Randomizers.Game1.Levels;
 using Randomizer.Randomizers.Game1.Misc;
+using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Levels;
 using Randomizer.Randomizers.Shared;
@@ -134,6 +136,25 @@ namespace Randomizer.Randomizers.Game1
             try
             {
                 MERFileSystem.InitMERFS(SelectedOptions);
+
+                // Install ASIs required to make game work with DLC
+                var asigame = new ASIGame(SelectedOptions.RandomizationTarget);
+                if (SelectedOptions.RandomizationTarget.Game == MEGame.ME1)
+                {
+                    var asiList = ASIManager.MasterME1ASIUpdateGroups;
+                    ASIManager.InstallASIToTarget(asiList.Find(x=>x.UpdateGroupId == ASIModIDs.ME1_DLC_MOD_ENABLER), SelectedOptions.RandomizationTarget);
+                }
+                else if (SelectedOptions.RandomizationTarget.Game == MEGame.LE1)
+                {
+                    var asiList = ASIManager.MasterLE1ASIUpdateGroups;
+                    ASIManager.InstallASIToTarget(asiList.Find(x => x.UpdateGroupId == ASIModIDs.LE1_AUTOTOC), SelectedOptions.RandomizationTarget);
+                    ASIManager.InstallASIToTarget(asiList.Find(x => x.UpdateGroupId == ASIModIDs.LE1_DLC_MOD_ENABLER), SelectedOptions.RandomizationTarget);
+                }
+                else
+                {
+                    throw new Exception("CANNOT RANDOMIZE THIS GAME");
+                }
+
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
 
@@ -199,14 +220,14 @@ namespace Randomizer.Randomizers.Game1
                         SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing game files [{currentFileNumber}/{files.Count}]");
 
 #if DEBUG
-                        if (true
-                //&& false //uncomment to disable filtering
-                //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                && !file.Contains("STA", StringComparison.InvariantCultureIgnoreCase)
-                )
-                            return;
+                        //        if (true
+                        ////&& false //uncomment to disable filtering
+                        ////&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                        ////&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                        ////&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("STA", StringComparison.InvariantCultureIgnoreCase)
+                        //)
+                        //            return;
 #endif
                         // Skip NON INT
                         var localization = name.GetUnrealLocalization();
@@ -288,7 +309,7 @@ namespace Randomizer.Randomizers.Game1
             //ResetClasses();
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
-            NonSharedPackageCache.Cache.ReleasePackages();
+            NonSharedPackageCache.Cache?.ReleasePackages();
 
 
 
@@ -404,12 +425,12 @@ namespace Randomizer.Randomizers.Game1
                 GroupName = "Characters",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    /*
+
                     new RandomizationOption()
                     {
                         HumanName = "Animation Set Bones",
-                        PerformRandomizationOnExportDelegate = RBioAnimSetData.RandomizeExport,
-                        SliderToTextConverter = RBioAnimSetData.UIConverter,
+                        PerformRandomizationOnExportDelegate = RSharedBioAnimSetData.RandomizeExport,
+                        SliderToTextConverter = RSharedBioAnimSetData.UIConverter,
                         HasSliderOption = true,
                         SliderValue = 1,
                         Ticks = "1,2,3,4,5",
@@ -417,6 +438,7 @@ namespace Randomizer.Randomizers.Game1
                         Description = "Changes the order of animations mapped to bones. E.g. arm rotation will be swapped with eyes",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
                     },
+                    /*
                     new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",
                         PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport2,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal, IsRecommended = true},
@@ -846,6 +868,13 @@ namespace Randomizer.Randomizers.Game1
                         HumanName = "Actors in cutscenes",
                         Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
                         PerformRandomizationOnExportDelegate = RCutscene.ShuffleCutscenePawns2,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true
+                    },
+                    new RandomizationOption() {
+                        HumanName = "Actors in conversations",
+                        Description="Swaps pawns around in conversations that have more than 2 participants.",
+                        PerformFileSpecificRandomization = RBioConversation.RandomizePackageActorsInConversation,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true
                     },

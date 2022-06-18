@@ -58,7 +58,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
         {
             if (Powers == null)
             {
-                string fileContents = MERUtilities.GetStaticTextFile("powerlistme2.json");
+                string fileContents = MERUtilities.GetEmbeddedTextAsset("powerlistme2.json");
                 Powers = new List<PowerInfo>();
                 var powermanifest = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
                 foreach (var powerInfo in powermanifest)

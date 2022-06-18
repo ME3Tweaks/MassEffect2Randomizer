@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
+using ControlzEx.Theming;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
@@ -297,6 +298,12 @@ namespace RandomizerUI
                 throw new Exception("NOT A VALID BUILD");
             }
         }
+
+        public string IntroTitleText => $"Welcome to {MERUtilities.GetGameUIName(true)} Randomizer";
+        public string IntroTitleSubText => $"Please read the following information to help ensure you have the best experience\nwith {MERUtilities.GetGameUIName(true)} Randomizer ({MERUtilities.GetRandomizerShortName()}).";
+
+
+        
 
         private bool CanStartRandomization()
         {
@@ -726,7 +733,18 @@ namespace RandomizerUI
                 BackupRestoreText = backupStatus?.BackupActionText;
                 BackupRestore_Button.ToolTip = backupStatus != null && backupStatus.BackedUp ? "Click to restore game/uninstall randomizer mod" : "Click to backup game";
                 //MERPeriodicRefresh();.OnPeriodicRefresh += MERPeriodicRefresh;
-
+#if __GAME1__
+#elif __GAME2__
+                if (SelectedTarget.Game == MEGame.LE2)
+                {
+                    ThemeManager.Current.ChangeTheme(this, "Dark.Blue");
+                }
+                else
+                {
+                    ThemeManager.Current.ChangeTheme(this, "Dark.Violet");
+                }
+#elif __GAME3__
+#endif
             }
         }
     }

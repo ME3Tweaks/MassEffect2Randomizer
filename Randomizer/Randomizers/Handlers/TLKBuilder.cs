@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -254,7 +255,7 @@ namespace Randomizer.Randomizers.Handlers
             {
                 if (tf.IsModified)
                 {
-                    var gsTLK = tf as TalkFile;
+                    var gsTLK = tf as ME2ME3TalkFile;
                     var hc = new LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression();
                     hc.LoadInputData(tf.StringRefs);
                     hc.SaveToFile(gsTLK.FilePath);

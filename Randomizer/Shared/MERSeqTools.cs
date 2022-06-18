@@ -6,6 +6,7 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Utility;
 
@@ -13,13 +14,13 @@ namespace Randomizer.Shared
 {
     class MERSeqTools
     {
-        public static ExportEntry InstallRandomSwitchIntoSequence(ExportEntry sequence, int numLinks)
+        public static ExportEntry InstallRandomSwitchIntoSequence(GameTarget target, ExportEntry sequence, int numLinks)
         {
             var packageBin = MERUtilities.GetEmbeddedStaticFilesBinaryFile("PremadeSeqObjs.pcc");
             var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(packageBin));
 
             // 1. Add the switch object and link it to the sequence
-            var nSwitch = PackageTools.PortExportIntoPackage(sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false, true);
+            var nSwitch = PackageTools.PortExportIntoPackage(target, sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false, true);
             KismetHelper.AddObjectToSequence(nSwitch, sequence);
 
             // 2. Generate the output links array. We will refresh the properties
@@ -69,7 +70,7 @@ namespace Randomizer.Shared
         {
             props.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[outputLinkIndex].GetProp<ArrayProperty<StructProperty>>("Links")[linksIndex].GetProp<ObjectProperty>("LinkedOp").Value = newTarget;
         }
-        
+
         /// <summary>
         /// Finds variable connections that come to this node.
         /// </summary>
@@ -114,7 +115,7 @@ namespace Randomizer.Shared
             KismetHelper.AddObjectToSequence(exp, sequence);
             return exp;
         }
-        
+
 
         public static void WriteOriginator(ExportEntry export, IEntry originator)
         {
@@ -205,6 +206,17 @@ namespace Randomizer.Shared
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Gets the next connected node from the specified kismet node. Does not do any error handling!
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="outputLinkIdx"></param>
+        /// <returns></returns>
+        public static ExportEntry GetNextNode(ExportEntry node, int outputLinkIdx)
+        {
+            return SeqTools.GetOutboundLinksOfNode(node)[outputLinkIdx][0].LinkedOp as ExportEntry;
         }
     }
 }

@@ -9,6 +9,8 @@ using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.ExportTypes
@@ -37,12 +39,12 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                     }
 
                     smc.RemoveProperty("AnimSets"); // We want to force new animations. we'll waste a bit of memory doing this but oh well
-                    List<RBioEvtSysTrackGesture.Gesture> installedGestures = new List<RBioEvtSysTrackGesture.Gesture>();
-                    var animationPackagesCache = new MERPackageCache();
+                    var installedGestures = new List<Gesture>();
+                    var animationPackagesCache = new MERPackageCache(target);
                     while (numAnimationsSupported > 0)
                     {
                         // should we make sure they're unique?
-                        var randGest = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(export.FileRef, 2, smaKeywords, null, null, true);
+                        var randGest = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, export.FileRef, 2, filterKeywords: smaKeywords, blacklistedKeywords: null, mainPackagesAllowed: null, includeSpecial: true);
                         InstallDynamicAnimSetRefForSkeletalMesh(smc, randGest);
                         installedGestures.Add(randGest);
                         numAnimationsSupported--;
@@ -120,13 +122,13 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             }
         }
 
-        private static void InstallDynamicAnimSetRefForSkeletalMesh(ExportEntry export, RBioEvtSysTrackGesture.Gesture gesture)
+        private static void InstallDynamicAnimSetRefForSkeletalMesh(ExportEntry export, Gesture gesture)
         {
             // We have parent sequence data
             var skmDynamicAnimSets = export.GetProperty<ArrayProperty<ObjectProperty>>("AnimSets") ?? new ArrayProperty<ObjectProperty>("AnimSets");
 
             // Check to see if there is any item that uses our bioanimset
-            var bioAnimSet = gesture.GetBioAnimSet(export.FileRef);
+            var bioAnimSet = gesture.GetBioAnimSet(export.FileRef, Game2Gestures.GestureSetNameToPackageExportName);
             if (bioAnimSet != null)
             {
                 ExportEntry skmBioDynamicAnimSet = null;
@@ -171,7 +173,5 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 }
             }
         }
-
-
     }
 }

@@ -19,7 +19,7 @@ namespace Randomizer.Randomizers.Levels
         private static void RandomizeFerosColonistBattle(GameTarget target, RandomizationOption option)
         {
             option.CurrentOperation = "Randoming Feros";
-            string fileContents = MERUtilities.GetStaticTextFile("colonistnames.xml");
+            string fileContents = MERUtilities.GetEmbeddedTextAsset("colonistnames.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var colonistnames = rootElement.Elements("colonistname").Select(x => x.Value).ToList();
 

@@ -374,7 +374,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
         private static void LoadAsset()
         {
-            acceptableTagsForPawnShuffling = MERUtilities.GetStaticTextFile("allowedcutscenerandomizationtags.txt").Split(new[] { "\r\n", "\r", "\n" },
+            acceptableTagsForPawnShuffling = MERUtilities.GetEmbeddedTextAsset("allowedcutscenerandomizationtags.txt").Split(new[] { "\r\n", "\r", "\n" },
                 StringSplitOptions.None).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         }
     }

@@ -41,7 +41,10 @@ namespace Randomizer.Randomizers.Handlers
             IniFiles = new SortedDictionary<string, DuplicatingIni>();
 
             // Load BioEngine.ini as it already exists.
+#if __GAME2__
             IniFiles["BIOEngine.ini"] = DuplicatingIni.LoadIni(Path.Combine(MERFileSystem.DLCModCookedPath, @"BIOEngine.ini"));
+#endif
+            // TODO: ME3 STUFF
         }
 
         private DuplicatingIni GetFile(string filename)

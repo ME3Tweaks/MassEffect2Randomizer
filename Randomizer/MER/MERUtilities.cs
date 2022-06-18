@@ -18,6 +18,7 @@ using System.Xml.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.GameFilesystem;
+using ME3TweaksCore.Misc;
 using ME3TweaksCore.Targets;
 using Microsoft.Win32;
 
@@ -25,8 +26,6 @@ namespace Randomizer.MER
 {
     public class MERUtilities
     {
-        public const uint MEMI_TAG = 0x494D454D;
-
         public const int WIN32_EXCEPTION_ELEVATED_CODE = -98763;
         [DllImport("kernel32.dll")]
         static extern uint GetLastError();
@@ -78,7 +77,7 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="filename"></param>
         /// <returns></returns>
-        public static string GetStaticTextFile(string filename, bool shared = false)
+        public static string GetEmbeddedTextAsset(string filename, bool shared = false)
         {
             using var stream = GetEmbeddedAsset("Text", filename, shared);
             using StreamReader sr = new StreamReader(stream);
@@ -96,8 +95,32 @@ namespace Randomizer.MER
 #endif
             if (shared)
                 assetBase = $"Randomizer.Randomizers.SharedAssets.{assettype}.";
+#if DEBUG
             var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+#endif
             return Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + assetpath);
+        }
+
+        /// <summary>
+        /// Gets a list of asset paths that match the given type and folder path.
+        /// </summary>
+        /// <param name="assettype"></param>
+        /// <param name="assetFolderPath"></param>
+        /// <param name="shared"></param>
+        /// <returns></returns>
+        public static List<string> ListEmbeddedAssets(string assettype, string assetFolderPath, bool shared = false)
+        {
+#if __GAME1__
+            var assetBase = $"Randomizer.Randomizers.Game1.Assets.{assettype}.";
+#elif __GAME2__
+            var assetBase = $"Randomizer.Randomizers.Game2.Assets.{assettype}.";
+#elif __GAME3__
+            var assetBase = $"Randomizer.Randomizers.Game3.Assets.{assettype}.";
+#endif
+            if (shared)
+                assetBase = $"Randomizer.Randomizers.SharedAssets.{assettype}.";
+            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            return items.Where(x => x.StartsWith(assetBase + assetFolderPath)).ToList();
         }
 
         /// <summary>
@@ -220,6 +243,33 @@ namespace Randomizer.MER
             }
 
             prefix = includemerPrefix ? prefix : $"staticfiles.{assetRootPath}";
+            return itemsL.Select(x => prefix + '.' + x).ToList();
+        }
+
+        /// <summary>
+        /// Lists packages for the specified game target that are embedded. Returned paths are full asset paths.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="includeSpecial"></param>
+        /// <returns></returns>
+        public static List<string> ListStaticPackageAssets(GameTarget target, string assetFolderName, bool includeSubitems)
+        {
+            var GameText = $"Game{target.Game.ToMEMGameNum()}"; // MEM Game num is 1 2 3 only.
+            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            string prefix = $"Randomizer.Randomizers.{GameText}.Assets.Binary.Packages.{target.Game}.{assetFolderName}";
+            List<string> itemsL = new List<string>();
+            foreach (var item in items)
+            {
+                if (item.StartsWith(prefix))
+                {
+                    var iName = item.Substring(prefix.Length + 1);
+                    if (includeSubitems || iName.Count(x => x == '.') == 1) //Only has extension
+                    {
+                        itemsL.Add(iName);
+                    }
+                }
+            }
+
             return itemsL.Select(x => prefix + '.' + x).ToList();
         }
 
@@ -828,6 +878,32 @@ namespace Randomizer.MER
             return originalTrilogy ? "Mass Effect 2" : "Mass Effect 2 (Legendary Editon)";
 #else
             return originalTrilogy ? "Mass Effect 3" : "Mass Effect 3 (Legendary Editon)";
+#endif
+        }
+
+        /// <summary>
+        /// Gets the stream data for a game-specific package.
+        /// </summary>
+        /// <param name="targetGame"></param>
+        /// <param name="packageName"></param>
+        /// <returns></returns>
+        public static Stream GetEmbeddedPackage(MEGame targetGame, string packageName)
+        {
+            return GetEmbeddedAsset("Binary", $"Packages.{targetGame}.{packageName}");
+        }
+
+        /// <summary>
+        /// Returns MER/ME2R/ME3R
+        /// </summary>
+        /// <returns></returns>
+        public static string GetRandomizerShortName()
+        {
+#if __GAME1__
+            return "MER";
+#elif __GAME2__
+            return "ME2R";
+#else
+            return "ME3R";
 #endif
         }
     }

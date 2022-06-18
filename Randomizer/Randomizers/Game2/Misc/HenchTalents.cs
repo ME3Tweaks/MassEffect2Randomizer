@@ -906,7 +906,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                               {
                                   if (loadoutInfo.FixedPowers.Contains(talentSetBasePower))
                                       continue; // Do not modify this
-                                  var portedPower = PackageTools.PortExportIntoPackage(loadout.FileRef, talentSetBasePower.PowerExport);
+                                  var portedPower = PackageTools.PortExportIntoPackage(target, loadout.FileRef, talentSetBasePower.PowerExport);
                                   powersList.Add(new ObjectProperty(portedPower.UIndex));
 
                                   // For each power, change the evolutions
@@ -915,8 +915,8 @@ namespace Randomizer.Randomizers.Game2.Misc
                                   var evolution1 = talentSet.EvolvedPowers[powIndex * 2];
                                   var evolution2 = talentSet.EvolvedPowers[(powIndex * 2) + 1];
                                   configuredPowers.Add(new MappedPower() { BaseTalent = talentSetBasePower, EvolvedTalent1 = evolution1, EvolvedTalent2 = evolution2 });
-                                  var evo1 = PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution1.PowerExport);
-                                  var evo2 = PackageTools.PortExportIntoPackage(portedPower.FileRef, evolution2.PowerExport);
+                                  var evo1 = PackageTools.PortExportIntoPackage(target, portedPower.FileRef, evolution1.PowerExport);
+                                  var evo2 = PackageTools.PortExportIntoPackage(target, portedPower.FileRef, evolution2.PowerExport);
                                   evo1.WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
                                   evo2.WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
                                   props.AddOrReplaceProp(new ObjectProperty(evo1, "EvolvedPowerClass1"));

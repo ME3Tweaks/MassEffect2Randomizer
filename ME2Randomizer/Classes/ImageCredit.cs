@@ -22,7 +22,7 @@ namespace RandomizerUI.Classes
         /// <returns></returns>
         public static List<ImageCredit> LoadImageCredits(string file, bool fourLine)
         {
-            var textFile = MERUtilities.GetStaticTextFile(file).Split('\n');
+            var textFile = MERUtilities.GetEmbeddedTextAsset(file).Split('\n');
             List<ImageCredit> credits = new List<ImageCredit>(330);
 
             ImageCredit currentCredit = null;

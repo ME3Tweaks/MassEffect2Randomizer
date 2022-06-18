@@ -3,9 +3,9 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Randomizer.Randomizers.Utility;
 
-namespace Randomizer.Randomizers.Game2.Misc
+namespace Randomizer.Randomizers.Shared
 {
-    class RBioLookAtTarget
+    class RSharedBioLookAtTarget
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioLookAtTarget";
 
@@ -36,7 +36,7 @@ namespace Randomizer.Randomizers.Game2.Misc
         }
     }
 
-    class RBioLookAtDefinition
+    class RSharedBioLookAtDefinition
     {
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"BioLookAtDefinition" || export.ClassName == @"Bio_Appr_Character";
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
 using ME3TweaksCore.Targets;
 
 namespace Randomizer.Randomizers.Shared
@@ -18,9 +20,58 @@ namespace Randomizer.Randomizers.Shared
 
 
         private static bool CanRandomize(ExportEntry export) => !export.IsDefaultObject && export.ClassName == @"AnimSequence";
+
         public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
+            var animSeq = ObjectBinary.From<AnimSequence>(export);
+            var boneList = animSeq.Bones;
+
+
+            animSeq.DecompressAnimationData();
+
+            if (true)
+            {
+                for (int i = 0; i < boneList.Count; i++)
+                {
+                    var boneName = boneList[i];
+                    if (shouldRandomizeBone(boneName, option))
+                    {
+                        //Debug.WriteLine($"Randomizing bone: {boneName}");
+                        // Location
+                        for (int v = 0; v < animSeq.RawAnimationData[i].Positions.Count; v++)
+                        {
+                            var vect = animSeq.RawAnimationData[i].Positions[v];
+                            vect.X = ThreadSafeRandom.NextFloat(vect.X - (vect.X * .3f), vect.X + (vect.X * .3f));
+                            vect.Y = ThreadSafeRandom.NextFloat(vect.Y - (vect.Y * .3f), vect.Y + (vect.Y * .3f));
+                            vect.Z = ThreadSafeRandom.NextFloat(vect.Z - (vect.Z * .3f), vect.Z + (vect.Z * .3f));
+                            animSeq.RawAnimationData[i].Positions[v] = vect;
+                        }
+
+                        // Rotation
+                        for (int v = 0; v < animSeq.RawAnimationData[i].Rotations.Count; v++)
+                        {
+                            var vect = animSeq.RawAnimationData[i].Rotations[v];
+                            vect.W = ThreadSafeRandom.NextFloat(vect.W - (vect.W * .1f), vect.W + (vect.W * .1f));
+                            vect.X = ThreadSafeRandom.NextFloat(vect.X - (vect.X * .1f), vect.X + (vect.X * .1f));
+                            vect.Y = ThreadSafeRandom.NextFloat(vect.Y - (vect.Y * .1f), vect.Y + (vect.Y * .1f));
+                            vect.Z = ThreadSafeRandom.NextFloat(vect.Z - (vect.Z * .1f), vect.Z + (vect.Z * .1f));
+                            animSeq.RawAnimationData[i].Rotations[v] = vect;
+                        }
+                    }
+                    else
+                    {
+                        //Debug.WriteLine($"Not randomizing bone: {boneName}");
+                    }
+                }
+            }
+
+            export.WritePropertiesAndBinary(animSeq.CompressAnimationDataAndUpdateProperties(), animSeq);
+            return true;
+        }
+
+        private static bool nothing(GameTarget target, ExportEntry export, RandomizationOption option)
+        {
             var game = export.FileRef.Game;
             byte[] data = export.Data;
             try
@@ -303,7 +354,7 @@ namespace Randomizer.Randomizers.Shared
 
         private static bool shouldRandomizeBone(string boneName, RandomizationOption option)
         {
-            if (boneName.Contains("base", StringComparison.InvariantCultureIgnoreCase)) 
+            if (boneName.Contains("base", StringComparison.InvariantCultureIgnoreCase))
                 return false;
 
             if (boneName.Contains("finger", StringComparison.InvariantCultureIgnoreCase)) return true;
