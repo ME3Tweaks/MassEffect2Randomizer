@@ -7,6 +7,7 @@ using System.Threading;
 using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Targets;
 using Serilog;
+using WinCopies.Util;
 
 namespace Randomizer.MER
 {
@@ -20,12 +21,6 @@ namespace Randomizer.MER
         /// </summary>
         private readonly GameTarget Target;
 
-        [Obsolete]
-        public MERPackageCache()
-        {
-            throw new Exception("MERPackageCache must use the constructor that takes a gametarget!");
-        }
-
         public MERPackageCache(GameTarget target)
         {
             Target = target;
@@ -36,7 +31,7 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="packageName"></param>
         /// <returns></returns>
-        public override IMEPackage GetCachedPackage(string packageName, bool openIfNotInCache = true)
+        public override IMEPackage GetCachedPackage(string packageName, bool openIfNotInCache = true, Func<string, IMEPackage> openPackageMethod = null)
         {
             // May need way to set maximum size of dictionary so we don't hold onto too much memory.
             packageName = Path.GetFileName(packageName); // Ensure we only use filename

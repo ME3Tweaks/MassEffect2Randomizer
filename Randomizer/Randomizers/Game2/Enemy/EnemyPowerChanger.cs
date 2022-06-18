@@ -379,7 +379,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     else
                     {
                         // MEMORY SAFE (resolve imports to exports)
-                        MERPackageCache cache = new MERPackageCache();
+                        MERPackageCache cache = new MERPackageCache(target);
                         relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
                     }
 

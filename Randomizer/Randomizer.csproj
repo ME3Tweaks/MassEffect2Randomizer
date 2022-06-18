@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows8.0</TargetFramework>
+    <TargetFramework>net6.0-windows8.0</TargetFramework>
     <Platforms>x64</Platforms>
     <Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release;Game3Debug;Game3Release</Configurations>
     <Authors>Mgamerz</Authors>
     <Company>ME3Tweaks</Company>
-    <Copyright>2017 - 2021 ME3Tweaks</Copyright>
+    <Copyright>2017 - 2022 ME3Tweaks</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
@@ -51,10 +51,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game2\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
-
-
-
-  <ItemGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
+	<ItemGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.json" />
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.txt" />
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.xml" />
@@ -92,11 +89,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fody" Version="6.6.0">
+    <PackageReference Include="Fody" Version="6.6.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
+    <PackageReference Include="PropertyChanged.Fody" Version="3.4.1" />
     <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
     <PackageReference Include="Serilog.Sinks.RollingFile.Extension" Version="2.0.2" />
   </ItemGroup>

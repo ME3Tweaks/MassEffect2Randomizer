@@ -27,7 +27,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var vipLounge = MEPackageHandler.OpenMEPackage(vipLoungeLF);
 
                 var playerDanceInterpData = vipLounge.GetUExport(547);
-                var c = new MERPackageCache();
+                var c = new MERPackageCache(target);
 
                 InstallShepardDanceGesture(target, playerDanceInterpData, c); // Paragon
                 InstallShepardDanceGesture(target, vipLounge.GetUExport(559), c); // Stupid shep lol
@@ -64,7 +64,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var loungeP = MEPackageHandler.OpenMEPackage(denDanceF);
                 var sequence = loungeP.GetUExport(3924);
 
-                MERPackageCache cache = new MERPackageCache();
+                MERPackageCache cache = new MERPackageCache(target);
                 List<InterpTools.InterpData> interpDatas = new List<InterpTools.InterpData>();
                 var interp1 = loungeP.GetUExport(3813);
 
@@ -125,7 +125,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         public static bool InstallShepardDanceGesture(GameTarget target, ExportEntry danceTrackExp, MERPackageCache cache)
         {
-            cache ??= new MERPackageCache();
+            cache ??= new MERPackageCache(target);
 
             var danceGestureData = RBioEvtSysTrackGesture.GetGestures(danceTrackExp);
             var newGestures = new List<Gesture>();

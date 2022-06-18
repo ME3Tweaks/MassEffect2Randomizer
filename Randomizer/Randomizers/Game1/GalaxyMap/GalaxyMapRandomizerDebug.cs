@@ -10,6 +10,7 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.TLK;
+using LegendaryExplorerCore.TLK.ME1;
 using LegendaryExplorerCore.TLK.ME2ME3;
 using LegendaryExplorerCore.Unreal.Classes;
 

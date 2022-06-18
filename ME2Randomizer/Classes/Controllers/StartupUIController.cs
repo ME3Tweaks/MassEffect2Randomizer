@@ -118,7 +118,7 @@ namespace RandomizerUI.Classes.Controllers
                     TrackEventCallback = TelemetryController.TrackEvent,
                     CreateLogger = MERLog.CreateLogger,
                     RunOnUiThreadDelegate = RunOnUIThread,
-                    LoadAuxillaryServices = true,
+                    LoadAuxiliaryServices = true,
                     LECPackageSaveFailedCallback = x => MERLog.Error($@"Failed to save package: {x}"),
                 };
 
@@ -356,28 +356,28 @@ namespace RandomizerUI.Classes.Controllers
 
                     // Disable games not installed or found
                     window.LEGameRadioButton.IsEnabled = Locations.GetTarget(true) != null;
-                        window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
+                    window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
 
-                        Random random = new Random();
-                        var preseed = random.Next();
-                        window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
-                        window.ContributorCredits.ReplaceAll(window.GetContributorCredits());
-                        window.LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
+                    Random random = new Random();
+                    var preseed = random.Next();
+                    window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
+                    window.ContributorCredits.ReplaceAll(window.GetContributorCredits());
+                    window.LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
 #if DEBUG
                     window.SeedTextBox.Text = 529572808.ToString();
 #else
                     window.SeedTextBox.Text = preseed.ToString();
 #endif
                     window.TextBlock_AssemblyVersion.Text = $"Version {MLibraryConsumer.GetAppVersion()}";
-                        window.SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
+                    window.SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
 
 
-                        if (MERSettings.GetSettingBool(ESetting.SETTING_FIRSTRUN))
-                        {
-                            window.FirstRunFlyoutOpen = true;
-                        }
-                        await pd.CloseAsync();
-                    };
+                    if (MERSettings.GetSettingBool(ESetting.SETTING_FIRSTRUN))
+                    {
+                        window.FirstRunFlyoutOpen = true;
+                    }
+                    await pd.CloseAsync();
+                };
             bw.RunWorkerAsync();
         }
 
