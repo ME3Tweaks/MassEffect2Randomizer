@@ -117,7 +117,16 @@ namespace RandomizerUI.Classes.Controllers
                 TelemetryInterposer.SetErrorCallback(TelemetryController.TrackError);
 
                 // Initialize core libraries
-                ME3TweaksCoreLib.Initialize(RunOnUIThread, MERLog.CreateLogger);
+
+                var bootPackage = new ME3TweaksCoreLibInitPackage()
+                {
+                    CreateLogger = MERLog.CreateLogger,
+                    LoadAuxiliaryServices = true,
+                    LECPackageSaveFailedCallback = x=> MERLog.Error($@"Error saving package: {x}"),
+                    RunOnUiThreadDelegate = action => { Application.Current.Dispatcher.Invoke(() => action());}
+                };
+
+                ME3TweaksCoreLib.Initialize(bootPackage);
                 //ALOTInstallerCoreLib.Startup(SetWrapperLogger, RunOnUIThread, startTelemetry, stopTelemetry, $"Mass Effect 2 Randomizer {App.AppVersion} starting up", false);
                 // Logger is now available
 

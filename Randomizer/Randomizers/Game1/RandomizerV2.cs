@@ -209,7 +209,7 @@ namespace Randomizer.Randomizers.Game1
                             return;
 #endif
                         // Skip NON INT
-                        var localization = MEDirectories.GetLocalizationFromFileName(name);
+                        var localization = name.GetUnrealLocalization();
                         if (localization != MELocalization.None && localization != MELocalization.INT)
                             return;
 

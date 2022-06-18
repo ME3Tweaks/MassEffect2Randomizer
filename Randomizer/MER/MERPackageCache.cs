@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Threading;
 using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Targets;
 using Serilog;
+using WinCopies.Util;
 
 namespace Randomizer.MER
 {
@@ -24,7 +26,7 @@ namespace Randomizer.MER
         /// </summary>
         /// <param name="packageName"></param>
         /// <returns></returns>
-        public override IMEPackage GetCachedPackage(string packageName, bool openIfNotInCache = true)
+        public override IMEPackage GetCachedPackage(string packageName, bool openIfNotInCache = true, Func<string, IMEPackage> openPackageMethod = null)
         {
             // May need way to set maximum size of dictionary so we don't hold onto too much memory.
             packageName = Path.GetFileName(packageName); // Ensure we only use filename

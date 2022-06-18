@@ -1,4 +1,5 @@
-﻿using Microsoft.WindowsAPICodePack.Taskbar;
+﻿
+using Microsoft.WindowsAPICodePack.Taskbar;
 
 namespace RandomizerUI.Classes.Randomizers.Utility
 {
