@@ -219,21 +219,21 @@ namespace Randomizer.Randomizers.Handlers
             {
                 if (tlkFile.Contains("DLC_440")) // Change if our module number changes
                 {
-                    var tf = new LegendaryExplorerCore.TLK.ME2ME3.TalkFile();
+                    var tf = new ME2ME3TalkFile();
                     tf.LoadTlkData(tlkFile);
                     MERTalkFiles.Add(tf);
                     if (tlkFile.Contains("_INT"))
                         MERTalkFile = tf;
                     var fname = Path.GetFileNameWithoutExtension(tlkFile);
-                    loadedLanguages.Add(MEDirectories.GetLocalizationFromFileName(fname));
+                    loadedLanguages.Add(fname.GetUnrealLocalization());
                 }
                 else
                 {
-                    var tf = new LegendaryExplorerCore.TLK.ME2ME3.TalkFile();
+                    var tf = new ME2ME3TalkFile();
                     tf.LoadTlkData(tlkFile);
                     LoadedOfficialTalkFiles.Add(tf);
                     var fname = Path.GetFileNameWithoutExtension(tlkFile);
-                    loadedLanguages.Add(MEDirectories.GetLocalizationFromFileName(fname));
+                    loadedLanguages.Add(fname.GetUnrealLocalization());
                 }
             }
 #elif __GAME3__

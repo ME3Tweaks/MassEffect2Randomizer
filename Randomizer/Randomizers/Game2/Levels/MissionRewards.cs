@@ -184,7 +184,7 @@ namespace Randomizer.Randomizers.Game1.Misc
             if (checkNext)
             {
                 // Get next node(s) as we might have multiple pieces
-                var nextOutlinks = KismetHelper.GetOutboundLinksOfNode(node);
+                var nextOutlinks = SeqTools.GetOutboundLinksOfNode(node);
                 if (nextOutlinks.Count == 1 && nextOutlinks[0].Count == 1 && nextOutlinks[0][0].LinkedOp is ExportEntry maybeSeqNext && maybeSeqNext.ClassName == "SequenceReference")
                 {
                     // CALL ON NEXT

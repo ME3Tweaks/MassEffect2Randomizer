@@ -23,7 +23,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         {
             var gestureFiles = MERUtilities.ListStaticAssets("binary.gestures");
             var randGestureFile = gestureFiles.RandomElement();
-            cache ??= new MERPackageCache();
+            cache ??= new MERPackageCache(target);
             var gPackage = cache.GetCachedPackageEmbedded(randGestureFile, isFullPath: true);
             var options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
 
@@ -281,7 +281,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             // Pick a random package
             var randGestureFile = gestureFiles.RandomElement();
             var hasCache = cache != null;
-            cache ??= new MERPackageCache();
+            cache ??= new MERPackageCache(target);
             var gPackage = cache.GetCachedPackageEmbedded(randGestureFile, isFullPath: true);
             List<ExportEntry> options;
             if (filterKeywords != null && blacklistedKeywords != null)

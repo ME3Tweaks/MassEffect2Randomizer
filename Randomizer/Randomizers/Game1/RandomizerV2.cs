@@ -21,7 +21,6 @@ using Randomizer.Randomizers.Game1._2DA;
 using Randomizer.Randomizers.Game1.ExportTypes;
 using Randomizer.Randomizers.Game1.Levels;
 using Randomizer.Randomizers.Game1.Misc;
-using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Levels;
 using Randomizer.Randomizers.Shared;
@@ -148,7 +147,7 @@ namespace Randomizer.Randomizers.Game1
                 {
                     var asiList = ASIManager.MasterLE1ASIUpdateGroups;
                     ASIManager.InstallASIToTarget(asiList.Find(x => x.UpdateGroupId == ASIModIDs.LE1_AUTOTOC), SelectedOptions.RandomizationTarget);
-                    ASIManager.InstallASIToTarget(asiList.Find(x => x.UpdateGroupId == ASIModIDs.LE1_DLC_MOD_ENABLER), SelectedOptions.RandomizationTarget);
+                    ASIManager.InstallASIToTarget(asiList.Find(x => x.UpdateGroupId == ASIModIDs.LE1_AUTOLOAD_ENABLER), SelectedOptions.RandomizationTarget);
                 }
                 else
                 {

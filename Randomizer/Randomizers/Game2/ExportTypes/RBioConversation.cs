@@ -75,7 +75,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             if (!conversationStartExports.Any())
                 return false;
 
-            MERPackageCache localCache = new MERPackageCache();
+            MERPackageCache localCache = new MERPackageCache(target);
 
             foreach (var convStart in conversationStartExports)
             {

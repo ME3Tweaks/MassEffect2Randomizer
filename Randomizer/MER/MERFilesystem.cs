@@ -318,5 +318,16 @@ namespace Randomizer.MER
             }
             return null;
         }
+
+        /// <summary>
+        /// Opens a package without loading the exports table. Do not cache this package.
+        /// </summary>
+        /// <param name="packagePath">The path to the package to open</param>
+        /// <returns></returns>
+        public static IMEPackage OpenMEPackageTablesOnly(string packagePath)
+        {
+            var package = MEPackageHandler.UnsafePartialLoad(packagePath, x => false);
+            return package;
+        }
     }
 }

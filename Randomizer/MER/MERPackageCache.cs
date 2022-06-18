@@ -21,12 +21,6 @@ namespace Randomizer.MER
         /// </summary>
         private readonly GameTarget Target;
 
-        [Obsolete]
-        public MERPackageCache()
-        {
-            throw new Exception("MERPackageCache must use the constructor that takes a gametarget!");
-        }
-
         public MERPackageCache(GameTarget target)
         {
             Target = target;
