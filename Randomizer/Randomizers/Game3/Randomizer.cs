@@ -17,15 +17,10 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
 using Randomizer.MER;
-//using Randomizer.Randomizers.Game1.Misc;
-//using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Game3.ExportTypes;
 using Randomizer.Randomizers.Game3.Framework;
 using Randomizer.Randomizers.Game3.Levels;
-//using Randomizer.Randomizers.Game2.Levels;
-//using Randomizer.Randomizers.Game2.Misc;
-//using Randomizer.Randomizers.Game2.TextureAssets;
-//using Randomizer.Randomizers.Game2.TextureAssets.LE2;
+using Randomizer.Randomizers.Game3.Misc;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared;
 using Randomizer.Randomizers.Utility;
@@ -196,14 +191,14 @@ namespace Randomizer.Randomizers.Game3
                         SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing game files [{currentFileNumber}/{files.Count}]");
 
 #if DEBUG
-                        if (true
-                        //&& false //uncomment to disable filtering
-                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("ProEar", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                        )
-                            return;
+                        //if (true
+                        ////&& false //uncomment to disable filtering
+                        ////&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("ProMar", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("Cat002", StringComparison.InvariantCultureIgnoreCase)
+                        //)
+                        //    return;
 #endif
                         try
                         {
@@ -713,6 +708,9 @@ namespace Randomizer.Randomizers.Game3
                 GroupName = "Gameplay",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
+                    new RandomizationOption() {HumanName = "Enemy spawns", Description = "Runtime randomization of what enemies will spawn", 
+                        PerformSpecificRandomizationDelegate = RSFXSeqAct_AIFactory2.Init,
+                        PerformRandomizationOnExportDelegate = RSFXSeqAct_AIFactory2.RandomizeSpawnSets, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe},
                     //new RandomizationOption() {HumanName = "Skip minigames", Description = "Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption()
                     //{

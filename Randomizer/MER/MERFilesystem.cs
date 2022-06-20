@@ -8,6 +8,7 @@ using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Targets;
@@ -42,7 +43,6 @@ namespace Randomizer.MER
         /// </summary>
         public static MEGame[] Games = new[] { MEGame.LE3 };
         public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
-        public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", /*"BIOG_Male_Player_C.pcc"*/ };
 #endif
 
 
@@ -59,16 +59,13 @@ namespace Randomizer.MER
             ReloadLoadedFiles(options.RandomizationTarget);
 
             dlcModPath = GetDLCModPath(options.RandomizationTarget);
-            if (options.Reroll && Directory.Exists(dlcModPath)) 
+            if (options.Reroll && Directory.Exists(dlcModPath))
                 MUtilities.DeleteFilesAndFoldersRecursively(dlcModPath); //Nukes the DLC folder
 
             // Re-extract even if we are on re-roll
             CreateRandomizerDLCMod(options.RandomizationTarget, dlcModPath);
             options.RandomizationTarget.InstallBinkBypass();
             DLCModCookedPath = Path.Combine(dlcModPath, options.RandomizationTarget.Game.CookedDirName());
-
-
-            ReloadLoadedFiles(options.RandomizationTarget);
 
             // ME1 Randomizer does not use this feature
 #if !__GAME1__
@@ -82,6 +79,13 @@ namespace Randomizer.MER
             {
                 TLKBuilder.StartHandler(options.RandomizationTarget);
             }
+
+#if __GAME3__
+            // LE3 version will always install a startup package
+            InstallStartupPackage(options.RandomizationTarget);
+#endif
+
+            ReloadLoadedFiles(options.RandomizationTarget);
         }
 
         private static object openSavePackageSyncObj = new object();
@@ -107,18 +111,25 @@ namespace Randomizer.MER
                 return;
             installedStartupPackage = true;
             var startupPackage = GetStartupPackage(target);
-            MERFileSystem.SavePackage(startupPackage, true);
+            var savedStartupPackage = MERFileSystem.SavePackage(startupPackage, true);
+            ThreadSafeDLCStartupPackage.AddStartupPackage(Path.GetFileNameWithoutExtension(savedStartupPackage));
+            // EntryImporter.AddUserSafeToImportFromFile(target.Game, Path.GetFileName(startupPackage.FilePath));
 
-            ThreadSafeDLCStartupPackage.AddStartupPackage($"Startup_DLC_MOD_{target.Game}Randomizer");
+            // We have to re-open package so it knows how to properly inventory the path of the package for class info.
+            var packageForInventory = MEPackageHandler.OpenMEPackage(savedStartupPackage);
+            foreach (var startupClass in packageForInventory.Exports.Where(x => x.ClassName == @"Class"))
+            {
+                MERUtilities.InventoryCustomClass(startupClass);
+            }
         }
 
         /// <summary>
-        /// Fetches the DLC mod component's startup package
+        /// Fetches the DLC mod component's startup package - FROM EXE
         /// </summary>
         /// <returns></returns>
         public static IMEPackage GetStartupPackage(GameTarget target)
         {
-            var startupDestName = $"Startup_DLC_MOD_{target.Game}Randomizer_INT.pcc";
+            var startupDestName = $"Startup_MOD_{target.Game}Randomizer.pcc";
             return MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedPackage(target.Game, startupDestName), startupDestName);
         }
 
@@ -158,6 +169,8 @@ namespace Randomizer.MER
 
             metacmm.WriteMetaCMM(metacmmFile, installedBy);
             GlobalCache = null;
+
+            EntryImporter.ClearUserSafeToImportFromFiles(selectedOptions.RandomizationTarget.Game);
         }
 
         public static CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
@@ -207,8 +220,9 @@ namespace Randomizer.MER
         /// <summary>
         /// Saves an open package, if it is modified. Saves it to the correct location.
         /// </summary>
-        /// <param name="package"></param>
-        public static void SavePackage(IMEPackage package, bool forceSave = false, string forcedFileName = null)
+        /// <param name="package">Package to save</param>
+        /// <returns>The path the package was saved to. Can be null if package was not saved</returns>
+        public static string SavePackage(IMEPackage package, bool forceSave = false, string forcedFileName = null)
         {
             if (package.IsModified || forceSave)
             {
@@ -218,8 +232,8 @@ namespace Randomizer.MER
                     packageNameNoLocalization = packageNameNoLocalization.Substring(0, packageNameNoLocalization.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase));
                 }
 
-
-                if (!alwaysBasegameFiles.Contains(packageNameNoLocalization, StringComparer.InvariantCultureIgnoreCase))
+                // Todo: This might need to check for things like Startup_ESN!
+                if (!EntryImporter.FilesSafeToImportFrom(package.Game).Contains(packageNameNoLocalization, StringComparer.InvariantCultureIgnoreCase))
                 {
                     var fname = Path.GetFileName(forcedFileName ?? package.FilePath);
                     var packageNewPath = Path.Combine(DLCModCookedPath, fname);
@@ -227,6 +241,7 @@ namespace Randomizer.MER
                     {
                         MERLog.Information($"Saving DLC package {Path.GetFileName(package.FilePath)} => {packageNewPath}");
                         package.Save(packageNewPath, true);
+                        return packageNewPath;
                     }
                 }
                 else
@@ -235,9 +250,12 @@ namespace Randomizer.MER
                     lock (openSavePackageSyncObj)
                     {
                         package.Save(compress: true);
+                        return package.FilePath;
                     }
                 }
             }
+
+            return null; // Package was not saved
         }
 
         /// <summary>

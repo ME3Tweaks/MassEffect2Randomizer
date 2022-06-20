@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using System.Windows;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using MahApps.Metro.Controls.Dialogs;
 using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Helpers;
@@ -49,12 +51,19 @@ namespace RandomizerUI.Classes.Controllers
                     var backupPath = BackupService.GetGameBackupPath(target.Game, false);
                     var gameCookedPath = M3Directories.GetCookedPath(target);
                     var backupCookedPath = MEDirectories.GetCookedPath(target.Game, backupPath);
-                    foreach (var bgf in MERFileSystem.alwaysBasegameFiles)
+                    foreach (var bgf in EntryImporter.FilesSafeToImportFrom(target.Game))
                     {
                         var srcPath = Path.Combine(backupCookedPath, bgf);
-                        var destPath = Path.Combine(gameCookedPath, bgf);
-                        MERLog.Information($@"Restoring {bgf}");
-                        File.Copy(srcPath, destPath, true);
+                        if (File.Exists(srcPath))
+                        {
+                            var destPath = Path.Combine(gameCookedPath, bgf);
+                            MERLog.Information($@"Restoring {bgf}");
+                            File.Copy(srcPath, destPath, true);
+                        }
+                        else
+                        {
+                            Debug.WriteLine($@"Skipping in quick restore: {srcPath}");
+                        }
                     }
 
 #if __GAME2__

@@ -27,7 +27,7 @@ namespace Randomizer.Randomizers.Handlers
 
         public static CoalesceAsset GetIniFile(string filename)
         {
-            return CurrentHandler.GetFile(filename);
+            return CurrentHandler.GetFile(Path.GetFileNameWithoutExtension(filename));
         }
 
         public static void EndHandler()
@@ -60,7 +60,12 @@ namespace Randomizer.Randomizers.Handlers
 
         private CoalesceAsset GetFile(string filename)
         {
-            if (!IniFiles.TryGetValue(filename, out var dupIni))
+#if __GAME3__
+            var ext = ".xml";
+#else
+            var ext = ".ini";
+#endif
+            if (!IniFiles.TryGetValue(filename + ext, out var dupIni))
             {
                 dupIni = new CoalesceAsset(filename);
                 IniFiles[filename] = dupIni;
@@ -92,6 +97,6 @@ namespace Randomizer.Randomizers.Handlers
             }
 #endif
         }
-        #endregion
+#endregion
     }
 }

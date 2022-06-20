@@ -142,7 +142,7 @@ namespace Randomizer.Randomizers
         /// </summary>
         public Func<GameTarget, ExportEntry, RandomizationOption, bool> PerformRandomizationOnExportDelegate { get; set; }
         /// <summary>
-        /// The callback to perform is this is not an export randomizer
+        /// The callback to perform is this is not an export randomizer. This is run first and can also be used for initialization purposes for an option
         /// </summary>
         public Func<GameTarget, RandomizationOption, bool> PerformSpecificRandomizationDelegate { get; set; }
         /// <summary>

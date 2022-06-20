@@ -17,6 +17,8 @@ using System.Xml;
 using System.Xml.Linq;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Misc;
 using ME3TweaksCore.Targets;
@@ -123,30 +125,30 @@ namespace Randomizer.MER
             return items.Where(x => x.StartsWith(assetBase + assetFolderPath)).ToList();
         }
 
-//        /// <summary>
-//        /// Fetches a file from the staticfiles resource folder
-//        /// </summary>
-//        /// <param name="filename"></param>
-//        /// <param name="fullName"></param>
-//        /// <returns></returns>
-//        public static byte[] GetEmbeddedStaticFile(string filename, bool fullName = false)
-//        {
-//            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-//#if __GAME1__
-//// NEEDS GENERATION
-//            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game1.staticfiles." + filename))
-//#elif __GAME2__
-//// NEEDS GENERATION
-//            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game2.staticfiles." + filename))
-//#elif __GAME3__
-//            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game3.Assets." + filename))
-//#endif
-//            {
-//                byte[] ba = new byte[stream.Length];
-//                stream.Read(ba, 0, ba.Length);
-//                return ba;
-//            }
-//        }
+        //        /// <summary>
+        //        /// Fetches a file from the staticfiles resource folder
+        //        /// </summary>
+        //        /// <param name="filename"></param>
+        //        /// <param name="fullName"></param>
+        //        /// <returns></returns>
+        //        public static byte[] GetEmbeddedStaticFile(string filename, bool fullName = false)
+        //        {
+        //            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+        //#if __GAME1__
+        //// NEEDS GENERATION
+        //            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game1.staticfiles." + filename))
+        //#elif __GAME2__
+        //// NEEDS GENERATION
+        //            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game2.staticfiles." + filename))
+        //#elif __GAME3__
+        //            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(fullName ? filename : "Randomizer.Randomizers.Game3.Assets." + filename))
+        //#endif
+        //            {
+        //                byte[] ba = new byte[stream.Length];
+        //                stream.Read(ba, 0, ba.Length);
+        //                return ba;
+        //            }
+        //        }
 
         ///// <summary>
         ///// Fetches a file from the staticfiles/binary resource folder
@@ -294,7 +296,7 @@ namespace Randomizer.MER
                     var partition = partitionSearcher.Get().Cast<ManagementBaseObject>().Single();
                     using (var physicalDiskSearcher = new ManagementObjectSearcher(
                         @"\\localhost\ROOT\Microsoft\Windows\Storage",
-                        $"SELECT Size, Model, MediaType FROM MSFT_PhysicalDisk WHERE DeviceID='{ partition["DiskNumber"] }'"))
+                        $"SELECT Size, Model, MediaType FROM MSFT_PhysicalDisk WHERE DeviceID='{partition["DiskNumber"]}'"))
                     {
                         var physicalDisk = physicalDiskSearcher.Get().Cast<ManagementBaseObject>().Single();
                         return
@@ -903,6 +905,21 @@ namespace Randomizer.MER
 #else
             return "ME3R";
 #endif
+        }
+
+        /// <summary>
+        /// Inventories a class export and adds it to the lookup system
+        /// </summary>
+        /// <param name="e"></param>
+        public static void InventoryCustomClass(ExportEntry e)
+        {
+            if (e.ClassName != "Class")
+                throw new Exception("Cannot inventory a non-class object");
+            var classInfo = GlobalUnrealObjectInfo.generateClassInfo(e);
+            var defaults = e.FileRef.GetUExport(ObjectBinary.From<UClass>(e).Defaults);
+            Debug.WriteLine($@"Inventorying {e.InstancedFullPath}");
+            GlobalUnrealObjectInfo.GenerateSequenceObjectInfoForClassDefaults(defaults);
+            GlobalUnrealObjectInfo.InstallCustomClassInfo(e.ObjectName, classInfo, e.Game);
         }
     }
 }

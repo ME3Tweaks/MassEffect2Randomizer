@@ -21,11 +21,19 @@ namespace Randomizer.Randomizers.Utility
         {
             lock (syncObj)
             {
+#if __GAME2__
                 var engine = CoalescedHandler.GetIniFile("BIOEngine.ini");
                 var sp = engine.GetOrAddSection("Engine.StartupPackages");
                 sp.AddEntryIfUnique(new CoalesceProperty("DLCStartupPackage", new CoalesceValue(packagename, CoalesceParseAction.AddUnique)));
                 return true;
+#elif __GAME3__
+                var engine = CoalescedHandler.GetIniFile("BioEngine.xml");
+                var sp = engine.GetOrAddSection("engine.startuppackages");
+                sp.AddEntryIfUnique(new CoalesceProperty("dlcstartuppackage", new CoalesceValue(packagename, CoalesceParseAction.AddUnique)));
+                return true;
+#endif
             }
+            return false;
         }
     }
 }
