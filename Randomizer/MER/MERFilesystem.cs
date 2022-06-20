@@ -82,7 +82,7 @@ namespace Randomizer.MER
 
 #if __GAME3__
             // LE3 version will always install a startup package
-            InstallStartupPackage(options.RandomizationTarget);
+            // nInstallStartupPackage(options.RandomizationTarget);
 #endif
 
             ReloadLoadedFiles(options.RandomizationTarget);

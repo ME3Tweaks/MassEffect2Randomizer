@@ -57,7 +57,8 @@
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.xml" />
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.zip" />
     <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.pcc" />
-  </ItemGroup>
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
+	</ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.json" />
@@ -65,7 +66,7 @@
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.xml" />
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.zip" />
     <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.pcc" />
-
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
@@ -74,6 +75,7 @@
     <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.xml" />
     <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.zip" />
     <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.pcc" />
+    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -115,5 +117,6 @@
     <Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME1\" />
     <Folder Include="Randomizers\Game2\Assets\Texture2D\" />
     <Folder Include="Randomizers\Game3\Assets\Binary\Packages\LE3\" />
+    <Folder Include="Randomizers\Game3\Assets\Images\GalaxyMap\" />
   </ItemGroup>
 </Project>

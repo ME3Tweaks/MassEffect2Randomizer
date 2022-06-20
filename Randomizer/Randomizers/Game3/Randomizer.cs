@@ -789,23 +789,24 @@ namespace Randomizer.Randomizers.Game3
                     //    IsRecommended = true,
                     //    ProgressIndeterminate = true,
                     //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
-                    //new RandomizationOption() {
-                    //    HumanName = "Galaxy Map",
-                    //    Description = "Moves things around the map, speeds up normandy",
-                    //    PerformSpecificRandomizationDelegate = GalaxyMap.RandomizeGalaxyMap,
-                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
-                    //    SubOptions = new ObservableCollectionExtended<RandomizationOption>()
-                    //    {
-                    //        new RandomizationOption()
-                    //        {
-                    //            SubOptionKey = GalaxyMap.SUBOPTIONKEY_INFINITEGAS,
-                    //            HumanName = "Infinite fuel",
-                    //            Description = "Prevents the Normandy from running out of fuel. Prevents possible softlock due to randomization",
-                    //            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                    //            IsOptionOnly = true
-                    //        }
-                    //    }
-                    //},
+                    new RandomizationOption() {
+                        HumanName = "Galaxy Map",
+                        Description = "Rewrites the galaxy map",
+                        RequiresTLK = true,
+                        PerformSpecificRandomizationDelegate = GalaxyMap.InstallGalaxyMapRewrite,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        //SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        //{
+                        //    new RandomizationOption()
+                        //    {
+                        //        SubOptionKey = GalaxyMap.SUBOPTIONKEY_INFINITEGAS,
+                        //        HumanName = "Infinite fuel",
+                        //        Description = "Prevents the Normandy from running out of fuel. Prevents possible softlock due to randomization",
+                        //        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        //        IsOptionOnly = true
+                        //    }
+                        //}
+                    },
                 }
             });
 
