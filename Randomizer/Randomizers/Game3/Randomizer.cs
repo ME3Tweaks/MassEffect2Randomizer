@@ -191,14 +191,14 @@ namespace Randomizer.Randomizers.Game3
                         SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing game files [{currentFileNumber}/{files.Count}]");
 
 #if DEBUG
-                        //if (true
-                        ////&& false //uncomment to disable filtering
-                        ////&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                        if (true
+                        //&& false //uncomment to disable filtering
+                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("ProMar", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("Cat002", StringComparison.InvariantCultureIgnoreCase)
-                        //)
-                        //    return;
+                        && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("SFXPawn", StringComparison.InvariantCultureIgnoreCase)
+                        )
+                            return;
 #endif
                         try
                         {
@@ -526,6 +526,7 @@ namespace Randomizer.Randomizers.Game3
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RSharedHolograms.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Photo mode", Description="Adds additional photo mode filters", PerformSpecificRandomizationDelegate = RPhotoMode.InstallAdditionalFilters, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     //new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
@@ -586,45 +587,46 @@ namespace Randomizer.Randomizers.Game3
                     //new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
-                    //                    new RandomizationOption() {HumanName = "Enemy weapons",
-                    //                        Description = "Gives enemies different guns",
-                    //                        PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport,
-                    //                        PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init,
-                    //                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
-                    //                        IsRecommended = true,
-                    //                        // Debug stuff.
-                    //#if DEBUG
-                    //                        //HasSliderOption = true,
-                    //                        //Ticks = string.Join(",",Enumerable.Range(-1,EnemyWeaponChanger.AllAvailableWeapons.Count + 1)),
-                    //                        //SliderToTextConverter = x =>
-                    //                        //{
-                    //                        //    if (x < 0)
-                    //                        //        return "All weapons";
-                    //                        //    var idx = (int) x;
-                    //                        //    return EnemyWeaponChanger.AllAvailableWeapons[idx].GunName;
-                    //                        //},
-                    //                        //SliderValue = -1, // End debug stuff
-                    //#endif
-
-
-                    //                    },
-                    //                    new RandomizationOption()
-                    //                    {
-                    //                        HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true,
-                    //                        // Debug stuff.
-                    //#if DEBUG
-                    //                        //HasSliderOption = true,
-                    //                        //Ticks = string.Join(",",Enumerable.Range(-1,EnemyPowerChanger.Powers.Count + 1)),
-                    //                        //SliderToTextConverter = x =>
-                    //                        //{
-                    //                        //    if (x < 0)
-                    //                        //        return "All powers";
-                    //                        //    var idx = (int) x;
-                    //                        //    return EnemyPowerChanger.Powers[idx].PowerName;
-                    //                        //},
-                    //                        //SliderValue = -1, // End debug stuff
-                    //#endif
-                    //                    },
+                                        new RandomizationOption() {HumanName = "Pawn weapons",
+                                            Description = "Every spawned combat pawn (except squadmates) will have a random weapon. May introduce a small amount of game stutter on enemy spawn",
+                                            PerformSpecificRandomizationDelegate = REnemyWeapons.RandomizeEnemyWeapons,
+                                            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                                            IsRecommended = true,
+                                            // Debug stuff.
+                    #if DEBUG
+                                            //HasSliderOption = true,
+                                            //Ticks = string.Join(",",Enumerable.Range(-1,EnemyWeaponChanger.AllAvailableWeapons.Count + 1)),
+                                            //SliderToTextConverter = x =>
+                                            //{
+                                            //    if (x < 0)
+                                            //        return "All weapons";
+                                            //    var idx = (int) x;
+                                            //    return EnemyWeaponChanger.AllAvailableWeapons[idx].GunName;
+                                            //},
+                                            //SliderValue = -1, // End debug stuff
+                    #endif
+                                        },
+                                        new RandomizationOption()
+                                        {
+                                            HumanName = "Enemy powers", Description = "Gives enemies different powers. Can introduce some slight stutter on enemy load. Will significantly increase game difficulty.", 
+                                            PerformFileSpecificRandomization = REnemyPowers.PerFileAIChanger,
+                                            PerformSpecificRandomizationDelegate = REnemyPowers.Init,
+                                            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, 
+                                            IsRecommended = true,
+                                            // Debug stuff.
+                    #if DEBUG
+                                            //HasSliderOption = true,
+                                            //Ticks = string.Join(",",Enumerable.Range(-1,EnemyPowerChanger.Powers.Count + 1)),
+                                            //SliderToTextConverter = x =>
+                                            //{
+                                            //    if (x < 0)
+                                            //        return "All powers";
+                                            //    var idx = (int) x;
+                                            //    return EnemyPowerChanger.Powers[idx].PowerName;
+                                            //},
+                                            //SliderValue = -1, // End debug stuff
+                    #endif
+                                        },
                 }
             });
 
@@ -708,7 +710,7 @@ namespace Randomizer.Randomizers.Game3
                 GroupName = "Gameplay",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Enemy spawns", Description = "Runtime randomization of what enemies will spawn", 
+                    new RandomizationOption() {HumanName = "Enemy spawns", Description = "Runtime randomization of what enemies will spawn",
                         PerformSpecificRandomizationDelegate = RSFXSeqAct_AIFactory2.Init,
                         PerformRandomizationOnExportDelegate = RSFXSeqAct_AIFactory2.RandomizeSpawnSets, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe},
                     //new RandomizationOption() {HumanName = "Skip minigames", Description = "Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
@@ -871,13 +873,13 @@ namespace Randomizer.Randomizers.Game3
                 GroupName = "Wackadoodle",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    //new RandomizationOption() {
-                    //    HumanName = "Actors in cutscenes",
-                    //    Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
-                    //    PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns2,
-                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
-                    //    IsRecommended = true
-                    //},
+                    new RandomizationOption() {
+                        HumanName = "Actors in cutscenes",
+                        Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
+                        PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns2,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true
+                    },
                     new RandomizationOption() {
                             HumanName = "Animation data",
                             PerformRandomizationOnExportDelegate = RSharedAnimSequence.RandomizeExport,

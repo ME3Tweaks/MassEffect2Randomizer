@@ -17,27 +17,36 @@ namespace Randomizer.Randomizers.Utility
 {
     internal class TextureTools
     {
-        public static void ReplaceTexture(ExportEntry export, Stream incomingTextureImageFileData, bool packageStored)
+        public static void ReplaceTexture(ExportEntry export, Stream incomingTextureImageFileData, bool packageStored, out Image loadedImage, Image preloadedImage = null)
         {
+            if (incomingTextureImageFileData == null && preloadedImage == null)
+            {
+                loadedImage = null;
+                Debug.WriteLine(@"Cannot replace texture without input data!");
+                return;
+            }
             //Check aspect ratios
             var props = export.GetProperties();
             var listedWidth = props.GetProp<IntProperty>("SizeX")?.Value ?? 0;
             var listedHeight = props.GetProp<IntProperty>("SizeY")?.Value ?? 0;
 
-            byte[] incomingData;
-            if (incomingTextureImageFileData is MemoryStream ms)
-                incomingData = ms.GetBuffer();
-            else
+            byte[] incomingData = null;
+            if (preloadedImage == null)
             {
-                MemoryStream ms2 = new MemoryStream();
-                incomingTextureImageFileData.CopyTo(ms2);
-                incomingData = ms2.GetBuffer();
+                if (incomingTextureImageFileData is MemoryStream ms)
+                    incomingData = ms.GetBuffer();
+                else
+                {
+                    MemoryStream ms2 = new MemoryStream();
+                    incomingTextureImageFileData.CopyTo(ms2);
+                    incomingData = ms2.GetBuffer();
+                }
             }
 
-            Image image;
+            loadedImage = null;
             try
             {
-                image = Image.LoadFromFileMemory(incomingData, 2, PixelFormat.ARGB);
+                loadedImage = preloadedImage ?? Image.LoadFromFileMemory(incomingData, 2, PixelFormat.ARGB);
             }
             catch (TextureSizeNotPowerOf2Exception)
             {
@@ -50,15 +59,22 @@ namespace Randomizer.Randomizers.Utility
                 return;
             }
 
-            if (image.mipMaps[0].origWidth / image.mipMaps[0].origHeight != listedWidth / listedHeight)
+            if (loadedImage.mipMaps[0].origWidth / loadedImage.mipMaps[0].origHeight != listedWidth / listedHeight)
             {
                 Debug.WriteLine($@"Error: aspect ratios have changed");
+                loadedImage = null;
+                return;
+            }
+
+            if (loadedImage.mipMaps[0].width != 1024 || loadedImage.mipMaps[0].height != 512)
+            {
+                Debug.WriteLine($@"Error: aspect ratio is not 2:1 1024x512");
+                loadedImage = null;
                 return;
             }
 
             Texture2D t2d = new Texture2D(export);
-            var t = t2d.Replace(image, props);
-            return;
+            t2d.Replace(loadedImage, props);
         }
     }
 }

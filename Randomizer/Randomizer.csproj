@@ -1,122 +1,131 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0-windows8.0</TargetFramework>
-    <Platforms>x64</Platforms>
-    <Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release;Game3Debug;Game3Release</Configurations>
-    <Authors>Mgamerz</Authors>
-    <Company>ME3Tweaks</Company>
-    <Copyright>2017 - 2022 ME3Tweaks</Copyright>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0-windows8.0</TargetFramework>
+		<Platforms>x64</Platforms>
+		<Configurations>Game1Debug;Game1Release;Game2Debug;Game2Release;Game3Debug;Game3Release</Configurations>
+		<Authors>Mgamerz</Authors>
+		<Company>ME3Tweaks</Company>
+		<Copyright>2017 - 2022 ME3Tweaks</Copyright>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
-    <Product>Mass Effect Randomizer Core Library</Product>
-    <Description>Core randomization library for Mass Effect and Mass Effect (Legendary Edition)</Description>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
+		<Product>Mass Effect Randomizer Core Library</Product>
+		<Description>Core randomization library for Mass Effect and Mass Effect (Legendary Edition)</Description>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
-    <Product>Mass Effect 2 Randomizer Core Library</Product>
-    <Description>Core randomization library for Mass Effect 2 and Mass Effect 2 (Legendary Edition)</Description>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
+		<Product>Mass Effect 2 Randomizer Core Library</Product>
+		<Description>Core randomization library for Mass Effect 2 and Mass Effect 2 (Legendary Edition)</Description>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
-    <Product>Mass Effect 3 Randomizer Core Library</Product>
-    <Description>Core randomization library for Mass Effect 3 and Mass Effect 3 (Legendary Edition)</Description>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
+		<Product>Mass Effect 3 Randomizer Core Library</Product>
+		<Description>Core randomization library for Mass Effect 3 and Mass Effect 3 (Legendary Edition)</Description>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Debug|x64'">
-    <DefineConstants>DEBUG;TRACE;__GAME1__</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game2\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Release|x64'">
-    <DefineConstants>TRACE;__GAME1__</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game2\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Debug|x64'">
+		<DefineConstants>DEBUG;TRACE;__GAME1__</DefineConstants>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game2\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Release|x64'">
+		<DefineConstants>TRACE;__GAME1__</DefineConstants>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game2\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Debug|x64'">
-    <DefineConstants>DEBUG;TRACE;__GAME2__</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Release|x64'">
-    <DefineConstants>TRACE;__GAME2__</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Debug|x64'">
+		<DefineConstants>DEBUG;TRACE;__GAME2__</DefineConstants>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game2Release|x64'">
+		<DefineConstants>TRACE;__GAME2__</DefineConstants>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game3\**\*</DefaultItemExcludes>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game3Debug|x64'">
-    <DefineConstants>DEBUG;TRACE;__GAME3__</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game2\**\*</DefaultItemExcludes>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game3Release|x64'">
-    <DefineConstants>TRACE;__GAME3__</DefineConstants>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game2\**\*</DefaultItemExcludes>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game3Debug|x64'">
+		<DefineConstants>DEBUG;TRACE;__GAME3__</DefineConstants>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game2\**\*</DefaultItemExcludes>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game3Release|x64'">
+		<DefineConstants>TRACE;__GAME3__</DefineConstants>
+		<DefaultItemExcludes>$(DefaultItemExcludes);Randomizers\Game1\**\*;Randomizers\Game2\**\*</DefaultItemExcludes>
+	</PropertyGroup>
 
 	<ItemGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
-    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.json" />
-    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.txt" />
-    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.xml" />
-    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.zip" />
-    <EmbeddedResource Include="Randomizers\Game1\Assets\**\*.pcc" />
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
+		<EmbeddedResource Include="Randomizers\Game1\Assets\**\*.json" />
+		<EmbeddedResource Include="Randomizers\Game1\Assets\**\*.txt" />
+		<EmbeddedResource Include="Randomizers\Game1\Assets\**\*.xml" />
+		<EmbeddedResource Include="Randomizers\Game1\Assets\**\*.zip" />
+		<EmbeddedResource Include="Randomizers\Game1\Assets\**\*.pcc" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
 	</ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
-    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.json" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.txt" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.xml" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.zip" />
-    <EmbeddedResource Include="Randomizers\Game2\Assets\**\*.pcc" />
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.json" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.txt" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.xml" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.zip" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.pcc" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.json" />
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.txt" />
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.xml" />
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.zip" />
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.pcc" />
-    <EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
-  </ItemGroup>
+	<ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.json" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.txt" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.xml" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.zip" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.pcc" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Randomizers\SharedAssets\**\*.json" />
-    <EmbeddedResource Include="Randomizers\SharedAssets\**\*.txt" />
-    <EmbeddedResource Include="Randomizers\SharedAssets\**\*.xml" />
-    <EmbeddedResource Include="Randomizers\SharedAssets\**\*.zip" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.json" />
+		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.txt" />
+		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.xml" />
+		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.zip" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Randomizers\Game3\Assets\Starterkit\le3starterkit.zip" />
-    <None Remove="Randomizers\Game3\Assets\Text\imagecredits.txt" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Randomizers\Game3\Assets\Starterkit\le3starterkit.zip" />
+		<None Remove="Randomizers\Game3\Assets\Text\imagecredits.txt" />
+		<None Remove="Randomizers\Game3\Assets\Text\Scripts\PhotoModeFilterLoader.uc" />
+		<None Remove="Randomizers\Game3\Assets\Text\Scripts\PlayerDamagedByHostileSquad.uc" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Fody" Version="6.6.3">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.4.1" />
-    <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
-    <PackageReference Include="Serilog.Sinks.RollingFile.Extension" Version="2.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Fody" Version="6.6.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="PropertyChanged.Fody" Version="3.4.1" />
+		<PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+		<PackageReference Include="Serilog.Sinks.RollingFile.Extension" Version="2.0.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCoreWPF\ME3TweaksCoreWPF.csproj" />
-    <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\ME3TweaksCore.csproj" />
-    <ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\submodules\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\ME3TweaksCore\ME3TweaksCoreWPF\ME3TweaksCoreWPF.csproj" />
+		<ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\ME3TweaksCore.csproj" />
+		<ProjectReference Include="..\ME3TweaksCore\ME3TweaksCore\submodules\LegendaryExplorer\LegendaryExplorer\LegendaryExplorerCore\LegendaryExplorerCore.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Randomizers\Game1\Assets\StarterKit\" />
-    <Folder Include="Randomizers\Game2\Assets\Binary\ME2\" />
-    <Folder Include="Randomizers\Game2\Assets\Binary\LE2\" />
-    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE2\Gestures\" />
-    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME2\Gestures\" />
-    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE1\" />
-    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE3\" />
-    <Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME1\" />
-    <Folder Include="Randomizers\Game2\Assets\Texture2D\" />
-    <Folder Include="Randomizers\Game3\Assets\Binary\Packages\LE3\" />
-    <Folder Include="Randomizers\Game3\Assets\Images\GalaxyMap\" />
-  </ItemGroup>
+	<ItemGroup>
+		<Folder Include="Randomizers\Game1\Assets\StarterKit\" />
+		<Folder Include="Randomizers\Game2\Assets\Binary\ME2\" />
+		<Folder Include="Randomizers\Game2\Assets\Binary\LE2\" />
+		<Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE2\Gestures\" />
+		<Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME2\Gestures\" />
+		<Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE1\" />
+		<Folder Include="Randomizers\Game2\Assets\Binary\Packages\LE3\" />
+		<Folder Include="Randomizers\Game2\Assets\Binary\Packages\ME1\" />
+		<Folder Include="Randomizers\Game2\Assets\Texture2D\" />
+		<Folder Include="Randomizers\Game3\Assets\Binary\Packages\LE3\" />
+		<Folder Include="Randomizers\Game3\Assets\Images\GalaxyMap\" />
+		<Folder Include="Randomizers\Game3\Assets\Text\Scripts\PlayerTeamDominate\" />
+	</ItemGroup>
 </Project>

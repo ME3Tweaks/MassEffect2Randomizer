@@ -1,11 +1,13 @@
-﻿using System;
+﻿
+
+using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using LegendaryExplorerCore;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
@@ -13,13 +15,11 @@ using LegendaryExplorerCore.Packages;
 using MahApps.Metro.Controls.Dialogs;
 using ME3TweaksCore;
 using ME3TweaksCore.Helpers;
-using ME3TweaksCore.Services.Backup;
 using ME3TweaksCore.Targets;
 using Microsoft.AppCenter;
 using Randomizer.MER;
 using Randomizer.Randomizers;
 using RandomizerUI.Classes.Telemetry;
-using Serilog;
 
 namespace RandomizerUI.Classes.Controllers
 {
@@ -170,8 +170,8 @@ namespace RandomizerUI.Classes.Controllers
                     },
                     ShowUpdateProgressDialogCallback = (title, initialmessage, canCancel) =>
                     {
-                    // We don't use this as we are already in a progress dialog
-                    pd.SetCancelable(canCancel);
+                        // We don't use this as we are already in a progress dialog
+                        pd.SetCancelable(canCancel);
                         pd.SetMessage(initialmessage);
                         pd.SetTitle(title);
                     },
@@ -339,11 +339,11 @@ namespace RandomizerUI.Classes.Controllers
             };
             bw.RunWorkerCompleted += async (a, b) =>
                     {
-                    // Post critical startup
-                    window.SelectableTargets.AddRange(Locations.GetAllAvailableTargets());
+                        // Post critical startup
+                        window.SelectableTargets.AddRange(Locations.GetAllAvailableTargets());
 
-                    // Initial selected game
-                    if (Locations.GetTarget(true) != null)
+                        // Initial selected game
+                        if (Locations.GetTarget(true) != null)
                         {
                             window.SelectedTarget = Locations.GetTarget(true);
                             window.LEGameRadioButton.IsChecked = true;
@@ -354,30 +354,30 @@ namespace RandomizerUI.Classes.Controllers
                             window.OTGameRadioButton.IsChecked = true;
                         }
 
-                    // Disable games not installed or found
-                    window.LEGameRadioButton.IsEnabled = Locations.GetTarget(true) != null;
-                    window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
+                        // Disable games not installed or found
+                        window.LEGameRadioButton.IsEnabled = Locations.GetTarget(true) != null;
+                        window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
 
-                    Random random = new Random();
-                    var preseed = random.Next();
-                    window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
-                    window.ContributorCredits.ReplaceAll(window.GetContributorCredits());
-                    window.LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
+                        Random random = new Random();
+                        var preseed = random.Next();
+                        window.ImageCredits.ReplaceAll(ImageCredit.LoadImageCredits("imagecredits.txt", false));
+                        window.ContributorCredits.ReplaceAll(window.GetContributorCredits());
+                        window.LibraryCredits.ReplaceAll(LibraryCredit.LoadLibraryCredits("librarycredits.txt"));
 #if DEBUG
-                    window.SeedTextBox.Text = 529572808.ToString();
+                        window.SeedTextBox.Text = 529572808.ToString();
 #else
                     window.SeedTextBox.Text = preseed.ToString();
 #endif
-                    window.TextBlock_AssemblyVersion.Text = $"Version {MLibraryConsumer.GetAppVersion()}";
-                    window.SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
+                        window.TextBlock_AssemblyVersion.Text = $"Version {MLibraryConsumer.GetAppVersion()}";
+                        window.SelectedRandomizeMode = RandomizationMode.ERandomizationMode_SelectAny;
 
 
-                    if (MERSettings.GetSettingBool(ESetting.SETTING_FIRSTRUN))
-                    {
-                        window.FirstRunFlyoutOpen = true;
-                    }
-                    await pd.CloseAsync();
-                };
+                        if (MERSettings.GetSettingBool(ESetting.SETTING_FIRSTRUN))
+                        {
+                            window.FirstRunFlyoutOpen = true;
+                        }
+                        await pd.CloseAsync();
+                    };
             bw.RunWorkerAsync();
         }
 
@@ -388,10 +388,10 @@ namespace RandomizerUI.Classes.Controllers
                 if (Application.Current.MainWindow is MainWindow mw)
                 {
                     Debug.WriteLine("PERIODIC REFRESH NOT IMPLEMENTED");
-            // Is DLC component installed?
-            //var dlcModPath = MERFileSystem.GetDLCModPath();
-            //mw.DLCComponentInstalled = dlcModPath != null ? Directory.Exists(dlcModPath) : false;
-        }
+                    // Is DLC component installed?
+                    //var dlcModPath = MERFileSystem.GetDLCModPath();
+                    //mw.DLCComponentInstalled = dlcModPath != null ? Directory.Exists(dlcModPath) : false;
+                }
             });
         }
 

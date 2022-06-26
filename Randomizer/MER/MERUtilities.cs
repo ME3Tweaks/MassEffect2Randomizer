@@ -86,6 +86,19 @@ namespace Randomizer.MER
             return sr.ReadToEnd();
         }
 
+        /// <summary>
+        /// Fetches an asset stream from a full asset path
+        /// </summary>
+        /// <param name="fullAssetPath"></param>
+        /// <returns></returns>
+        public static Stream GetEmbeddedAssetByFullPath(string fullAssetPath)
+        {
+#if DEBUG
+            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+#endif
+            return Assembly.GetExecutingAssembly().GetManifestResourceStream(fullAssetPath);
+        }
+
         public static Stream GetEmbeddedAsset(string assettype, string assetpath, bool shared = false)
         {
 #if __GAME1__

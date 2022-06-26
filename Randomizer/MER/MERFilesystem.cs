@@ -82,7 +82,7 @@ namespace Randomizer.MER
 
 #if __GAME3__
             // LE3 version will always install a startup package
-            // nInstallStartupPackage(options.RandomizationTarget);
+            InstallStartupPackage(options.RandomizationTarget);
 #endif
 
             ReloadLoadedFiles(options.RandomizationTarget);
@@ -176,12 +176,7 @@ namespace Randomizer.MER
         public static CaseInsensitiveDictionary<string> LoadedFiles { get; private set; }
         public static void ReloadLoadedFiles(GameTarget target)
         {
-            var loadedFiles = MELoadedFiles.GetAllGameFiles(target.TargetPath, target.Game, true);
-            LoadedFiles = new LegendaryExplorerCore.Misc.CaseInsensitiveDictionary<string>();
-            foreach (var lf in loadedFiles)
-            {
-                LoadedFiles[Path.GetFileName(lf)] = lf;
-            }
+            LoadedFiles = MELoadedFiles.GetFilesLoadedInGame(target.Game, true, false, false, target.TargetPath);
         }
 
         /// <summary>
@@ -231,6 +226,7 @@ namespace Randomizer.MER
                 {
                     packageNameNoLocalization = packageNameNoLocalization.Substring(0, packageNameNoLocalization.LastIndexOf("_", StringComparison.InvariantCultureIgnoreCase));
                 }
+                packageNameNoLocalization += Path.GetExtension(forcedFileName ?? package.FilePath);
 
                 // Todo: This might need to check for things like Startup_ESN!
                 if (!EntryImporter.FilesSafeToImportFrom(package.Game).Contains(packageNameNoLocalization, StringComparer.InvariantCultureIgnoreCase))

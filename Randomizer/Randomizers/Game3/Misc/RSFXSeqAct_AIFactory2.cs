@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Helpers;
@@ -36,42 +38,29 @@ namespace Randomizer.Randomizers.Game3.Misc
             return false;
         }
 
-        private class DecookerInfo
-        {
-            /// <summary>
-            /// Which file to open to find the data in
-            /// </summary>
-            public string SourceFileName { get; set; }
-
-            /// <summary>
-            /// Contains the asset path and the destination package name
-            /// </summary>
-            public SeekFreeInfo SeekFreeInfo { get; set; }
-        }
-
-        private class SeekFreeInfo
-        {
-            /// <summary>
-            /// The entry path to map to a package
-            /// </summary>
-            public string EntryPath { get; set; }
-            /// <summary>
-            /// The package that contains the specified EntryPath for loading if not in memory
-            /// </summary>
-            public string SeekFreePackage { get; set; }
-            /// <summary>
-            /// Generates the struct text used in Coalesced files
-            /// </summary>
-            public string GetSeekFreeStructText() => $"(ObjectName=\"{EntryPath}\",SeekFreePackageName=\"{SeekFreePackage}\", bReplicate=true)";
-        }
-
         public static bool Init(GameTarget target, RandomizationOption option)
         {
+            // Setup functions to allow custom enemies
+            var sfxGame = ScriptTools.InstallScriptToPackage(target, "SFXGame.pcc", "SFXModule_DamagePlayer.SFXTakeDamage", "PlayerTeamDominate.SFXTakeDamage.uc", false, false);
+            
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.AddOrder"), "PlayerTeamDominate.AddOrder.uc");
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.CanInstantlyUsePowers"), "PlayerTeamDominate.CanInstantlyUsePowers.uc");
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.CanQueueOrder"), "PlayerTeamDominate.CanQueueOrder.uc");
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.CanUsePowers"), "PlayerTeamDominate.CanUsePowers.uc");
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.HasAnyEnemies"), "PlayerTeamDominate.HasAnyEnemies.uc");
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.MoveToCoverNearHoldLocation"), "PlayerTeamDominate.MoveToCoverNearHoldLocation.uc");
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.ShouldAttack"), "PlayerTeamDominate.ShouldAttack.uc");
+
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXPawn_Henchman.Downed.BeginState"), "PlayerTeamDominate.DownedBeginState.uc");
+            // Setup functions to allow teammates to change teams against the player
+
+            MERFileSystem.SavePackage(sfxGame);
+
             // Split out packages to prepare them for use in seek free
-            var decooksRequired = new List<DecookerInfo>()
+            var decooksRequired = new List<ObjectDecookInfo>()
             {
                 // OMEGA DLC
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_OMG003_125LitExtra.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -80,7 +69,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                         SeekFreePackage = "SFXPawn_Adjutant"
                     }
                 },
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_Omg004_300Fan.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -91,7 +80,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                 },
 
                 // CITADEL - MP ENHANCEMENTS
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_CitSim_CrbrsC.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -100,7 +89,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                         SeekFreePackage = "SFXPawn_Phoenix"
                     }
                 },
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_CitSim_GthB.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -111,7 +100,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                 },
 
                 // CITADEL - MP COLLECTORS
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_CitSim_CllctrC.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -120,7 +109,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                         SeekFreePackage = "SFXPawn_Abomination"
                     }
                 },
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_CitSim_CllctrB.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -129,7 +118,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                         SeekFreePackage = "SFXPawn_CollectorTrooper"
                     }
                 },
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_CitSim_CllctrC.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -138,7 +127,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                         SeekFreePackage = "SFXPawn_CollectorCaptain"
                     }
                 },
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_CitSim_CllctrC.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -147,7 +136,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                         SeekFreePackage = "SFXPawn_Scion"
                     }
                 },
-                new DecookerInfo()
+                new ObjectDecookInfo()
                 {
                     SourceFileName = "BioD_CitSim_CllctrC.pcc",
                     SeekFreeInfo = new SeekFreeInfo()
@@ -156,41 +145,20 @@ namespace Randomizer.Randomizers.Game3.Misc
                         SeekFreePackage = "SFXPawn_Praetorian"
                     }
                 },
-            };
 
-            MERPackageCache gc = new MERPackageCache(target);
-            MERPackageCache c = new MERPackageCache(target);
-            option.ProgressMax = decooksRequired.Count;
-            option.ProgressValue = 0;
-            option.ProgressIndeterminate = false;
-            option.CurrentOperation = "Decooking pawn files";
 
-            var engine = CoalescedHandler.GetIniFile("BioEngine.xml");
-            var sfxengine = engine.GetOrAddSection("sfxgame.sfxengine");
-            List<CoalesceValue> mappings = new List<CoalesceValue>();
-
-            foreach (var di in decooksRequired)
-            {
-                var cachedPacakge = c.GetCachedPackage(di.SourceFileName);
-                var objRef = MEREasyPorts.PortExportIntoPackage(target, "ObjectReferencer_0", cachedPacakge); // Add the object reference if it 
-                objRef.WriteProperty(new ArrayProperty<ObjectProperty>(new[] { new ObjectProperty(cachedPacakge.FindExport(di.SeekFreeInfo.EntryPath).UIndex) }, "ReferencedObjects")); // Write the reference - overwrite if same cached package
-
-                var outPath = Path.Combine(MERFileSystem.DLCModCookedPath, $"{di.SeekFreeInfo.SeekFreePackage}.pcc");
-                var results = EntryExporter.ExportExportToFile(objRef, outPath, out _, globalCache: gc, pc: c);
-                if (results != null)
+                // CUSTOM SPECIAL
+                new ObjectDecookInfo()
                 {
-                    foreach (var v in results)
+                    SourceFileName = null,
+                    SeekFreeInfo = new SeekFreeInfo()
                     {
-                        Debug.WriteLine(v.Message);
+                        EntryPath = "Char_Enemies_MER.Archetypes.Reapers.CorruptBanshee",
+                        SeekFreePackage = "SFXPawn_CorruptBanshee"
                     }
-                }
-
-                mappings.Add(new CoalesceValue(di.SeekFreeInfo.GetSeekFreeStructText(), CoalesceParseAction.AddUnique));
-                option.ProgressValue++;
-            }
-
-            // Add seek free info
-            sfxengine.AddEntry(new CoalesceProperty("dynamicloadmapping", mappings));
+                },
+            };
+            MERDecooker.DecookObjectsToPackages(target, option, decooksRequired, "Decooking enemy pawn files", true);
             return true;
         }
 
@@ -203,7 +171,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                 var nodesInSeq = SeqTools.GetAllSequenceElements(sequence);
                 var connectionsToAIFactory = SeqTools.FindOutboundConnectionsToNode(export, nodesInSeq.OfType<ExportEntry>());
 
-                if (Enumerable.Any(connectionsToAIFactory))
+                if (connectionsToAIFactory.Any())
                 {
                     // Install randomization
                     var aiFactoryTypeShuffler = SequenceObjectCreator.CreateSequenceObject(export.FileRef, MERCustomClasses.RandomizeSpawnSets);
@@ -242,10 +210,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                             SeqTools.WriteOutboundLinksToNode(connection, outbound);
                         }
                     }
-
-
                 }
-
             }
 
             return true;

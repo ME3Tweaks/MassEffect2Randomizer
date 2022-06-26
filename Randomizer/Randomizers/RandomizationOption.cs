@@ -198,11 +198,12 @@ namespace Randomizer.Randomizers
         /// <summary>
         /// Thread-safe progressvalue increment
         /// </summary>
-        public void IncrementProgressValue()
+        public int IncrementProgressValue()
         {
             lock (Self)
             {
                 ProgressValue++;
+                return ProgressValue;
             }
         }
     }
