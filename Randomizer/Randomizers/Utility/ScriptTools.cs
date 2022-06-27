@@ -23,10 +23,10 @@ namespace Randomizer.Randomizers.Utility
         /// <param name="instancedFullPath"></param>
         /// <param name="scriptFilename"></param>
         /// <param name="shared"></param>
-        public static IMEPackage InstallScriptToPackage(IMEPackage pf, string instancedFullPath, string scriptFilename, bool shared, bool saveOnFinish = false)
+        public static IMEPackage InstallScriptToPackage(IMEPackage pf, string instancedFullPath, string scriptFilename, bool shared, bool saveOnFinish = false, PackageCache cache = null)
         {
             var targetExp = pf.FindExport(instancedFullPath);
-            InstallScriptToExport(targetExp, scriptFilename, shared);
+            InstallScriptToExport(targetExp, scriptFilename, shared, cache);
             if (saveOnFinish)
             {
                 MERFileSystem.SavePackage(pf);
@@ -43,23 +43,23 @@ namespace Randomizer.Randomizers.Utility
         /// <param name="instancedFullPath"></param>
         /// <param name="scriptFilename"></param>
         /// <param name="shared"></param>
-        public static IMEPackage InstallScriptToPackage(GameTarget target, string packageFile, string instancedFullPath, string scriptFilename, bool shared, bool saveOnFinish = false)
+        public static IMEPackage InstallScriptToPackage(GameTarget target, string packageFile, string instancedFullPath, string scriptFilename, bool shared, bool saveOnFinish = false, PackageCache cache = null)
         {
             var pf = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, packageFile));
-            return InstallScriptToPackage(pf, instancedFullPath, scriptFilename, shared, saveOnFinish);
+            return InstallScriptToPackage(pf, instancedFullPath, scriptFilename, shared, saveOnFinish, cache);
         }
 
-        public static void InstallScriptToExport(ExportEntry targetExport, string scriptFilename, bool shared = false)
+        public static void InstallScriptToExport(ExportEntry targetExport, string scriptFilename, bool shared = false, PackageCache cache = null)
         {
             MERLog.Information($@"Installing script {scriptFilename} to export {targetExport.InstancedFullPath}");
             string scriptText = MERUtilities.GetEmbeddedTextAsset($"Scripts.{scriptFilename}", shared);
-            InstallScriptTextToExport(targetExport, scriptText, scriptFilename);
+            InstallScriptTextToExport(targetExport, scriptText, scriptFilename, cache);
         }
 
-        public static void InstallScriptTextToExport(ExportEntry targetExport, string scriptText, string scriptFileNameForLogging)
+        public static void InstallScriptTextToExport(ExportEntry targetExport, string scriptText, string scriptFileNameForLogging, PackageCache cache)
         {
             var fl = new FileLib(targetExport.FileRef);
-            bool initialized = fl.Initialize();
+            bool initialized = fl.Initialize(cache);
             if (!initialized)
             {
                 MERLog.Error($@"FileLib loading failed for package {targetExport.InstancedFullPath} ({targetExport.FileRef.FilePath}):");
@@ -79,6 +79,9 @@ namespace Randomizer.Randomizers.Utility
                     break;
                 case "State":
                     (_, log) =UnrealScriptCompiler.CompileState(targetExport, scriptText, fl);
+                    break;
+                case "Class":
+                    (_, log) = UnrealScriptCompiler.CompileClass(targetExport.FileRef, scriptText, fl, export: targetExport);
                     break;
                 default:
                     throw new Exception("Can't compile to this type yet!");

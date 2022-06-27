@@ -112,8 +112,14 @@ namespace Randomizer.MER
                 assetBase = $"Randomizer.Randomizers.SharedAssets.{assettype}.";
 #if DEBUG
             var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-#endif
+            var result = Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + assetpath);
+            if (result == null)
+                Debugger.Break();
+            return result;
+#else
             return Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + assetpath);
+
+#endif
         }
 
         /// <summary>

@@ -105,7 +105,7 @@ namespace Randomizer.Randomizers.Game3
         private void PerformRandomization(object sender, DoWorkEventArgs e)
         {
             MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
-            ResetClasses();
+            ResetClasses(); // Cleanup anything that wasn't cleaned up previously for some reason.
             SelectedOptions.SetRandomizationInProgress?.Invoke(true);
             SelectedOptions.SetCurrentOperationText?.Invoke("Initializing randomizer");
             SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
@@ -127,6 +127,7 @@ namespace Randomizer.Randomizers.Game3
                 }
             }
 
+            MERCaches.Init(SelectedOptions.RandomizationTarget);
             Exception rethrowException = null;
             try
             {
@@ -297,6 +298,7 @@ namespace Randomizer.Randomizers.Game3
             //SquadmateHead.ResetClass();
             //PawnPorting.ResetClass();
             //NPCHair.ResetClass();
+            MERCaches.Cleanup();
         }
 
 

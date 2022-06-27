@@ -16,6 +16,7 @@
     }
     else
     {
+        weaponPoolSize = 71;
         if (SFXPawn(self) != None && !SFXPawn(self).bSupportsVisibleWeapons){
             weaponPoolSize = %FULLWEAPONPOOLSIZE%;
         }

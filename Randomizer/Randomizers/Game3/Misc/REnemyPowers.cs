@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Microsoft.WindowsAPICodePack.Win32Native.NamedPipe;
 using Randomizer.MER;
@@ -19,7 +20,7 @@ namespace Randomizer.Randomizers.Game3.Misc
         /// </summary>
         private static Dictionary<string, string> PatchMapping;
 
-
+        private static MERPackageCache globalFileLibCache;
         /// <summary>
         /// Run once per file - determine if file has any AIs that need updated.
         /// </summary>
@@ -33,7 +34,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                 var exp = package.FindExport(v);
                 if (exp != null)
                 {
-                    ScriptTools.InstallScriptTextToExport(exp, PatchMapping[v], $"AI patch - {v}");
+                    ScriptTools.InstallScriptTextToExport(exp, PatchMapping[v], $"AI patch - {v}", globalFileLibCache);
                 }
             }
 
@@ -42,6 +43,7 @@ namespace Randomizer.Randomizers.Game3.Misc
 
         public static bool Init(GameTarget target, RandomizationOption option)
         {
+            globalFileLibCache = new MERPackageCache(target);
             // Inventory the AI patches
             PatchMapping = new Dictionary<string, string>();
             var scriptAssets = MERUtilities.ListEmbeddedAssets("Text", "Scripts.EnemyPowersAI");
@@ -53,8 +55,19 @@ namespace Randomizer.Randomizers.Game3.Misc
             }
 
             // Install the script that randomly gives powers on SFXPowerManager load.
-            ScriptTools.InstallScriptToPackage(target, "SFXGame.pcc", "SFXPowerManager.InitializePowerList", "PawnPowerRandomizer.uc", false, true);
+            var sfxgame = ScriptTools.InstallScriptToPackage(target, "SFXGame.pcc", "SFXPowerManager.InitializePowerList", "PawnPowerRandomizer.uc", false, false, cache: MERCaches.LookupCache);
+            ScriptTools.InstallScriptToPackage(sfxgame, "SFXPowerCustomAction.ShouldUsePowerOnShields", "EnemyPowersSFXGame.ShouldUsePowerOnShields.uc", false, false, cache: MERCaches.LookupCache);
+
+            // Set percent to allow pawns to use powers.
+            sfxgame.FindExport("Default__BioPawn").WriteProperty(new FloatProperty(0.75f, "m_fPowerUsePercent"));
+            MERFileSystem.SavePackage(sfxgame);
             return true;
+        }
+
+        public static void CleanupClass()
+        {
+            globalFileLibCache.Dispose();
+            globalFileLibCache = null;
         }
     }
 }
