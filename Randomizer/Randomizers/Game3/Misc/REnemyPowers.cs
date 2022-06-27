@@ -9,6 +9,7 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Targets;
 using Microsoft.WindowsAPICodePack.Win32Native.NamedPipe;
 using Randomizer.MER;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game3.Misc
@@ -44,6 +45,7 @@ namespace Randomizer.Randomizers.Game3.Misc
         public static bool Init(GameTarget target, RandomizationOption option)
         {
             globalFileLibCache = new MERPackageCache(target);
+
             // Inventory the AI patches
             PatchMapping = new Dictionary<string, string>();
             var scriptAssets = MERUtilities.ListEmbeddedAssets("Text", "Scripts.EnemyPowersAI");
@@ -60,13 +62,33 @@ namespace Randomizer.Randomizers.Game3.Misc
 
             // Set percent to allow pawns to use powers.
             sfxgame.FindExport("Default__BioPawn").WriteProperty(new FloatProperty(0.75f, "m_fPowerUsePercent"));
+
+            // Extract our custom powers.
+            MERUtilities.ExtractEmbeddedPackageFolder("PowerRandomizer", target.Game);
+
+            // Add our custom powers to seek free.
+            var mappings = new[]
+            {
+                new SeekFreeInfo()
+                {
+                    SeekFreePackage = "SFXPower_EnemyBioticCharge",
+                    EntryPath = "MERGameContent.SFXPowerCustomAction_EnemyBioticCharge"
+                }
+            };
+            foreach (var v in mappings)
+            {
+                CoalescedHandler.AddDynamicLoadMappingEntry(v);
+            }
+
+            MERDebug.InstallDebugScript(sfxgame, "SFXAI_Core.ChooseAttack", false);
+            MERDebug.InstallDebugScript(sfxgame, "SFXAI_Core.Attack", false);
             MERFileSystem.SavePackage(sfxgame);
             return true;
         }
 
-        public static void CleanupClass()
+        public static void ResetClass()
         {
-            globalFileLibCache.Dispose();
+            globalFileLibCache?.Dispose();
             globalFileLibCache = null;
         }
     }

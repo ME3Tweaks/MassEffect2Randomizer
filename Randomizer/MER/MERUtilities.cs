@@ -15,6 +15,8 @@ using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Xml;
 using System.Xml.Linq;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
@@ -142,6 +144,23 @@ namespace Randomizer.MER
                 assetBase = $"Randomizer.Randomizers.SharedAssets.{assettype}.";
             var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
             return items.Where(x => x.StartsWith(assetBase + assetFolderPath)).ToList();
+        }
+
+        /// <summary>
+        /// Extracts packages from an embedded folder to the DLC folder for MERFS
+        /// </summary>
+        /// <param name="packageFolderName"></param>
+        /// <param name="game"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        public static void ExtractEmbeddedPackageFolder(string packageFolderName, MEGame game)
+        {
+            var items = ListEmbeddedAssets("Binary", $"Packages.{game}.{packageFolderName}");
+            items = items.Where(x => x.RepresentsPackageFilePath()).ToList();
+
+            foreach (var v in items)
+            {
+                ExtractInternalFile(v, true, Path.Combine(MERFileSystem.DLCModCookedPath, v.Substring(v.IndexOf(packageFolderName) + packageFolderName.Length + 1)));
+            }
         }
 
         //        /// <summary>
@@ -821,13 +840,13 @@ namespace Randomizer.MER
 
         public static bool IsGameRunning(MEGame game)
         {
-#if __ME2__
-            return Process.GetProcessesByName("MassEffect2").Any() || Process.GetProcessesByName("ME2Game").Any();
-#elif __ME3__
-            return true; // FIX ME
-#else
+            foreach (var exeName in MEDirectories.ExecutableNames(game))
+            {
+                if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(exeName)).Any())
+                    return true;
+            }
+
             return false;
-#endif
         }
 
         public static bool IsSupportedLocale(GameTarget target)

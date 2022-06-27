@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Coalesced.Xml;
@@ -97,6 +99,20 @@ namespace Randomizer.Randomizers.Handlers
             }
 #endif
         }
-#endregion
+        #endregion
+
+        public static void AddDynamicLoadMappingEntries(IEnumerable<CoalesceValue> mappings)
+        {
+            var engine = CoalescedHandler.GetIniFile("BioEngine");
+            var sfxengine = engine.GetOrAddSection("sfxgame.sfxengine");
+            sfxengine.AddEntry(new CoalesceProperty("dynamicloadmapping", mappings.ToList()));
+        }
+
+        public static void AddDynamicLoadMappingEntry(SeekFreeInfo mapping)
+        {
+            var engine = CoalescedHandler.GetIniFile("BioEngine");
+            var sfxengine = engine.GetOrAddSection("sfxgame.sfxengine");
+            sfxengine.AddEntry(new CoalesceProperty("dynamicloadmapping", new CoalesceValue(mapping.GetSeekFreeStructText())));
+        }
     }
 }

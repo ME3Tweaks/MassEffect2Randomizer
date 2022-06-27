@@ -298,6 +298,7 @@ namespace Randomizer.Randomizers.Game3
             //SquadmateHead.ResetClass();
             //PawnPorting.ResetClass();
             //NPCHair.ResetClass();
+            REnemyPowers.ResetClass();
             MERCaches.Cleanup();
         }
 

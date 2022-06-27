@@ -12,6 +12,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Navigation;
 using ControlzEx.Theming;
+using LegendaryExplorerCore.Gammtek.Extensions;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
@@ -484,7 +485,7 @@ namespace RandomizerUI
             }
             else
             {
-                await this.ShowMessageAsync("Mass Effect 2 is running", "Cannot randomize the game while Mass Effect 2 is running. Please close the game and try again.");
+                await this.ShowMessageAsync($"{SelectedTarget.Game.ToGameName()} is running", $"Cannot randomize the game while {SelectedTarget.Game.ToGameName()} is running. Please close the game and try again.");
             }
         }
 

@@ -34,7 +34,7 @@ namespace Randomizer.Randomizers.Game3.Levels
                                     {
                                         PlanetName = (string)e.Element("PlanetName"),
                                         PlanetName2 = (string)e.Element("PlanetName2"), //Original name (plot planets only)
-                                        PlanetDescription = (string)e.Element("PlanetDescription"),
+                                        PlanetDescription = PrepareDescription((string)e.Element("PlanetDescription")),
                                         IsMSV = (bool)e.Element("IsMSV"),
                                         IsAsteroidBelt = (bool)e.Element("IsAsteroidBelt"),
                                         IsAsteroid = e.Element("IsAsteroid") != null && (bool)e.Element("IsAsteroid"),
@@ -159,13 +159,16 @@ namespace Randomizer.Randomizers.Game3.Levels
                                 newTexture = EntryCloner.CloneEntry(sourceItem);
                                 newTexture.ObjectName = new NameReference($"MERGalaxyMap_TEST{done}", 0);
                                 TextureTools.ReplaceTexture(newTexture, null, true, out imageCache, imageCache); // Use cached version to improve speed
+                                props = sourceItem.GetProperties();
+                                props.AddOrReplaceProp(new StringRefProperty(newTlkStr, "Description"));
+                                props.AddOrReplaceProp(new StringRefProperty(newTlkStr, "DisplayName"));
                                 props.AddOrReplaceProp(new ObjectProperty(newTexture.UIndex, "PreviewImage"));
                                 planet2.WriteProperties(props);
                             }
                         }
                         else
                         {
-                            Debug.WriteLine($@"No image cateogry found for {newPlanetInfo.ImageGroup}");
+                            Debug.WriteLine($@"No image category found for {newPlanetInfo.ImageGroup}");
                         }
 
                         done++;
@@ -177,6 +180,21 @@ namespace Randomizer.Randomizers.Game3.Levels
             MERFileSystem.SavePackage(galaxyMapPackage);
             MERFileSystem.SavePackage(galaxyMapPackage2);
             return true;
+        }
+
+        private static string PrepareDescription(string xmlText)
+        {
+            if (xmlText == null) return null;
+            StringBuilder sb = new StringBuilder();
+            var lines = xmlText.Split('\n');
+
+            foreach (var v in lines)
+            {
+                // Trim each line
+                sb.Append(v.Trim()); // It apparently has newline already so don't do AppendLine, just append
+            }
+
+            return sb.ToString();
         }
     }
 }

@@ -13,6 +13,8 @@ public function InitializePowerList()
     local int nIndex;
     local SFXPowerCustomActionBase PowerInList;
     local bool continueAddingPower;
+    local bool gotAmmoPower;
+    local bool isAmmoPower;
     
     if (MyPawn == None)
     {
@@ -26,6 +28,7 @@ public function InitializePowerList()
         for (powerGivingIdx = 0; powerGivingIdx < numPowersToGive; powerGivingIdx++)
         {
             continueAddingPower = TRUE;
+            isAmmoPower = FALSE;
             merRandomPowerId = Rand(47);
             switch (merRandomPowerId)
             {
@@ -37,6 +40,7 @@ public function InitializePowerList()
                     break;
                 case 2:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_ArmorPiercingAmmo";
+                    isAmmoPower = TRUE;
                     break;
                 case 3:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_KaiLengSlash";
@@ -61,6 +65,7 @@ public function InitializePowerList()
                     break;
                 case 10:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_CryoAmmo";
+                    isAmmoPower = TRUE;
                     break;
                 case 11:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_CryoBlast";
@@ -79,6 +84,7 @@ public function InitializePowerList()
                     break;
                 case 16:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_DisruptorAmmo";
+                    isAmmoPower = TRUE;
                     break;
                 case 17:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_EnergyDrain";
@@ -100,6 +106,7 @@ public function InitializePowerList()
                     break;
                 case 23:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_IncendiaryAmmo";
+                    isAmmoPower = TRUE;
                     break;
                 case 24:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_Incinerate";
@@ -166,12 +173,22 @@ public function InitializePowerList()
                     break;
                 case 45:
                     powerSeekFreeName = "SFXGameContent.SFXPowerCustomAction_WarpAmmo";
+                    isAmmoPower = TRUE;
+                    break;
+                case 46:
+                    powerSeekFreeName = "MERGameContent.SFXPowerCustomAction_EnemyBioticCharge";
                     break;
                 default:
                     LogInternal("MER Warning: Random power out of range: " $ merRandomPowerId, );
                     continue;
             }
             LogInternal((("MER: Attempting to give " $ MyPawn) $ " power ") $ powerSeekFreeName, );
+            if (isAmmoPower && (SFXPawn(MyPawn).Loadout.Weapons.Length == 0 || gotAmmoPower))
+            {
+                LogInternal("MER: Re-rolling power, pawn has no weapon or was already given an ammo power", );
+                powerGivingIdx--;
+                continue;
+            }
             RandomPower = Class<SFXPowerCustomActionBase>(Class'SFXEngine'.static.GetSeekFreeObject(powerSeekFreeName, Class'Class'));
             PowerID = RandomPower.default.PowerCustomActionID;
             if (PowerID == 0)
@@ -193,6 +210,10 @@ public function InitializePowerList()
             {
                 MyPawn.PowerCustomActionClasses[PowerID] = RandomPower;
                 MyPawn.VerifyCAHasBeenInstanced(132, PowerID);
+                if (isAmmoPower)
+                {
+                    gotAmmoPower = TRUE;
+                }
             }
         }
     }

@@ -76,8 +76,6 @@ namespace Randomizer.MER
             option.ProgressIndeterminate = false;
             option.CurrentOperation = operationTextBase;
 
-            var engine = CoalescedHandler.GetIniFile("BioEngine");
-            var sfxengine = engine.GetOrAddSection("sfxgame.sfxengine");
             ConcurrentDictionary<int, CoalesceValue> mappings = new ConcurrentDictionary<int, CoalesceValue>();
 
 #if DEBUG
@@ -110,10 +108,12 @@ namespace Randomizer.MER
                 mappings[option.IncrementProgressValue()] = new CoalesceValue(di.SeekFreeInfo.GetSeekFreeStructText(), CoalesceParseAction.AddUnique);
                 //}
             });
+
             // Add seek free info
+
             if (addSeekFree)
             {
-                sfxengine.AddEntry(new CoalesceProperty("dynamicloadmapping", mappings.Select(x => x.Value).ToList()));
+                CoalescedHandler.AddDynamicLoadMappingEntries(mappings.Select(x => x.Value));
             }
         }
     }

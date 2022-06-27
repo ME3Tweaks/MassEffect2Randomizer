@@ -94,6 +94,7 @@
 	<ItemGroup>
 		<None Remove="Randomizers\Game3\Assets\Starterkit\le3starterkit.zip" />
 		<None Remove="Randomizers\Game3\Assets\Text\imagecredits.txt" />
+		<None Remove="Randomizers\Game3\Assets\Text\Scripts\Debug\SFXAI_Core.ChooseAttack.uc" />
 		<None Remove="Randomizers\Game3\Assets\Text\Scripts\PhotoModeFilterLoader.uc" />
 		<None Remove="Randomizers\Game3\Assets\Text\Scripts\PlayerDamagedByHostileSquad.uc" />
 	</ItemGroup>
