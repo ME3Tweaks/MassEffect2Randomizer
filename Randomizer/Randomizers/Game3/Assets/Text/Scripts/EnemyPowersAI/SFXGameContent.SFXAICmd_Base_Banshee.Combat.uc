@@ -25,10 +25,7 @@ Begin:
         Outer.MyBP.StartCustomAction(169);
         Outer.LastBlastTime = Outer.WorldInfo.GameTimeSeconds;
     }
-    else if (Outer.LastBlastTime + 6.0 < Outer.WorldInfo.GameTimeSeconds)
-    {
-        Outer.Attack();
-    }
+    Outer.Attack();
     Outer.Sleep(0.200000003);
     goto 'Begin';
     stop;
