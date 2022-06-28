@@ -437,6 +437,13 @@ namespace Randomizer.Randomizers.Game3
                         Description = "Shuffles the NPCs that the LE3 Framework provides.",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
                     },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Henchmen",
+                        PerformSpecificRandomizationDelegate = RBioH.RandomizeBioH,
+                        Description = "Shuffles the pawn files around so different squadmates load in place of others. This will automatically re-apply powers to the pawn due to save/load issues.",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    },
                     new RandomizationOption() {
                         HumanName = "Look At Definitions",
                         Description="Changes how pawns look at things",

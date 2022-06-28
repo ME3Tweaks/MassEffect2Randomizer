@@ -24,6 +24,19 @@ namespace Randomizer.MER
         {
             return export.FileRef.GetUExport(ObjectBinary.From<UClass>(export).Defaults);
         }
+
+        public static ExportEntry GetLevel(this IMEPackage package)
+        {
+            return package.FindExport("TheWorld.PersistentLevel");
+        }
+
+        public static Level GetLevelBinary(this IMEPackage package)
+        {
+            var level = GetLevel(package);
+            if (level != null)
+                return ObjectBinary.From<Level>(level);
+            return null;
+        }
     }
 
     public static class StringExtensions
