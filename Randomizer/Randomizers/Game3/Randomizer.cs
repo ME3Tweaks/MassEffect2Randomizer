@@ -545,15 +545,20 @@ namespace Randomizer.Randomizers.Game3
                         PerformSpecificRandomizationDelegate = SizeSixteens.InstallSSChanges,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true
-                    },
+                    },*/
                     new RandomizationOption() {HumanName = "NPC names",
-                        Description = "Install a list of names into the game and renames some of the generic NPCs to them. You can install your stream chat members, for example. There are 48 name slots.",
-                        PerformSpecificRandomizationDelegate = CharacterNames.InstallNameSet,
-                        SetupRandomizerDelegate = CharacterNames.SetupRandomizer,
+                        Description = "Install a list of names into the game and renames generic NPCs to them. You can install your stream chat members, for example. There are 525 name slots.",
+                        PerformSpecificRandomizationDelegate = RCharacterNames.InstallNameSet,
+                        SetupRandomizerDelegate = RCharacterNames.SetupRandomizer,
                         SetupRandomizerButtonText = "Setup",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        RequiresTLK = true
-                    },*/
+                        RequiresTLK = true,
+                        HasSliderOption = true,
+                        Ticks = "1,2,3,4,5,6,7,8,9,10",
+                        SliderToTextConverter = x=> $"Duplicate namelist {x} time(s)",
+                        SliderTooltip = "Duplicates the namelist this many times. For example, if you load 5 names, if you duplicate it 3 times, 15 NPC names will be replaced - your list will be installed 3 times.",
+                        SliderValue = 1,
+                    },
 #if DEBUG && __ME2__
                     new RandomizationOption() {HumanName = "Skip splash",
                         Description = "Skips the splash screen",

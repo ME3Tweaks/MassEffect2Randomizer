@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
@@ -17,6 +18,21 @@ namespace Randomizer.Randomizers.Game3.Misc
         private static List<string> tempNameChanges;
         public static bool RandomizeBioH(GameTarget target, RandomizationOption option)
         {
+            var henchDecooks = new List<ObjectDecookInfo>()
+            {
+                new ObjectDecookInfo()
+                {
+                    SourceFileName = "BioD_ProEar_200.pcc",
+                    SeekFreeInfo = new SeekFreeInfo()
+                    {
+                        EntryPath = "SFXGameContent.SFXPawn_Anderson",
+                        SeekFreePackage = "SFXPawn_Anderson"
+                    }
+                }
+            };
+            MERDecooker.DecookObjectsToPackages(target, option, henchDecooks, "Decooking henchmen", true);
+
+            option.CurrentOperation = "Randomizing henchmen";
             tempNameChanges = new List<string>();
 
             // Inventory BioH
@@ -70,20 +86,25 @@ namespace Randomizer.Randomizers.Game3.Misc
                 remappingNonCombat[foundOutfitsNonCombat.PullFirstItem().Key] = key;
             }
 
-
+            option.ProgressValue = 0;
+            option.ProgressMax = remappingCombat.Count + remappingNonCombat.Count + remappingExplore.Count;
+            option.ProgressIndeterminate = false;
             foreach (var v in remappingCombat)
             {
                 SwapHenchFiles(target, v.Key, v.Value, true);
+                option.ProgressValue++;
             }
 
             foreach (var v in remappingExplore)
             {
                 SwapHenchFiles(target, v.Key, v.Value, true);
+                option.ProgressValue++;
             }
 
             foreach (var v in remappingNonCombat)
             {
                 SwapHenchFiles(target, v.Key, v.Value, false);
+                option.ProgressValue++;
             }
 
             // We have to finalize name changes so lookups in MERFS don't return our modified packages
@@ -124,43 +145,85 @@ namespace Randomizer.Randomizers.Game3.Misc
             // Update the tag
             pawn.WriteProperty(new NameProperty($"hench_{newhenchname}", "Tag"));
 
-            if (requiresHandshakeUpdate)
+            // We must update the kismet so it properly does a handshake
+
+            // 1. Change the name for polling and remote event.
+            int nameIdx = 0;
+            for (int i = 0; i < henchPackage.Names.Count; i++)
             {
-                // We must update the kismet so it properly does a handshake
-
-                // 1. Change the name for polling and remote event.
-                int nameIdx = 0;
-                for (int i = 0; i < henchPackage.Names.Count; i++)
+                if (henchPackage.Names[i].StartsWith("RE_Poll_BioH_"))
                 {
-                    if (henchPackage.Names[i].StartsWith("RE_Poll_BioH_"))
-                    {
-                        henchPackage.replaceName(i, $"RE_Poll_BioH_{newhenchname.UpperFirst()}_Visible");
-                    }
-                    if (henchPackage.Names[i].StartsWith("re_BioH_"))
-                    {
-                        henchPackage.replaceName(i, $"re_BioH_{newhenchname.UpperFirst()}_Visible");
-                    }
+                    henchPackage.replaceName(i, $"RE_Poll_BioH_{newhenchname.UpperFirst()}_Visible");
                 }
-
-                // 2. Update the plot conditional for inParty to match.
-                var pmCheckState = henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckState");
-                pmCheckState ??= henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckConditional"); // WREX
-                if (pmCheckState != null)
-                    pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyIndex(newhenchname), "m_nIndex"));
-                else 
-                    MERLog.Information($"Skipping non-conditionalized squad member: {sourceFile}");
-
-                // 3. Update the handshake transition
-                pmCheckState = henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMExecuteTransition");
-                //pmCheckState ??= henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckConditional"); // WREX
-                if (pmCheckState != null)
-                    pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyIndexHandshake(newhenchname), "m_nIndex"));
-                else
-                    MERLog.Information($"Skipping non-conditionalized transition squad member: {sourceFile}");
-
+                if (henchPackage.Names[i].StartsWith("re_BioH_"))
+                {
+                    henchPackage.replaceName(i, $"re_BioH_{newhenchname.UpperFirst()}_Visible");
+                }
             }
+
+            // 2. Update the plot conditional for inParty to match.
+            var pmCheckState = henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckState");
+            pmCheckState ??= henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckConditional"); // WREX
+            if (pmCheckState != null)
+                pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyIndex(newhenchname), "m_nIndex"));
+            else
+                MERLog.Information($"Skipping non-conditionalized squad member: {sourceFile}");
+
+            // 3. Update the handshake transition
+            pmCheckState = henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMExecuteTransition");
+            //pmCheckState ??= henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckConditional"); // WREX
+            if (pmCheckState != null)
+                pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyIndexHandshake(newhenchname), "m_nIndex"));
+            else
+                MERLog.Information($"Skipping non-conditionalized transition squad member: {sourceFile}");
+
+            // 4. Handle special Nyreen and Aria cases
+            // The incoming package will have the actual filename.
+            if (henchPackage.FileNameNoExtension.StartsWith("BioH_Nyreen") || henchPackage.FileNameNoExtension.StartsWith("BioH_Aria"))
+            {
+                // Nyreen and Aria uses a 'Set Bool' for some reason.
+                pmCheckState = henchPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.BioSeqVar_StoryManagerBool_1");
+                if (pmCheckState != null) 
+                    pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyIndexHandshake(newhenchname), "m_nIndex"));
+            }
+
+
+            // 5. Update the FaceFX asset so people like garrus can move their mouth.
+            var destPawnBeingReplacedPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, destFile));
+            var faceFx = destPawnBeingReplacedPackage.Exports.Where(x => x.ClassName == "FaceFXAsset").ToList();
+            if (faceFx.Count > 1)
+                faceFx.RemoveAt(0); // Wrex.
+
+            EntryExporter.ExportExportToPackage(faceFx[0], henchPackage, out var newFaceFX);
+
+            var faceFxLinkCandidates =
+                henchPackage.Exports.Where(x => x.ClassName == "SFXModule_Conversation").ToList();
+            foreach (var faceFxLinkCandidate in faceFxLinkCandidates)
+            {
+                var prop = faceFxLinkCandidate.GetProperty<ObjectProperty>("m_pDefaultFaceFXAsset");
+                if (prop != null)
+                {
+                    prop.Value = newFaceFX.UIndex;
+                    faceFxLinkCandidate.WriteProperty(prop);
+                }
+            }
+
             tempNameChanges.Add(destFileTempName);
             MERFileSystem.SavePackage(henchPackage, forceSave: true, forcedFileName: destFileTempName);
+
+            // 6. Rename localizations as they contain things like the FaceFX stuff.
+            var locFiles =
+                MERFileSystem.LoadedFiles.Keys.Where(x =>
+                    x.StartsWith(Path.GetFileNameWithoutExtension(destFile) + "_LOC"));
+
+            foreach (var locFile in locFiles)
+            {
+                var destLocFile = Path.Combine(MERFileSystem.DLCModCookedPath,
+                    $"{Path.GetFileNameWithoutExtension(destFile)}_LOC_{locFile.GetUnrealLocalization()}_TMP.pcc");
+                File.Copy(MERFileSystem.LoadedFiles[locFile], destLocFile);
+                tempNameChanges.Add(destLocFile);
+
+            }
         }
 
         private static int GetHenchInPartyIndex(string newhenchname)

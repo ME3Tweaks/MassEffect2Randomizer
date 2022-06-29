@@ -4,6 +4,7 @@ using MahApps.Metro.Controls;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game3.FirstRun;
 using Randomizer.Randomizers.Shared.Classes;
+using RandomizerUI.Classes;
 using RandomizerUI.Classes.Controllers;
 
 namespace RandomizerUI.DebugTools
@@ -28,12 +29,12 @@ namespace RandomizerUI.DebugTools
 
         private void DataFinder_Click(object sender, RoutedEventArgs e)
         {
-            var fpath = @"B:\SteamLibrary\steamapps\common\Mass Effect Legendary Edition\Game\ME2\BioGame\DLC\DLC_CER_02\CookedPCConsole\BioEngine.ini";
+            /*var fpath = @"B:\SteamLibrary\steamapps\common\Mass Effect Legendary Edition\Game\ME2\BioGame\DLC\DLC_CER_02\CookedPCConsole\BioEngine.ini";
             var proxy = ConfigFileProxy.LoadIni(fpath);
 
             Debug.WriteLine(proxy.ToXmlString());
             var o = proxy;
-            //DataFinder df = new DataFinder(mw);
+            */DataFinder df = new DataFinder(mw);
         }
 
         private void CheckProperties_Click(object sender, RoutedEventArgs e)

@@ -31,14 +31,15 @@ namespace RandomizerUI.Classes
 
         public DataFinder(MainWindow mainWindow)
         {
+#if DEBUG
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
             //dataworker.DoWork += FindActor;
-            dataworker.RunWorkerCompleted += ResetUI;
-
+            dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
             mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync();
+#endif
         }
 
         //private void Fuzzer(object? sender, DoWorkEventArgs e)
@@ -127,69 +128,8 @@ namespace RandomizerUI.Classes
             File.WriteAllText(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\musiclistme2.json", jsonList);
         }
         #endregion
-
-        #region Actor names
+        */
         /*
-        private void FindActor(object? sender, DoWorkEventArgs e)
-        {
-            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE3, true, false).Values
-                //.Where(x =>
-                //                    !x.Contains("_LOC_")
-                //&& x.Contains(@"CitHub", StringComparison.InvariantCultureIgnoreCase)
-                //)
-                //.OrderBy(x => x.Contains("_LOC_"))
-                .ToList();
-
-            // PackageName -> GesturePackage
-            Dictionary<string, GesturePackage> sourceMapping = new Dictionary<string, GesturePackage>();
-            int i = 0;
-            mainWindow.CurrentOperationText = "Finding actor types";
-            mainWindow.ProgressBarIndeterminate = false;
-            mainWindow.ProgressBar_Bottom_Max = files.Count;
-            SortedSet<string> actorTypeNames = new SortedSet<string>();
-            TLKBuilder.StartHandler();
-            foreach (var f in files)
-            {
-                mainWindow.CurrentProgressValue = i;
-                i++;
-                var p = MEPackageHandler.OpenMEPackage(f);
-                var world = p.FindExport("TheWorld.PersistentLevel");
-                if (world != null)
-                {
-                    var pl = ObjectBinary.From<Level>(world);
-                    foreach (var actor in pl.Actors)
-                    {
-                        if (p.TryGetUExport(actor, out var actorE))
-                        {
-                            if (actorE.IsA("Pawn"))
-                            {
-                                if (actorE.GetProperty<ObjectProperty>("ActorType")?.ResolveToEntry(p) is ExportEntry atypeexp)
-                                {
-                                    var displayNameVal = atypeexp.GetProperty<StringRefProperty>("ActorGameNameStrRef");
-                                    if (displayNameVal != null)
-                                    {
-                                        var displayName = TLKBuilder.TLKLookupByLang(displayNameVal.Value, "INT");
-                                        actorTypeNames.Add($"{atypeexp.ObjectName.Instanced}: {displayName}");
-                                    }
-                                    else
-                                    {
-                                        actorTypeNames.Add(atypeexp.ObjectName.Instanced);
-
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            foreach (var atn in actorTypeNames)
-            {
-                Debug.WriteLine(atn);
-            }
-        }
-        #endregion
-
         #region ActorTypes
         
         private void FindActorTypes(object? sender, DoWorkEventArgs e)
