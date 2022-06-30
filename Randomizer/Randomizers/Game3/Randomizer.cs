@@ -195,7 +195,7 @@ namespace Randomizer.Randomizers.Game3
                         if (true
                         //&& false //uncomment to disable filtering
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("ProMar", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("ProEar", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("SFXPawn", StringComparison.InvariantCultureIgnoreCase)
                         )

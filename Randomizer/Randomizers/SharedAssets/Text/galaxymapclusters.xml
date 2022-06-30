@@ -8,6 +8,8 @@
   <originalsuffixedname>Exodus Cluster</originalsuffixedname>
   <originalsuffixedname>Local Cluster</originalsuffixedname>
   <originalsuffixedname>Voyage Cluster</originalsuffixedname>
+	<nonsuffixedclustername>Abryss Expanse</nonsuffixedclustername>
+
   <!-- Go to the XXX and find the enemy -->
   <!-- Go find the enemy in the XXX. -->
   <suffixedclustername>Zora’s Domain</suffixedclustername>
@@ -16,8 +18,10 @@
   <suffixedclustername>Forest of Redead</suffixedclustername>
   <suffixedclustername>Indigo Plateau</suffixedclustername>
   <suffixedclustername>Slug Homeworlds</suffixedclustername>
-  <suffixedclustername>Cluster o’ Hags</suffixedclustername>
-  <nonsuffixedclustername>Kamino</nonsuffixedclustername>
+  <suffixedclustername>Cluster o' Hags</suffixedclustername>
+  <nonsuffixedclustername>Abriss Expanse</nonsuffixedclustername>
+
+	<nonsuffixedclustername>Kamino</nonsuffixedclustername>
   <nonsuffixedclustername>Akkala</nonsuffixedclustername>
   <nonsuffixedclustername>Wily Castle</nonsuffixedclustername>
   <nonsuffixedclustername>Kyramud</nonsuffixedclustername>
@@ -42,6 +46,7 @@
   <nonsuffixedclustername>Sagan</nonsuffixedclustername>
   <nonsuffixedclustername>Kakariko</nonsuffixedclustername>
   <nonsuffixedclustername>Widowmaker</nonsuffixedclustername>
+
 </clusternames>
 
 

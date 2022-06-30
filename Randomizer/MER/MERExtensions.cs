@@ -63,9 +63,29 @@ namespace Randomizer.MER
             // Full path
             var parent = Directory.GetParent(origName);
             return Path.Combine(parent.FullName, $"{fname}_INT{Path.GetExtension(origName)}");
+        }
 
+        /// <summary>
+        /// Memory efficient line splitter.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        // From https://stackoverflow.com/questions/1547476/easiest-way-to-split-a-string-on-newlines-in-net
+        public static IEnumerable<string> SplitToLines(this string input)
+        {
+            if (input == null)
+            {
+                yield break;
+            }
 
-
+            using (System.IO.StringReader reader = new System.IO.StringReader(input))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    yield return line;
+                }
+            }
         }
 
         /// <summary>

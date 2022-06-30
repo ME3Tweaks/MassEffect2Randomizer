@@ -35,8 +35,8 @@ namespace RandomizerUI.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            //dataworker.DoWork += FindActor;
-            dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
+            dataworker.DoWork += MERDebug.DecookGame;
+            //dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
             mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync();
 #endif

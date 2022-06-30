@@ -280,14 +280,10 @@ namespace Randomizer.MER
             {
                 Debug.WriteLine("Loading global cache");
                 GlobalCache = new MERPackageCache(target);
-                GlobalCache.GetCachedPackage("Core.pcc");
-                GlobalCache.GetCachedPackage("SFXGame.pcc");
-                GlobalCache.GetCachedPackage("Startup_INT.pcc");
-                GlobalCache.GetCachedPackage("Engine.pcc");
-                GlobalCache.GetCachedPackage("WwiseAudio.pcc");
-                GlobalCache.GetCachedPackage("SFXOnlineFoundation.pcc");
-                GlobalCache.GetCachedPackage("PlotManagerMap.pcc");
-                GlobalCache.GetCachedPackage("GFxUI.pcc");
+                foreach (var fullySafeFile in EntryImporter.FilesSafeToImportFrom(target.Game))
+                {
+                    GlobalCache.GetCachedPackage(fullySafeFile);
+                }
             }
 
             return GlobalCache;

@@ -40,6 +40,7 @@ namespace Randomizer.Randomizers.Game3.Misc
                 x.Key.StartsWith("BioH", StringComparison.CurrentCultureIgnoreCase)
                 && !x.Key.Contains("CitSim", StringComparison.InvariantCultureIgnoreCase)
                 && !x.Key.Contains("Exp3", StringComparison.InvariantCultureIgnoreCase)
+                && !x.Key.Contains("Nyreen", StringComparison.InvariantCultureIgnoreCase) // Sorry but bioware messed up your files good
                 && !x.Key.Equals("BioH_SelectGUI.pcc", StringComparison.InvariantCultureIgnoreCase)
                 ).ToList();
 
@@ -144,18 +145,22 @@ namespace Randomizer.Randomizers.Game3.Misc
 
             // Update the tag
             pawn.WriteProperty(new NameProperty($"hench_{newhenchname}", "Tag"));
-
+            var sfxUseModule = henchPackage.Exports.FirstOrDefault(x => x.idxLink == pawn.UIndex && x.ClassName == "SFXSimpleUseModule");
+            if (sfxUseModule != null)
+            {
+                sfxUseModule.WriteProperty(new BoolProperty(true, "m_bTargetable"));
+            }
             // We must update the kismet so it properly does a handshake
 
             // 1. Change the name for polling and remote event.
             int nameIdx = 0;
             for (int i = 0; i < henchPackage.Names.Count; i++)
             {
-                if (henchPackage.Names[i].StartsWith("RE_Poll_BioH_"))
+                if (henchPackage.Names[i].StartsWith("RE_Poll_BioH_", StringComparison.InvariantCultureIgnoreCase))
                 {
                     henchPackage.replaceName(i, $"RE_Poll_BioH_{newhenchname.UpperFirst()}_Visible");
                 }
-                if (henchPackage.Names[i].StartsWith("re_BioH_"))
+                if (henchPackage.Names[i].StartsWith("re_BioH_", StringComparison.InvariantCultureIgnoreCase))
                 {
                     henchPackage.replaceName(i, $"re_BioH_{newhenchname.UpperFirst()}_Visible");
                 }
@@ -183,7 +188,7 @@ namespace Randomizer.Randomizers.Game3.Misc
             {
                 // Nyreen and Aria uses a 'Set Bool' for some reason.
                 pmCheckState = henchPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.BioSeqVar_StoryManagerBool_1");
-                if (pmCheckState != null) 
+                if (pmCheckState != null)
                     pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyIndexHandshake(newhenchname), "m_nIndex"));
             }
 

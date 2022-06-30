@@ -9,6 +9,7 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
@@ -34,7 +35,8 @@ namespace Randomizer.Randomizers.Game3.Framework
                 {
                     var packageName = Path.GetFileName(npcFile);
                     var npcPackagePath = MERFileSystem.GetPackageFile(target, packageName, false);
-                    using var package = MEPackageHandler.UnsafePartialLoad(npcPackagePath, x => x.ClassName == "SFXStuntActor" || x.ClassName == "Level");
+                    using var package = MEPackageHandler.UnsafePartialLoad(npcPackagePath, x => x.ClassName == "SFXStuntActor" || x.ClassName == "Level" 
+                                                                                                                               || x.IsA("SFXPawn") || x.InheritsFrom("SFXPawn")); // Pawns will reference instances and classes
 
                     List<ExportEntry> randomizableActors = new List<ExportEntry>();
                     var actors = ObjectBinary.From<Level>(package.FindExport("TheWorld.PersistentLevel")).Actors;
@@ -48,17 +50,24 @@ namespace Randomizer.Randomizers.Game3.Framework
                     // Currently we only support 1 swap
                     if (randomizableActors.Count == 1)
                     {
-                        if (randomizableActors[0].ClassName != "SFXStuntActor")
+                        if (randomizableActors[0].ClassName != "SFXStuntActor" && !randomizableActors[0].IsA("SFXPawn"))
                             Debugger.Break();
                         // var props = randomizableActors[0].GetProperties();
                         var tag = randomizableActors[0].GetProperty<NameProperty>("Tag");
 
-                        if (tag == null)
+                        var archetype = randomizableActors[0].Archetype as ExportEntry;
+                        while (tag == null)
                         {
                             // It's probably on the archetype...
-                            var archetype = randomizableActors[0].Archetype as ExportEntry;
                             tag = archetype.GetProperty<NameProperty>("Tag");
+                            archetype = archetype.Archetype as ExportEntry;
+                            if (tag == null)
+                            {
+                                // Might be an SFXPawn?
+                                tag = (archetype.Class as ExportEntry).GetDefaults().GetProperty<NameProperty>("Tag");
+                            }
                         }
+
                         vanillaPackageToTagNameMap[packageName] = tag.Value;
                         vanillaTagNameToPackage[tag.Value] = packageName;
                     }
@@ -102,6 +111,8 @@ namespace Randomizer.Randomizers.Game3.Framework
                     var newPackageF = MERFileSystem.GetPackageFile(target, originalFilename, false);
                     var newPackage = MEPackageHandler.OpenMEPackage(newPackageF);
                     var stuntActor = newPackage.Exports.FirstOrDefault(x => x.ClassName == "SFXStuntActor" && x.Parent.InstancedFullPath == "TheWorld.PersistentLevel");
+                    if (stuntActor == null)
+                        stuntActor  = newPackage.Exports.FirstOrDefault(x => x.IsA("SFXPawn") && x.Parent.InstancedFullPath == "TheWorld.PersistentLevel");
                     stuntActor.WriteProperty(new NameProperty(newTag, "Tag"));
 
                     // Update the sequencing
