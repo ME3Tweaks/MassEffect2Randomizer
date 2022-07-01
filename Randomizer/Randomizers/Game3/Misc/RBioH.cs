@@ -16,24 +16,34 @@ namespace Randomizer.Randomizers.Game3.Misc
     internal class RBioH
     {
         private static List<string> tempNameChanges;
+
+        //
+        private static string[] MERSpecialHenchFilesCombat =
+        {
+            "BioH_Anderson_00.pcc"
+        };
+
         public static bool RandomizeBioH(GameTarget target, RandomizationOption option)
         {
-            var henchDecooks = new List<ObjectDecookInfo>()
-            {
-                new ObjectDecookInfo()
-                {
-                    SourceFileName = "BioD_ProEar_200.pcc",
-                    SeekFreeInfo = new SeekFreeInfo()
-                    {
-                        EntryPath = "SFXGameContent.SFXPawn_Anderson",
-                        SeekFreePackage = "SFXPawn_Anderson"
-                    }
-                }
-            };
-            MERDecooker.DecookObjectsToPackages(target, option, henchDecooks, "Decooking henchmen", true);
+            //var henchDecooks = new List<ObjectDecookInfo>()
+            //{
+            //    new ObjectDecookInfo()
+            //    {
+            //        SourceFileName = "BioD_ProEar_200.pcc",
+            //        SeekFreeInfo = new SeekFreeInfo()
+            //        {
+            //            EntryPath = "SFXGameContent.SFXPawn_Anderson",
+            //            SeekFreePackage = "SFXPawn_Anderson"
+            //        }
+            //    }
+            //};
+            //MERDecooker.DecookObjectsToPackages(target, option, henchDecooks, "Decooking henchmen", true);
 
             option.CurrentOperation = "Randomizing henchmen";
             tempNameChanges = new List<string>();
+
+            // Extract custom henchmen files
+            var merCustomHenchmenFiles = MERUtilities.ExtractEmbeddedPackageFolder("Henchmen", target.Game);
 
             // Inventory BioH
             var biohFiles = MERFileSystem.LoadedFiles.Where(x =>
@@ -42,7 +52,10 @@ namespace Randomizer.Randomizers.Game3.Misc
                 && !x.Key.Contains("Exp3", StringComparison.InvariantCultureIgnoreCase)
                 && !x.Key.Contains("Nyreen", StringComparison.InvariantCultureIgnoreCase) // Sorry but bioware messed up your files good
                 && !x.Key.Equals("BioH_SelectGUI.pcc", StringComparison.InvariantCultureIgnoreCase)
+                && !MERSpecialHenchFilesCombat.Contains(x.Key, StringComparer.InvariantCultureIgnoreCase)
                 ).ToList();
+
+
 
             // Get No-Loc files.
             var foundOutfits = biohFiles.Where(x => x.Key.GetUnrealLocalization() == MELocalization.None).ToList();
@@ -51,6 +64,9 @@ namespace Randomizer.Randomizers.Game3.Misc
             var foundOutfitsCombat = foundOutfits.Where(x => !x.Key.Contains("Explore", StringComparison.InvariantCultureIgnoreCase) && !x.Key.Contains("_NC", StringComparison.InvariantCultureIgnoreCase)).ToList();
             var foundOutfitsExplore = foundOutfits.Where(x => x.Key.Contains("Explore", StringComparison.InvariantCultureIgnoreCase) && !x.Key.Contains("_NC", StringComparison.InvariantCultureIgnoreCase)).ToList();
             var foundOutfitsNonCombat = foundOutfits.Where(x => x.Key.Contains("_NC", StringComparison.InvariantCultureIgnoreCase)).ToList();
+
+            var specialOutfitsCombat = MERFileSystem.LoadedFiles.Where(x => MERSpecialHenchFilesCombat.Contains(x.Key, StringComparer.InvariantCultureIgnoreCase)).ToList();
+
 
             var newOutfitsCombat = new List<KeyValuePair<string, string>>();
             var newOutfitsExplore = new List<KeyValuePair<string, string>>();
@@ -65,6 +81,27 @@ namespace Randomizer.Randomizers.Game3.Misc
             List<string> combatKeys = foundOutfitsCombat.Select(x => x.Key).ToList();
             List<string> exploreKeys = foundOutfitsExplore.Select(x => x.Key).ToList();
             List<string> nonCombatKeys = foundOutfitsNonCombat.Select(x => x.Key).ToList();
+
+            // Add MER special outfits ONLY to the found outfits, which are the source files
+            foundOutfitsCombat.Add(new KeyValuePair<string, string>("BioH_Anderson_00.pcc", Path.Combine(MERFileSystem.DLCModCookedPath, "BioH_Anderson_00.pcc")));
+            // Add Citadel Armax files only to found outfits
+            // Inventory BioH
+            var citsimBioHFiles = MERFileSystem.LoadedFiles.Where(x =>
+                x.Key.StartsWith("BioH", StringComparison.CurrentCultureIgnoreCase)
+                && x.Key.Contains("CitSim", StringComparison.InvariantCultureIgnoreCase)
+                && !x.Key.Contains("Exp3", StringComparison.InvariantCultureIgnoreCase)
+                && !x.Key.Contains("Wrex", StringComparison.InvariantCultureIgnoreCase) // sorry matey but you use conditional
+                && !x.Key.Contains("Nyreen", StringComparison.InvariantCultureIgnoreCase) // Sorry but bioware messed up your files good
+                && !x.Key.Equals("BioH_SelectGUI.pcc", StringComparison.InvariantCultureIgnoreCase)
+                && !MERSpecialHenchFilesCombat.Contains(x.Key, StringComparer.InvariantCultureIgnoreCase)
+                && x.Key.GetUnrealLocalization() == MELocalization.None
+            ).ToList();
+            foundOutfitsCombat.AddRange(citsimBioHFiles);
+            foundOutfitsCombat.Add(new KeyValuePair<string, string>("BioH_Anderson_00.pcc", Path.Combine(MERFileSystem.DLCModCookedPath, "BioH_Anderson_00.pcc")));
+
+
+
+            foundOutfitsCombat.Shuffle();
 
             combatKeys.Shuffle();
             while (combatKeys.Any())
@@ -125,11 +162,19 @@ namespace Randomizer.Randomizers.Game3.Misc
             }
         }
 
+        /// <summary>
+        /// Swaps a BioH file and updates it to work in place of the original. Saves to a TMP File which is renamed after all swaps have been completed to avoid MERFS loading the wrong files
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="sourceFile"></param>
+        /// <param name="destFile"></param>
+        /// <param name="requiresHandshakeUpdate"></param>
         private static void SwapHenchFiles(GameTarget target, string sourceFile, string destFile, bool requiresHandshakeUpdate)
         {
             Debug.WriteLine($"NonCombat file {sourceFile} -> {destFile}");
             var newhenchname = Path.GetFileNameWithoutExtension(destFile).Substring(5); // BioH_
             newhenchname = newhenchname.Substring(0, newhenchname.IndexOf("_")).ToLower();
+
             Debug.WriteLine($"New henchname: {newhenchname}");
 
             var destFileTempName = Path.Combine(MERFileSystem.DLCModCookedPath,
@@ -168,11 +213,22 @@ namespace Randomizer.Randomizers.Game3.Misc
 
             // 2. Update the plot conditional for inParty to match.
             var pmCheckState = henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckState");
-            pmCheckState ??= henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckConditional"); // WREX
             if (pmCheckState != null)
+            {
                 pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyIndex(newhenchname), "m_nIndex"));
+            }
             else
-                MERLog.Information($"Skipping non-conditionalized squad member: {sourceFile}");
+            {
+                pmCheckState ??= henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMCheckConditional"); // WREX
+                if (pmCheckState != null)
+                {
+                    pmCheckState.WriteProperty(new IntProperty(GetHenchInPartyConditionalIndex(newhenchname), "m_nIndex"));
+                }
+                else
+                {
+                    MERLog.Information($"Skipping non-conditionalized squad member: {sourceFile}");
+                }
+            }
 
             // 3. Update the handshake transition
             pmCheckState = henchPackage.Exports.FirstOrDefault(x => x.ClassName == "BioSeqAct_PMExecuteTransition");
@@ -217,18 +273,34 @@ namespace Randomizer.Randomizers.Game3.Misc
             MERFileSystem.SavePackage(henchPackage, forceSave: true, forcedFileName: destFileTempName);
 
             // 6. Rename localizations as they contain things like the FaceFX stuff.
-            var locFiles =
-                MERFileSystem.LoadedFiles.Keys.Where(x =>
-                    x.StartsWith(Path.GetFileNameWithoutExtension(destFile) + "_LOC"));
+            var locFiles = MERFileSystem.LoadedFiles.Keys.Where(x => x.StartsWith(Path.GetFileNameWithoutExtension(sourceFile) + "_LOC")).ToList();
 
             foreach (var locFile in locFiles)
             {
-                var destLocFile = Path.Combine(MERFileSystem.DLCModCookedPath,
-                    $"{Path.GetFileNameWithoutExtension(destFile)}_LOC_{locFile.GetUnrealLocalization()}_TMP.pcc");
+                var destLocFile = Path.Combine(MERFileSystem.DLCModCookedPath, $"{Path.GetFileNameWithoutExtension(destFile)}_LOC_{locFile.GetUnrealLocalization()}_TMP.pcc");
+                Debug.WriteLine($"Moving LOC file {MERFileSystem.LoadedFiles[locFile]} -> {destLocFile}");
                 File.Copy(MERFileSystem.LoadedFiles[locFile], destLocFile);
                 tempNameChanges.Add(destLocFile);
-
             }
+        }
+
+        private static int GetHenchInPartyConditionalIndex(string newhenchname)
+        {
+            return newhenchname switch
+            {
+                "liara" => 3,
+                "kaidan" => 4,
+                "ashley" => 5,
+                "garrus" => 6,
+                "edi" => 7,
+                "prothean" => 8,
+                "marine" => 32,
+                "tali" => 184,
+                "aria" => 2758,
+                "nyreen" => 2760,
+                "wrex" => 3325, // THIS IS A CONDITIONAL!
+                _ => throw new Exception($"Invalid party member {newhenchname}")
+            };
         }
 
         private static int GetHenchInPartyIndex(string newhenchname)
