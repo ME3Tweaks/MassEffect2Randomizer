@@ -2,7 +2,6 @@
 using System.Windows;
 using MahApps.Metro.Controls;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game3.FirstRun;
 using Randomizer.Randomizers.Shared.Classes;
 using RandomizerUI.Classes;
 using RandomizerUI.Classes.Controllers;
@@ -60,7 +59,7 @@ namespace RandomizerUI.DebugTools
         private void BuildInventoryPackages_Click(object sender, RoutedEventArgs e)
         {
 #if __GAME3__
-            Inventory.PerformInventory(Locations.GetTarget(true), @"C:\users\mgame\desktop\Inventory");
+            Randomizer.Randomizers.Game3.FirstRun.Inventory.PerformInventory(Locations.GetTarget(true), @"C:\users\mgame\desktop\Inventory");
 #endif
             //ME2Debug.GetExportsInPersistentThatAreAlsoInSub();
         }

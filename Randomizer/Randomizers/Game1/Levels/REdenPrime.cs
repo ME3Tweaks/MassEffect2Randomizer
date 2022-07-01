@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,8 +20,9 @@ namespace Randomizer.Randomizers.Levels
 
             var p = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Maps\PRO\DSG\BIOA_PRO10_08_DSG.SFM"));
             MERLog.Information("Applying sovereign drawscale pre-randomization modifications");
-            p.GetUExport(5640).Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackFloatDrawScale_5640_PRO08DSG.bin");
-            p.GetUExport(5643).Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackMove_5643_PRO08DSG.bin");
+            Debug.WriteLine("NOT IMPLEMENTED!!!");
+            //p.GetUExport(5640).Data = MERUtilities.GetEmbedded("exportreplacements.SovereignInterpTrackFloatDrawScale_5640_PRO08DSG.bin");
+            //p.GetUExport(5643).Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.SovereignInterpTrackMove_5643_PRO08DSG.bin");
 
             ExportEntry drawScaleExport = p.GetUExport(5640);
             var floatTrack = drawScaleExport.GetProperty<StructProperty>("FloatTrack");

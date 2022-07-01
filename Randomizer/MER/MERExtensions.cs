@@ -6,6 +6,8 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using System.Windows.Media;
+using LegendaryExplorerCore.Coalesced;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.TLK.ME1;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
@@ -246,6 +248,38 @@ namespace Randomizer.MER
             if (vector.Y > max) max = vector.Y;
             if (vector.Z > max) max = vector.Z;
             return max;
+        }
+    }
+
+    public static class CoalesceExtensions
+    {
+        public static void SetSingleEntry(this CoalesceSection asset, CoalesceProperty value)
+        {
+            asset.RemoveAllNamedEntries(value.Name);
+            asset.AddEntry(value);
+        }
+
+        public static void SetSingleEntry(this CoalesceSection asset, string key, object value, CoalesceParseAction type = CoalesceParseAction.AddUnique)
+        {
+            asset.RemoveAllNamedEntries(key);
+            asset.AddEntry(new CoalesceProperty(key, new CoalesceValue(value.ToString(), type)));
+        }
+
+        public static void AddEntry(this CoalesceSection asset, string key, object value, CoalesceParseAction type = CoalesceParseAction.AddUnique)
+        {
+            asset.AddEntry(new CoalesceProperty(key, new CoalesceValue(value.ToString(), type)));
+        }
+    }
+
+    public static class StreamExtensions
+    {
+        public static byte[] ToBytes(this Stream stream)
+        {
+            if (stream is MemoryStream ms)
+                return ms.ToArray();
+            ms = new MemoryStream();
+            stream.CopyTo(ms);
+            return ms.ToArray();
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
@@ -384,7 +385,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                     // Clear mapping
                     var mappedPowers = biogame.GetOrAddSection($"SFXGamePawns.SFXCharacterClass_{kit}");
-                    mappedPowers.Entries.Add(new DuplicatingIni.IniEntry("!MappedPowers")); //Clear
+                    mappedPowers.AddEntry("MappedPowers", "", CoalesceParseAction.RemoveProperty); //Clear
 
                     var loadoutProps = loadout.GetProperties();
                     var powersList = loadoutProps.GetProp<ArrayProperty<ObjectProperty>>("Powers");
@@ -411,7 +412,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                         if (basePower.BaseName != null)
                         {
-                            mappedPowers.Entries.Add(new DuplicatingIni.IniEntry("MappedPowers", $"SFXPower_{basePower.BaseName}"));
+                            mappedPowers.AddEntry("MappedPowers", $"SFXPower_{basePower.BaseName}", CoalesceParseAction.AddUnique);
                         }
 
                         // For each power, change the evolutions

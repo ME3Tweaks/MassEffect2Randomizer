@@ -1,4 +1,5 @@
 ﻿using ME3TweaksCore.Targets;
+using Randomizer.MER;
 using Randomizer.Randomizers.Handlers;
 
 namespace Randomizer.Randomizers.Game2.Misc

@@ -247,12 +247,15 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
         private void ReplaceSWFFromResource(ExportEntry exp, string swfResourcePath)
         {
             Debug.WriteLine($"Replacing {Path.GetFileName(exp.FileRef.FilePath)} {exp.UIndex} {exp.ObjectName} SWF with {swfResourcePath}");
-            var bytes = MERUtilities.GetEmbeddedStaticFilesBinaryFile(swfResourcePath, true);
+            var bytes = MERUtilities.GetEmbeddedAsset("Binary", swfResourcePath);
             var props = exp.GetProperties();
 
             var rawData = props.GetProp<ArrayProperty<ByteProperty>>("Data");
             //Write SWF data
-            rawData.Values = bytes.Select(b => new ByteProperty(b)).ToList();
+            while (bytes.Position < bytes.Length)
+            {
+                rawData.Values.Add(new ByteProperty((byte)bytes.ReadByte()));
+            }
 
             //Write SWF metadata
             props.AddOrReplaceProp(new StrProperty("MASS EFFECT RANDOMIZER - " + Path.GetFileName(swfResourcePath), "SourceFilePath"));

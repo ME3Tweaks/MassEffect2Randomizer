@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Kismet;
@@ -460,9 +461,9 @@ namespace Randomizer.Randomizers.Game1.Misc
             // We need to rebuild the bonus mission flags.
             var biogame = CoalescedHandler.GetIniFile("BioGame.ini");
             var hasBonusWeapon = biogame.GetOrAddSection("SFXGameContent.SFXSeqAct_HasBonusWeapon");
-            if (hasBonusWeapon.Entries.Count == 0)
+            if (hasBonusWeapon.Count == 0)
             {
-                hasBonusWeapon.Entries.Add(new DuplicatingIni.IniEntry("!BonusWeaponFlags", "CLEAR"));
+                hasBonusWeapon.AddEntry("BonusWeaponFlags", "CLEAR", CoalesceParseAction.RemoveProperty);
             }
 
             if (bonusWeaponFlag.StartsWith("Tre_"))
@@ -472,7 +473,7 @@ namespace Randomizer.Randomizers.Game1.Misc
                 Debug.WriteLine("NOT TRE STARD!");
             }
 
-            hasBonusWeapon.Entries.Add(new DuplicatingIni.IniEntry("+BonusWeaponFlags", bonusWeaponFlag));
+            hasBonusWeapon.AddEntry("BonusWeaponFlags", bonusWeaponFlag, CoalesceParseAction.AddUnique);
         }
     }
 }

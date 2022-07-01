@@ -299,8 +299,8 @@ namespace Randomizer.Randomizers.Game2.Enemy
         {
             if (powerInfo.IsCorrectedPackage)
             {
-                var sourceData = MERUtilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.powers." + powerInfo.PackageFileName);
-                sourcePackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(sourceData));
+                var sourceData = MERUtilities.GetEmbeddedPackage(target.Game, "correctedloadouts.powers." + powerInfo.PackageFileName);
+                sourcePackage = MEPackageHandler.OpenMEPackageFromStream(sourceData);
             }
             else
             {

@@ -49,7 +49,7 @@ namespace Randomizer.Randomizers.Levels
                 props.AddOrReplaceProp(new StrProperty("MASS EFFECT RANDOMIZER - " + Path.GetFileName(newBinaryResource), "SourceFilePath"));
                 props.AddOrReplaceProp(new StrProperty(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), "SourceFileTimestamp"));
                 textureExport.WriteProperties(props);
-                var bytes = MERUtilities.GetEmbeddedStaticFilesBinaryFile(newBinaryResource, true);
+                var bytes = MERUtilities.GetEmbeddedAsset("Binary",newBinaryResource).ToBytes();
                 textureExport.WriteBinary(bytes);
             }
             MERFileSystem.SavePackage(pinnacleTextures);

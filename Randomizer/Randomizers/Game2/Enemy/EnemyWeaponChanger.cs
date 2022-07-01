@@ -290,8 +290,8 @@ namespace Randomizer.Randomizers.Game2.Enemy
             IMEPackage sourcePackage;
             if (gunInfo.IsCorrectedPackage)
             {
-                var sourceData = MERUtilities.GetEmbeddedStaticFilesBinaryFile("correctedloadouts.weapons." + gunInfo.PackageFileName);
-                sourcePackage = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(sourceData));
+                var sourceData = MERUtilities.GetEmbeddedPackage(target.Game,"correctedloadouts.weapons." + gunInfo.PackageFileName);
+                sourcePackage = MEPackageHandler.OpenMEPackageFromStream(sourceData);
 
                 if (gunInfo.ImportOnly)
                 {

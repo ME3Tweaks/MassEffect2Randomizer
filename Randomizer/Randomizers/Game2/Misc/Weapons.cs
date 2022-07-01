@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Misc;
 using ME3TweaksCore.GameFilesystem;
 using ME3TweaksCore.Helpers;
@@ -23,9 +24,8 @@ namespace Randomizer.Randomizers.Game2.Misc
             var loadoutSection = bg.GetOrAddSection("SFXGame.SFXPlayerSquadLoadoutData");
 
             // We need to minus them out
-            loadoutSection.Entries.Add(new DuplicatingIni.IniEntry("!PlayerLoadoutInfo", "CLEAR"));
-            loadoutSection.Entries.Add(new DuplicatingIni.IniEntry("!HenchLoadoutInfo", "CLEAR"));
-
+            loadoutSection.AddEntry(new CoalesceProperty("PlayerLoadoutInfo", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
+            loadoutSection.AddEntry(new CoalesceProperty("HenchLoadoutInfo", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
 
             var pawns = new[]
             {
@@ -55,7 +55,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             foreach (var p in pawns)
             {
-                loadoutSection.Entries.Add(BuildLoadout(p));
+                loadoutSection.AddEntry(BuildLoadout(p));
             }
 
             return true;
@@ -71,10 +71,10 @@ namespace Randomizer.Randomizers.Game2.Misc
             "LoadoutWeapons_AutoPistols"
         };
 
-        private static DuplicatingIni.IniEntry BuildLoadout(string pawnName)
+        private static CoalesceProperty BuildLoadout(string pawnName)
         {
             var isPlayer = pawnName.Contains("Player");
-            string key = isPlayer ? "+PlayerLoadoutInfo" : "+HenchLoadoutInfo";
+            string key = isPlayer ? "PlayerLoadoutInfo" : "HenchLoadoutInfo";
 
             string value = $"(ClassName = {pawnName}, WeaponClasses = (";
 
@@ -114,7 +114,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             }
 
             value += "))";
-            return new DuplicatingIni.IniEntry(key, value);
+            return new CoalesceProperty(key, new CoalesceValue(value, CoalesceParseAction.AddUnique));
         }
 
 
@@ -185,7 +185,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
         };
 
-        private static void RandomizeWeaponIni(DuplicatingIni vanillaFile, DuplicatingIni randomizerIni)
+        private static void RandomizeWeaponIni(DuplicatingIni vanillaFile, CoalesceAsset randomizerIni)
         {
             foreach (var section in vanillaFile.Sections)
             {

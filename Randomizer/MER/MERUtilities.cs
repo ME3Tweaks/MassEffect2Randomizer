@@ -149,18 +149,22 @@ namespace Randomizer.MER
         /// <summary>
         /// Extracts packages from an embedded folder to the DLC folder for MERFS
         /// </summary>
-        /// <param name="packageFolderName"></param>
-        /// <param name="game"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        public static void ExtractEmbeddedPackageFolder(string packageFolderName, MEGame game)
+        /// <param name="packageFolderName">Name of package folder to extract to DLC mod folder</param>
+        /// <param name="game">Which game to extract</param>
+        public static List<string> ExtractEmbeddedPackageFolder(string packageFolderName, MEGame game)
         {
+            var extractedItems = new List<string>();
             var items = ListEmbeddedAssets("Binary", $"Packages.{game}.{packageFolderName}");
             items = items.Where(x => x.RepresentsPackageFilePath()).ToList();
 
             foreach (var v in items)
             {
-                ExtractInternalFile(v, true, Path.Combine(MERFileSystem.DLCModCookedPath, v.Substring(v.IndexOf(packageFolderName) + packageFolderName.Length + 1)));
+                var dest = Path.Combine(MERFileSystem.DLCModCookedPath, v.Substring(v.IndexOf(packageFolderName) + packageFolderName.Length + 1));
+                ExtractInternalFile(v, true, dest);
+                extractedItems.Add(dest);
             }
+
+            return extractedItems;
         }
 
         //        /// <summary>

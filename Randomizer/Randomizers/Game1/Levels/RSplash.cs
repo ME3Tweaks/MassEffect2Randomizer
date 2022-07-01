@@ -100,7 +100,7 @@ namespace Randomizer.Randomizers.Levels
                                 foreach (var vector in vectors)
                                 {
                                     var paramValue = vector.GetProp<StructProperty>("ParameterValue");
-                                    StructTools.RandomizeTint( paramValue, false);
+                                    StructTools.RandomizeTint(paramValue, false);
                                 }
                             }
                         }
@@ -137,7 +137,7 @@ namespace Randomizer.Randomizers.Levels
             cameraInterpData.WriteProperty(interpLength);
 
             ExportEntry cameraInterpTrackMove = entrymenu.GetUExport(967);
-            cameraInterpTrackMove.Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.InterpTrackMove967_EntryMenu_CameraPan.bin");
+            cameraInterpTrackMove.Data = MERUtilities.GetEmbeddedAsset("Binary", "exportreplacements.InterpTrackMove967_EntryMenu_CameraPan.bin").ToBytes();
             props = cameraInterpTrackMove.GetProperties(forceReload: true);
             var posTrack = props.GetProp<StructProperty>("PosTrack");
             bool ZUp = false;
@@ -228,7 +228,7 @@ namespace Randomizer.Randomizers.Levels
             cameraInterpTrackMove.WriteProperties(props);
 
             var fovCurve = entrymenu.GetUExport(964);
-            fovCurve.Data = MERUtilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.InterpTrackMove964_EntryMenu_CameraFOV.bin");
+            fovCurve.Data = MERUtilities.GetEmbeddedAsset("Binary", "exportreplacements.InterpTrackMove964_EntryMenu_CameraFOV.bin").ToBytes();
             props = fovCurve.GetProperties(forceReload: true);
             //var pi = props.GetProp<ArrayProperty<StructProperty>>("Points");
             //var pi2 = props.GetProp<ArrayProperty<StructProperty>>("Points")[1].GetProp<FloatProperty>("OutVal");

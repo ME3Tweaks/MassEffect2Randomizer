@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
@@ -128,8 +129,8 @@ namespace Randomizer.Randomizers.Game2.Levels
             var charCreatorPCS = bgr.GetOrAddSection("SFXGame.BioSFHandler_PCNewCharacter");
             var charCreatorControllerS = bioUI.GetOrAddSection("SFXGame.BioSFHandler_NewCharacter");
 
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
-            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!MalePregeneratedHeadCodes", "CLEAR"));
+            charCreatorPCS.AddEntry(new CoalesceProperty("MalePregeneratedHeadCodes", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
+            charCreatorControllerS.AddEntry(new CoalesceProperty("MalePregeneratedHeadCodes", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
 
             int numToMake = 20;
             int i = 0;
@@ -138,25 +139,25 @@ namespace Randomizer.Randomizers.Game2.Levels
             while (i < numToMake)
             {
                 i++;
-                charCreatorPCS.Entries.Add(GenerateHeadCode(codeMapMale, false));
-                charCreatorControllerS.Entries.Add(GenerateHeadCode(codeMapMale, false));
+                charCreatorPCS.AddEntry(GenerateHeadCode(codeMapMale, false));
+                charCreatorControllerS.AddEntry(GenerateHeadCode(codeMapMale, false));
             }
 
 
 
             // Female: 36 chars
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
-            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
-            charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
-            charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("!FemalePregeneratedHeadCodes", "CLEAR"));
+            //charCreatorPCS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
+            //charCreatorControllerS.Entries.Add(new DuplicatingIni.IniEntry("")); //blank line
+
+            charCreatorPCS.AddEntry(new CoalesceProperty("FemalePregeneratedHeadCodes", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
+            charCreatorControllerS.AddEntry(new CoalesceProperty("FemalePregeneratedHeadCodes", new CoalesceValue("CLEAR", CoalesceParseAction.RemoveProperty)));
 
             i = 0;
             while (i < numToMake)
             {
                 i++;
-                charCreatorPCS.Entries.Add(GenerateHeadCode(codeMapFemale, true));
-                charCreatorControllerS.Entries.Add(GenerateHeadCode(codeMapFemale, true));
+                charCreatorPCS.AddEntry(GenerateHeadCode(codeMapFemale, true));
+                charCreatorControllerS.AddEntry(GenerateHeadCode(codeMapFemale, true));
             }
 
 
@@ -274,7 +275,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             return map;
         }
 
-        private static DuplicatingIni.IniEntry GenerateHeadCode(Dictionary<int, char[]> codeMap, bool female)
+        private static CoalesceProperty GenerateHeadCode(Dictionary<int, char[]> codeMap, bool female)
         {
             // Doubt this will actually work but whatevers.
             int numChars = female ? 36 : 34;
@@ -286,7 +287,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 i++;
             }
 
-            return new DuplicatingIni.IniEntry(female ? "+FemalePregeneratedHeadCodes" : "+MalePregeneratedHeadCodes", new string(headCode));
+            return new CoalesceProperty(female ? "FemalePregeneratedHeadCodes" : "MalePregeneratedHeadCodes", new CoalesceValue(new string(headCode), CoalesceParseAction.AddUnique));
         }
 
         private static void randomizeFrontEnd(ExportEntry frontEnd)
