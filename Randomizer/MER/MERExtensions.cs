@@ -39,6 +39,14 @@ namespace Randomizer.MER
                 return ObjectBinary.From<Level>(level);
             return null;
         }
+
+        public static List<ExportEntry> GetLevelActors(this IMEPackage package)
+        {
+            var levelBin = GetLevelBinary(package);
+            if (levelBin == null)
+                return null; // Not level
+            return levelBin.Actors.Where(x => x.value > 0).Select(x => package.GetUExport(x.value)).ToList();
+        }
     }
 
     public static class StringExtensions

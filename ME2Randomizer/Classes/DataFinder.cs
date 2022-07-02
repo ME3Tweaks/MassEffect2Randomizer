@@ -35,7 +35,7 @@ namespace RandomizerUI.Classes
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += MERDebug.DecookGame;
+            dataworker.DoWork += MERDebug.BuildGestureFiles;
             //dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
             mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync();
@@ -205,63 +205,9 @@ namespace RandomizerUI.Classes
         }
 
         #endregion
+        */
+      
         /*
-        #region Gestures
-        private void BuildGestureFiles(object? sender, DoWorkEventArgs e)
-        {
-            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
-                //.Where(x =>
-                //                    !x.Contains("_LOC_")
-                //&& x.Contains(@"CitHub", StringComparison.InvariantCultureIgnoreCase)
-                //)
-                .OrderBy(x => x.Contains("_LOC_"))
-                .ToList();
-
-            // PackageName -> GesturePackage
-            Dictionary<string, GesturePackage> sourceMapping = new Dictionary<string, GesturePackage>();
-            int i = 0;
-            mainWindow.CurrentOperationText = "Finding gesture animations";
-            mainWindow.ProgressBarIndeterminate = false;
-            mainWindow.ProgressBar_Bottom_Max = files.Count;
-            foreach (var f in files)
-            {
-                mainWindow.CurrentProgressValue = i;
-                i++;
-                var p = MEPackageHandler.OpenMEPackage(f);
-                var gesturePackages = p.Exports.Where(x => x.idxLink == 0 && x.ClassName == "Package" && RBioEvtSysTrackGesture.IsGesturePackage(x.ObjectName)).ToList();
-                foreach (var gesturePackage in gesturePackages)
-                {
-                    // Get package
-                    if (!sourceMapping.TryGetValue(gesturePackage.ObjectName, out var gp))
-                    {
-                        gp = new GesturePackage()
-                        {
-                            PackageName = gesturePackage.ObjectName
-                        };
-                        sourceMapping[gesturePackage.ObjectName] = gp;
-                    }
-
-                    gp.UpdatePackage(gesturePackage);
-                }
-            }
-
-            var gestureSaveP = @"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\binary\gestures";
-            i = mainWindow.CurrentProgressValue = 0;
-            mainWindow.ProgressBar_Bottom_Max = sourceMapping.Count;
-            mainWindow.CurrentOperationText = "Building Gesture Packages";
-
-            foreach (var gestP in sourceMapping)
-            {
-                mainWindow.CurrentProgressValue = i++;
-                var pPath = Path.Combine(gestureSaveP, gestP.Key + ".pcc");
-                MEPackageHandler.CreateAndSavePackage(pPath, MERFileSystem.Game);
-                var gestPackage = MEPackageHandler.OpenMEPackage(pPath);
-                gestP.Value.PortIntoPackage(gestPackage);
-                gestPackage.Save(compress: true);
-            }
-
-            //File.WriteAllLines(@"C:\Users\mgame\source\repos\ME2Randomizer\ME2Randomizer\staticfiles\text\animseq.txt", alltags);
-        }
 
         private class GesturePackage
         {
@@ -586,7 +532,7 @@ namespace RandomizerUI.Classes
             mainWindow.ShowProgressPanel = false;
             mainWindow.CurrentOperationText = "Data finder done";
         }
-        
+
         /*
 
         #region Guns

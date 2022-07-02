@@ -134,11 +134,14 @@ namespace Randomizer.Randomizers.Game3
                 MERFileSystem.InitMERFS(SelectedOptions);
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
+                // PREPARATION FOR RANDOMIZATIONS
 
                 // Prepare the textures
                 //LE3Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
 
-
+                // Prepare runtime gestures data
+                GestureManager.Init(SelectedOptions.RandomizationTarget);
+                
                 void srUpdate(object? o, EventArgs eventArgs)
                 {
                     if (o is RandomizationOption option)
@@ -195,9 +198,9 @@ namespace Randomizer.Randomizers.Game3
                         if (true
                         //&& false //uncomment to disable filtering
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("ProEar", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("SFXPawn", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("ProEar", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("BioNPC", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -282,7 +285,6 @@ namespace Randomizer.Randomizers.Game3
             ResetClasses();
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
-            NonSharedPackageCache.Cache?.Dispose();
 
             // Re-throw the unhandled exception after MERFS has closed
             if (rethrowException != null)
@@ -298,7 +300,6 @@ namespace Randomizer.Randomizers.Game3
             //SquadmateHead.ResetClass();
             //PawnPorting.ResetClass();
             //NPCHair.ResetClass();
-            REnemyPowers.ResetClass();
             MERCaches.Cleanup();
         }
 
@@ -579,7 +580,8 @@ namespace Randomizer.Randomizers.Game3
                     //new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
                     //new RandomizationOption() {HumanName = "Hammerhead", IsRecommended = true, Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
-                    //new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by basic non-interactable NPCs. Some may T-pose due to the sheer complexity of this randomizer",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActorMAT.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by most basic non-interactable NPCs.",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActor.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "Pawn materials", IsRecommended = true, Description = "Runtime randomzier that randomizes the inputs to materials on every level file load. An input may be a glow, color, etc.",PerformFileSpecificRandomization = RSharedSkeletalMesh.InstallRandomMICKismetObject, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
 
                     //new RandomizationOption()
                     //{
@@ -623,10 +625,10 @@ namespace Randomizer.Randomizers.Game3
                                         },
                                         new RandomizationOption()
                                         {
-                                            HumanName = "Enemy powers", Description = "Gives enemies different powers. Can introduce some slight stutter on enemy load. Will significantly increase game difficulty.", 
+                                            HumanName = "Enemy powers", Description = "Gives enemies different powers. Can introduce some slight stutter on enemy load. Will significantly increase game difficulty.",
                                             PerformFileSpecificRandomization = REnemyPowers.PerFileAIChanger,
                                             PerformSpecificRandomizationDelegate = REnemyPowers.Init,
-                                            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, 
+                                            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                                             IsRecommended = true,
                                             // Debug stuff.
                     #if DEBUG

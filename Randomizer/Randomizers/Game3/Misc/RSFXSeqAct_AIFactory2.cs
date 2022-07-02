@@ -174,8 +174,8 @@ namespace Randomizer.Randomizers.Game3.Misc
                 if (connectionsToAIFactory.Any())
                 {
                     // Install randomization
-                    var aiFactoryTypeShuffler = SequenceObjectCreator.CreateSequenceObject(export.FileRef, MERCustomClasses.RandomizeSpawnSets);
-                    var aiFactorySeqObj = SequenceObjectCreator.CreateSequenceObject(export.FileRef, "SeqVar_Object");
+                    var aiFactoryTypeShuffler = SequenceObjectCreator.CreateSequenceObject(export.FileRef, MERCustomClasses.RandomizeSpawnSets, MERCaches.GlobalCommonLookupCache);
+                    var aiFactorySeqObj = SequenceObjectCreator.CreateSequenceObject(export.FileRef, "SeqVar_Object", MERCaches.GlobalCommonLookupCache);
                     aiFactorySeqObj.WriteProperty(new ObjectProperty(export, "ObjValue"));
 
                     // Install the randomization object and point to AIFactory2

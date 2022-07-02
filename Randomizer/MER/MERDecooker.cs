@@ -69,8 +69,8 @@ namespace Randomizer.MER
         /// <param name="addSeekFree">If a seek free reference should be added to sfxengine</param>
         public static void DecookObjectsToPackages(GameTarget target, RandomizationOption option, List<ObjectDecookInfo> objectsToDecook, string operationTextBase, bool addSeekFree)
         {
-            MERPackageCache gc = new MERPackageCache(target);
-            MERPackageCache c = new MERPackageCache(target);
+            MERPackageCache gc = MERCaches.GlobalCommonLookupCache;
+            MERPackageCache c = new MERPackageCache(target, null, true);
             option.ProgressMax = objectsToDecook.Count;
             option.ProgressValue = 0;
             option.ProgressIndeterminate = false;

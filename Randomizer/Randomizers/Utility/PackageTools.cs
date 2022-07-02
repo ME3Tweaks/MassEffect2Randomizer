@@ -136,7 +136,7 @@ namespace Randomizer.Randomizers.Utility
             else
             {
                 // Memory safe, fixes upstream
-                var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, MERFileSystem.GetGlobalCache(target), cache);
+                var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, MERCaches.GlobalCommonLookupCache, cache);
                 if (relinkedResults.Any())
                 {
                     Debugger.Break();

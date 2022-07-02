@@ -13,6 +13,8 @@ using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
+using Randomizer.Randomizers;
+using Randomizer.Randomizers.Game3.ExportTypes;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
@@ -129,7 +131,7 @@ namespace Randomizer.MER
 
             // var decookPackagesList = File.ReadAllLines(@"B:\DecookedGames\LE3TopLevelPackages.txt");
 
-            using var globalCache = MERFileSystem.GetGlobalCache(new GameTarget(game, MEDirectories.GetDefaultGamePath(game), true));
+            using var globalCache = MERCaches.GlobalCommonLookupCache; // This way of accessing will not work in release builds.
 
             Parallel.ForEach(topLevelPackages, new ParallelOptions() { MaxDegreeOfParallelism = 6 }, tlp =>
             {
@@ -156,9 +158,50 @@ namespace Randomizer.MER
                         }
                     }
                 }
+
                 decookedPackage.Save();
             });
             fileToTablesOnlyPackage = null;
+#endif
+        }
+
+        public static void BuildGestureFiles(object? sender, DoWorkEventArgs e)
+        {
+#if DEBUG
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE3, true, false).Values
+                //.Where(x =>
+                //                    !x.Contains("_LOC_")
+                //&& x.Contains(@"CitHub", StringComparison.InvariantCultureIgnoreCase)
+                //)
+                .OrderBy(x => x.Contains("_LOC_"))
+                .ToList();
+            RandomizationOption option = (RandomizationOption)e.Argument;
+            var game = MEGame.LE3;
+            var gameTarget = new GameTarget(game, MEDirectories.GetDefaultGamePath(game), true);
+            GestureManager.Init(gameTarget);
+
+
+            // PackageName -> GesturePackage
+            var gestureSaveP = @"C:\Users\mgame\source\repos\ME2Randomizer\Randomizer\Randomizers\Game3\Assets\Binary\Packages\LE3\Gestures.pcc";
+            MEPackageHandler.CreateAndSavePackage(gestureSaveP, MEGame.LE3);
+            var gestPackage = MEPackageHandler.OpenMEPackage(gestureSaveP);
+
+            option.CurrentOperation = "Finding gesture animations";
+            option.ProgressMax = files.Count;
+            option.ProgressValue = 0;
+            foreach (var f in files)
+            {
+                option.ProgressValue++;
+                var p = MEPackageHandler.OpenMEPackage(f);
+                var gesturesPackageExports = p.Exports.Where(x => x.idxLink == 0 && x.ClassName == "Package" && GestureManager.IsGesturePackage(x.ObjectName)).Select(x => x.UIndex).ToList();
+
+                // Get list of exports under these packages
+                foreach (var exp in p.Exports.Where(x => gesturesPackageExports.Contains(x.idxLink)))
+                {
+                    EntryExporter.ExportExportToPackage(exp, gestPackage, out var _, MERCaches.GlobalCommonLookupCache);
+                }
+            }
+            gestPackage.Save(compress: true);
 #endif
         }
     }

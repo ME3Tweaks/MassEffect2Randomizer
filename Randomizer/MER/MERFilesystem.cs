@@ -23,6 +23,7 @@ namespace Randomizer.MER
     /// </summary>
     public class MERFileSystem
     {
+        public const string PREVENT_SAVE_METADATA_NAME = "preventsave";
 #if __GAME1__
         /// <summary>
         /// List of games this build supports
@@ -97,9 +98,14 @@ namespace Randomizer.MER
         /// <param name="forceLoadFromDisk"></param>
         /// <param name="quickload"></param>
         /// <returns></returns>
-        public static IMEPackage OpenMEPackage(string path, bool forceLoadFromDisk = false, bool quickload = false)
+        public static IMEPackage OpenMEPackage(string path, bool forceLoadFromDisk = false, bool quickload = false, bool preventSave = false)
         {
-            return MEPackageHandler.OpenMEPackage(path, forceLoadFromDisk: forceLoadFromDisk, quickLoad: quickload, diskIOSyncLock: openSavePackageSyncObj);
+            var package = MEPackageHandler.OpenMEPackage(path, forceLoadFromDisk: forceLoadFromDisk, quickLoad: quickload, diskIOSyncLock: openSavePackageSyncObj);
+            if (preventSave)
+            {
+                package.CustomMetadata[PREVENT_SAVE_METADATA_NAME] = true;
+            }
+            return package;
         }
 
         /// <summary>
@@ -116,11 +122,15 @@ namespace Randomizer.MER
             // EntryImporter.AddUserSafeToImportFromFile(target.Game, Path.GetFileName(startupPackage.FilePath));
 
             // We have to re-open package so it knows how to properly inventory the path of the package for class info.
-            var packageForInventory = MEPackageHandler.OpenMEPackage(savedStartupPackage);
+            var packageForInventory = MERFileSystem.OpenMEPackage(savedStartupPackage, preventSave: true);
             foreach (var startupClass in packageForInventory.Exports.Where(x => x.ClassName == @"Class"))
             {
                 MERUtilities.InventoryCustomClass(startupClass);
             }
+            
+            // Add the startup file to the global lookup cache because this will often be looked into 
+            // with randomizer design for things like sequence object creation.
+            MERCaches.GlobalCommonLookupCache.InsertIntoCache(packageForInventory);
         }
 
         /// <summary>
@@ -168,8 +178,6 @@ namespace Randomizer.MER
 #endif
 
             metacmm.WriteMetaCMM(metacmmFile, installedBy);
-            GlobalCache = null;
-
             EntryImporter.ClearUserSafeToImportFromFiles(selectedOptions.RandomizationTarget.Game);
         }
 
@@ -219,6 +227,11 @@ namespace Randomizer.MER
         /// <returns>The path the package was saved to. Can be null if package was not saved</returns>
         public static string SavePackage(IMEPackage package, bool forceSave = false, string forcedFileName = null)
         {
+            if (package.CustomMetadata.TryGetValue(PREVENT_SAVE_METADATA_NAME, out var cannotSaveFlag) && cannotSaveFlag is bool b && b)
+            {
+                throw new Exception("Attempting to save package marked read only usage on load!");
+            }
+
             if (package.IsModified || forceSave)
             {
                 var packageNameNoLocalization = forcedFileName != null ? Path.GetFileNameWithoutExtension(forcedFileName) : package.FileNameNoExtension;
@@ -267,28 +280,8 @@ namespace Randomizer.MER
             archive.ExtractToDirectory(dlcpath);
         }
 
-        private static MERPackageCache GlobalCache;
         private static bool installedStartupPackage;
-
-        /// <summary>
-        /// Gets the global cache of files that can be used for looking up imports
-        /// </summary>
-        /// <returns></returns>
-        public static MERPackageCache GetGlobalCache(GameTarget target)
-        {
-            if (GlobalCache == null)
-            {
-                Debug.WriteLine("Loading global cache");
-                GlobalCache = new MERPackageCache(target);
-                foreach (var fullySafeFile in EntryImporter.FilesSafeToImportFrom(target.Game))
-                {
-                    GlobalCache.GetCachedPackage(fullySafeFile);
-                }
-            }
-
-            return GlobalCache;
-        }
-
+        
         /// <summary>
         /// Gets a specific file from the game, bypassing the MERFS system.
         /// </summary>
@@ -338,6 +331,14 @@ namespace Randomizer.MER
         {
             var package = MEPackageHandler.UnsafePartialLoad(packagePath, x => false);
             return package;
+        }
+
+        public static void SetReadOnly(IMEPackage package, bool preventSaves)
+        {
+            if (preventSaves)
+            {
+                package.CustomMetadata[PREVENT_SAVE_METADATA_NAME] = true;
+            }
         }
     }
 }

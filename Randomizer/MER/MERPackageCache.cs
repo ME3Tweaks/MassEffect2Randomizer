@@ -12,7 +12,7 @@ using WinCopies.Util;
 namespace Randomizer.MER
 {
     /// <summary>
-    /// A superset cache package that can cache embedded assets
+    /// PackageCache for Mass Effect Randomizer that enables parent cache lookups, read only opening, and opening from specific targets
     /// </summary>
     public class MERPackageCache : PackageCache
     {
@@ -21,9 +21,21 @@ namespace Randomizer.MER
         /// </summary>
         private readonly GameTarget Target;
 
-        public MERPackageCache(GameTarget target)
+        /// <summary>
+        /// Cache to also look in for packages
+        /// </summary>
+        public MERPackageCache ParentCache;
+
+        /// <summary>
+        /// If packages opened from this cache can be saved (through MERFS)
+        /// </summary>
+        private bool PreventSaves;
+
+        public MERPackageCache(GameTarget target, MERPackageCache parent, bool preventSaves)
         {
             Target = target;
+            ParentCache = parent;
+            PreventSaves = preventSaves;
         }
 
         /// <summary>
@@ -33,6 +45,10 @@ namespace Randomizer.MER
         /// <returns></returns>
         public override IMEPackage GetCachedPackage(string packageName, bool openIfNotInCache = true, Func<string, IMEPackage> openPackageMethod = null)
         {
+            var parentP = ParentCache?.GetCachedPackage(packageName, false);
+            if (parentP != null)
+                return parentP;
+
             // May need way to set maximum size of dictionary so we don't hold onto too much memory.
             packageName = Path.GetFileName(packageName); // Ensure we only use filename
             if (Cache.TryGetValue(packageName, out var package))
@@ -52,6 +68,7 @@ namespace Randomizer.MER
                         {
                             i--;
                             package = MERFileSystem.OpenMEPackage(file);
+                            MERFileSystem.SetReadOnly(package, PreventSaves);
                         }
                         catch (IOException e)
                         {
@@ -90,6 +107,7 @@ namespace Randomizer.MER
                 if (embeddedData != null)
                 {
                     package = MEPackageHandler.OpenMEPackageFromStream(embeddedData);
+                    MERFileSystem.SetReadOnly(package, PreventSaves);
                     Cache[embeddedPath] = package;
                     return package;
                 }
