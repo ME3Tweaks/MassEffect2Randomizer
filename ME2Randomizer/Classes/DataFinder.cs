@@ -29,16 +29,37 @@ namespace RandomizerUI.Classes
         private MainWindow mainWindow;
         private BackgroundWorker dataworker;
 
+        void srUpdate(object? o, EventArgs eventArgs)
+        {
+            if (o is RandomizationOption option)
+            {
+                mainWindow.ProgressBarIndeterminate = option.ProgressIndeterminate;
+                mainWindow.CurrentProgressValue = option.ProgressValue;
+                mainWindow.ProgressBar_Bottom_Max = option.ProgressMax;
+                if (option.CurrentOperation != null)
+                {
+                    mainWindow.CurrentOperationText = option.CurrentOperation;
+                }
+            }
+        }
+
         public DataFinder(MainWindow mainWindow)
         {
 #if DEBUG
             this.mainWindow = mainWindow;
             dataworker = new BackgroundWorker();
 
-            dataworker.DoWork += MERDebug.DecookGame;
+            // For UI binding.
+            RandomizationOption option = new RandomizationOption();
+            option.OnOperationUpdate += srUpdate;
+            dataworker.DoWork += MERDebug.FindRTPCNames;
             //dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
             mainWindow.ShowProgressPanel = true;
-            dataworker.RunWorkerAsync();
+            dataworker.RunWorkerAsync(option);
+            dataworker.RunWorkerCompleted += (sender, args) =>
+            {
+                option.OnOperationUpdate -= srUpdate;
+            };
 #endif
         }
 
