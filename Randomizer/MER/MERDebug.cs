@@ -88,6 +88,43 @@ namespace Randomizer.MER
         }
 #endif
 
+        public static void FindRTPCNames(object sender, DoWorkEventArgs doWorkEventArgs)
+        {
+#if DEBUG
+            var option = doWorkEventArgs.Argument as RandomizationOption;
+            var game = MEGame.LE3;
+            var target = new GameTarget(game, MEDirectories.GetDefaultGamePath(game), true);
+            var loadedFiles = MELoadedFiles.GetFilesLoadedInGame(game);
+            SortedSet<string> rtpcStrings = new SortedSet<string>();
+
+            option.ProgressMax = loadedFiles.Count;
+            option.ProgressValue = 0;
+            option.CurrentOperation = "Finding RTPCs";
+            option.ProgressIndeterminate = false;
+            foreach (var v in loadedFiles)
+            {
+                using var package = MEPackageHandler.UnsafePartialLoad(v.Value, x=>x.ClassName == "SFXModule_Audio");
+                foreach (var am in package.Exports.Where(x => x.ClassName == "SFXModule_Audio"))
+                {
+                    var rtpcs = am.GetProperty<ArrayProperty<StructProperty>>("RTPCs");
+                    if (rtpcs != null)
+                    {
+                        foreach (var rtpc in rtpcs)
+                        {
+                            rtpcStrings.Add($"{rtpc.GetProp<StrProperty>("RTPCName").Value}: {rtpc.GetProp<FloatProperty>("RTPCValue").Value}");
+                        }
+                    }
+                }
+                
+                option.IncrementProgressValue();
+            }
+
+            foreach (var v in rtpcStrings)
+            {
+                Debug.WriteLine(v);
+            }
+#endif
+        }
 
         /// <summary>
         /// Attempts to build full packages (still ForcedExport unfortunately)
@@ -96,6 +133,7 @@ namespace Randomizer.MER
         public static void DecookGame(object sender, DoWorkEventArgs doWorkEventArgs)
         {
 #if DEBUG
+            var option = doWorkEventArgs.Argument as RandomizationOption;
             var game = MEGame.LE3;
             var loadedFiles = MELoadedFiles.GetFilesLoadedInGame(game);
             var outputDirectory = @"B:\DecookedGames\LE3";
@@ -103,6 +141,9 @@ namespace Randomizer.MER
             // Step 1: Find all top level package exports
             SortedSet<string> topLevelPackages = new SortedSet<string>(StringComparer.InvariantCultureIgnoreCase);
             Dictionary<string, IMEPackage> fileToTablesOnlyPackage = new Dictionary<string, IMEPackage>();
+            option.CurrentOperation = "Loading all package summaries";
+            option.ProgressMax = loadedFiles.Count;
+            option.ProgressValue = 0;
             foreach (var f in loadedFiles)
             {
                 if (f.Key.StartsWith("BIOG_"))
@@ -119,6 +160,7 @@ namespace Randomizer.MER
                 }
 
                 fileToTablesOnlyPackage[f.Key] = file;
+                option.ProgressValue++;
             }
 
             //File.WriteAllLines(@"B:\DecookedGames\LE3TopLevelPackages.txt", topLevelPackages.ToList());
@@ -133,12 +175,16 @@ namespace Randomizer.MER
 
             using var globalCache = MERCaches.GlobalCommonLookupCache; // This way of accessing will not work in release builds.
 
+            option.ProgressValue = 0;
+            option.ProgressMax = topLevelPackages.Count;
+            option.CurrentOperation = "Decooking packages";
             Parallel.ForEach(topLevelPackages, new ParallelOptions() { MaxDegreeOfParallelism = 6 }, tlp =>
             {
                 Debug.WriteLine($"Decooking {tlp}");
                 if (tlp.Contains("..") || tlp.Contains('\\'))
                 {
                     Debug.WriteLine($"Skipping path-named package {tlp}");
+                    option.IncrementProgressValue();
                     return;
                 }
 
@@ -160,6 +206,7 @@ namespace Randomizer.MER
                 }
 
                 decookedPackage.Save();
+                option.IncrementProgressValue();
             });
             fileToTablesOnlyPackage = null;
 #endif
