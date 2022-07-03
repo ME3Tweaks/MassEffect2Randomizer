@@ -103,7 +103,7 @@ namespace Randomizer.MER
             option.ProgressIndeterminate = false;
             foreach (var v in loadedFiles)
             {
-                using var package = MEPackageHandler.UnsafePartialLoad(v.Value, x=>x.ClassName == "SFXModule_Audio");
+                using var package = MEPackageHandler.UnsafePartialLoad(v.Value, x => x.ClassName == "SFXModule_Audio");
                 foreach (var am in package.Exports.Where(x => x.ClassName == "SFXModule_Audio"))
                 {
                     var rtpcs = am.GetProperty<ArrayProperty<StructProperty>>("RTPCs");
@@ -115,7 +115,7 @@ namespace Randomizer.MER
                         }
                     }
                 }
-                
+
                 option.IncrementProgressValue();
             }
 
@@ -224,31 +224,53 @@ namespace Randomizer.MER
                 .ToList();
             RandomizationOption option = (RandomizationOption)e.Argument;
             var game = MEGame.LE3;
-            var gameTarget = new GameTarget(game, MEDirectories.GetDefaultGamePath(game), true);
-            GestureManager.Init(gameTarget);
+            var target = new GameTarget(game, MEDirectories.GetDefaultGamePath(game), true);
+            GestureManager.Init(target);
 
 
             // PackageName -> GesturePackage
-            var gestureSaveP = @"C:\Users\mgame\source\repos\ME2Randomizer\Randomizer\Randomizers\Game3\Assets\Binary\Packages\LE3\Gestures.pcc";
-            MEPackageHandler.CreateAndSavePackage(gestureSaveP, MEGame.LE3);
-            var gestPackage = MEPackageHandler.OpenMEPackage(gestureSaveP);
+            var gestureSaveF = @"C:\Users\mgame\source\repos\ME2Randomizer\Randomizer\Randomizers\Game3\Assets\Binary\Packages\LE3\Gestures";
 
             option.CurrentOperation = "Finding gesture animations";
             option.ProgressMax = files.Count;
             option.ProgressValue = 0;
+            option.ProgressIndeterminate = false;
+
+            using MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true)
+            {
+                CacheMaxSize = 10
+            };
+
+            using PackageCache gestureCache = new PackageCache();
+
             foreach (var f in files)
             {
                 option.ProgressValue++;
                 var p = MEPackageHandler.OpenMEPackage(f);
-                var gesturesPackageExports = p.Exports.Where(x => x.idxLink == 0 && x.ClassName == "Package" && GestureManager.IsGesturePackage(x.ObjectName)).Select(x => x.UIndex).ToList();
+                var gesturesPackageExports = p.Exports.Where(x => x.idxLink == 0 && x.ClassName == "Package" && GestureManager.IsGestureGroupPackage(x.ObjectName)).Select(x => x.UIndex).ToList();
 
                 // Get list of exports under these packages
-                foreach (var exp in p.Exports.Where(x => gesturesPackageExports.Contains(x.idxLink)))
+                foreach (var exp in p.Exports.Where(x => gesturesPackageExports.Contains(x.idxLink) && (x.ClassName == "AnimSet" || x.ClassName=="AnimSequence")))
                 {
-                    EntryExporter.ExportExportToPackage(exp, gestPackage, out var _, MERCaches.GlobalCommonLookupCache);
+                    var destFile = Path.Combine(gestureSaveF, exp.Parent.ObjectName.Name + ".pcc");
+                    IMEPackage gestPackage = gestureCache.GetCachedPackage(destFile, false);
+
+                    if (gestPackage == null)
+                    {
+                        MEPackageHandler.CreateAndSavePackage(destFile, game);
+                        gestPackage = MEPackageHandler.OpenMEPackage(destFile);
+                        gestureCache.InsertIntoCache(gestPackage);
+                    }
+                    EntryExporter.ExportExportToPackage(exp, gestPackage, out var _, MERCaches.GlobalCommonLookupCache, cache);
                 }
             }
-            gestPackage.Save(compress: true);
+
+            foreach (var v in gestureCache.Cache)
+            {
+                v.Value.Save();
+            }
+
+            MERCaches.Cleanup();
 #endif
         }
     }

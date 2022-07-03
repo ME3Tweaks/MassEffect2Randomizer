@@ -131,17 +131,19 @@ namespace Randomizer.Randomizers.Game3
             Exception rethrowException = null;
             try
             {
+                // Initialize FileSystem and handlers
                 MERFileSystem.InitMERFS(SelectedOptions);
+
+                // Initialize any special items here
+                if (SelectedOptions.SelectedOptions.Any(x => x.RequiresGestures))
+                {
+                    // Prepare runtime gestures data
+                    GestureManager.Init(SelectedOptions.RandomizationTarget);
+                }
+
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-                // PREPARATION FOR RANDOMIZATIONS
 
-                // Prepare the textures
-                //LE3Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
-
-                // Prepare runtime gestures data
-                GestureManager.Init(SelectedOptions.RandomizationTarget);
-                
                 void srUpdate(object? o, EventArgs eventArgs)
                 {
                     if (o is RandomizationOption option)
@@ -580,7 +582,7 @@ namespace Randomizer.Randomizers.Game3
                     //new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
                     //new RandomizationOption() {HumanName = "Hammerhead", IsRecommended = true, Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
-                    new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by most basic non-interactable NPCs.",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActor.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by most basic non-interactable NPCs.", PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActor.RandomizeBasicGestures, RequiresGestures = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
                     new RandomizationOption() {HumanName = "Pawn materials", IsRecommended = true, Description = "Runtime randomzier that randomizes the inputs to materials on every level file load. An input may be a glow, color, etc.",PerformFileSpecificRandomization = RSharedSkeletalMesh.InstallRandomMICKismetObject, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
 
                     //new RandomizationOption()
@@ -655,7 +657,7 @@ namespace Randomizer.Randomizers.Game3
                     //    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship, including one sidequest", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     //    //new RandomizationOption() {HumanName = "Prologue"},
                     //    //new RandomizationOption() {HumanName = "Tali Acquisition"}, //sfxgame tla damagetype
-                    //    new RandomizationOption() {HumanName = "Citadel", Description = "Changes many things across the level", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true, IsRecommended = true},
+                        new RandomizationOption() {HumanName = "Citadel (Not DLC)", Description = "Changes many things across the Citadel", PerformSpecificRandomizationDelegate = CitHub.RandomizeLevel, RequiresTLK = true, IsRecommended = true},
                     //    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true, RequiresTLK = true},
                     //    new RandomizationOption() {HumanName = "Illium Hub", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = IlliumHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     //    new RandomizationOption() {HumanName = "Omega Hub", Description = "Improved dancing technique", PerformSpecificRandomizationDelegate = OmegaHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},

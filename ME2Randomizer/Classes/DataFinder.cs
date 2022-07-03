@@ -52,13 +52,14 @@ namespace RandomizerUI.Classes
             // For UI binding.
             RandomizationOption option = new RandomizationOption();
             option.OnOperationUpdate += srUpdate;
-            dataworker.DoWork += MERDebug.FindRTPCNames;
+            dataworker.DoWork += MERDebug.BuildGestureFiles;
             //dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
             mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync(option);
             dataworker.RunWorkerCompleted += (sender, args) =>
             {
                 option.OnOperationUpdate -= srUpdate;
+                mainWindow.ShowProgressPanel = false;
             };
 #endif
         }
@@ -227,7 +228,7 @@ namespace RandomizerUI.Classes
 
         #endregion
         */
-      
+
         /*
 
         private class GesturePackage

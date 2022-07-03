@@ -184,6 +184,10 @@ namespace Randomizer.Randomizers
         /// The tooltip to display on the setup randomizer button
         /// </summary>
         public string SetupRandomizerButtonToolTip { get; set; }
+        /// <summary>
+        /// If this option requires gesture packages to load into memory for use
+        /// </summary>
+        public bool RequiresGestures { get; set; }
 
         /// <summary>
         /// Check if this option has a suboption that is selected with the specified key

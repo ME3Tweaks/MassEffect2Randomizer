@@ -51,6 +51,11 @@ namespace Randomizer.MER
 
             // May need way to set maximum size of dictionary so we don't hold onto too much memory.
             packageName = Path.GetFileName(packageName); // Ensure we only use filename
+
+            parentP = ParentCache?.GetCachedPackage(packageName, false);
+            if (parentP != null)
+                return parentP;
+
             if (Cache.TryGetValue(packageName, out var package))
             {
                 return package;
@@ -81,7 +86,7 @@ namespace Randomizer.MER
                     if (package == null)
                         return null;
 
-                    Cache[packageName] = package;
+                    InsertIntoCache(package);
                     return package;
                 }
             }
@@ -89,7 +94,7 @@ namespace Randomizer.MER
         }
 
         /// <summary>
-        /// Returns a cached package that references an internally embedded package. Ensure this cache is synchronized if across threads or you may end up saving two different instances of files to the same location
+        /// Returns a cached package that references an internally embedded package. Ensure this cache is synchronized across threads or you may end up saving two different instances of files to the same location
         /// </summary>
         /// <param name="packageName"></param>
         /// <returns></returns>
@@ -113,6 +118,37 @@ namespace Randomizer.MER
                 }
             }
             return null; //Package could not be found
+        }
+
+        public override void InsertIntoCache(IMEPackage package)
+        {
+            Cache[Path.GetFileName(package.FilePath)] = package;
+            LastAccessMap[Path.GetFileName(package.FilePath)] = DateTime.Now;
+            CheckCacheFullness();
+        }
+
+        public override void CheckCacheFullness()
+
+        {
+            if (CacheMaxSize > 1 && Cache.Count > CacheMaxSize)
+            {
+                var accessOrder = LastAccessMap.OrderBy(x => x.Value).ToList();
+                while (CacheMaxSize > 1 && Cache.Count > CacheMaxSize)
+                {
+                    // Find the oldest package
+                    if (!ResidentPackages.Contains(accessOrder[0].Key))
+                    {
+                        ReleasePackage(accessOrder[0].Key);
+                    }
+                    accessOrder.RemoveAt(0);
+                }
+            }
+
+            if (CacheMaxSize == 0)
+            {
+                //Debug.WriteLine(guid);
+                //Debugger.Break();
+            }
         }
 
         public IReadOnlyCollection<IMEPackage> GetPackages()
