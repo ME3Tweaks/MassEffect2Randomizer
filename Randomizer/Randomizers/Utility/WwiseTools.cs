@@ -1,4 +1,5 @@
 ﻿using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Sound.Wwise;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using Randomizer.Shared.DataTypes;
@@ -8,7 +9,6 @@ namespace Randomizer.Randomizers.Utility
     public static class WwiseTools
     {
         /// <summary>
-        /// ME2 SPECIFIC<para/>
         /// Repoint a WwiseStream to play the data from another, typically across banks.
         /// </summary>
         /// <param name="originalExport">The audio you want to play (e.g. this is the audio that will be 'installed')</param>
@@ -20,10 +20,11 @@ namespace Randomizer.Randomizers.Utility
             var targetId = targetAudioStream.GetProperty<IntProperty>("Id");
             props.AddOrReplaceProp(targetId);
             targetAudioStream.WritePropertiesAndBinary(props, bin);
+            WwiseStream w = ObjectBinary.From<WwiseStream>(targetAudioStream);
+            WwiseHelper.UpdateReferencedWwiseEventLengths(targetAudioStream, (float)w.GetAudioInfo().GetLength().TotalMilliseconds);
         }
 
         /// <summary>
-        /// ME2 SPECIFIC<para/>
         /// Repoint a WwiseStream to play the data from another precomputed stream.
         /// </summary>
         /// <param name="originalExport">The audio you want to play (e.g. this is the audio that will be 'installed')</param>
@@ -31,16 +32,31 @@ namespace Randomizer.Randomizers.Utility
         public static void RepointWwiseStreamToInfo(MusicStreamInfo streamInfo, ExportEntry targetAudioStream)
         {
             WwiseStream stream = new WwiseStream();
+            PropertyCollection props = new PropertyCollection();
+
+#if __GAME2__
+
             stream.Filename = ""; // Just make sure it's not set to null so internal code thinks this is not Pcc stored.
             stream.DataSize = streamInfo.DataSize;
             stream.Unk1 = stream.Unk2 = stream.Unk3 = stream.Unk4 = stream.Unk5 = 1;
             stream.UnkGuid = streamInfo.UnkGuid;
             stream.DataOffset = streamInfo.DataOffset;
 
-            PropertyCollection props = new PropertyCollection();
             props.Add(targetAudioStream.GetProperty<IntProperty>("Id")); // Use the existing Id
             props.Add(new NameProperty(streamInfo.Filename, "Filename")); // AFC file
             props.Add(new NameProperty(streamInfo.BankName, "BankName")); // ?
+#endif
+#if __GAME3__
+            stream.Filename = ""; // Just make sure it's not set to null so internal code thinks this is not Pcc stored.
+            stream.DataSize = streamInfo.DataSize;
+            stream.Unk1 = stream.Unk2 = stream.Unk3 = stream.Unk4 = stream.Unk5 = 1;
+            stream.UnkGuid = streamInfo.UnkGuid;
+            stream.DataOffset = streamInfo.DataOffset;
+
+            props.Add(targetAudioStream.GetProperty<IntProperty>("Id")); // Use the existing Id
+            props.Add(new NameProperty(streamInfo.Filename, "Filename")); // AFC file
+            props.Add(new NameProperty(streamInfo.BankName, "BankName")); // ?
+#endif
             targetAudioStream.WritePropertiesAndBinary(props, stream);
         }
 
