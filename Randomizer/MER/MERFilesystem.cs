@@ -23,7 +23,11 @@ namespace Randomizer.MER
     /// </summary>
     public class MERFileSystem
     {
+        /// <summary>
+        /// Metadata flag to prevent package from being able to be saved.
+        /// </summary>
         public const string PREVENT_SAVE_METADATA_NAME = "preventsave";
+
 #if __GAME1__
         /// <summary>
         /// List of games this build supports
@@ -56,6 +60,7 @@ namespace Randomizer.MER
         public static void InitMERFS(OptionsPackage options)
         {
             var useTlk = options.SelectedOptions.Any(x => x.RequiresTLK);
+
             installedStartupPackage = false;
             ReloadLoadedFiles(options.RandomizationTarget);
 
@@ -80,6 +85,14 @@ namespace Randomizer.MER
             {
                 TLKBuilder.StartHandler(options.RandomizationTarget);
             }
+
+#if __GAME2__ || __GAME3__
+            // Extract audio folder is any options need it.
+            if (options.SelectedOptions.Any(x => x.RequiresAudio))
+            {
+                MEREmbedded.ExtractEmbeddedBinaryFolder("Audio.AFC");
+            }
+#endif
 
 #if __GAME3__
             // LE3 version will always install a startup package
@@ -140,7 +153,7 @@ namespace Randomizer.MER
         public static IMEPackage GetStartupPackage(GameTarget target)
         {
             var startupDestName = $"Startup_MOD_{target.Game}Randomizer.pcc";
-            return MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedPackage(target.Game, startupDestName), startupDestName);
+            return MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, startupDestName), startupDestName);
         }
 
         public static void Finalize(OptionsPackage selectedOptions)
@@ -275,7 +288,7 @@ namespace Randomizer.MER
         private static void CreateRandomizerDLCMod(GameTarget target, string dlcpath)
         {
             Directory.CreateDirectory(dlcpath);
-            var zipMemory = MERUtilities.GetEmbeddedAsset("StarterKit", $"{target.Game.ToString().ToLower()}starterkit.zip");
+            var zipMemory = MEREmbedded.GetEmbeddedAsset("StarterKit", $"{target.Game.ToString().ToLower()}starterkit.zip");
             using ZipArchive archive = new ZipArchive(zipMemory);
             archive.ExtractToDirectory(dlcpath);
         }

@@ -19,7 +19,7 @@ namespace Randomizer.Randomizers.Game3.Misc
             var sfxgame = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc"));
             var targetScriptExport = sfxgame.FindExport("BioPawn.CreateWeapon");
 
-            string scriptText = MERUtilities.GetEmbeddedTextAsset($"Scripts.RandomEnemyWeapon.uc", false);
+            string scriptText = MEREmbedded.GetEmbeddedTextAsset($"Scripts.RandomEnemyWeapon.uc", false);
 
             int startingSwitchIndex = 71;
 

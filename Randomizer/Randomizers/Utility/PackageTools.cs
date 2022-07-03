@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
@@ -216,6 +217,21 @@ namespace Randomizer.Randomizers.Utility
             var objRef = referencer.GetProperty<ArrayProperty<ObjectProperty>>("ReferencedObjects");
             objRef.Add(new ObjectProperty(reference));
             referencer.WriteProperty(objRef);
+        }
+
+        /// <summary>
+        /// Ports the specified LEXOpenable into the listed package.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="targetPackage"></param>
+        /// <param name="underBellyDp"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static ExportEntry PortExportIntoPackage(GameTarget target, LEXOpenable sourceItem, IMEPackage package, MERPackageCache sourceCache = null)
+        {
+            sourceCache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+            var sourcePackage = sourceCache.GetCachedPackage(MERFileSystem.GetPackageFile(target, sourceItem.FilePath));
+            return PortExportIntoPackage(target, package, sourcePackage.FindExport(sourceItem.EntryPath));
         }
     }
 }

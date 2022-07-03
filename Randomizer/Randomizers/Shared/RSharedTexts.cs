@@ -38,7 +38,7 @@ namespace Randomizer.Randomizers.Shared
         /// <returns></returns>
         public static bool RandomizeOpeningCrawl(GameTarget target, RandomizationOption arg)
         {
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("openingcrawls.xml");
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("openingcrawls.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var gameoverTexts = rootElement.Elements("CrawlText").Select(x => x.Value).ToList();
             // The trim calls here will remove first and last lines that are blank. The TrimForIntro() will remove whitespace per line.
@@ -76,7 +76,7 @@ namespace Randomizer.Randomizers.Shared
         /// <returns></returns>
         public static bool RandomizeGameOverText(GameTarget target, RandomizationOption arg)
         {
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("gameovertexts.xml");
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("gameovertexts.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var gameoverTexts = rootElement.Elements("gameovertext").Select(x => x.Value).ToList();
             var gameOverText = gameoverTexts[ThreadSafeRandom.Next(gameoverTexts.Count)];
@@ -232,7 +232,7 @@ namespace Randomizer.Randomizers.Shared
             //initialize reactions/regex if this is first run
             if (ReactionList == null)
             {
-                string rawReactionDefinitions = MERUtilities.GetEmbeddedTextAsset("reactiondefinitions.xml");
+                string rawReactionDefinitions = MEREmbedded.GetEmbeddedTextAsset("reactiondefinitions.xml");
                 var reactionXml = new StringReader(rawReactionDefinitions);
                 XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
                 ReactionList = (List<Reaction>)serializer.Deserialize(reactionXml);

@@ -20,7 +20,7 @@ namespace Randomizer.MER
         /// <returns></returns>
         public static ExportEntry PortExportIntoPackage(GameTarget target, string objectName, IMEPackage destPackage)
         {
-            var packageBin = MERUtilities.GetEmbeddedPackage(target.Game, "EasyPorts.pcc");
+            var packageBin = MEREmbedded.GetEmbeddedPackage(target.Game, "EasyPorts.pcc");
             var easyP = MEPackageHandler.OpenMEPackageFromStream(packageBin);
             return PackageTools.PortExportIntoPackage(target, destPackage, easyP.FindExport(objectName), 0, false, true);
         }

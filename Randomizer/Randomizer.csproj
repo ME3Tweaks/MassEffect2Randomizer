@@ -71,6 +71,7 @@
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.afc" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
@@ -82,9 +83,11 @@
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
+		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.afc" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.afc" />
 		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.json" />
 		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.txt" />
 		<EmbeddedResource Include="Randomizers\SharedAssets\**\*.xml" />

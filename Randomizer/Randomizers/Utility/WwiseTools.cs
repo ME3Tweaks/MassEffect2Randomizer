@@ -1,7 +1,9 @@
-﻿using LegendaryExplorerCore.Packages;
+﻿using System.IO;
+using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Sound.Wwise;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using Randomizer.MER;
 using Randomizer.Shared.DataTypes;
 
 namespace Randomizer.Randomizers.Utility
@@ -79,6 +81,24 @@ namespace Randomizer.Randomizers.Utility
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// Repoints audio to a SINGLE AFC that is new via MER, located in the DLC mod folder.
+        /// </summary>
+        /// <param name="originalExport"></param>
+        /// <param name="afcName"></param>
+        public static void RepointWwiseStreamToSingleAFC(ExportEntry originalExport, string afcName)
+        {
+            var props = originalExport.GetProperties();
+            var bin = ObjectBinary.From<WwiseStream>(originalExport);
+            props.AddOrReplaceProp(new NameProperty(afcName, "Filename"));
+            bin.DataOffset = 0;
+            bin.DataSize = (int) new FileInfo(Path.Combine(MERFileSystem.DLCModCookedPath, $"{afcName}.afc")).Length;
+            originalExport.WritePropertiesAndBinary(props, bin);
+
+            WwiseStream w = ObjectBinary.From<WwiseStream>(originalExport);
+            WwiseHelper.UpdateReferencedWwiseEventLengths(originalExport, (float)w.GetAudioInfo().GetLength().TotalMilliseconds);
         }
     }
 }

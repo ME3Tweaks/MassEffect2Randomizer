@@ -52,7 +52,7 @@ namespace Randomizer.Randomizers.Utility
         public static void InstallScriptToExport(ExportEntry targetExport, string scriptFilename, bool shared = false, PackageCache cache = null)
         {
             MERLog.Information($@"Installing script {scriptFilename} to export {targetExport.InstancedFullPath}");
-            string scriptText = MERUtilities.GetEmbeddedTextAsset($"Scripts.{scriptFilename}", shared);
+            string scriptText = MEREmbedded.GetEmbeddedTextAsset($"Scripts.{scriptFilename}", shared);
             InstallScriptTextToExport(targetExport, scriptText, scriptFilename, cache);
         }
 

@@ -19,7 +19,7 @@ namespace RandomizerUI.Classes
         /// <returns></returns>
         public static List<LibraryCredit> LoadLibraryCredits(string file)
         {
-            var textFile = MERUtilities.GetEmbeddedTextAsset(file, true).Split('\n');
+            var textFile = MEREmbedded.GetEmbeddedTextAsset(file, true).Split('\n');
             List<LibraryCredit> credits = new List<LibraryCredit>(100);
 
             LibraryCredit currentCredit = null;

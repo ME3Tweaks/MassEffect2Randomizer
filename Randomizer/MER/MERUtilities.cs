@@ -31,11 +31,14 @@ namespace Randomizer.MER
     public class MERUtilities
     {
         public const int WIN32_EXCEPTION_ELEVATED_CODE = -98763;
+
         [DllImport("kernel32.dll")]
         static extern uint GetLastError();
+
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetPhysicallyInstalledSystemMemory(out long TotalMemoryInKilobytes);
+
         public static string GetOperatingSystemInfo()
         {
             StringBuilder sb = new StringBuilder();
@@ -45,27 +48,31 @@ namespace Randomizer.MER
             {
                 if (managementObject["Caption"] != null)
                 {
-                    sb.AppendLine("Operating System Name  :  " + managementObject["Caption"].ToString());   //Display operating system caption
+                    sb.AppendLine("Operating System Name  :  " + managementObject["Caption"].ToString()); //Display operating system caption
                 }
+
                 if (managementObject["OSArchitecture"] != null)
                 {
-                    sb.AppendLine("Operating System Architecture  :  " + managementObject["OSArchitecture"].ToString());   //Display operating system architecture.
+                    sb.AppendLine("Operating System Architecture  :  " + managementObject["OSArchitecture"].ToString()); //Display operating system architecture.
                 }
+
                 if (managementObject["CSDVersion"] != null)
                 {
-                    sb.AppendLine("Operating System Service Pack   :  " + managementObject["CSDVersion"].ToString());     //Display operating system version.
+                    sb.AppendLine("Operating System Service Pack   :  " + managementObject["CSDVersion"].ToString()); //Display operating system version.
                 }
             }
+
             sb.AppendLine("\nProcessor Information-------");
-            RegistryKey processor_name = Registry.LocalMachine.OpenSubKey(@"Hardware\Description\System\CentralProcessor\0", RegistryKeyPermissionCheck.ReadSubTree);   //This registry entry contains entry for processor info.
+            RegistryKey processor_name = Registry.LocalMachine.OpenSubKey(@"Hardware\Description\System\CentralProcessor\0", RegistryKeyPermissionCheck.ReadSubTree); //This registry entry contains entry for processor info.
 
             if (processor_name != null)
             {
                 if (processor_name.GetValue("ProcessorNameString") != null)
                 {
-                    sb.AppendLine((string)processor_name.GetValue("ProcessorNameString"));   //Display processor ingo.
+                    sb.AppendLine((string)processor_name.GetValue("ProcessorNameString")); //Display processor ingo.
                 }
             }
+
             return sb.ToString();
         }
 
@@ -76,96 +83,7 @@ namespace Randomizer.MER
             return folder;
         }
 
-        /// <summary>
-        /// Fetches a text file's contents from the Assets.Text directory.
-        /// </summary>
-        /// <param name="filename"></param>
-        /// <returns></returns>
-        public static string GetEmbeddedTextAsset(string filename, bool shared = false)
-        {
-            using var stream = GetEmbeddedAsset("Text", filename, shared);
-            using StreamReader sr = new StreamReader(stream);
-            return sr.ReadToEnd();
-        }
 
-        /// <summary>
-        /// Fetches an asset stream from a full asset path
-        /// </summary>
-        /// <param name="fullAssetPath"></param>
-        /// <returns></returns>
-        public static Stream GetEmbeddedAssetByFullPath(string fullAssetPath)
-        {
-#if DEBUG
-            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-#endif
-            return Assembly.GetExecutingAssembly().GetManifestResourceStream(fullAssetPath);
-        }
-
-        public static Stream GetEmbeddedAsset(string assettype, string assetpath, bool shared = false)
-        {
-#if __GAME1__
-            var assetBase = $"Randomizer.Randomizers.Game1.Assets.{assettype}.";
-#elif __GAME2__
-            var assetBase = $"Randomizer.Randomizers.Game2.Assets.{assettype}.";
-#elif __GAME3__
-            var assetBase = $"Randomizer.Randomizers.Game3.Assets.{assettype}.";
-#endif
-            if (shared)
-                assetBase = $"Randomizer.Randomizers.SharedAssets.{assettype}.";
-#if DEBUG
-            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            var result = Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + assetpath);
-            if (result == null)
-                Debugger.Break();
-            return result;
-#else
-            return Assembly.GetExecutingAssembly().GetManifestResourceStream(assetBase + assetpath);
-
-#endif
-        }
-
-        /// <summary>
-        /// Gets a list of asset paths that match the given type and folder path.
-        /// </summary>
-        /// <param name="assettype"></param>
-        /// <param name="assetFolderPath"></param>
-        /// <param name="shared"></param>
-        /// <returns></returns>
-        public static List<string> ListEmbeddedAssets(string assettype, string assetFolderPath, bool shared = false)
-        {
-#if __GAME1__
-            var assetBase = $"Randomizer.Randomizers.Game1.Assets.{assettype}.";
-#elif __GAME2__
-            var assetBase = $"Randomizer.Randomizers.Game2.Assets.{assettype}.";
-#elif __GAME3__
-            var assetBase = $"Randomizer.Randomizers.Game3.Assets.{assettype}.";
-#endif
-            if (shared)
-                assetBase = $"Randomizer.Randomizers.SharedAssets.{assettype}.";
-            var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
-            return items.Where(x => x.StartsWith(assetBase + assetFolderPath)).ToList();
-        }
-
-        /// <summary>
-        /// Extracts packages from an embedded folder to the DLC folder for MERFS
-        /// </summary>
-        /// <param name="packageFolderName">Name of package folder to extract to DLC mod folder</param>
-        /// <param name="game">Which game to extract</param>
-        public static List<string> ExtractEmbeddedPackageFolder(string packageFolderName, MEGame game)
-        {
-            var extractedItems = new List<string>();
-            var items = ListEmbeddedAssets("Binary", $"Packages.{game}.{packageFolderName}");
-            items = items.Where(x => x.RepresentsPackageFilePath()).ToList();
-
-            foreach (var v in items)
-            {
-                var dest = Path.Combine(MERFileSystem.DLCModCookedPath, v.Substring(v.IndexOf(packageFolderName) + packageFolderName.Length + 1));
-                ExtractInternalFile(v, true, dest);
-                extractedItems.Add(dest);
-            }
-
-            return extractedItems;
-        }
 
         //        /// <summary>
         //        /// Fetches a file from the staticfiles resource folder
@@ -205,55 +123,23 @@ namespace Randomizer.MER
         //    return GetEmbeddedAsset("Binary", fullName ? filename : ("Binary." + filename), fullName);
         //}
 
-        public static string ExtractInternalFile(string internalResourceName, bool fullname, string destination, bool overwrite)
-        {
-            return ExtractInternalFile(internalResourceName, fullname, destination, overwrite, null);
-        }
-
-        public static void ExtractInternalFileToMemory(string internalResourceName, bool fullname, MemoryStream stream)
-        {
-            ExtractInternalFile(internalResourceName, fullname, destStream: stream);
-        }
-
-        private static string ExtractInternalFile(string internalResourceName, bool fullname, string destination = null, bool overwrite = false, Stream destStream = null)
-        {
-            MERLog.Information("Extracting file: " + internalResourceName);
-            if (destStream != null || (destination != null && (!File.Exists(destination) || overwrite)))
-            {
-                // Todo: might need adjusted for ME3
-                using Stream stream = MERUtilities.GetResourceStream(fullname ? internalResourceName : "ME2Randomizer.staticfiles." + internalResourceName);
-                bool close = destStream != null;
-                if (destStream == null)
-                {
-                    destStream = new FileStream(destination, FileMode.Create, FileAccess.Write);
-                }
-                stream.CopyTo(destStream);
-                if (close) stream.Close();
-            }
-            else if (destination != null && !overwrite)
-            {
-                MERLog.Warning("File already exists");
-            }
-            else
-            {
-                MERLog.Warning("Invalid extraction parameters!");
-            }
-            return destination;
-        }
+        
 
         public static bool IsDirectoryWritable2(string dirPath)
         {
             try
             {
                 using (FileStream fs = File.Create(
-                    Path.Combine(
-                        dirPath,
-                        Path.GetRandomFileName()
-                    ),
-                    1,
-                    FileOptions.DeleteOnClose)
-                )
-                { }
+                           Path.Combine(
+                               dirPath,
+                               Path.GetRandomFileName()
+                           ),
+                           1,
+                           FileOptions.DeleteOnClose)
+                      )
+                {
+                }
+
                 return true;
             }
             catch
@@ -330,19 +216,19 @@ namespace Randomizer.MER
         public static int GetPartitionDiskBackingType(string partitionLetter)
         {
             using (var partitionSearcher = new ManagementObjectSearcher(
-                @"\\localhost\ROOT\Microsoft\Windows\Storage",
-                $"SELECT DiskNumber FROM MSFT_Partition WHERE DriveLetter='{partitionLetter}'"))
+                       @"\\localhost\ROOT\Microsoft\Windows\Storage",
+                       $"SELECT DiskNumber FROM MSFT_Partition WHERE DriveLetter='{partitionLetter}'"))
             {
                 try
                 {
                     var partition = partitionSearcher.Get().Cast<ManagementBaseObject>().Single();
                     using (var physicalDiskSearcher = new ManagementObjectSearcher(
-                        @"\\localhost\ROOT\Microsoft\Windows\Storage",
-                        $"SELECT Size, Model, MediaType FROM MSFT_PhysicalDisk WHERE DeviceID='{partition["DiskNumber"]}'"))
+                               @"\\localhost\ROOT\Microsoft\Windows\Storage",
+                               $"SELECT Size, Model, MediaType FROM MSFT_PhysicalDisk WHERE DeviceID='{partition["DiskNumber"]}'"))
                     {
                         var physicalDisk = physicalDiskSearcher.Get().Cast<ManagementBaseObject>().Single();
                         return
-                            (UInt16)physicalDisk["MediaType"];/*||
+                            (UInt16)physicalDisk["MediaType"]; /*||
                         SSDModelSubstrings.Any(substring => result.Model.ToLower().Contains(substring)); ;*/
 
 
@@ -371,6 +257,7 @@ namespace Randomizer.MER
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -392,12 +279,14 @@ namespace Randomizer.MER
                         str += moProcessor["name"].ToString();
                         str += "\n";
                     }
+
                     if (moProcessor["maxclockspeed"] != null)
                     {
                         str += "Maximum reported clock speed: ";
                         str += moProcessor["maxclockspeed"].ToString();
                         str += " Mhz\n";
                     }
+
                     if (moProcessor["numberofcores"] != null)
                     {
                         str += "Cores: ";
@@ -405,6 +294,7 @@ namespace Randomizer.MER
                         str += moProcessor["numberofcores"].ToString();
                         str += "\n";
                     }
+
                     if (moProcessor["numberoflogicalprocessors"] != null)
                     {
                         str += "Logical processors: ";
@@ -413,15 +303,16 @@ namespace Randomizer.MER
                     }
 
                 }
+
                 return str
-                   .Replace("(TM)", "™")
-                   .Replace("(tm)", "™")
-                   .Replace("(R)", "®")
-                   .Replace("(r)", "®")
-                   .Replace("(C)", "©")
-                   .Replace("(c)", "©")
-                   .Replace("    ", " ")
-                   .Replace("  ", " ").Trim();
+                    .Replace("(TM)", "™")
+                    .Replace("(tm)", "™")
+                    .Replace("(R)", "®")
+                    .Replace("(r)", "®")
+                    .Replace("(C)", "©")
+                    .Replace("(c)", "©")
+                    .Replace("    ", " ")
+                    .Replace("  ", " ").Trim();
             }
             catch
             {
@@ -438,15 +329,6 @@ namespace Randomizer.MER
             var os = Environment.OSVersion;
             return os.Platform == PlatformID.Win32NT &&
                    (os.Version.Major >= 10);
-        }
-
-        private static Stream GetResourceStream(string assemblyResource)
-        {
-            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-#if DEBUG
-            var resources = assembly.GetManifestResourceNames();
-#endif
-            return assembly.GetManifestResourceStream(assemblyResource);
         }
 
         public static void OpenWebPage(string link)
@@ -470,9 +352,9 @@ namespace Randomizer.MER
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool GetDiskFreeSpaceEx(string lpDirectoryName,
-        out ulong lpFreeBytesAvailable,
-        out ulong lpTotalNumberOfBytes,
-        out ulong lpTotalNumberOfFreeBytes);
+            out ulong lpFreeBytesAvailable,
+            out ulong lpTotalNumberOfBytes,
+            out ulong lpTotalNumberOfFreeBytes);
 
         public static bool DriveFreeBytes(string folderName, out ulong freespace)
         {
@@ -508,23 +390,9 @@ namespace Randomizer.MER
             {
                 folder += Path.DirectorySeparatorChar;
             }
+
             Uri folderUri = new Uri(folder);
             return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
-        }
-
-        public static string FlattenException(Exception exception)
-        {
-            var stringBuilder = new StringBuilder();
-
-            while (exception != null)
-            {
-                stringBuilder.AppendLine(exception.Message);
-                stringBuilder.AppendLine(exception.StackTrace);
-
-                exception = exception.InnerException;
-            }
-
-            return stringBuilder.ToString();
         }
 
         //public static ALOTVersionInfo GetInstalledALOTInfo()
@@ -637,10 +505,12 @@ namespace Randomizer.MER
                             {
                                 MERLog.Information("Standard:\n" + output.ToString());
                             }
+
                             if (error.ToString().Length > 0)
                             {
                                 MERLog.Error("Error output:\n" + error.ToString());
                             }
+
                             return p.ExitCode;
                         }
                         else
@@ -680,7 +550,7 @@ namespace Randomizer.MER
                         }
                         catch (Exception e)
                         {
-                            MERLog.Error("Error getting return code from admin process. It may have timed out.\n" + FlattenException(e));
+                            MERLog.Error("Error getting return code from admin process. It may have timed out.\n" + e.FlattenException());
                             return -1;
                         }
                     }
@@ -758,6 +628,7 @@ namespace Randomizer.MER
                 string errorMessage = new Win32Exception(Marshal.GetLastWin32Error()).Message;
                 MERLog.Warning("Failed to get RAM amount. This may indicate a potential (or soon coming) hardware problem. The error message was: " + errorMessage);
             }
+
             return memKb;
         }
 
@@ -780,6 +651,7 @@ namespace Randomizer.MER
             {
                 return false;
             }
+
             //Clean up file path so it can be navigated OK
             filePath = System.IO.Path.GetFullPath(filePath);
             System.Diagnostics.Process.Start("explorer.exe", string.Format("/select,\"{0}\"", filePath));
@@ -790,8 +662,8 @@ namespace Randomizer.MER
         public static bool IsWindowOpen<T>(string name = "") where T : Window
         {
             return string.IsNullOrEmpty(name)
-               ? Application.Current.Windows.OfType<T>().Any()
-               : Application.Current.Windows.OfType<T>().Any(w => w.Name.Equals(name));
+                ? Application.Current.Windows.OfType<T>().Any()
+                : Application.Current.Windows.OfType<T>().Any(w => w.Name.Equals(name));
         }
 
         public static long DirSize(DirectoryInfo d)
@@ -803,12 +675,14 @@ namespace Randomizer.MER
             {
                 size += fi.Length;
             }
+
             // Add subdirectory sizes.
             DirectoryInfo[] dis = d.GetDirectories();
             foreach (DirectoryInfo di in dis)
             {
                 size += DirSize(di);
             }
+
             return size;
         }
 
@@ -822,8 +696,10 @@ namespace Randomizer.MER
                 {
                     return true;
                 }
+
                 childUri = childUri.Parent;
             }
+
             return false;
         }
 
@@ -863,6 +739,7 @@ namespace Randomizer.MER
 
             return File.Exists(locintfile1) && File.Exists(locintfile2) && File.Exists(locintfile3) && File.Exists(locintfile4);
         }
+
         internal static string GetAppCrashHandledFile()
         {
             return Path.Combine(MERUtilities.GetAppDataFolder(), "APP_CRASH_HANDLED");
@@ -873,16 +750,6 @@ namespace Randomizer.MER
             return Path.Combine(MERUtilities.GetAppDataFolder(), "APP_CRASH");
         }
 
-        internal static object ExtractInteralFileToMemory(string v)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static string GetFilenameFromAssetName(string assetName)
-        {
-            var parts = assetName.Split('.');
-            return string.Join('.', parts[^2], parts[^1]);
-        }
 
         /// <summary>
         /// Loads an image from the specified data array
@@ -903,6 +770,7 @@ namespace Randomizer.MER
                 image.StreamSource = mem;
                 image.EndInit();
             }
+
             image.Freeze();
             return image;
         }
@@ -923,16 +791,7 @@ namespace Randomizer.MER
 #endif
         }
 
-        /// <summary>
-        /// Gets the stream data for a game-specific package.
-        /// </summary>
-        /// <param name="targetGame"></param>
-        /// <param name="packageName"></param>
-        /// <returns></returns>
-        public static Stream GetEmbeddedPackage(MEGame targetGame, string packageName)
-        {
-            return GetEmbeddedAsset("Binary", $"Packages.{targetGame}.{packageName}");
-        }
+
 
         /// <summary>
         /// Returns MER/ME2R/ME3R
@@ -963,5 +822,9 @@ namespace Randomizer.MER
             GlobalUnrealObjectInfo.GenerateSequenceObjectInfoForClassDefaults(defaults);
             GlobalUnrealObjectInfo.InstallCustomClassInfo(e.ObjectName, classInfo, e.Game);
         }
+
+
+
+
     }
 }

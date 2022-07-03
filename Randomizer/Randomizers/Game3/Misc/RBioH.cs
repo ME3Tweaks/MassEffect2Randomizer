@@ -43,7 +43,7 @@ namespace Randomizer.Randomizers.Game3.Misc
             tempNameChanges = new List<string>();
 
             // Extract custom henchmen files
-            var merCustomHenchmenFiles = MERUtilities.ExtractEmbeddedPackageFolder("Henchmen", target.Game);
+            var merCustomHenchmenFiles = MEREmbedded.ExtractEmbeddedBinaryFolder($"Binary.Packages.{target.Game}.Henchmen");
 
             // Inventory BioH
             var biohFiles = MERFileSystem.LoadedFiles.Where(x =>

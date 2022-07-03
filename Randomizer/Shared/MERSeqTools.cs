@@ -15,9 +15,16 @@ namespace Randomizer.Shared
 {
     class MERSeqTools
     {
+        /// <summary>
+        /// Installs a random switch into the sequence with the specified number of outlinks.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="sequence"></param>
+        /// <param name="numLinks"></param>
+        /// <returns></returns>
         public static ExportEntry InstallRandomSwitchIntoSequence(GameTarget target, ExportEntry sequence, int numLinks)
         {
-            var packageBin = MERUtilities.GetEmbeddedPackage(target.Game, "PremadeSeqObjs.pcc");
+            var packageBin = MEREmbedded.GetEmbeddedPackage(target.Game, "PremadeSeqObjs.pcc");
             var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(packageBin);
 
             // 1. Add the switch object and link it to the sequence

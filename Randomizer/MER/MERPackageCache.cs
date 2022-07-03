@@ -108,7 +108,7 @@ namespace Randomizer.MER
 
             if (openIfNotInCache)
             {
-                var embeddedData = MERUtilities.GetEmbeddedPackage(game, embeddedPath);
+                var embeddedData = MEREmbedded.GetEmbeddedPackage(game, embeddedPath);
                 if (embeddedData != null)
                 {
                     package = MEPackageHandler.OpenMEPackageFromStream(embeddedData);

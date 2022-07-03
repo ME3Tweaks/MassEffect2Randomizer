@@ -44,7 +44,7 @@ namespace Randomizer.Randomizers.Game3.Levels
 
         private static void RandomizeGalaxyMapSystems(GameTarget target, RandomizationOption option, IMEPackage galaxyMapPackage, IMEPackage galaxyMapPackage2)
         {
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("galaxymapsystems.xml", true);
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("galaxymapsystems.xml", true);
             XElement rootElement = XElement.Parse(fileContents);
 
             var systemnames = rootElement.Elements("systemname").Select(x => x.Value).ToList(); //Used for assignments
@@ -76,7 +76,7 @@ namespace Randomizer.Randomizers.Game3.Levels
 
         private static void RandomizeGalaxyMapClusters(GameTarget target, RandomizationOption option, IMEPackage galaxyMapPackage, IMEPackage galaxyMapPackage2)
         {
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("galaxymapclusters.xml", true);
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("galaxymapclusters.xml", true);
             XElement rootElement = XElement.Parse(fileContents);
 
             var originalSuffixedNames = rootElement.Elements("originalsuffixedname").Select(x => x.Value).ToList(); //Used for assignments
@@ -116,7 +116,7 @@ namespace Randomizer.Randomizers.Game3.Levels
 
             // Load the planet data and shuffle it
             option.CurrentOperation = GALAXY_MAP_RANDOMIZING_MESSAGE;
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("galaxymapplanets.xml", true);
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("galaxymapplanets.xml", true);
             XElement rootElement = XElement.Parse(fileContents);
             var availablePlanets = (from e in rootElement.Elements("RandomizedPlanetInfo")
                                     select new RandomizedPlanetInfo
@@ -142,7 +142,7 @@ namespace Randomizer.Randomizers.Game3.Levels
 
             // Inventory images we can use
             var categoryImages = new CaseInsensitiveDictionary<List<string>>();
-            var possibilities = MERUtilities.ListEmbeddedAssets("Images", "GalaxyMap").Where(x => x.EndsWith(".jpg")).ToList();
+            var possibilities = MEREmbedded.ListEmbeddedAssets("Images", "GalaxyMap").Where(x => x.EndsWith(".jpg")).ToList();
             foreach (var fullAssetPath in possibilities)
             {
                 var split = fullAssetPath.Split('.');
@@ -255,7 +255,7 @@ namespace Randomizer.Randomizers.Game3.Levels
                                 var sourceItem = galaxyMapPackage.FindExport(@"BIOA_GalaxyMap_Previews.PlanetOrbitalPreview_Citadel_512x256");
                                 var newTexture = EntryCloner.CloneEntry(sourceItem);
                                 newTexture.ObjectName = new NameReference($"MERGalaxyMap_TEST{done}", 0);
-                                TextureTools.ReplaceTexture(newTexture, MERUtilities.GetEmbeddedAssetByFullPath(imageToUse), true, out imageCache);
+                                TextureTools.ReplaceTexture(newTexture, MEREmbedded.GetEmbeddedAsset("FULLPATH", imageToUse, false, true), true, out imageCache);
                                 props.AddOrReplaceProp(new ObjectProperty(newTexture.UIndex, "PreviewImage"));
                                 planet.WriteProperties(props);
 

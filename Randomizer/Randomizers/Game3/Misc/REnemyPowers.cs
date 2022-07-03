@@ -45,12 +45,12 @@ namespace Randomizer.Randomizers.Game3.Misc
         {
             // Inventory the AI patches
             PatchMapping = new Dictionary<string, string>();
-            var scriptAssets = MERUtilities.ListEmbeddedAssets("Text", "Scripts.EnemyPowersAI");
+            var scriptAssets = MEREmbedded.ListEmbeddedAssets("Text", "Scripts.EnemyPowersAI");
             var cutOffPosition = scriptAssets[0].IndexOf("EnemyPowersAI") + "EnemyPowersAI".Length + 1;
 
             foreach (var asset in scriptAssets)
             {
-                PatchMapping[Path.GetFileNameWithoutExtension(asset.Substring(cutOffPosition))] = new StreamReader(MERUtilities.GetEmbeddedAssetByFullPath(asset)).ReadToEnd();
+                PatchMapping[Path.GetFileNameWithoutExtension(asset.Substring(cutOffPosition))] = new StreamReader(MEREmbedded.GetEmbeddedAsset("FULLPATH", asset, false, true)).ReadToEnd();
             }
 
             // Install the script that randomly gives powers on SFXPowerManager load.
@@ -61,7 +61,7 @@ namespace Randomizer.Randomizers.Game3.Misc
             sfxgame.FindExport("Default__BioPawn").WriteProperty(new FloatProperty(0.75f, "m_fPowerUsePercent"));
 
             // Extract our custom powers.
-            MERUtilities.ExtractEmbeddedPackageFolder("PowerRandomizer", target.Game);
+            MEREmbedded.ExtractEmbeddedBinaryFolder($"Packages.{target.Game}.PowerRandomizer");
 
             // Add our custom powers to seek free.
             var mappings = new[]

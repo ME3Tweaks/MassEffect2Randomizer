@@ -8,7 +8,8 @@ using PropertyChanged;
 
 namespace Randomizer.Randomizers
 {
-    public enum RandomizationMode {
+    public enum RandomizationMode
+    {
         ERandomizationMode_SelectAny,
         ERandomizationMode_Common,
         ERandomizationMode_Screed,
@@ -160,11 +161,7 @@ namespace Randomizer.Randomizers
         /// </summary>
         public bool IsExportRandomizer => PerformRandomizationOnExportDelegate != null;
         /// <summary>
-        /// If this randomization option requires loading TLKs. This can speed up randomization if a TLK option is not chosen.
-        /// </summary>
-        public bool RequiresTLK { get; set; }
-        /// <summary>
-        /// If this option is selectable/unselectable. Essentially changes the behavior of other randomizers only (parent) and does not have it's own algorithm
+        /// If this option is selectable/unselectable. Essentially changes the behavior of other randomizers only (parent) and does not have its own algorithm
         /// </summary>
         public bool IsOptionOnly { get; set; }
         public Action<RandomizationOption> StateChangingDelegate { get; internal set; }
@@ -184,10 +181,21 @@ namespace Randomizer.Randomizers
         /// The tooltip to display on the setup randomizer button
         /// </summary>
         public string SetupRandomizerButtonToolTip { get; set; }
+
+        #region REQUIRES
         /// <summary>
         /// If this option requires gesture packages to load into memory for use
         /// </summary>
         public bool RequiresGestures { get; set; }
+        /// <summary>
+        /// If this randomization option requires loading TLKs. This can speed up randomization if a TLK option is not chosen.
+        /// </summary>
+        public bool RequiresTLK { get; set; }
+        /// <summary>
+        /// If this randomization option requires extracting the audio folder.
+        /// </summary>
+        public bool RequiresAudio { get; set; }
+        #endregion
 
         /// <summary>
         /// Check if this option has a suboption that is selected with the specified key

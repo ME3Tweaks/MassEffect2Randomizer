@@ -66,7 +66,7 @@ namespace Randomizer.Randomizers.Game3.Misc
 
             PawnNameListInstanced.Shuffle();
 
-            var pawnStringIds = MERUtilities.GetEmbeddedTextAsset("namerefs.txt").Split("\n");
+            var pawnStringIds = MEREmbedded.GetEmbeddedTextAsset("namerefs.txt").Split("\n");
             pawnStringIds.Shuffle();
             
             foreach (var strId in pawnStringIds)
