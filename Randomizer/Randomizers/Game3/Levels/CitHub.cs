@@ -23,55 +23,88 @@ namespace Randomizer.Randomizers.Game3.Levels
     {
         private static LEXOpenable[] VIClientEffects = new[]
         {
+            // Lots of the commented out ones have an 'off' effect which makes shep just go invisible on exit
+            // So we can't use them unless the effect was tweaked
+            // and i'm way too lazy for that
+
             // DEFAULT
-            new LEXOpenable()
-            {
-                EntryClass = "RvrClientEffect",
-                EntryPath = "BioVFX_Env_Hologram.Character.VCFX.Character_Hologram_Crust_VCFX_orange",
-                FilePath = "BioD_CitHub_Underbelly.pcc"
-            },
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Env_Hologram.Character.VCFX.Character_Hologram_Crust_VCFX_orange",
+            //    FilePath = "BioD_CitHub_Underbelly.pcc"
+            //},
             // Blue with lines
-            new LEXOpenable()
-            {
-                EntryClass = "RvrClientEffect",
-                EntryPath = "BioVFX_Env_Hologram.Character.VCFX.Char_Holo_Crust_VCFX_blue_Static",
-                FilePath = "BioD_CitHub_001ProCit_LOC_INT.pcc"
-            },
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Env_Hologram.Character.VCFX.Character_Hologram_Crust_VCFX_blue",
+            //    FilePath = "BioD_CitHub_001ProCit_LOC_INT.pcc"
+            //},
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Env_Hologram.Character.VCFX.Character_Hologram_Crust_VCFX_Lit",
+            //    FilePath = "BioD_CitHub_001ProCit_LOC_INT.pcc"
+            //},
             // Prothean VI
-            new LEXOpenable()
-            {
-                EntryClass = "RvrClientEffect",
-                EntryPath = "BioVFX_Env_Cat002.VCFX.Prothean_VI_Crust_01",
-                FilePath = "BioD_Cat004_750TIMConv_LOC_INT.pcc"
-            },
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Env_Cat002.VCFX.Prothean_VI_Crust_01",
+            //    FilePath = "BioD_Cat004_750TIMConv_LOC_INT.pcc"
+            //},
 
-            // Robots
-            new LEXOpenable()
-            {
-                EntryClass = "RvrClientEffect",
-                EntryPath = "BioVFX_Exp3_CitCas.VCFX.Robot_Boxing_Crust_1",
-                FilePath = "BioD_CitCas_Robot.pcc"
-            },
-            new LEXOpenable()
-            {
-                EntryClass = "RvrClientEffect",
-                EntryPath = "BioVFX_Exp3_CitCas.VCFX.Robot_Boxing_Crust_2",
-                FilePath = "BioD_CitCas_Robot.pcc"
-            },
+            // Robots - these are lame
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Exp3_CitCas.VCFX.Robot_Boxing_Crust_1",
+            //    FilePath = "BioD_CitCas_Robot.pcc"
+            //},
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Exp3_CitCas.VCFX.Robot_Boxing_Crust_2",
+            //    FilePath = "BioD_CitCas_Robot.pcc"
+            //},
             //Wet
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Env_Rain.VCFX.Wet_Crust_VCFX",
+            //    FilePath = "BioD_Cat003_220LockersVisual.pcc"
+            //},
             new LEXOpenable()
             {
                 EntryClass = "RvrClientEffect",
-                EntryPath = "BioVFX_Env_Rain.VCFX.Wet_Crust_VCFX",
-                FilePath = "BioD_Cat003_220LockersVisual.pcc"
+                EntryPath = "BioVFX_Hch_Prothean.VCFX.DarkChannel_TargetCrust_VCFX",
+                FilePath = "SFXPower_DarkChannel.pcc"
             },
 
-            // Gore
+            //new LEXOpenable()
+            //{
+            //    EntryClass = "RvrClientEffect",
+            //    EntryPath = "BioVFX_Env_Gthleg.VCFX.Memory_Hologram_Crust_VCFX",
+            //    FilePath = "BioD_GthLeg_510Parliment.pcc"
+            //},
             new LEXOpenable()
             {
                 EntryClass = "RvrClientEffect",
-                EntryPath = "BioVFX_C_Blood.VCFX.Cin.Gore_Crust_Reaper_wGuts",
-                FilePath = "BioD_KroGru_800Exit_LOC_INT.pcc"
+                EntryPath = "BioVFX_C_Electricity.VCFX.Electrocute_TargetCrust_VCFX",
+                FilePath = "SFXPower_Warp.pcc"
+            },
+            new LEXOpenable()
+            {
+                EntryClass = "RvrClientEffect",
+                EntryPath = "biovfx_c_engineer.VCFX.Repair_Turret_Crust_VCFX",
+                FilePath = "SFXPawn_Gunner.pcc"
+            },
+            new LEXOpenable()
+            {
+                EntryClass = "RvrClientEffect",
+                EntryPath = "biovfx_crt_kaileng.VCFX.Charged_Crust_VCFX",
+                FilePath = "BioD_Cat004_800KaiLeng.pcc"
             },
         };
 
@@ -221,7 +254,6 @@ namespace Randomizer.Randomizers.Game3.Levels
 
             // Loop to ourself in the delay
             KismetHelper.CreateOutputLink(delay, "Finished", delay);
-
 
             KismetHelper.CreateOutputLink(underBellyDP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Shepard_VI.SeqAct_AttachToEvent_0"), "Out", delay); // hookup our logic
             KismetHelper.AddObjectsToSequence(sequence, false, delay, randFloat);

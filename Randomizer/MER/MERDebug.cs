@@ -225,7 +225,7 @@ namespace Randomizer.MER
             RandomizationOption option = (RandomizationOption)e.Argument;
             var game = MEGame.LE3;
             var target = new GameTarget(game, MEDirectories.GetDefaultGamePath(game), true);
-            GestureManager.Init(target);
+            GestureManager.Init(target, false);
 
 
             // PackageName -> GesturePackage
@@ -247,7 +247,9 @@ namespace Randomizer.MER
             {
                 option.ProgressValue++;
                 var p = MEPackageHandler.OpenMEPackage(f);
-                var gesturesPackageExports = p.Exports.Where(x => x.idxLink == 0 && x.ClassName == "Package" && GestureManager.IsGestureGroupPackage(x.ObjectName)).Select(x => x.UIndex).ToList();
+                var gesturesPackageExports = p.Exports.Where(
+                    x => x.idxLink == 0 && x.ClassName == "Package" 
+                                        && GestureManager.IsGestureGroupPackage(x.InstancedFullPath)).Select(x => x.UIndex).ToList();
 
                 // Get list of exports under these packages
                 foreach (var exp in p.Exports.Where(x => gesturesPackageExports.Contains(x.idxLink) && (x.ClassName == "AnimSet" || x.ClassName=="AnimSequence")))

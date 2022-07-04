@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using LegendaryExplorerCore.Kismet;
+using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
@@ -12,6 +14,7 @@ using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
+using WinCopies.Util;
 
 namespace Randomizer.Randomizers.Game3.ExportTypes
 {
@@ -38,6 +41,103 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
 #if __GAME3__
         public static readonly string[] RandomGesturePackages =
         {
+            // KID ANIMATION
+            "HMC_AM_Scared",
+            "HMC_AM_MoveStartStop",
+            "HMC_DP_Crawl",
+            "HMC_AM_StandingDefault",
+
+            // CHOKE FIGHT
+            "HMF_2P_Choke",
+            "HMF_2P_GarrusRomance",
+            "HMF_2P_Main", // has kiss
+
+            // "HMF_2P_PHT_SynchMelee", // NOT IN GESTURES
+
+            "HMF_DP_BackAgainstWall",
+            "HMF_DP_ArmsCrossed",
+            "HMF_DP_BarActions",
+            "HMF_DP_HandsFace",
+
+            "HMF_FC_Communicator",
+            "HMF_FC_Custom",
+
+            // "HMM_2P_BAN_Synch",
+            // "HMM_2P_ATA_Synch",
+            "HMM_2P_ChokeLift",
+            "HMM_2P_Choking",
+            "HMM_2P_Comraderie",
+            "HMM_2P_Consoling",
+            "HMM_2P_Conspire",
+            "HMM_2P_End002",
+            "HMM_2P_ForcedExit",
+            "HMM_2P_Grab",
+
+            "HMM_2P_GunInterrupt",
+            "HMM_2P_Handshake",
+            "HMM_2P_HeadButt",
+            "HMM_2P_HoldingHands",
+            "HMM_2P_Hostage",
+            "HMM_2P_InjuredAgainstWall",
+            "HMM_2P_KaiLengDeath",
+            "HMM_2P_KissCheek",
+            "HMM_2P_KissMale",
+            "HMM_2P_LiftPillar",
+            "HMM_2P_Main",
+            // "HMM_2P_PHT_SyncMelee",
+            "HMM_2P_PinAgainstWall",
+            "HMM_2P_PunchInterrupt",
+            "HMM_2P_ThaneKaiLengFight",
+            //"HMM_AM_BeckonPistol",
+            //"HMM_AM_BeckonRifle",
+            "HMM_AM_Biotic",
+            "HMM_AM_Environmental",
+            "HMM_AM_Gamble",
+            "HMM_AM_HandsClap",
+            "HMM_DG_Deaths",
+            "HMM_DG_Exploration",
+            "HMM_DL_Decline",
+            "HMM_DL_ElusiveMan",
+            "HMM_DL_EmoStates",
+            "HMM_DL_Gestures",
+            "HMM_DL_HandChop",
+            "HMM_DL_HandDismiss",
+            "HMM_DL_HenchActions",
+            "HMM_DL_Melee",
+            "HMM_DL_PoseBreaker",
+            "HMM_DL_Smoking",
+            "HMM_DL_Sparring",
+            "HMM_DL_StandingDefault",
+            "HMM_DP_ArmsCross",
+            "HMM_DP_ArmsCrossedBack",
+            "HMM_DP_BarActions",
+            "HMM_DP_CatchDogTags",
+            "HMM_DP_ChinTouch",
+            "HMM_DP_ClenchFist",
+            "HMM_DP_HandOnHip",
+            "HMM_DP_HandsBehindBack",
+            "HMM_DP_HandsFace",
+            "HMM_DP_Salute",
+            "HMM_DP_Shuttle",
+            "HMM_DP_ShuttleTurbulence",
+            "HMM_DP_ToughGuy",
+            "HMM_DP_Whisper",
+            "HMM_FC_Angry",
+            "HMM_FC_Communicator",
+            "HMM_FC_DesignerCutscenes",
+            "HMM_FC_Main",
+            "HMM_FC_Sad",
+            "HMM_FC_Startled",
+            "NCA_ELC_EX_AnimSet",
+            "NCA_VOL_DL_AnimSet",
+            "PTY_EX_Geth",
+            "PTY_EX_Asari",
+            "PTY_EX_Krogan",
+            //"RPR_BAN_CB_Banshe",
+            // "RPR_HSK_AM_Husk",
+            // "RPR_HSK_CB_2PMelee", // Is in special .RPR subpackage, will need special handling
+            // "RPR_HSK_CB_Husk",
+            "YAH_SBR_CB_AnimSet",
             "HMF_AM_Towny", // Dance?
             "HMM_AM_Towny", // Dance
             "HMM_AM_ThinkingFrustration",
@@ -54,15 +154,13 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
             "2P_BigKiss",
             "HMM_DP_SitFloorInjured",
             "HMM_AM_Possession",
-            "HMM_DG_Deaths",
-            "NCA_HAN_DL_AnimSet",
         };
 #endif
         /// <summary>
         /// Maps a name of an animation package to the actual unreal package name it sits under in packages
         /// </summary>
         private static Dictionary<string, string> mapAnimSetOwners;
-        public static void Init(GameTarget target)
+        public static void Init(GameTarget target, bool loadGestures = true)
         {
             MERLog.Information("Initializing GestureManager");
             // Load gesture mapping
@@ -84,7 +182,7 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
             foreach (var v in gestMap.m_mapAnimSetOwners)
             {
                 mapAnimSetOwners[v.Key] = v.Value;
-                if (RandomGesturePackages.Contains(v.Key.Name))
+                if (loadGestures && RandomGesturePackages.Contains(v.Key.Name))
                 {
                     _gesturePackageCache.GetCachedPackageEmbedded(target.Game, $"Gestures.{v.Value.Name}.pcc"); // We don't capture the result - we just preload
                 }
@@ -92,34 +190,67 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
         }
 
         /// <summary>
-        /// Determines if the listed object name matches a key in the gesture mapping values (the result value)
+        /// Determines if the listed object path matches a key in the gesture mapping values (the result value)
         /// </summary>
-        /// <param name="objectName"></param>
+        /// <param name="instancedFullPath">The path of the object to check against</param>
         /// <returns></returns>
-        public static bool IsGestureGroupPackage(NameReference objectName)
+        public static bool IsGestureGroupPackage(string instancedFullPath)
         {
-            return mapAnimSetOwners.Values.Any(x => x.Equals(objectName.Name, StringComparison.InvariantCultureIgnoreCase));
+            return mapAnimSetOwners.Values.Any(x => x.Equals(instancedFullPath, StringComparison.InvariantCultureIgnoreCase));
         }
 
         private static MERPackageCache _gesturePackageCache;
 
         public static IMEPackage GetGesturePackage(string gestureGroupName)
         {
-            return _gesturePackageCache.GetCachedPackage($"Gestures.{mapAnimSetOwners[gestureGroupName]}.pcc", false);
+            if (mapAnimSetOwners.TryGetValue(gestureGroupName, out var packageName))
+            {
+                return _gesturePackageCache.GetCachedPackage($"Gestures.{packageName}.pcc", false);
+            }
+            Debug.WriteLine($"PACKAGE NOT FOUND IN GESTURE MAP {gestureGroupName}");
+            return null;
         }
 
+        /// <summary>
+        /// Gets a random looping gesture. Can return null
+        /// </summary>
+        /// <returns></returns>
         public static GestureInfo GetRandomMERGesture()
         {
-            var gestureGroup = RandomGesturePackages.RandomElement();
-            var randomGesturePackage = GetGesturePackage(gestureGroup);
-            var candidates = randomGesturePackage.Exports.Where(x => x.ClassName == "AnimSequence" && x.ParentName == mapAnimSetOwners[gestureGroup] && x.ObjectName.Name.StartsWith(gestureGroup)).ToList();
-            var randGesture = candidates.RandomElement();
-
-            return new GestureInfo()
+            int retryCount = 10;
+            while (retryCount > 0)
             {
-                GestureAnimSequence = randGesture,
-                GestureGroup = gestureGroup
-            };
+                retryCount--;
+
+                IMEPackage randomGesturePackage = null;
+                string gestureGroup = null;
+                while (randomGesturePackage == null)
+                {
+                    gestureGroup = RandomGesturePackages.RandomElement();
+                    randomGesturePackage = GetGesturePackage(gestureGroup);
+                }
+                var candidates = randomGesturePackage.Exports.Where(x => x.ClassName == "AnimSequence" && x.ParentName == mapAnimSetOwners[gestureGroup]
+                                                                                                       && x.ObjectName.Name.StartsWith(gestureGroup+"_")
+                                                                                                       && !x.ObjectName.Name.StartsWith(gestureGroup+"_Alt") // This is edge case for animation names
+                                                                                                       ).ToList();
+                var randGesture = candidates.RandomElement();
+
+                // Get animations that loop.
+                if (randGesture.ObjectName.Name.Contains("Exit", StringComparison.InvariantCultureIgnoreCase) ||
+                    randGesture.ObjectName.Name.Contains("Enter", StringComparison.InvariantCultureIgnoreCase))
+                    continue;
+
+                // Make sure it has the right animgroup - some are subsets of another - e.g. ArmsCrossed and ArmsCrossed_Alt
+
+
+                return new GestureInfo()
+                {
+                    GestureAnimSequence = randGesture,
+                    GestureGroup = gestureGroup
+                };
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -131,18 +262,38 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
         /// <param name="seq"></param>
         /// <param name="animSetData"></param>
         /// <returns></returns>
-        public static ExportEntry GenerateBioDynamicAnimSet(GameTarget target, ExportEntry parent, string group, ExportEntry seq, ExportEntry animSetData)
+        public static ExportEntry GenerateBioDynamicAnimSet(GameTarget target, ExportEntry parent, GestureInfo gestInfo, bool isKismet = false)
         {
+            // The incoming gestinfo might be pointing to the cached embedded version.
+            // We look up the value in the given package to ensure we use the right values.
+
+            var animSeq = parent.FileRef.FindExport(gestInfo.GestureAnimSequence.InstancedFullPath);
+            var animSet = animSeq.GetProperty<ObjectProperty>("m_pBioAnimSetData").ResolveToEntry(parent.FileRef);
+
             PropertyCollection props = new PropertyCollection();
-            props.Add(new NameProperty(group, "m_nmOrigSetName"));
-            props.Add(new ArrayProperty<ObjectProperty>(new[] { new ObjectProperty(seq) }, "Sequences"));
-            props.Add(new ObjectProperty(animSetData, "m_pBioAnimSetData"));
+            props.Add(new NameProperty(gestInfo.GestureGroup, "m_nmOrigSetName"));
+            props.Add(new ArrayProperty<ObjectProperty>(new[] { new ObjectProperty(animSeq) }, "Sequences"));
+            props.Add(new ObjectProperty(animSet, "m_pBioAnimSetData"));
+
+            BioDynamicAnimSet bin = new BioDynamicAnimSet()
+            {
+                SequenceNamesToUnkMap = new OrderedMultiValueDictionary<NameReference, int>(1)
+                {
+                    {gestInfo.GestureName, 1} // If we ever add support for multiple we do it here.
+                }
+            };
 
             var rop = new RelinkerOptionsPackage() { Cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true) };
-            var bioDynObj = new ExportEntry(parent.FileRef, parent, parent.FileRef.GetNextIndexedName("BioDynamicAnimSet"), properties: props)
+            var bioDynObj = new ExportEntry(parent.FileRef, parent, parent.FileRef.GetNextIndexedName(isKismet ? $"KIS_DYN_{gestInfo.GestureGroup}" : "BioDynamicAnimSet"), properties: props, binary: bin)
             {
                 Class = EntryImporter.EnsureClassIsInFile(parent.FileRef, "BioDynamicAnimSet", rop)
             };
+
+            // These will always be unique
+            if (isKismet)
+            {
+                bioDynObj.indexValue = 0;
+            }
             parent.FileRef.AddExport(bioDynObj);
             return bioDynObj;
         }
@@ -151,13 +302,14 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
 
     class ComponentActor
     {
+        // Components
         public const string HEAD_MESH_COMP_NAME = "HeadMesh";
         public const string GEAR_MESH_COMP_NAME = "HeadGearMesh";
         public const string HAIR_MESH_COMP_NAME = "HairMesh";
         public const string SKEL_MESH_COMP_NAME = "SkelMesh";
 
         /// <summary>
-        /// Builds a mapping of mesh components to their exports for an actor.
+        /// Builds a mapping of mesh components and modules to their exports for an actor.
         /// </summary>
         /// <param name="actor"></param>
         /// <returns></returns>
@@ -168,9 +320,47 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
             AddComp(actor, props, components, "HeadMesh", HEAD_MESH_COMP_NAME);
             AddComp(actor, props, components, "HeadGearMesh", GEAR_MESH_COMP_NAME);
             AddComp(actor, props, components, "HairMesh", HAIR_MESH_COMP_NAME);
-            AddComp(actor, props, components, "SkeletalMeshComponent", SKEL_MESH_COMP_NAME); // SFXSkeletalMeshActor
-            // STUNT ACTOR USES BODYMESH
+
+            if (actor.ClassName == "SFXSkeletalMeshActor")
+            {
+                AddComp(actor, props, components, "SkeletalMeshComponent", SKEL_MESH_COMP_NAME);
+            }
+            else if (actor.ClassName == "SFXStuntActor")
+            {
+                AddComp(actor, props, components, "BodyMesh", SKEL_MESH_COMP_NAME);
+                AddModules(actor, props, components);
+            }
+
             return components;
+        }
+
+        /// <summary>
+        /// Maps the modules list to exports on the actor
+        /// </summary>
+        /// <param name="actor"></param>
+        /// <param name="props"></param>
+        /// <param name="components"></param>
+        /// <param name="propName"></param>
+        /// <param name="keyName"></param>
+        private static void AddModules(ExportEntry actor, PropertyCollection props, Dictionary<string, ExportEntry> components)
+        {
+            var prop = props.GetProp<ArrayProperty<ObjectProperty>>("Modules");
+            if (prop != null)
+            {
+                foreach (var item in prop)
+                {
+                    var exp = item.ResolveToEntry(actor.FileRef) as ExportEntry;
+                    if (exp != null && exp.ClassName.StartsWith("SFXModule_"))
+                    {
+                        components[exp.ClassName.Substring(10)+"Module"] = exp;
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"SKIP MODULE {exp.ClassName}");
+                    }
+                    // SKIP
+                }
+            }
         }
 
         /// <summary>
@@ -191,30 +381,218 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
         }
     }
 
+    class ConversationGestures
+    {
+        public static bool RandomizeConversationGestures(GameTarget target, ExportEntry bioConv, RandomizationOption option)
+        {
+            if (bioConv.ClassName != "BioConversation")
+                return false;
+
+            var matSeq = bioConv.GetProperty<ObjectProperty>("MatineeSequence").ResolveToEntry(bioConv.FileRef) as ExportEntry;
+            var dynamicAnimSets = matSeq.GetProperty<ArrayProperty<ObjectProperty>>("m_aSFXSharedAnimSets");
+            if (dynamicAnimSets == null)
+                return false; // We don't bother with this.
+
+            var dynAnimSetMap = new CaseInsensitiveDictionary<ExportEntry>(); // Maps a GestureGroup to it's animset in this kismet sequence.
+            foreach (var dynamicAnim in dynamicAnimSets)
+            {
+                var entry = dynamicAnim.ResolveToEntry(bioConv.FileRef) as ExportEntry;
+                dynAnimSetMap[entry.ObjectName.Name.Substring(8)] = entry; // Remove KIS_DYN_
+            }
+
+
+            var interps = SeqTools.GetAllSequenceElements(matSeq).OfType<ExportEntry>().Where(x => x.ClassName == "InterpData");
+
+            foreach (var interp in interps)
+            {
+                InterpTools.InterpData data = new InterpTools.InterpData(interp);
+                foreach (var group in data.InterpGroups)
+                {
+                    if (group.GroupName != "Conversation")
+                        continue; // Don't care
+
+                    foreach (var track in group.Tracks)
+                    {
+                        if (track.TrackTitle == null || !track.TrackTitle.StartsWith("Gesture"))
+                            continue; // Don't care
+
+                        var isPlayerTrack = track.TrackTitle.Contains("Player");
+
+                        var randGesture = GestureManager.GetRandomMERGesture();
+                        EntryExporter.ExportExportToPackage(randGesture.GestureAnimSequence, bioConv.FileRef, out var portedRandGestureSeq, MERCaches.GlobalCommonLookupCache);
+                        if (!dynAnimSetMap.TryGetValue(randGesture.GestureGroup, out var dynAnimSetToUpdate))
+                        {
+                            // Making a ne animset since we don't have a dynamic animset for this.
+                            var newBDS = GestureManager.GenerateBioDynamicAnimSet(target, matSeq, randGesture, true);
+                            dynAnimSetMap[randGesture.GestureGroup] = newBDS;
+                        }
+                        else
+                        {
+                            // We have an existing animset.
+                            var existing = dynAnimSetToUpdate.GetProperty<ArrayProperty<ObjectProperty>>("Sequences");
+                            if (existing.All(x => x.Value != portedRandGestureSeq.UIndex))
+                            {
+                                // It's a new animation - add it to the list of sequences
+                                existing.Add(new ObjectProperty(portedRandGestureSeq.UIndex));
+                                dynAnimSetToUpdate.WriteProperty(existing);
+
+                                // VERIFY
+                                string foundSt = null;
+                                foreach (var v in existing)
+                                {
+                                    var seqExp = v.ResolveToEntry(portedRandGestureSeq.FileRef) as ExportEntry;
+                                    if (seqExp != null)
+                                    {
+                                        if (foundSt == null)
+                                        {
+                                            foundSt = seqExp.GetProperty<ObjectProperty>("m_pBioAnimSetData").ResolveToEntry(portedRandGestureSeq.FileRef).InstancedFullPath;
+                                        }
+                                        else
+                                        {
+                                            var temp = seqExp.GetProperty<ObjectProperty>("m_pBioAnimSetData").ResolveToEntry(portedRandGestureSeq.FileRef).InstancedFullPath;
+                                            if (temp != foundSt)
+                                                Debugger.Break(); // WE HAVE DIFFERENT BIOANIMSETDATA
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Install the gesture strings
+                        PropertyCollection props = track.Export.GetProperties();
+                        InstallRandomGestureToGestureTrack(randGesture, props);
+                        track.Export.WriteProperties(props);
+                    }
+                }
+            }
+
+            // Update the binary for the dynamic anim sets
+            foreach (var dynSet in dynAnimSetMap)
+            {
+                var sequences = dynSet.Value.GetProperty<ArrayProperty<ObjectProperty>>("Sequences");
+                var bin = ObjectBinary.From<BioDynamicAnimSet>(dynSet.Value);
+
+                // Rebuild the binary data with the sequence names
+                bin.SequenceNamesToUnkMap.Clear();
+                foreach (var seq in sequences)
+                {
+                    var seqExp = seq.ResolveToEntry(dynSet.Value.FileRef);
+                    if (seqExp.ObjectName.Name == "AnimSequence")
+                    {
+                        if (seqExp is ImportEntry imp)
+                            throw new Exception("Cannot look up name of imported object");
+                        var actualExp = seqExp as ExportEntry;
+                        bin.SequenceNamesToUnkMap[actualExp.GetProperty<NameProperty>("SequenceName").Value] = 1;
+                    }
+                    else
+                    {
+                        var seqName = seqExp.ObjectName.Name.Substring(dynSet.Key.Length + 1);
+                        bin.SequenceNamesToUnkMap[seqName] = 1;
+                    }
+                }
+
+                dynSet.Value.WriteBinary(bin);
+            }
+
+            // Write the referenes to the animsets
+            dynamicAnimSets.Clear();
+            dynamicAnimSets.AddRange(dynAnimSetMap.Select(x => new ObjectProperty(x.Value)));
+            matSeq.WriteProperty(dynamicAnimSets);
+
+            return true;
+        }
+
+        private static void InstallRandomGestureToGestureTrack(GestureInfo randGesture, PropertyCollection props)
+        {
+            //BioEvtSysTrackGesture
+            var gestures = props.GetProp<ArrayProperty<StructProperty>>("m_aGestures");
+            if (gestures != null)
+            {
+                foreach (var g in gestures)
+                {
+                    var gestSet = g.GetProp<NameProperty>("nmTransitionSet");
+                    var gestAnim = g.GetProp<NameProperty>("nmTransitionAnim");
+
+                    if (gestSet.Value == "None" && gestAnim.Value == "None")
+                    {
+                        gestSet.Value = randGesture.GestureGroup;
+                        gestAnim.Value = randGesture.GestureName;
+                        continue;
+                    }
+
+
+                }
+            }
+            else
+            {
+                // It is just a standard anim (e.g. other speaker). So set the root
+                props.AddOrReplaceProp(new NameProperty(randGesture.GestureGroup, "nmStartingPoseSet"));
+                props.AddOrReplaceProp(new NameProperty(randGesture.GestureName, "nmStartingPoseAnim"));
+            }
+        }
+    }
+
+    class SFXModuleGestures
+    {
+        public static void RandomizeGestures(GameTarget target, ExportEntry gesturesComp)
+        {
+            //SFXModule_Gestures
+            var props = gesturesComp.GetProperties();
+
+            // Port the gesture animation
+            var randGesture = GestureManager.GetRandomMERGesture();
+            if (randGesture == null)
+                return;
+            EntryExporter.ExportExportToPackage(randGesture.GestureAnimSequence, gesturesComp.FileRef, out var portedRandGestureSeq, MERCaches.GlobalCommonLookupCache);
+            if (portedRandGestureSeq is ImportEntry imp)
+            {
+                return; // We aren't going to randomize this - it's too much work to work with these.
+            }
+
+            var portedBioAnimSetDataProp = (portedRandGestureSeq as ExportEntry).GetProperty<ObjectProperty>("m_pBioAnimSetData");
+
+            // Set pose name
+            props.AddOrReplaceProp(new NameProperty(randGesture.GestureName, "m_nmDefaultPoseAnim"));
+            // Set the bioanimset data
+            ExportEntry poseSet = props.GetProp<ObjectProperty>("m_pDefaultPoseSet").ResolveToEntry(gesturesComp.FileRef) as ExportEntry;
+            PropertyCollection aprops = new PropertyCollection();
+            aprops.Add(new NameProperty(randGesture.GestureGroup, "m_nmOrigSetName"));
+            aprops.Add(new ArrayProperty<ObjectProperty>(new[] { new ObjectProperty(portedRandGestureSeq) }, "Sequences"));
+            aprops.Add(portedBioAnimSetDataProp);
+            poseSet.WriteProperties(aprops);
+            var objBin = ObjectBinary.From<BioDynamicAnimSet>(poseSet);
+            objBin.SequenceNamesToUnkMap[randGesture.GestureName] = 0; // Index 0
+            poseSet.WriteBinary(objBin);
+            gesturesComp.WriteProperties(props);
+        }
+    }
+
     class SkelMeshComponent
     {
-        public static void RandomizeGestures(ExportEntry skelMeshComp)
+        public static void RandomizeGestures(GameTarget target, ExportEntry skelMeshComp)
         {
             var props = skelMeshComp.GetProperties();
-            var animNode = props.GetProp<ObjectProperty>("Animations");
-            if (animNode == null)
-            {
-                Debug.WriteLine("NO ANIMATIONS");
-                return;
-            }
+
             var animSetData = props.GetProp<ArrayProperty<ObjectProperty>>("AnimSets");
             if (animSetData == null)
             {
-                Debug.WriteLine("NO ANIMSETS");
                 return;
             }
 
-            var animNodeExp = animNode.ResolveToEntry(skelMeshComp.FileRef) as ExportEntry;
-            if (animNodeExp == null)
-                return;
+            // SFXSkeletalMeshActor component seems to use this, which specifies just one animation it uses.
+            var animNode = props.GetProp<ObjectProperty>("Animations");
+            ExportEntry animNodeExp = null;
+            if (animNode != null)
+            {
+                animNodeExp = animNode.ResolveToEntry(skelMeshComp.FileRef) as ExportEntry;
+            }
+
+
 
             // Port the data
             var randGesture = GestureManager.GetRandomMERGesture();
+            if (randGesture == null)
+                return;
             EntryExporter.ExportExportToPackage(randGesture.GestureAnimSequence, skelMeshComp.FileRef, out var portedRandGestureSeq, MERCaches.GlobalCommonLookupCache);
             var portedBioAnimSetDataProp = ((ExportEntry)(portedRandGestureSeq)).GetProperty<ObjectProperty>("m_pBioAnimSetData");
             //EntryExporter.ExportExportToPackage(randGesture.GestureAnimSetData, skelMeshComp.FileRef, out var portedBioAnimSetData, MERCaches.GlobalCommonLookupCache);
@@ -222,7 +600,12 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
             // Clone it so we don't have to deal with imports to it.
             // animNodeExp = EntryCloner.CloneEntry(animNodeExp);
 
-            animNodeExp.WriteProperty(new NameProperty(randGesture.GestureName, "AnimSeqName")); // Update the AnimSeqName
+            if (animNodeExp != null)
+            {
+                // SFXSkeletalMeshActor will have this probably
+                animNodeExp.WriteProperty(new NameProperty(randGesture.GestureName, "AnimSeqName")); // Update the AnimSeqName
+            }
+
             var animSetDyn = animSetData[0].ResolveToEntry(skelMeshComp.FileRef) as ExportEntry;
             PropertyCollection aprops = new PropertyCollection();
             aprops.Add(new NameProperty(randGesture.GestureGroup, "m_nmOrigSetName"));
@@ -240,7 +623,6 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
             var animNode = props.GetProp<ObjectProperty>("Animations");
             if (animNode == null)
             {
-                Debug.WriteLine("NO ANIMATIONS");
                 return;
             }
 
@@ -271,7 +653,8 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
 
     class RSFXSkeletalMeshActor
     {
-        private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && !exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && exp.ClassName == "SFXSkeletalMeshActor";
+        private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && !exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject)
+                                                                                  && (exp.ClassName == "SFXSkeletalMeshActor" || exp.ClassName == "SFXStuntActor");
         //&& !exp.ObjectName.Name.Contains("Dead", StringComparison.InvariantCultureIgnoreCase);
         private static string[] smaKeywords = new[] { "Dancing", "Dance", "Angry", "Cursing", "Fearful", "ROM", "Drunk", "Kiss", "Headbutt", "Hugging", "Consoling", "Come_Here", "Cough", "Count", "Bhand_Slapped" };
 
@@ -282,7 +665,14 @@ namespace Randomizer.Randomizers.Game3.ExportTypes
             if (!components.TryGetValue(ComponentActor.SKEL_MESH_COMP_NAME, out var skelMeshComp))
                 return false;
 
-            SkelMeshComponent.RandomizeGestures(skelMeshComp);
+            if (export.ClassName == "SFXSkeletalMeshActor")
+            {
+                SkelMeshComponent.RandomizeGestures(target, skelMeshComp);
+            }
+            else if (export.ClassName == "SFXStuntActor")
+            {
+                SFXModuleGestures.RandomizeGestures(target, components["GesturesModule"]);
+            }
 
             return true;
         }

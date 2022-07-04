@@ -182,7 +182,7 @@ namespace Randomizer.Randomizers.Game3
                     var totalFilesCount = files.Count;
 
 #if DEBUG
-                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
+                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
 #else
                 Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
 #endif
@@ -202,7 +202,7 @@ namespace Randomizer.Randomizers.Game3
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("ProEar", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("BioNPC", StringComparison.InvariantCultureIgnoreCase)
+                        // && !file.Contains("BioNPC", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -657,7 +657,7 @@ namespace Randomizer.Randomizers.Game3
                     //    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship, including one sidequest", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     //    //new RandomizationOption() {HumanName = "Prologue"},
                     //    //new RandomizationOption() {HumanName = "Tali Acquisition"}, //sfxgame tla damagetype
-                        new RandomizationOption() {HumanName = "Citadel (Not DLC)", Description = "Changes many things across the Citadel", PerformSpecificRandomizationDelegate = CitHub.RandomizeLevel, 
+                        new RandomizationOption() {HumanName = "Citadel (Not DLC)", Description = "Changes many things across the Citadel", PerformSpecificRandomizationDelegate = CitHub.RandomizeLevel,
                             RequiresTLK = true, RequiresAudio = true, IsRecommended = true},
                     //    new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true, RequiresTLK = true},
                     //    new RandomizationOption() {HumanName = "Illium Hub", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = IlliumHub.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
@@ -899,6 +899,14 @@ namespace Randomizer.Randomizers.Game3
                         PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns2,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true
+                    },
+                    new RandomizationOption() {
+                        HumanName = "Gestures in conversations",
+                        Description="Changes animations used in conversations",
+                        PerformRandomizationOnExportDelegate = ConversationGestures.RandomizeConversationGestures,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                        RequiresGestures = true,
+                        IsRecommended = false
                     },
                     new RandomizationOption() {
                             HumanName = "Animation data",
