@@ -539,7 +539,7 @@ namespace Randomizer.Randomizers.Game3
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RSharedHolograms.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    new RandomizationOption() {HumanName = "Photo mode", Description="Adds additional photo mode filters", PerformSpecificRandomizationDelegate = RPhotoMode.InstallAdditionalFilters, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    // new RandomizationOption() {HumanName = "Photo mode", Description="Adds additional photo mode filters", PerformSpecificRandomizationDelegate = RPhotoMode.InstallAdditionalFilters, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
                     //new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
@@ -581,7 +581,29 @@ namespace Randomizer.Randomizers.Game3
                     //new RandomizationOption() {HumanName = "NPC movement speeds", Description = "Changes non-player movement stats", PerformRandomizationOnExportDelegate = PawnMovementSpeed.RandomizeMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
-                    //new RandomizationOption() {HumanName = "Hammerhead", IsRecommended = true, Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption() {HumanName = "Pawns stats", 
+                        IsRecommended = true, 
+                        Description = "Randomizes various non-player pawn stats. Pick options below to customize",
+                        PerformSpecificRandomizationDelegate = RPawnStats.PerformRandomization, 
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                HumanName = "Health",
+                                Description = "Randomizes pawn health and shields (if they have shields by default)",
+                                SubOptionKey = RPawnStats.HEALTH_OPTION,
+                                IsOptionOnly = true,
+                            },
+                            new RandomizationOption()
+                            {
+                                HumanName = "Movement speeds",
+                                Description = "Randomizes pawn movement speeds and accelerations",
+                                SubOptionKey = RPawnStats.MOVEMENTSPEED_OPTION,
+                                IsOptionOnly = true,
+                            }
+                        }
+                    },
                     new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by most basic non-interactable NPCs.", PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActor.RandomizeBasicGestures, RequiresGestures = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
                     new RandomizationOption() {HumanName = "Pawn materials", IsRecommended = true, Description = "Runtime randomzier that randomizes the inputs to materials on every level file load. An input may be a glow, color, etc.",PerformFileSpecificRandomization = RSharedSkeletalMesh.InstallRandomMICKismetObject, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
 

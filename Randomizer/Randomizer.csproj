@@ -98,6 +98,9 @@
 		<None Remove="Randomizers\Game3\Assets\Starterkit\le3starterkit.zip" />
 		<None Remove="Randomizers\Game3\Assets\Text\imagecredits.txt" />
 		<None Remove="Randomizers\Game3\Assets\Text\Scripts\Debug\SFXAI_Core.ChooseAttack.uc" />
+		<None Remove="Randomizers\Game3\Assets\Text\Scripts\EnemyStats\CombatSpeedRandomizer.uc" />
+		<None Remove="Randomizers\Game3\Assets\Text\Scripts\EnemyStats\HealthRandomizer.uc" />
+		<None Remove="Randomizers\Game3\Assets\Text\Scripts\EnemyStats\SFXAI_Core_Initialize.uc" />
 		<None Remove="Randomizers\Game3\Assets\Text\Scripts\PhotoModeFilterLoader.uc" />
 		<None Remove="Randomizers\Game3\Assets\Text\Scripts\PlayerDamagedByHostileSquad.uc" />
 	</ItemGroup>
