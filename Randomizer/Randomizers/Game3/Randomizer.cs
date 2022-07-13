@@ -18,6 +18,7 @@ using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game3.ExportTypes;
+using Randomizer.Randomizers.Game3.ExportTypes.Enemy;
 using Randomizer.Randomizers.Game3.Framework;
 using Randomizer.Randomizers.Game3.Levels;
 using Randomizer.Randomizers.Game3.Misc;
@@ -199,9 +200,9 @@ namespace Randomizer.Randomizers.Game3
 #if DEBUG
                         if (true
                         //&& false //uncomment to disable filtering
-                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("ProEar", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("Cat003", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
+                        // !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                         // && !file.Contains("BioNPC", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
@@ -581,18 +582,25 @@ namespace Randomizer.Randomizers.Game3
                     //new RandomizationOption() {HumanName = "NPC movement speeds", Description = "Changes non-player movement stats", PerformRandomizationOnExportDelegate = PawnMovementSpeed.RandomizeMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
-                    new RandomizationOption() {HumanName = "Pawns stats", 
-                        IsRecommended = true, 
-                        Description = "Randomizes various non-player pawn stats. Pick options below to customize",
-                        PerformSpecificRandomizationDelegate = RPawnStats.PerformRandomization, 
+                    new RandomizationOption() {HumanName = "Pawns stats",
+                        IsRecommended = true,
+                        Description = "Runtime randomization of various non-player pawn stats. Pick options below to customize",
+                        PerformSpecificRandomizationDelegate = RPawnStats.PerformRandomization,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
                         SubOptions = new ObservableCollectionExtended<RandomizationOption>()
                         {
                             new RandomizationOption()
                             {
                                 HumanName = "Health",
-                                Description = "Randomizes pawn health and shields (if they have shields by default)",
+                                Description = "Randomizes pawn health health",
                                 SubOptionKey = RPawnStats.HEALTH_OPTION,
+                                IsOptionOnly = true,
+                            },
+                            new RandomizationOption()
+                            {
+                                HumanName = "Shields",
+                                Description = "Randomizes pawn shields and shield regen",
+                                SubOptionKey = RPawnStats.SHIELD_OPTION,
                                 IsOptionOnly = true,
                             },
                             new RandomizationOption()
@@ -601,7 +609,16 @@ namespace Randomizer.Randomizers.Game3
                                 Description = "Randomizes pawn movement speeds and accelerations",
                                 SubOptionKey = RPawnStats.MOVEMENTSPEED_OPTION,
                                 IsOptionOnly = true,
-                            }
+                            },
+                            new RandomizationOption() {HumanName = "Evasion abilities",
+                            Description = "Randomizes what abilities can be used for evading damage",
+                            SubOptionKey = RPawnStats.EVASION_OPTION,
+                            IsOptionOnly = true,
+                            },new RandomizationOption() {HumanName = "Melee abilities",
+                                Description = "Randomizes what ability can be used for the close range melee attack",
+                                SubOptionKey = RPawnStats.MELEE_OPTION,
+                                IsOptionOnly = true,
+                            },
                         }
                     },
                     new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by most basic non-interactable NPCs.", PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActor.RandomizeBasicGestures, RequiresGestures = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
@@ -649,11 +666,37 @@ namespace Randomizer.Randomizers.Game3
                                         },
                                         new RandomizationOption()
                                         {
-                                            HumanName = "Enemy powers", Description = "Gives enemies different powers. Can introduce some slight stutter on enemy load. Will significantly increase game difficulty.",
+                                            HumanName = "Enemy powers", Description = "Gives non-player characters different powers - at least one option must be chosen. Can introduce some slight stutter on enemy load. Will significantly increase game difficulty.",
                                             PerformFileSpecificRandomization = REnemyPowers.PerFileAIChanger,
                                             PerformSpecificRandomizationDelegate = REnemyPowers.Init,
                                             Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                                             IsRecommended = true,
+                                            SubOptions =
+                                            {
+                                                new RandomizationOption()
+                                                {
+                                                    IsOptionOnly = true,
+                                                    SubOptionKey = REnemyPowers.OPTION_VANILLA,
+                                                    HumanName = "Vanilla powers",
+                                                    Description = "Allows vanilla powers to the power pool",
+                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                                                },
+                                                new RandomizationOption()
+                                                {
+                                                    IsOptionOnly = true,
+                                                    SubOptionKey = REnemyPowers.OPTION_NEW,
+                                                    HumanName = "New powers",
+                                                    Description = "Allows powers designed for this randomizer to be added to the power pool",
+                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                                                },new RandomizationOption()
+                                                {
+                                                    IsOptionOnly = true,
+                                                    SubOptionKey = REnemyPowers.OPTION_PORTED,
+                                                    HumanName = "Placeholder",
+                                                    Description = "Dummy option",
+                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                                                }
+                                            }
                                             // Debug stuff.
                     #if DEBUG
                                             //HasSliderOption = true,
@@ -668,6 +711,7 @@ namespace Randomizer.Randomizers.Game3
                                             //SliderValue = -1, // End debug stuff
                     #endif
                                         },
+
                 }
             });
 
@@ -755,6 +799,7 @@ namespace Randomizer.Randomizers.Game3
                     new RandomizationOption() {HumanName = "Enemy spawns", Description = "Runtime randomization of what enemies will spawn",
                         PerformSpecificRandomizationDelegate = RSFXSeqAct_AIFactory2.Init,
                         PerformRandomizationOnExportDelegate = RSFXSeqAct_AIFactory2.RandomizeSpawnSets, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe},
+
                     //new RandomizationOption() {HumanName = "Skip minigames", Description = "Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption()
                     //{

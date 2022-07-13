@@ -39,6 +39,13 @@ namespace Randomizer.MER
     /// </summary>
     public class SeekFreeInfo
     {
+        public SeekFreeInfo() { }
+        public SeekFreeInfo(ExportEntry export, string forcedFileName = null)
+        {
+            EntryPath = export.InstancedFullPath; // Might not be accurate if we don't use ForcedExport...
+            SeekFreePackage = Path.GetFileNameWithoutExtension(forcedFileName ?? export.FileRef.FilePath);
+        }
+
         /// <summary>
         /// The entry path to map to a package
         /// </summary>

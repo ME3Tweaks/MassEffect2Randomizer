@@ -11,9 +11,9 @@ namespace Randomizer.MER
 #if __GAME3__
 
         /// <summary>
-        /// Sequence Object to create a random spawn
+        /// Sequence object to modify how spawns work
         /// </summary>
-        public static string RandomizeSpawnSets = "MERSeqAct_RandomizeSpawnSets";
+        public static string SpawnModifier = "MERSeqAct_SpawnModifier";
 #endif
     }
 }

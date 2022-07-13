@@ -112,7 +112,7 @@ namespace Randomizer.Randomizers.Handlers
         {
             var engine = CoalescedHandler.GetIniFile("BioEngine");
             var sfxengine = engine.GetOrAddSection("sfxgame.sfxengine");
-            sfxengine.AddEntry(new CoalesceProperty("dynamicloadmapping", new CoalesceValue(mapping.GetSeekFreeStructText())));
+            sfxengine.AddEntry(new CoalesceProperty("dynamicloadmapping", new CoalesceValue(mapping.GetSeekFreeStructText(), CoalesceParseAction.AddUnique)));
         }
     }
 }

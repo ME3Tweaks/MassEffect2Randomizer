@@ -5,6 +5,8 @@
     local float ShieldStrength;
     local ScaledFloat NewMaxShields;
     local float ShieldMultiplier;
+    local SFXModule_Damage DmgMod;
+    local int randIndex;
     
     if (MyBP != None)
     {
@@ -31,4 +33,12 @@
     %COMBATSPEEDRANDOMIZER%
     
     %HEALTHRANDOMIZER%
+
+    %SHIELDRANDOMIZER%
+
+    %SHIELDRANDOMIZER%
+
+    %EVASIONRANDOMIZER%
+    
+    %MELEERANDOMIZER%
 }
