@@ -17,6 +17,7 @@ using LegendaryExplorerCore.Unreal;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
 using Randomizer.MER;
+using Randomizer.Randomizers.Game3.Enemies;
 using Randomizer.Randomizers.Game3.ExportTypes;
 using Randomizer.Randomizers.Game3.ExportTypes.Enemy;
 using Randomizer.Randomizers.Game3.Framework;
@@ -200,8 +201,9 @@ namespace Randomizer.Randomizers.Game3
 #if DEBUG
                         if (true
                         //&& false //uncomment to disable filtering
+                        && !file.Contains("Cat002", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("Cat003", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
+                        // && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
                         // !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                         // && !file.Contains("BioNPC", StringComparison.InvariantCultureIgnoreCase)
                         )
@@ -275,6 +277,10 @@ namespace Randomizer.Randomizers.Game3
                 rethrowException = exception;
             }
 
+            // DEBUG SCRIPTS
+            MERDebug.InstallDebugScript(SelectedOptions.RandomizationTarget, "SFXGame.pcc", "BioCheatManager.ProfilePower");
+
+
             // TOC game
             var dlcFolder = MERFileSystem.GetDLCModPath(SelectedOptions.RandomizationTarget);
             var toc = TOCCreator.CreateDLCTOCForDirectory(dlcFolder, SelectedOptions.RandomizationTarget.Game);
@@ -303,6 +309,7 @@ namespace Randomizer.Randomizers.Game3
             //SquadmateHead.ResetClass();
             //PawnPorting.ResetClass();
             //NPCHair.ResetClass();
+            RPawnStats.ResetClass();
             MERCaches.Cleanup();
         }
 
@@ -639,12 +646,90 @@ namespace Randomizer.Randomizers.Game3
 
             RandomizationGroups.Add(new RandomizationGroup()
             {
+                GroupName = "Enemy Specific",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption()
+                    {
+                        HumanName = "Banshee",
+                        Description = "Changes how the Banshee enemy behaves",
+                        PerformFileSpecificRandomization = RBanshee.RandomizeBanshee,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Reverse-side warping",
+                                Description = "Banshee teleportion at close range to the target will change between jumping beyond the target (reverse-side) and the default same-side. This can make the Banshee very difficult to predict at close range",
+                                SubOptionKey = RBanshee.OPTION_REVERSE_SIDE_MIXIN
+                            },
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Variable teleportation distance",
+                                Description = "Banshee teleportion distances will randomly vary from the default range (1x) to up to 20x. This will make the banshee close distance extremely quickly and will significantly increase game difficulty",
+                                SubOptionKey = RBanshee.OPTION_JUMPDIST_MIXIN
+                            },
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Ignore invalid pathing",
+                                Description = "Banshee teleportion will ignore pathing that it normally cannot use. This will let the Banshee get into areas it normally shouldn't be able to, such as on top of cover. This will allow the banshee to close distance faster",
+                                SubOptionKey = RBanshee.OPTION_IGNOREINVALIDPATHING_MIXIN
+                            }
+                        }
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Engineer",
+                        Description = "Changes how the Engineer enemy behaves",
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Place turret anywhere",
+                                Description = "The Engineer can place its turret anywhere, instead of specified locations",
+                                SubOptionKey = RBanshee.OPTION_REVERSE_SIDE_MIXIN
+                            },
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "No turret suicide",
+                                Description = "Disables the suicide timer on the Engineer turret",
+                                SubOptionKey = RBanshee.OPTION_JUMPDIST_MIXIN
+                            },
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Repair anybody",
+                                Description = "Allows the Engineer to heal any teammate, not just the Atlas and Turret",
+                                SubOptionKey = RBanshee.OPTION_IGNOREINVALIDPATHING_MIXIN
+                            }
+                        }
+                    }
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
                 GroupName = "Weapons & Enemies",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     //new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
-                    //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
+                    new RandomizationOption() {
+                        HumanName = "Enemies always berserk",
+                        Description = "Changes enemy AI to go 'berserk'. Enemies in berserk mode will close distance as fast as possible. This setting will significantly increase game difficulty.",
+                        PerformSpecificRandomizationDelegate = RSFXAI_Core.SetupBerserkerAI,
+                        IsRecommended = false,
+                        SliderTooltip = "The random chance that an enemy will spawn with berserk AI",
+                        Ticks = "5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100",
+                        SliderToTextConverter = val => $"{val}% chance to spawn berserk",
+                        SliderValue = 25,
+                        HasSliderOption = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    },
                                         new RandomizationOption() {HumanName = "Pawn weapons",
                                             Description = "Every spawned combat pawn (except squadmates) will have a random weapon. May introduce a small amount of game stutter on enemy spawn",
                                             PerformSpecificRandomizationDelegate = REnemyWeapons.RandomizeEnemyWeapons,
@@ -664,6 +749,12 @@ namespace Randomizer.Randomizers.Game3
                                             //SliderValue = -1, // End debug stuff
                     #endif
                                         },
+                                        new RandomizationOption() {
+                                            HumanName = "Enemy weapons can penetrate",
+                                            Description = "Allows enemy weapons to penetrate cover and walls. This only has an effect if the enemy weapon has innate penetration ability, which most don't by default",
+                                            PerformSpecificRandomizationDelegate = RSFXGameGeneric.AllowEnemyWeaponPenetration,
+                                            IsRecommended = true,
+                                        },
                                         new RandomizationOption()
                                         {
                                             HumanName = "Enemy powers", Description = "Gives non-player characters different powers - at least one option must be chosen. Can introduce some slight stutter on enemy load. Will significantly increase game difficulty.",
@@ -671,30 +762,30 @@ namespace Randomizer.Randomizers.Game3
                                             PerformSpecificRandomizationDelegate = REnemyPowers.Init,
                                             Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                                             IsRecommended = true,
-                                            SubOptions =
+                                            SubOptions =new ObservableCollectionExtended<RandomizationOption>()
                                             {
                                                 new RandomizationOption()
                                                 {
-                                                    IsOptionOnly = true,
-                                                    SubOptionKey = REnemyPowers.OPTION_VANILLA,
                                                     HumanName = "Vanilla powers",
                                                     Description = "Allows vanilla powers to the power pool",
-                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                                                    SubOptionKey = REnemyPowers.OPTION_VANILLA,
+                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                                                    IsOptionOnly = true,
                                                 },
                                                 new RandomizationOption()
                                                 {
-                                                    IsOptionOnly = true,
-                                                    SubOptionKey = REnemyPowers.OPTION_NEW,
                                                     HumanName = "New powers",
                                                     Description = "Allows powers designed for this randomizer to be added to the power pool",
-                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                                                    SubOptionKey = REnemyPowers.OPTION_NEW,
+                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                                                    IsOptionOnly = true,
                                                 },new RandomizationOption()
                                                 {
-                                                    IsOptionOnly = true,
-                                                    SubOptionKey = REnemyPowers.OPTION_PORTED,
                                                     HumanName = "Placeholder",
                                                     Description = "Dummy option",
-                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                                                    SubOptionKey = REnemyPowers.OPTION_PORTED,
+                                                    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                                                    IsOptionOnly = true,
                                                 }
                                             }
                                             // Debug stuff.
