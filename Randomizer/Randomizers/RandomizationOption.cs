@@ -136,6 +136,9 @@ namespace Randomizer.Randomizers
             TickText = SliderToTextConverter?.Invoke(SliderValue) ?? SliderValue.ToString();
         }
 
+        /// <summary>
+        /// Converter for slider to text. This is called whenever the Slider Value changed. IN Randomizer.cs define this before setting the value so it is properly populated the first time
+        /// </summary>
         public Func<double, string> SliderToTextConverter { get; set; }
 
         /// <summary>
