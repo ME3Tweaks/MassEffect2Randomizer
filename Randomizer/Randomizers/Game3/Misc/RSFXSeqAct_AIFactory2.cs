@@ -33,6 +33,25 @@ namespace Randomizer.Randomizers.Game3.Misc
             // Look for AIFactory2 objects
             if (!export.IsDefaultObject && export.ClassName == "SFXSeqAct_AIFactory2")
             {
+                // Make sure we aren't spawning dummy pawns
+                var ss = export.GetProperty<ArrayProperty<StructProperty>>("SpawnSets");
+                if (ss != null)
+                {
+                    foreach (var structProperty in ss)
+                    {
+                        var types = structProperty.GetProp<ArrayProperty<ObjectProperty>>("Types");
+                        foreach (var type in types)
+                        {
+                            var r = type.ResolveToEntry(export.FileRef);
+                            if (r.ObjectName.Name.Contains("Dummy", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                Debug.WriteLine($@">>>> SKIPPING RSFXAIFactory {r.ObjectName}");
+                                return false;
+                            }
+                        }
+                    }
+                }
+
                 return true;
             }
             return false;
@@ -42,7 +61,7 @@ namespace Randomizer.Randomizers.Game3.Misc
         {
             // Setup functions to allow custom enemies
             var sfxGame = ScriptTools.InstallScriptToPackage(target, "SFXGame.pcc", "SFXModule_DamagePlayer.SFXTakeDamage", "PlayerTeamDominate.SFXTakeDamage.uc", false, false);
-            
+
             ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.AddOrder"), "PlayerTeamDominate.AddOrder.uc");
             ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.CanInstantlyUsePowers"), "PlayerTeamDominate.CanInstantlyUsePowers.uc");
             ScriptTools.InstallScriptToExport(sfxGame.FindExport("SFXAI_Henchman.CanQueueOrder"), "PlayerTeamDominate.CanQueueOrder.uc");
@@ -55,6 +74,9 @@ namespace Randomizer.Randomizers.Game3.Misc
             // Setup functions to allow teammates to change teams against the player
 
             MERFileSystem.SavePackage(sfxGame);
+
+            // Ensure we have prepared the custom action assets and seek free for boost/climb
+            RPawnStats.PrepareCustomActions(target);
 
             // Split out packages to prepare them for use in seek free
             var decooksRequired = new List<ObjectDecookInfo>()
@@ -176,12 +198,15 @@ namespace Randomizer.Randomizers.Game3.Misc
                     // Install randomization
                     var aiFactoryTypeShuffler = SequenceObjectCreator.CreateSequenceObject(export.FileRef, MERCustomClasses.SpawnModifier, MERCaches.GlobalCommonLookupCache);
                     var aiFactorySeqObj = SequenceObjectCreator.CreateSequenceObject(export.FileRef, "SeqVar_Object", MERCaches.GlobalCommonLookupCache);
+                    var spawnedSeqObj = SequenceObjectCreator.CreateSequenceObject(export.FileRef, "SeqVar_Object", MERCaches.GlobalCommonLookupCache);
                     aiFactorySeqObj.WriteProperty(new ObjectProperty(export, "ObjValue"));
 
                     // Install the randomization object and point to AIFactory2
-                    KismetHelper.AddObjectsToSequence(sequence, false, aiFactoryTypeShuffler, aiFactorySeqObj);
+                    KismetHelper.AddObjectsToSequence(sequence, false, aiFactoryTypeShuffler, aiFactorySeqObj, spawnedSeqObj);
                     KismetHelper.CreateOutputLink(aiFactoryTypeShuffler, "Out", export, 0); // Connect from Out to Spawn
                     KismetHelper.CreateVariableLink(aiFactoryTypeShuffler, "ActorFactory", aiFactorySeqObj); // Connect variable link to ActorFactory reference object
+                    KismetHelper.CreateVariableLink(export, "Last Spawned", spawnedSeqObj); // Link spawned to Pawn
+                    KismetHelper.CreateVariableLink(aiFactoryTypeShuffler, "Pawn", spawnedSeqObj); // Link spawned to Pawn
 
                     // Repoint all the original inputs to Spawn to ours.
                     foreach (var connection in connectionsToAIFactory)
@@ -209,6 +234,21 @@ namespace Randomizer.Randomizers.Game3.Misc
                         {
                             SeqTools.WriteOutboundLinksToNode(connection, outbound);
                         }
+                    }
+
+
+                    // Change outputs for Spawned to link to our OnSpawned
+
+                    var outLinksT = export.GetProperty<ArrayProperty<StructProperty>>("OutputLinks").FirstOrDefault(x => x.GetProp<StrProperty>("LinkDesc") == "Spawned");
+                    if (outLinksT != null)
+                    {
+                        var outLinks = outLinksT.GetProp<ArrayProperty<StructProperty>>("Links");
+                        MERSeqTools.RemoveAllNamedOutputLinks(export, "Spawned"); // Remove all existing nodes
+                        KismetHelper.CreateOutputLink(export, "Spawned", aiFactoryTypeShuffler, 1); // Link to our OnSpawned
+
+                        var aifProps = aiFactoryTypeShuffler.GetProperties();
+                        aifProps.GetProp<ArrayProperty<StructProperty>>("OutputLinks")[1].Properties.AddOrReplaceProp(outLinks);
+                        aiFactoryTypeShuffler.WriteProperties(aifProps);
                     }
                 }
             }
