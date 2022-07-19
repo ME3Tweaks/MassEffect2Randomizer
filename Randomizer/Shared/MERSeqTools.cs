@@ -234,6 +234,31 @@ namespace Randomizer.Shared
             return FindSequenceObjectByClassAndPosition(seqObjs, className, posX, posY);
         }
 
+        /// <summary>
+        /// Removes all links to other sequence objects from the given object.
+        /// Use the optional parameters to specify which types of links can be removed.
+        /// </summary>
+        /// <param name="export">Sequence object to remove all links from</param>
+        /// <param name="outlinks">If true, output links will be removed. Default: True</param>
+        /// <param name="variablelinks">If true, variable links will be removed. Default: True</param>
+        /// <param name="eventlinks">If true, event links will be removed. Default: True</param>
+        public static void RemoveAllNamedOutputLinks(ExportEntry export, string linkName)
+        {
+            var props = export.GetProperties();
+            var outLinksProp = props.GetProp<ArrayProperty<StructProperty>>("OutputLinks");
+            if (outLinksProp != null)
+            {
+                foreach (var prop in outLinksProp)
+                {
+                    if (prop.GetProp<StrProperty>("LinkDesc")?.Value == linkName)
+                    {
+                        prop.GetProp<ArrayProperty<StructProperty>>("Links").Clear();
+                    }
+                }
+            }
+            export.WriteProperties(props);
+        }
+
         public static ExportEntry FindSequenceObjectByClassAndPosition(List<ExportEntry> seqObjs, string className, int posX = int.MinValue, int posY = int.MinValue)
         {
             seqObjs = seqObjs.Where(x => x.ClassName == className).ToList();

@@ -56,6 +56,28 @@ namespace Randomizer.Randomizers.Utility
             InstallScriptTextToExport(targetExport, scriptText, scriptFilename, cache);
         }
 
+        /// <summary>
+        /// Opens a package and installs a script to the specified path, then saves the package.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="packageFile"></param>
+        /// <param name="instancedFullPath"></param>
+        /// <param name="scriptText"></param>
+        /// <param name="scriptFileNameForLogging"></param>
+        /// <param name="cache"></param>
+        public static IMEPackage InstallScriptTextToPackage(GameTarget target, string packageFile, string instancedFullPath, string scriptText, string scriptFileNameForLogging, bool saveOnFinish = false, PackageCache cache = null)
+        {
+            var pf = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, packageFile));
+            var export = pf.FindExport(instancedFullPath);
+            InstallScriptTextToExport(export, scriptText, scriptFileNameForLogging, cache);
+            if (saveOnFinish)
+            {
+                MERFileSystem.SavePackage(pf);
+            }
+
+            return pf;
+        }
+
         public static void InstallScriptTextToExport(ExportEntry targetExport, string scriptText, string scriptFileNameForLogging, PackageCache cache)
         {
             var fl = new FileLib(targetExport.FileRef);
