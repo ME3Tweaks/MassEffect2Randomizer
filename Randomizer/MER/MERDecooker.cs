@@ -97,9 +97,9 @@ namespace Randomizer.MER
                 // If there is a source filename, we need to decook it
                 if (di.SourceFileName != null)
                 {
-                    var cachedPacakge = c.GetCachedPackage(di.SourceFileName);
-                    var objRef = PackageTools.CreateObjectReferencer(cachedPacakge);
-                    objRef.WriteProperty(new ArrayProperty<ObjectProperty>(new[] { new ObjectProperty(cachedPacakge.FindExport(di.SeekFreeInfo.EntryPath).UIndex) }, "ReferencedObjects")); // Write the reference - overwrite if same cached package
+                    var cachedDecookedPackage = c.GetCachedPackage(di.SourceFileName);
+                    var objRef = PackageTools.CreateObjectReferencer(cachedDecookedPackage);
+                    objRef.WriteProperty(new ArrayProperty<ObjectProperty>(new[] { new ObjectProperty(cachedDecookedPackage.FindExport(di.SeekFreeInfo.EntryPath).UIndex) }, "ReferencedObjects")); // Write the reference - overwrite if same cached package
 
                     var outPath = Path.Combine(MERFileSystem.DLCModCookedPath, $"{di.SeekFreeInfo.SeekFreePackage}.pcc");
                     var results = EntryExporter.ExportExportToFile(objRef, outPath, out _, globalCache: gc, pc: c);

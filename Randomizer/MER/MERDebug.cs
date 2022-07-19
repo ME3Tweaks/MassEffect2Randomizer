@@ -22,21 +22,19 @@ namespace Randomizer.MER
 {
     public class MERDebug
     {
+        [Conditional("DEBUG")]
         public static void InstallDebugScript(GameTarget target, string packagename, string scriptName)
         {
-#if DEBUG
             Debug.WriteLine($"Installing debug script {scriptName}");
             ScriptTools.InstallScriptToPackage(target, packagename, scriptName, "Debug." + scriptName + ".uc", false,
                 true);
-#endif
         }
 
+        [Conditional("DEBUG")]
         public static void InstallDebugScript(IMEPackage package, string scriptName, bool saveOnFinish)
         {
-#if DEBUG
             Debug.WriteLine($"Installing debug script {scriptName}");
             ScriptTools.InstallScriptToPackage(package, scriptName, "Debug." + scriptName + ".uc", false, saveOnFinish);
-#endif
         }
 
         public static void DebugPrintActorNames(object sender, RunWorkerCompletedEventArgs e)
