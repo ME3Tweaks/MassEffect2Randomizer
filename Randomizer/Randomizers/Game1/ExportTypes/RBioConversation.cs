@@ -78,7 +78,7 @@ namespace Randomizer.Randomizers.Game1.ExportTypes
             if (!conversationStartExports.Any())
                 return false;
 
-            MERPackageCache localCache = new MERPackageCache(target);
+            MERPackageCache localCache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
 
             foreach (var convStart in conversationStartExports)
             {

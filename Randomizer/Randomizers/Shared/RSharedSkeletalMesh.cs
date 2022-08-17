@@ -21,7 +21,11 @@ namespace Randomizer.Randomizers.Shared
 
             var actors = package.GetLevelActors();
             var actorsToLink = new List<ExportEntry>();
-#if __GAME3__
+#if __GAME1__
+            foreach (var actor in actors.Where(x => x.IsA("BioPawn")))
+#elif __GAME2__
+            foreach (var actor in actors.Where(x => x.IsA("SFXSkeletalMeshActor"))) // BioPawn, SkelActorMAT
+#elif __GAME3__
             foreach (var actor in actors.Where(x => x.IsA("SFXSkeletalMeshActor") || x.IsA("SFXStuntActor")|| x.IsA("SFXPawn")))
 #endif
             {

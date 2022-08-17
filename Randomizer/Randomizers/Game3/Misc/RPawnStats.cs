@@ -95,7 +95,7 @@ namespace Randomizer.Randomizers.Game3.Misc
         private static List<SeekFreeInfo> _evadeForwardActions = new();
         private static List<SeekFreeInfo> _evadeBackwardsActions = new();
         private static List<SeekFreeInfo> _punchActions = new();
-        private static void PrepareDynamicResources(GameTarget target)
+        internal static void PrepareDynamicResources(GameTarget target)
         {
             // Extract custom actions packages
             var assets = MEREmbedded.ListEmbeddedAssets("Binary", $"Packages.{target.Game}.CustomActions", false);

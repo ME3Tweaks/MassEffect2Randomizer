@@ -58,7 +58,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
         {
             if (Powers == null)
             {
-                string fileContents = MERUtilities.GetEmbeddedTextAsset("powerlistme2.json");
+                string fileContents = MEREmbedded.GetEmbeddedTextAsset("powerlistme2.json");
                 Powers = new List<PowerInfo>();
                 var powermanifest = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
                 foreach (var powerInfo in powermanifest)
@@ -299,12 +299,12 @@ namespace Randomizer.Randomizers.Game2.Enemy
         {
             if (powerInfo.IsCorrectedPackage)
             {
-                var sourceData = MERUtilities.GetEmbeddedPackage(target.Game, "correctedloadouts.powers." + powerInfo.PackageFileName);
+                var sourceData = MEREmbedded.GetEmbeddedPackage(target.Game, "correctedloadouts.powers." + powerInfo.PackageFileName);
                 sourcePackage = MEPackageHandler.OpenMEPackageFromStream(sourceData);
             }
             else
             {
-                sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(powerInfo.PackageFileName);
+                sourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName));
             }
 
             if (sourcePackage != null)
@@ -379,7 +379,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     else
                     {
                         // MEMORY SAFE (resolve imports to exports)
-                        MERPackageCache cache = new MERPackageCache(target);
+                        MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
                         relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
                     }
 
@@ -510,7 +510,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                         continue; // Duplicate powers crash the game. It seems this code is not bulletproof here and needs changed a bit...
 
 
-                    MERLog.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "(+New Power)"} => {randomNewPower.PowerName }");
+                    MERLog.Information($@"Changing power {export.ObjectName} {existingPowerEntry?.ObjectName ?? "(+New Power)"} => {randomNewPower.PowerName}");
                     // It's a different power.
 
                     // See if we need to port this in
@@ -535,7 +535,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                         var world = export.FileRef.FindExport("TheWorld");
                         var worldBin = ObjectBinary.From<World>(world);
                         var extraRefs = worldBin.ExtraReferencedObjects.ToList();
-                        extraRefs.Add(new UIndex(existingPowerEntry.UIndex));
+                        extraRefs.Add(existingPowerEntry.UIndex);
                         worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
                         world.WriteBinary(worldBin);
                     }

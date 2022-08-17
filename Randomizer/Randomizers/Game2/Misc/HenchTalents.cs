@@ -585,7 +585,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             PatchOutTutorials(target);
 
-            var henchCache = new MERPackageCache(target);
+            var henchCache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
 
             // We can have up to 5 UI powers assigned. However, kits will only have 4 powers total assigned as each pawn only has 4 in vanilla gameplay.
             var squadmatePackageMap = new CaseInsensitiveConcurrentDictionary<HenchInfo>();

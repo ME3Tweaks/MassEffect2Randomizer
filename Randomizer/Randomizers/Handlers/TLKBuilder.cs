@@ -207,7 +207,7 @@ namespace Randomizer.Randomizers.Handlers
                 }
             }
 
-            var tlkPackage = MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedAsset("Package", $"BlankTlkPackage.{(target.Game.IsOTGame() ? "upk" : "pcc")}"));
+            var tlkPackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedAsset("Package", $"BlankTlkPackage.{(target.Game.IsOTGame() ? "upk" : "pcc")}"));
 
             MERTalkFile = new ME1TalkFile(tlkPackage.Exports.FirstOrDefault(x => x.ClassName == "BioTlk"));
 #elif __GAME2__

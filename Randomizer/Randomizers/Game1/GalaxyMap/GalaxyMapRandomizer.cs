@@ -247,7 +247,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
         private void ReplaceSWFFromResource(ExportEntry exp, string swfResourcePath)
         {
             Debug.WriteLine($"Replacing {Path.GetFileName(exp.FileRef.FilePath)} {exp.UIndex} {exp.ObjectName} SWF with {swfResourcePath}");
-            var bytes = MERUtilities.GetEmbeddedAsset("Binary", swfResourcePath);
+            var bytes = MEREmbedded.GetEmbeddedAsset("Binary", swfResourcePath);
             var props = exp.GetProperties();
 
             var rawData = props.GetProp<ArrayProperty<ByteProperty>>("Data");
@@ -674,7 +674,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
         private void RandomizePlanetNameDescriptions(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             option.CurrentOperation = "Applying entropy to galaxy map";
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("planetinfo.xml");
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("planetinfo.xml");
 
             XElement rootElement = XElement.Parse(fileContents);
             var allMapRandomizationInfo = (from e in rootElement.Elements("RandomizedPlanetInfo")
@@ -696,7 +696,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
                                                Playable = !(e.Element("NotPlayable") != null && (bool)e.Element("NotPlayable")),
                                            }).ToList();
 
-            fileContents = MERUtilities.GetEmbeddedTextAsset("galaxymapclusters.xml");
+            fileContents = MEREmbedded.GetEmbeddedTextAsset("galaxymapclusters.xml");
             rootElement = XElement.Parse(fileContents);
             var suffixedClusterNames = rootElement.Elements("suffixedclustername").Select(x => x.Value).ToList(); //Used for assignments
             var suffixedClusterNamesForPreviousLookup = rootElement.Elements("suffixedclustername").Select(x => x.Value).ToList(); //Used to lookup previous assignments 
@@ -705,7 +705,7 @@ namespace Randomizer.Randomizers.Game1.GalaxyMap
             suffixedClusterNames.Shuffle();
             nonSuffixedClusterNames.Shuffle();
 
-            fileContents = MERUtilities.GetEmbeddedTextAsset("galaxymapsystems.xml");
+            fileContents = MEREmbedded.GetEmbeddedTextAsset("galaxymapsystems.xml");
             rootElement = XElement.Parse(fileContents);
             var shuffledSystemNames = rootElement.Elements("systemname").Select(x => x.Value).ToList();
             shuffledSystemNames.Shuffle();

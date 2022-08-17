@@ -40,7 +40,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
 
                     smc.RemoveProperty("AnimSets"); // We want to force new animations. we'll waste a bit of memory doing this but oh well
                     var installedGestures = new List<Gesture>();
-                    var animationPackagesCache = new MERPackageCache(target);
+                    var animationPackagesCache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
                     while (numAnimationsSupported > 0)
                     {
                         // should we make sure they're unique?

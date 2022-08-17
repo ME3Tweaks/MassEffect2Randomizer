@@ -222,7 +222,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 var biopEndGm3 = MEPackageHandler.OpenMEPackage(endGame3F);
 
-                var packageBin = MERUtilities.GetEmbeddedPackage(target.Game, "Delux2go_Edmonton_Burger.pcc");
+                var packageBin = MEREmbedded.GetEmbeddedPackage(target.Game, "Delux2go_Edmonton_Burger.pcc");
                 var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(packageBin);
 
                 // 1. Add the burger package

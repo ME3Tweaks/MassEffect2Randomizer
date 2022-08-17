@@ -284,7 +284,6 @@ namespace Randomizer.Randomizers.Game2
             ResetClasses();
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
-            NonSharedPackageCache.Cache?.Dispose();
 
             // Re-throw the unhandled exception after MERFS has closed
             if (rethrowException != null)

@@ -45,7 +45,7 @@ namespace Randomizer.MER
             var levelBin = GetLevelBinary(package);
             if (levelBin == null)
                 return null; // Not level
-            return levelBin.Actors.Where(x => x.value > 0).Select(x => package.GetUExport(x.value)).ToList();
+            return levelBin.Actors.Where(x => x > 0).Select(x => package.GetUExport(x)).ToList();
         }
     }
 

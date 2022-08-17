@@ -107,7 +107,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             {
                 if (IsCorrectedAsset)
                 {
-                    var package = MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedPackage(target.Game, $"correctedmeshes.heads.{PackageFile}"));
+                    var package = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, $"correctedmeshes.heads.{PackageFile}"));
                     return package.FindExport(AssetPath);
                 }
                 else
@@ -121,7 +121,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             {
                 if (IsCorrectedAsset)
                 {
-                    var package = MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedPackage(target.Game, $"correctedmeshes.heads.{PackageFile}"));
+                    var package = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, $"correctedmeshes.heads.{PackageFile}"));
                     return package.FindExport(HairAssetPath);
                 }
                 else
@@ -689,12 +689,12 @@ namespace Randomizer.Randomizers.Game2.Misc
                     if (parent.ObjectName == "Default__SFXPawn_Thane_02")
                     {
                         // Install DLC version of mesh
-                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedAsset("Binary", "correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc"));
+                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedAsset("Binary", "correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc"));
                     }
                     else
                     {
                         // Install basegame version of mesh
-                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(MERUtilities.GetEmbeddedPackage(target.Game, "correctedmeshes.body.ThaneBodyNoEyelids.pcc"));
+                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, "correctedmeshes.body.ThaneBodyNoEyelids.pcc"));
                     }
 
                     var meshExp = parent.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
@@ -979,7 +979,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                 // Update level
                 var worldBin = ObjectBinary.From<Level>(world);
-                worldBin.Actors[609] = newMirandaPawn;
+                worldBin.Actors[609] = newMirandaPawn.UIndex;
                 world.WriteBinary(worldBin);
 
                 MERFileSystem.SavePackage(package);
@@ -1064,8 +1064,8 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                 // Update level
                 var worldBin = ObjectBinary.From<Level>(world);
-                worldBin.Actors[43] = newMirandaPawn;
-                worldBin.Actors[44] = newJacobPawn;
+                worldBin.Actors[43] = newMirandaPawn.UIndex;
+                worldBin.Actors[44] = newJacobPawn.UIndex;
                 world.WriteBinary(worldBin);
 
                 //mirandaI.ObjectName = "SFXPawn_Miranda_NOTUSED";

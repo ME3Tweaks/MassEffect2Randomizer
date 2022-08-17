@@ -56,7 +56,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             if (henchmenLOCInt250 != null && File.Exists(henchmenLOCInt250))
             {
                 var washroomP = MEPackageHandler.OpenMEPackage(henchmenLOCInt250);
-                using MERPackageCache pc = new MERPackageCache(target);
+                using MERPackageCache pc = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
                 var randomMale = MaleWashroomAudioSources.RandomElement();
                 var randomFemale = FemaleWashroomAudioSources.RandomElement();
 
@@ -86,7 +86,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 var nor250Henchmen = MEPackageHandler.OpenMEPackage(cookingAreaF);
 
-                var packageBin = MERUtilities.GetEmbeddedPackage(target.Game,"Delux2go_EdmontonBurger.pcc");
+                var packageBin = MEREmbedded.GetEmbeddedPackage(target.Game, "Delux2go_EdmontonBurger.pcc");
                 var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(packageBin);
 
                 List<ExportEntry> addedBurgers = new List<ExportEntry>();

@@ -76,7 +76,7 @@ namespace Randomizer.Randomizers.Game3.Misc
             MERFileSystem.SavePackage(sfxGame);
 
             // Ensure we have prepared the custom action assets and seek free for boost/climb
-            RPawnStats.PrepareCustomActions(target);
+            RPawnStats.PrepareDynamicResources(target);
 
             // Split out packages to prepare them for use in seek free
             var decooksRequired = new List<ObjectDecookInfo>()

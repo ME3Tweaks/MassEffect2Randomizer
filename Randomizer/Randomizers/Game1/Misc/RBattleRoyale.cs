@@ -114,7 +114,7 @@ namespace Randomizer.Randomizers.Game1.Misc
             if (addedSquads.Any())
             {
                 var me1PersistentLevel = ObjectBinary.From<Level>(level);
-                me1PersistentLevel.Actors.AddRange(addedSquads.Select(x => new UIndex(x.UIndex)));
+                me1PersistentLevel.Actors.AddRange(addedSquads.Select(x => x.UIndex));
                 level.WriteBinary(me1PersistentLevel);
             }
 
@@ -126,7 +126,7 @@ namespace Randomizer.Randomizers.Game1.Misc
             if (TemplatePackage != null)
                 return;
 
-            var packageStream = MERUtilities.GetEmbeddedAsset("RHelper", "AkuzeModeHelper.pcc");
+            var packageStream = MEREmbedded.GetEmbeddedPackage(MEGame.LE1, "AkuzeModeHelper.pcc");
             TemplatePackage = MEPackageHandler.OpenMEPackageFromStream(packageStream);
         }
 

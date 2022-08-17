@@ -14,7 +14,6 @@ using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Randomizer.Randomizers;
-using Randomizer.Randomizers.Game3.ExportTypes;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
@@ -212,7 +211,7 @@ namespace Randomizer.MER
 
         public static void BuildGestureFiles(object? sender, DoWorkEventArgs e)
         {
-#if DEBUG
+#if DEBUG && __GAME3__
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE3, true, false).Values
                 //.Where(x =>
                 //                    !x.Contains("_LOC_")

@@ -75,7 +75,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             if (!conversationStartExports.Any())
                 return false;
 
-            MERPackageCache localCache = new MERPackageCache(target);
+            MERPackageCache localCache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
 
             foreach (var convStart in conversationStartExports)
             {
@@ -208,7 +208,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 // Update the localizations
                 foreach (var loc in Localizations)
                 {
-                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERFileSystem.GetGlobalCache(target), localCache, loc);
+                    var bioConversation = EntryImporter.ResolveImport(bioConvImport, MERCaches.GlobalCommonLookupCache, localCache, loc);
                     var conv = new ConversationExtended(bioConversation);
                     conv.LoadConversation(null, true);
 

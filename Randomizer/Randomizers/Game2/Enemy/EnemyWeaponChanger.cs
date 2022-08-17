@@ -32,10 +32,10 @@ namespace Randomizer.Randomizers.Game2.Enemy
         {
             if (AllAvailableWeapons == null)
             {
-                string fileContents = MERUtilities.GetEmbeddedTextAsset("weaponloadoutrules.json");
+                string fileContents = MEREmbedded.GetEmbeddedTextAsset("weaponloadoutrules.json");
                 LoadoutSupportsVisibleMapping = JsonConvert.DeserializeObject<ConcurrentDictionary<string, bool>>(fileContents);
 
-                fileContents = MERUtilities.GetEmbeddedTextAsset("weaponlistme2.json");
+                fileContents = MEREmbedded.GetEmbeddedTextAsset("weaponlistme2.json");
                 var allGuns = JsonConvert.DeserializeObject<List<GunInfo>>(fileContents).ToList();
                 AllAvailableWeapons = new List<GunInfo>();
                 VisibleAvailableWeapons = new List<GunInfo>();
@@ -290,7 +290,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             IMEPackage sourcePackage;
             if (gunInfo.IsCorrectedPackage)
             {
-                var sourceData = MERUtilities.GetEmbeddedPackage(target.Game,"correctedloadouts.weapons." + gunInfo.PackageFileName);
+                var sourceData = MEREmbedded.GetEmbeddedPackage(target.Game, "correctedloadouts.weapons." + gunInfo.PackageFileName);
                 sourcePackage = MEPackageHandler.OpenMEPackageFromStream(sourceData);
 
                 if (gunInfo.ImportOnly)
@@ -306,7 +306,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             }
             else
             {
-                sourcePackage = NonSharedPackageCache.Cache.GetCachedPackage(gunInfo.PackageFileName);
+                sourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, gunInfo.PackageFileName));
             }
 
             if (sourcePackage != null)
@@ -355,7 +355,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     else
                     {
                         // MEMORY SAFE (resolve imports to exports)
-                        MERPackageCache cache = new MERPackageCache(target);
+                        MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
                         relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
                     }
 
@@ -609,7 +609,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                             var world = export.FileRef.FindExport("TheWorld");
                             var worldBin = ObjectBinary.From<World>(world);
                             var extraRefs = worldBin.ExtraReferencedObjects.ToList();
-                            extraRefs.Add(new UIndex(originalGun.UIndex));
+                            extraRefs.Add(originalGun.UIndex);
                             worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
                             world.WriteBinary(worldBin);
                         }

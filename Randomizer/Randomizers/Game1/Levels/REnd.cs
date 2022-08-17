@@ -34,8 +34,8 @@ namespace Randomizer.Randomizers.Levels
             var paragonItem = paragonItems[0];
             var renegadeItem = renegadeItems[0];
 
-            paragonTexture.WriteBinary(MERUtilities.GetEmbeddedAsset("Binary", paragonItem).ToBytes());
-            renegadeTexture.WriteBinary(MERUtilities.GetEmbeddedAsset("Binary", renegadeItem).ToBytes());
+            paragonTexture.WriteBinary(MEREmbedded.GetEmbeddedAsset("Binary", paragonItem).ToBytes());
+            renegadeTexture.WriteBinary(MEREmbedded.GetEmbeddedAsset("Binary", renegadeItem).ToBytes());
 
             MERLog.Information("Backdrop randomizer, setting paragon backdrop to " + Path.GetFileName(paragonItem));
             MERLog.Information("Backdrop randomizer, setting renegade backdrop to " + Path.GetFileName(renegadeItem));

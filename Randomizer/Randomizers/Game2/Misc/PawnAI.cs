@@ -83,7 +83,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                         {
                             // AI is changing.
                             // TODO: Change to EnsureClassIsInFile()
-                            var sfxgame = NonSharedPackageCache.Cache.GetCachedPackage("SFXGame.pcc");
+                            var sfxgame = MERCaches.GlobalCommonLookupCache.GetCachedPackage("SFXGame.pcc");
                             var newAIImp = EntryImporter.GenerateEntryForGlobalFileExport(newAi, sfxgame, exp.FileRef, new RelinkerOptionsPackage());
                             currentAi.Value = newAIImp.UIndex;
                             exp.WriteProperty(currentAi);

@@ -67,7 +67,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         private static void RandomizeEndorsements(GameTarget target)
         {
-            var cache = new MERPackageCache(target);
+            var cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
             List<int> pickedIndices = new List<int>();
 
             RandomizeEndorsementLine(@"BioD_CitHub_240Vendors_LOC_INT.pcc", 808, 793, 26, 7, cache, pickedIndices); //sirta, i think?
@@ -180,7 +180,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var loungeP = MEPackageHandler.OpenMEPackage(loungeF);
                 var sequence = loungeP.GetUExport(2583);
 
-                MERPackageCache cache = new MERPackageCache(target);
+                MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
                 List<InterpTools.InterpData> interpDatas = new List<InterpTools.InterpData>();
                 var interp1 = loungeP.GetUExport(2532);
 
@@ -245,7 +245,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             if (embassyF != null)
             {
                 var embassyInt = MEPackageHandler.OpenMEPackage(embassyF);
-                MERPackageCache cache = new MERPackageCache(target);
+                MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
 
                 var convoE = embassyInt.GetUExport(94);
                 RandomizeCouncilConvoSingle(target, convoE, cache);
