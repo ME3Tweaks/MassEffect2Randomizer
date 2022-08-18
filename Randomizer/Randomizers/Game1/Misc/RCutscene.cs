@@ -153,7 +153,7 @@ namespace Randomizer.Randomizers.Game1.Misc
                         else if (vl.ExpectedTypeName == "SeqVar_Object" && !addedToShuffler)
                         {
                             // Find what assigns
-                            if (MERSeqTools.IsAssignedBioPawn(export, variableLinkNode, sequenceElements))
+                            if (MERSeqTools.IsAssignedClassType(export, variableLinkNode, sequenceElements, "BioPawn"))
                             {
                                 pawnsToShuffleDirectAttached.Add(variableLinkNode);
                                 addedToShuffler = true;
