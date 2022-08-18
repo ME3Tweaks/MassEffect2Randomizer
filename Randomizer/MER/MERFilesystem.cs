@@ -70,7 +70,7 @@ namespace Randomizer.MER
 
             // Re-extract even if we are on re-roll
             CreateRandomizerDLCMod(options.RandomizationTarget, dlcModPath);
-            options.RandomizationTarget.InstallBinkBypass();
+            options.RandomizationTarget.InstallBinkBypass(true);
             DLCModCookedPath = Path.Combine(dlcModPath, options.RandomizationTarget.Game.CookedDirName());
 
             // ME1 Randomizer does not use this feature

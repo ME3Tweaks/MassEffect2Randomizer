@@ -115,18 +115,7 @@ namespace Randomizer.Randomizers.Game3.Misc
         private static List<SeekFreeInfo> _evadeForwardActions = new();
         private static List<SeekFreeInfo> _evadeBackwardsActions = new();
         private static List<SeekFreeInfo> _punchActions = new();
-        private static List<SeekFreeInfo> _syncMeleeActions = new(); // Actions usable for sync melee (banshee, brute, etc)
-
-        private static List<SeekFreeInfo> _deathActions = new(); // Not used in MER, but in kismet
-        private static List<SeekFreeInfo> _climbUpActions = new(); // Not used in MER, but in kismet
-        private static List<SeekFreeInfo> _climbDownActions = new(); // Not used in MER, but in kismet
-
-
-        /// <summary>
-        /// Initialization of randomizer - inventory actions we can use
-        /// </summary>
-        /// <param name="target"></param>
-        internal static void PrepareCustomActions(GameTarget target)
+        internal static void PrepareDynamicResources(GameTarget target)
         {
             if (Prepared)
                 return;

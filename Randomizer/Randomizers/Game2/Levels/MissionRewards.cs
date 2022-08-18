@@ -251,7 +251,7 @@ namespace Randomizer.Randomizers.Game1.Misc
         internal static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
             // Load randomization list.
-            var rewardsJson = MERUtilities.GetEmbeddedTextAsset("missionrewards.json");
+            var rewardsJson = MEREmbedded.GetEmbeddedTextAsset("missionrewards.json");
             var allRewards = JsonConvert.DeserializeObject<List<MissionReward>>(rewardsJson);
             var researchRewards = allRewards.Where(x => x.IsWeapon == false).ToList();
             var weaponRewards = allRewards.Where(x => x.IsWeapon == true).ToList();
@@ -261,7 +261,7 @@ namespace Randomizer.Randomizers.Game1.Misc
             weaponRewards.Shuffle();
 
             // Load rewards image packages as we will need to port those in.
-            using MERPackageCache texturePackageCache = new MERPackageCache(target);
+            using MERPackageCache texturePackageCache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
 
             // LE2: This is a big chungus
             var codexPackage = texturePackageCache.GetCachedPackage("GUI_Codex_Images.pcc");

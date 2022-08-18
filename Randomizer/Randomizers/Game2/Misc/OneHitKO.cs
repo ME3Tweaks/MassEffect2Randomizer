@@ -125,7 +125,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             }
 
             // Zero out stats in tables
-            MERPackageCache cache = new MERPackageCache(target);
+            MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
             foreach (var asset in ZeroOutStatAssets)
             {
                 var statClass = asset.GetAsset(target, cache);

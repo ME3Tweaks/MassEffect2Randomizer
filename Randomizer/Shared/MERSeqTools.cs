@@ -150,13 +150,13 @@ namespace Randomizer.Shared
         }
 
         /// <summary>
-        /// Is the specified node assigned to a BioPawn or subclass of? 
+        /// Is the specified node assigned to a subclass of the specified type?
         /// </summary>
         /// <param name="sequenceObj">The object that we are checking that should be ignored for references (like conversation start)</param>
         /// <param name="vlNode">The node to check</param>
         /// <param name="sequenceElements">List of nodes in the sequence</param>
         /// <returns></returns>
-        public static bool IsAssignedBioPawn(ExportEntry sequenceObj, ExportEntry vlNode, List<ExportEntry> sequenceElements)
+        public static bool IsAssignedClassType(ExportEntry sequenceObj, ExportEntry vlNode, List<ExportEntry> sequenceElements, string rootClass)
         {
             var inboundConnections = SeqTools.FindVariableConnectionsToNode(vlNode, sequenceElements);
             foreach (var sequenceObject in inboundConnections)
@@ -192,7 +192,7 @@ namespace Randomizer.Shared
                                     if (linkedNodeType != null)
                                     {
                                         var linkedNodeData = sequenceObj.FileRef.GetUExport(linkedNodeType.Value);
-                                        if (linkedNodeData.IsA("BioPawn"))
+                                        if (linkedNodeData.IsA(rootClass))
                                         {
                                             //We can shuffle this item.
 

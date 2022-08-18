@@ -191,7 +191,7 @@ namespace Randomizer.Randomizers.Utility
             var theWorld = package.FindExport("TheWorld");
             var world = ObjectBinary.From<World>(theWorld);
             var extarRefs = world.ExtraReferencedObjects.ToList();
-            extarRefs.AddRange(newRefs.Select(x => new UIndex(x.UIndex)));
+            extarRefs.AddRange(newRefs.Select(x => x.UIndex));
             world.ExtraReferencedObjects = extarRefs.Distinct().ToArray();
             theWorld.WriteBinary(world);
         }

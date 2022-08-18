@@ -453,7 +453,7 @@ namespace RandomizerUI
             if (!MERUtilities.IsGameRunning(SelectedTarget.Game))
             {
 #if __GAME1__
-                var randomizer = new Randomizer.Randomizers.Game1.RandomizerV2();
+                var randomizer = new Randomizer.Randomizers.Game1.Randomizer();
 #elif __GAME2__
                 var randomizer = new Randomizer.Randomizers.Game2.Randomizer();
 #elif __GAME3__
@@ -504,7 +504,7 @@ namespace RandomizerUI
         public void FinalizeInterfaceLoad()
         {
 #if __GAME1__
-            Randomizer.Randomizers.Game1.RandomizerV2.SetupOptions(RandomizationGroups, optionStateChanging);
+            Randomizer.Randomizers.Game1.Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
 #elif __GAME2__
             Randomizer.Randomizers.Game2.Randomizer.SetupOptions(RandomizationGroups, optionStateChanging);
 #elif __GAME3__

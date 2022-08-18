@@ -95,7 +95,7 @@ namespace Randomizer.Randomizers.Levels
 
             //Randomize Scan the Keepers
             MERLog.Information("Randomizing Scan the Keepers");
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("stakeepers.xml");
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("stakeepers.xml");
             XElement rootElement = XElement.Parse(fileContents);
             var keeperDefinitions = (from e in rootElement.Elements("keeper")
                                      select new KeeperDefinition

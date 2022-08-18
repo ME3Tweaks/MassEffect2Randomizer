@@ -1,1674 +1,938 @@
 ﻿#if __GAME1__
-//using System;
-//using System.Collections.Concurrent;
-//using System.Collections.Generic;
-//using System.ComponentModel;
-//using System.Diagnostics;
-//using System.Globalization;
-//using System.IO;
-//using System.Linq;
-//using System.Numerics;
-//using System.Reflection;
-//using System.Text;
-//using System.Text.RegularExpressions;
-//using System.Threading;
-//using System.Xml;
-//using System.Xml.Linq;
-//using System.Xml.Serialization;
-//using LegendaryExplorerCore.Packages;
-//using LegendaryExplorerCore.TLK.ME1;
-//using LegendaryExplorerCore.TLK.ME2ME3;
-//using LegendaryExplorerCore.Unreal;
-//using LegendaryExplorerCore.Unreal.BinaryConverters;
-//using LegendaryExplorerCore.Unreal.ObjectInfo;
-//using Serilog;
-//using StringComparison = System.StringComparison;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using LegendaryExplorerCore.GameFilesystem;
+using LegendaryExplorerCore.Helpers;
+using LegendaryExplorerCore.Memory;
+using LegendaryExplorerCore.Misc;
+using LegendaryExplorerCore.Packages;
+using ME3TweaksCore.Helpers;
+using ME3TweaksCore.Misc;
+using ME3TweaksCore.NativeMods;
+using Randomizer.MER;
+using Randomizer.Randomizers.Game1._2DA;
+using Randomizer.Randomizers.Game1.ExportTypes;
+using Randomizer.Randomizers.Game1.Levels;
+using Randomizer.Randomizers.Game1.Misc;
+using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Levels;
+using Randomizer.Randomizers.Shared;
+using Randomizer.Randomizers.Utility;
+using Serilog;
 
-//namespace Randomizer.Randomizers.Game1
-//{
-//    public class Randomizer
-//    {
+namespace Randomizer.Randomizers.Game1
+{
+    public class Randomizer
+    {
+        private BackgroundWorker randomizationWorker;
 
-        /*
-        private void PerformRandomization(object sender, DoWorkEventArgs e)
+        // Files that should not be generally passed over
+        private static List<string> SpecializedFiles { get; } = new List<string>()
         {
-            ModifiedFiles = new ConcurrentDictionary<string, string>(); //this will act as a Set since there is no ConcurrentSet
-            Random random = new Random((int)e.Argument);
+            "BioP_Char",
+            "BioD_Nor_103aGalaxyMap",
+            "BioG_UIWorld" // Char creator lighting
+        };
 
-            //Load TLKs
-            option.CurrentOperation = "Loading TLKs";
-            option.ProgressIndeterminate = true;
-            string globalTLKPath = Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "Packages", "Dialog", "GlobalTlk.upk");
-            ME1Package globalTLK = MERFileSystem.OpenMEPackage(globalTLKPath);
-            List<TalkFile> Tlks = new List<TalkFile>();
-            foreach (ExportEntry exp in globalTLK.Exports)
-            {
-                //TODO: Use BioTlkFileSet or something to only do INT
-                if (exp.ClassName == "BioTlkFile")
-                {
-                    TalkFile tlk = new TalkFile(exp);
-                    Tlks.Add(tlk);
-                }
-            }
+        public Randomizer()
+        {
 
-            ////Test
-            //ME1Package test = MERFileSystem.OpenMEPackage(@"D:\Origin Games\Mass Effect\BioGame\CookedPC\Maps\STA\DSG\BIOA_STA60_06_DSG.SFM");
-            //var morphFaces = test.Exports.Where(x => x.ClassName == "BioMorphFace").ToList();
-            //morphFaces.ForEach(x => RandomizeBioMorphFace(x, random));
-            //test.save();
-            //return;
-
-            
-
-            //Randomize BIOC_BASE
-            ME1Package bioc_base = MERFileSystem.OpenMEPackage(Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "BIOC_Base.u"));
-            bool bioc_base_changed = false;
-            if (mainWindow.RANDSETTING_MOVEMENT_MAKO)
-            {
-                RandomizeMako(bioc_base, random);
-                bioc_base_changed = true;
-            }
-
-            if (bioc_base_changed)
-            {
-                ModifiedFiles[bioc_base.FileName] = bioc_base.FileName;
-                bioc_base.save();
-            }
-
-
-
-
-            //Randomize ENGINE
-            ME1Package engine = MERFileSystem.OpenMEPackage(Utilities.GetEngineFile());
-            ExportEntry talentEffectLevels = null;
-
-            foreach (ExportEntry export in engine.Exports)
-            {
-                
-                    case "MovementTables_CreatureSpeeds":
-                        if (mainWindow.RANDSETTING_MOVEMENT_CREATURESPEED)
-                        {
-                            RandomizeMovementSpeeds(export, random);
-                        }
-
-                        break;
-                    case "GalaxyMap_Cluster":
-                        if (mainWindow.RANDSETTING_GALAXYMAP_CLUSTERS)
-                        {
-                            RandomizeClustersXY(export, random, Tlks);
-                        }
-
-                        break;
-                    case "GalaxyMap_System":
-                        if (mainWindow.RANDSETTING_GALAXYMAP_SYSTEMS)
-                        {
-                            RandomizeSystems(export, random);
-                        }
-
-                        break;
-                    case "GalaxyMap_Planet":
-                        //DumpPlanetTexts(export, Tlks[0]);
-                        //return;
-
-                        if (mainWindow.RANDSETTING_GALAXYMAP_PLANETCOLOR)
-                        {
-                            RandomizePlanets(export, random);
-                        }
-
-                        if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION)
-                        {
-                            RandomizePlanetNameDescriptions(export, random, Tlks);
-                        }
-
-                        break;
-                    case "Characters_StartingEquipment":
-                        if (mainWindow.RANDSETTING_WEAPONS_STARTINGEQUIPMENT)
-                        {
-                            RandomizeStartingWeapons(export, random);
-                        }
-
-                        break;
-                    case "Classes_ClassTalents":
-                        if (mainWindow.RANDSETTING_TALENTS_SHUFFLECLASSTALENTS)
-                        {
-                            ShuffleClassTalentsAndPowers(export, random);
-                        }
-
-                        break;
-                    case "LevelUp_ChallengeScalingVars":
-                        //RandomizeLevelUpChallenge(export, random);
-                        break;
-                    case "Items_ItemEffectLevels":
-                        if (mainWindow.RANDSETTING_WEAPONS_EFFECTLEVELS || mainWindow.RANDSETTING_MOVEMENT_MAKO)
-                        {
-                            RandomizeWeaponStats(export, random);
-                        }
-
-                        break;
-                    case "Characters_Character":
-                        //Has internal checks for types
-                        RandomizeCharacter(export, random);
-                        break;
-
-                        break;
-                }
-            
-
-            if (talentEffectLevels != null && mainWindow.RANDSETTING_TALENTS_SHUFFLECLASSTALENTS)
-            {
-
-            }
-
-            if (engine.ShouldSave)
-            {
-                engine.save();
-                ModifiedFiles[engine.FileName] = engine.FileName;
-
-            }
-
-            //RANDOMIZE ENTRYMENU
-            ME1Package entrymenu = MERFileSystem.OpenMEPackage(Utilities.GetEntryMenuFile());
-            foreach (ExportEntry export in entrymenu.Exports)
-            {
-                switch (export.ObjectName)
-                {
-                    case "FemalePregeneratedHeads":
-                    case "MalePregeneratedHeads":
-                    case "BaseMaleSliders":
-                    case "BaseFemaleSliders":
-                        if (mainWindow.RANDSETTING_CHARACTER_CHARCREATOR)
-                        {
-                            RandomizePregeneratedHead(export, random);
-                        }
-
-                        break;
-                    default:
-                        if ((export.ClassName == "Bio2DA" || export.ClassName == "Bio2DANumberedRows") && !export.ObjectName.Contains("Default") && mainWindow.RANDSETTING_CHARACTER_CHARCREATOR)
-                        {
-                            RandomizeCharacterCreator2DA(random, export);
-                        }
-
-                        break;
-
-                        //RandomizeGalaxyMap(random);
-                        //RandomizeGUISounds(random);
-                        //RandomizeMusic(random);
-                        //RandomizeMovementSpeeds(random);
-                        //RandomizeCharacterCreator2DA(random);
-                        //Dump2DAToExcel();
-                }
-
-                if (mainWindow.RANDSETTING_CHARACTER_ICONICFACE && export.ClassName == "BioMorphFace" && export.ObjectName.StartsWith("Player_"))
-                {
-                    MERLog.Information("Randomizing iconic female shepard face by " + mainWindow.RANDSETTING_CHARACTER_ICONICFACE_AMOUNT);
-                    RandomizeBioMorphFace(export, random, mainWindow.RANDSETTING_CHARACTER_ICONICFACE_AMOUNT);
-                }
-            }
-
-            if (mainWindow.RANDSETTING_CHARACTER_CHARCREATOR)
-            {
-                RandomizeCharacterCreatorSingular(random, Tlks);
-            }
-
-            if (mainWindow.RANDSETTING_MISC_SPLASH)
-            {
-                RandomizeSplash(random, entrymenu);
-            }
-
-
-            if (mainWindow.RANDSETTING_MAP_EDENPRIME)
-            {
-                RandomizeEdenPrime(random);
-            }
-
-            if (mainWindow.RANDSETTING_MAP_FEROS)
-            {
-                RandomizeFerosColonistBattle(random, Tlks);
-            }
-
-            if (mainWindow.RANDSETTING_MAP_NOVERIA)
-            {
-                RandomizeNoveria(random, Tlks);
-            }
-
-            if (mainWindow.RANDSETTING_MAP_PINNACLESTATION)
-            {
-                RandomizePinnacleScoreboard(random);
-            }
-
-            if (mainWindow.RANDSETTING_MAP_BDTS)
-            {
-                RandomizeBDTS(random);
-            }
-
-            if (mainWindow.RANDSETTING_MAP_CITADEL)
-            {
-                RandomizeCitadel(random);
-            }
-
-            if (mainWindow.RANDSETTING_MISC_ENDINGART)
-            {
-                RandomizeEnding(random);
-            }
-
-            if (entrymenu.ShouldSave)
-            {
-                entrymenu.save();
-                ModifiedFiles[entrymenu.FileName] = entrymenu.FileName;
-            }
-
-
-            //RANDOMIZE FACES
-            if (mainWindow.RANDSETTING_CHARACTER_HENCHFACE)
-            {
-                RandomizeBioMorphFaceWrapper(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Packages\GameObjects\Characters\Faces\BIOG_Hench_FAC.upk"), random); //Henchmen
-                RandomizeBioMorphFaceWrapper(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Packages\BIOG_MORPH_FACE.upk"), random); //Iconic and player (Not sure if this does anything...
-            }
-
-            //Map file randomizer
-            if (RunMapRandomizerPass)
-            {
-                option.CurrentOperation = "Getting list of files...";
-
-                option.ProgressIndeterminate = true;
-                string path = Path.Combine(Utilities.GetGamePath(), "BioGame", "CookedPC", "Maps");
-                string bdtspath = Path.Combine(Utilities.GetGamePath(), "DLC", "DLC_UNC", "CookedPC", "Maps");
-                string pspath = Path.Combine(Utilities.GetGamePath(), "DLC", "DLC_Vegas", "CookedPC", "Maps");
-
-                var filesEnum = Directory.GetFiles(path, "*.sfm", SearchOption.AllDirectories);
-                string[] files = null;
-                if (!mainWindow.RANDSETTING_PAWN_FACEFX)
-                {
-                    files = filesEnum.Where(x => !Path.GetFileName(x).ToLower().Contains("_loc_")).ToArray();
-                }
-                else
-                {
-                    files = filesEnum.ToArray();
-                }
-
-                if (Directory.Exists(bdtspath))
-                {
-                    files = files.Concat(Directory.GetFiles(bdtspath, "*.sfm", SearchOption.AllDirectories)).ToArray();
-                }
-
-                if (Directory.Exists(pspath))
-                {
-                    files = files.Concat(Directory.GetFiles(pspath, "*.sfm", SearchOption.AllDirectories)).ToArray();
-                }
-
-                option.ProgressIndeterminate = false;
-                option.ProgressMax = files.Count();
-                mainWindow.ProgressBar_Bottom_Min = 0;
-                double morphFaceRandomizationAmount = mainWindow.RANDSETTING_MISC_MAPFACES_AMOUNT;
-                double faceFXRandomizationAmount = mainWindow.RANDSETTING_WACK_FACEFX_AMOUNT;
-                string[] mapBaseNamesToNotRandomize = { "entrymenu", "biog_uiworld" };
-                for (int i = 0; i < files.Length; i++)
-                {
-                    bool MERLoggedFilename = false;
-                    option.ProgressValue = i;
-                    option.CurrentOperation = "Randomizing map files [" + i + "/" + files.Count() + "]";
-                    var mapBaseName = Path.GetFileNameWithoutExtension(files[i]).ToLower();
-                    //Debug.WriteLine(mapBaseName);
-                    //if (mapBaseName != "bioa_nor10_03_dsg") continue;
-                    if (!mapBaseNamesToNotRandomize.Any(x => x.StartsWith(mapBaseName)))
-                    {
-                        //if (!mapBaseName.StartsWith("bioa_sta")) continue;
-                        bool hasLogged = false;
-                        ME1Package package = MERFileSystem.OpenMEPackage(files[i]);
-                        if (RunMapRandomizerPassAllExports)
-                        {
-                            foreach (ExportEntry exp in package.Exports)
-                            {
-                                if (mainWindow.RANDSETTING_PAWN_MAPFACES && exp.ClassName == "BioMorphFace")
-                                {
-                                    //Face randomizer
-                                    if (!loggedFilename)
-                                    {
-                                        MERLog.Information("Randomizing map file: " + files[i]);
-                                        MERLoggedFilename = true;
-                                    }
-
-                                    RandomizeBioMorphFace(exp, random, morphFaceRandomizationAmount);
-                                    package.ShouldSave = true;
-                                }
-                                else if (mainWindow.RANDSETTING_MISC_HAZARDS && exp.ClassName == "SequenceReference")
-                                {
-                                    //Hazard Randomizer
-                                    var seqRef = exp.GetProperty<ObjectProperty>("oSequenceReference");
-                                    if (seqRef != null && exp.FileRef.isUExport(seqRef.Value))
-                                    {
-                                        ExportEntry possibleHazSequence = exp.FileRef.GetUExport(seqRef.Value);
-                                        var objName = possibleHazSequence.GetProperty<StrProperty>("ObjName");
-                                        if (objName != null && objName == "REF_HazardSystem")
-                                        {
-                                            if (!loggedFilename)
-                                            {
-                                                MERLog.Information("Randomizing map file: " + files[i]);
-                                                MERLoggedFilename = true;
-                                            }
-
-                                            RandomizeHazard(exp, random);
-                                            package.ShouldSave = true;
-                                        }
-                                    }
-                                }
-                                else if ((exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent" || exp.ClassName == "BioSunActor") && mainWindow.RANDSETTING_MISC_STARCOLORS)
-                                {
-                                    if (!loggedFilename)
-                                    {
-                                        MERLog.Information("Randomizing map file: " + files[i]);
-                                        MERLoggedFilename = true;
-                                    }
-                                    if (exp.ClassName == "BioSunFlareComponent" || exp.ClassName == "BioSunFlareStreakComponent")
-                                    {
-                                        var tint = exp.GetProperty<StructProperty>("FlareTint");
-                                        if (tint != null)
-                                        {
-                                            RandomizeTint(random, tint, false);
-                                            exp.WriteProperty(tint);
-                                        }
-                                    }
-                                    else if (exp.ClassName == "BioSunActor")
-                                    {
-                                        var tint = exp.GetProperty<StructProperty>("SunTint");
-                                        if (tint != null)
-                                        {
-                                            RandomizeTint(random, tint, false);
-                                            exp.WriteProperty(tint);
-                                        }
-                                    }
-                                }
-                                else if (exp.ClassName == "SeqAct_Interp" && mainWindow.RANDSETTING_MISC_INTERPPAWNS)
-                                {
-                                    if (!loggedFilename)
-                                    {
-                                        //Log.Information("Randomizing map file: " + files[i]);
-                                        MERLoggedFilename = true;
-                                    }
-                                    RandomizeInterpPawns(exp, random);
-                                }
-                                else if (exp.ClassName == "BioLookAtDefinition" && mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION)
-                                {
-                                    if (!loggedFilename)
-                                    {
-                                        //Log.Information("Randomizing map file: " + files[i]);
-                                        MERLoggedFilename = true;
-                                    }
-                                    RandomizeBioLookAtDefinition(exp, random);
-                                }
-                                else if (exp.ClassName == "BioPawn")
-                                {
-                                    if (mainWindow.RANDSETTING_MISC_MAPPAWNSIZES && ThreadSafeRandom.Next(4) == 0)
-                                    {
-                                        if (!loggedFilename)
-                                        {
-                                            MERLog.Information("Randomizing map file: " + files[i]);
-                                            MERLoggedFilename = true;
-                                        }
-
-                                        //Pawn size randomizer
-                                        RandomizeBioPawnSize(exp, random, 0.4);
-                                    }
-
-                                    if (mainWindow.RANDSETTING_PAWN_MATERIALCOLORS)
-                                    {
-                                        if (!loggedFilename)
-                                        {
-                                            MERLog.Information("Randomizing map file: " + files[i]);
-                                            MERLoggedFilename = true;
-                                        }
-
-                                        RandomizePawnMaterialInstances(exp, random);
-                                    }
-                                }
-                                else if (exp.ClassName == "HeightFogComponent" && mainWindow.RANDSETTING_MISC_HEIGHTFOG)
-                                {
-                                    if (!loggedFilename)
-                                    {
-                                        MERLog.Information("Randomizing map file: " + files[i]);
-                                        MERLoggedFilename = true;
-                                    }
-                                    RandomizeHeightFogComponent(exp, random);
-                                }
-                                else if (mainWindow.RANDSETTING_MISC_INTERPS && exp.ClassName == "InterpTrackMove" /* && ThreadSafeRandom.Next(4) == 0*//*)
-                                {
-                                    if (!loggedFilename)
-                                    {
-                                        MERLog.Information("Randomizing map file: " + files[i]);
-                                        MERLoggedFilename = true;
-                                    }
-
-                                    //Interpolation randomizer
-                                    RandomizeInterpTrackMove(exp, random, morphFaceRandomizationAmount);
-                                    package.ShouldSave = true;
-                                }
-                            }
-                        }
-
-                        if (mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES)
-                        {
-                            RandomizeAINames(package, random);
-                        }
-
-                        if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION && package.LocalTalkFiles.Any())
-                        {
-                            if (!loggedFilename)
-                            {
-                                MERLog.Information("Randomizing map file: " + files[i]);
-                                MERLoggedFilename = true;
-                            }
-                            UpdateGalaxyMapReferencesForTLKs(package.LocalTalkFiles, false, false);
-                        }
-
-                        if (mainWindow.RANDSETTING_WACK_SCOTTISH && package.LocalTalkFiles.Any())
-                        {
-                            if (!loggedFilename)
-                            {
-                                MERLog.Information("Randomizing map file: " + files[i]);
-                                MERLoggedFilename = true;
-                            }
-
-                            MakeTextPossiblyScottish(package.LocalTalkFiles, random, false);
-                        }
-                        if (mainWindow.RANDSETTING_WACK_UWU && package.LocalTalkFiles.Any())
-                        {
-                            if (!loggedFilename)
-                            {
-                                MERLog.Information("Randomizing map file: " + files[i]);
-                                MERLoggedFilename = true;
-                            }
-
-                            UwuifyTalkFiles(package.LocalTalkFiles, random, false, mainWindow.RANDSETTING_WACK_UWU_KEEPCASING, mainWindow.RANDSETTING_WACK_UWU_EMOTICONS);
-                        }
-
-                        foreach (var talkFile in package.LocalTalkFiles.Where(x => x.Modified))
-                        {
-                            talkFile.saveToExport();
-                        }
-
-                        if (package.ShouldSave || package.TlksModified)
-                        {
-                            Debug.WriteLine("Saving package: " + package.FileName);
-                            ModifiedFiles[package.FileName] = package.FileName;
-                            package.save();
-                        }
-                    }
-                }
-            }
-
-            if (mainWindow.RANDSETTING_WACK_OPENINGCUTSCENE)
-            {
-
-            }
-
-            if (mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION)
-            {
-                // REMOVE FROM ME1R
-                MERLog.Information("Apply galaxy map background transparency fix");
-                ME1Package p = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, @"BioGame\CookedPC\Maps\NOR\DSG\BIOA_NOR10_03_DSG.SFM"));
-                p.GetUExport(1655).Data = Utilities.GetEmbeddedStaticFilesBinaryFile("exportreplacements.PC_GalaxyMap_BGFix_1655.bin");
-                p.save();
-                ModifiedFiles[p.FileName] = p.FileName;
-            }
-
-
-            bool saveGlobalTLK = false;
-            option.ProgressIndeterminate = true;
-            foreach (TalkFile tf in Tlks)
-            {
-                if (tf.Modified)
-                {
-                    //string xawText = tf.FindDataById(138077); //Earth.
-                    //Debug.WriteLine($"------------AFTER REPLACEMENT----{tf.export.ObjectName}------------------");
-                    //Debug.WriteLine("New description:\n" + xawText);
-                    //Debug.WriteLine("----------------------------------");
-                    //Debugger.Break(); //Xawin
-                    option.CurrentOperation = "Saving TLKs";
-                    ModifiedFiles[tf.export.FileRef.FileName] = tf.export.FileRef.FileName;
-                    tf.saveToExport();
-                }
-
-                saveGlobalTLK = true;
-            }
-
-            if (saveGlobalTLK)
-            {
-                globalTLK.save();
-            }
-            option.CurrentOperation = "Finishing up";
-            AddMERSplash(random);
         }
 
-        private void UwuifyTalkFiles(List<TalkFile> talkfiles, Random random, bool updateProgressbar, bool keepCasing, bool addReactions)
+        /// <summary>
+        /// Are we busy randomizing?
+        /// </summary>
+        public bool Busy => randomizationWorker != null && randomizationWorker.IsBusy;
+
+        /// <summary>
+        /// The options selected by the user that will be used to determine what the randomizer does
+        /// </summary>
+        public OptionsPackage SelectedOptions { get; set; }
+
+        public void Randomize(OptionsPackage op)
         {
-            MERLog.Information("UwUifying text");
-
-            int currentTlkIndex = 0;
-            foreach (TalkFile tf in talkfiles)
+            SelectedOptions = op;
+            ThreadSafeRandom.Reset();
+            if (!SelectedOptions.UseMultiThread)
             {
-                currentTlkIndex++;
-                int max = tf.StringRefs.Count();
-                int current = 0;
-                if (updateProgressbar)
-                {
-                    option.CurrentOperation = $"UwUifying text [{currentTlkIndex}/{talkfiles.Count}]";
-                    option.ProgressMax = tf.StringRefs.Length;
-                    option.ProgressIndeterminate = false;
-                }
-
-                foreach (var sref in tf.StringRefs)
-                {
-                    current++;
-                    if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
-                    if (updateProgressbar)
-                    {
-                        option.ProgressValue = current;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(sref.Data))
-                    {
-                        string originalString = sref.Data;
-                        if (originalString.Length == 1)
-                        {
-                            continue; //Don't modify I, A
-                        }
-
-                        string[] words = originalString.Split(' ');
-                        for (int j = 0; j < words.Length; j++)
-                        {
-                            string word = words[j];
-                            if (word.Length == 1)
-                            {
-                                continue; //Don't modify I, A
-                            }
-
-                            if (word.StartsWith("%") || word.StartsWith("<CUSTOM"))
-                            {
-                                Debug.WriteLine($"Skipping {word}");
-                                continue; // Don't modify tokens
-                            }
-
-                            // PUT CODE HERE
-                            words[j] = uwuifyString(word, random, keepCasing, addReactions);
-                        }
-
-                        string rebuiltStr = string.Join(" ", words);
-                        if (addReactions)
-                        {
-                            rebuiltStr = AddReactionToLine(originalString, rebuiltStr, keepCasing, random);
-                        }
-
-                        tf.replaceString(sref.StringID, rebuiltStr);
-                    }
-                }
-            }
-        }
-        private static void FindSkipRanges(ME1TalkFile.TLKStringRef sref, List<int> skipRanges)
-        {
-            var str = sref.Data;
-            int startPos = -1;
-            char openingChar = (char)0x00;
-            for (int i = 0; i < sref.Data.Length; i++)
-            {
-                if (startPos < 0 && (sref.Data[i] == '[' || sref.Data[i] == '<' || sref.Data[i] == '{'))
-                {
-                    startPos = i;
-                    openingChar = sref.Data[i];
-                }
-                else if (startPos >= 0 && openingChar == '[' && sref.Data[i] == ']') // ui control token
-                {
-                    var insideStr = sref.Data.Substring(startPos + 1, i - startPos - 1);
-                    if (insideStr.StartsWith("Xbox", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        skipRanges.Add(startPos);
-                        skipRanges.Add(i + 1);
-                    }
-                    //else
-                    //    Debug.WriteLine(insideStr);
-
-                    startPos = -1;
-                    openingChar = (char)0x00;
-
-                }
-                else if (startPos >= 0 && openingChar == '<' && sref.Data[i] == '>') //cust token
-                {
-                    var insideStr = sref.Data.Substring(startPos + 1, i - startPos - 1);
-                    if (insideStr.StartsWith("CUSTOM") || insideStr.StartsWith("font") || insideStr.StartsWith("/font") || insideStr.Equals("br", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        // custom token. Do not modify it
-                        skipRanges.Add(startPos);
-                        skipRanges.Add(i + 1);
-                    }
-                    //else
-                    //Debug.WriteLine(insideStr);
-
-                    startPos = -1;
-                    openingChar = (char)0x00;
-                }
-                else if (startPos >= 0 && openingChar == '{' && sref.Data[i] == '}') // token for powers (?)
-                {
-                    //var insideStr = sref.Data.Substring(startPos + 1, i - startPos - 1);
-                    //Debug.WriteLine(insideStr);
-                    // { } brackets are for ui tokens in powers, saves, I think.
-                    skipRanges.Add(startPos);
-                    skipRanges.Add(i + 1);
-
-                    startPos = -1;
-                    openingChar = (char)0x00;
-                }
-
-                // it's nothing.
-            }
-        }
-
-        private string uwuifyString(string strData, Random random, bool keepCasing, bool addReactions)
-        {
-            StringBuilder sb = new StringBuilder();
-            char previousChar = (char)0x00;
-            char currentChar;
-            for (int i = 0; i < strData.Length; i++)
-            {
-                //if (skipRanges.Any() && skipRanges[0] == i)
-                //{
-                //    sb.Append(strData.Substring(skipRanges[0], skipRanges[1] - skipRanges[0]));
-                //    previousChar = (char)0x00;
-                //    i = skipRanges[1] - 1; // We subtract one as the next iteration of the loop will +1 it again, which then will make it read the 'next' character
-                //    skipRanges.RemoveAt(0); // remove first 2
-                //    skipRanges.RemoveAt(0); // remove first 2
-
-                //    if (i >= strData.Length - 1)
-                //        break;
-                //    continue;
-                //}
-
-                currentChar = strData[i];
-                if (currentChar == 'L' || currentChar == 'R')
-                {
-                    sb.Append(keepCasing ? 'W' : 'w');
-                }
-                else if (currentChar == 'l' || currentChar == 'r')
-                {
-                    sb.Append('w');
-                    if (ThreadSafeRandom.Next(5) == 0)
-                    {
-                        sb.Append('w'); // append another w 20% of the time
-                        if (ThreadSafeRandom.Next(8) == 0)
-                        {
-                            sb.Append('w'); // append another w 20% of the time
-                        }
-                    }
-                }
-                else if (currentChar == 'N' && (previousChar == 0x00 || previousChar == ' '))
-                {
-                    sb.Append(keepCasing ? "Nyaa" : "nyaa");
-                }
-                else if (currentChar == 'O' || currentChar == 'o')
-                {
-                    if (previousChar == 'N' || previousChar == 'n' ||
-                        previousChar == 'M' || previousChar == 'm')
-                    {
-                        sb.Append("yo");
-                    }
-                    else
-                    {
-                        sb.Append(keepCasing ? strData[i] : char.ToLower(strData[i]));
-                    }
-                }
-                else if (currentChar == '!' && !addReactions)
-                {
-                    sb.Append(currentChar);
-                    if (ThreadSafeRandom.Next(2) == 0)
-                    {
-                        sb.Append(currentChar); // append another ! 50% of the time
-                    }
-                }
-                else
-                {
-                    sb.Append(keepCasing ? strData[i] : char.ToLower(strData[i]));
-                }
-
-                previousChar = currentChar;
+                ThreadSafeRandom.SetSingleThread(SelectedOptions.Seed);
             }
 
-            var str = sb.ToString();
+            randomizationWorker = new BackgroundWorker();
+            randomizationWorker.DoWork += PerformRandomization;
+            randomizationWorker.RunWorkerCompleted += Randomization_Completed;
 
-            if (!addReactions)
+            if (SelectedOptions.UseMultiThread)
             {
-                // Does ME1 drop any f-bombs?
-                str = str.Replace("fuck", keepCasing ? "UwU" : "uwu");
-                str = str.Replace("Fuck", keepCasing ? "UwU" : "uwu");
-            }
-
-            return str;
-        }
-
-        private static char[] uwuPunctuationDuplicateChars = { '?', '!' };
-
-
-        #region UwU Reactions
-
-        [XmlType("reaction")]
-        public class Reaction
-        {
-            [XmlAttribute("name")]
-            public string name;
-
-            [XmlElement("property")]
-            public List<string> properties;
-
-            [XmlElement("face")]
-            public List<string> faces;
-
-            [XmlElement("keyword")]
-            public List<string> keywords;
-
-            public int keywordScore = 0;
-
-            public void EarnPoint()
-            {
-                keywordScore += (properties.Contains("doublescore") ? 2 : 1);
-            }
-
-            public string GetFace(Random random)
-            {
-                return faces[ThreadSafeRandom.Next(faces.Count)];
-            }
-        }
-
-        private static List<Reaction> ReactionList;
-        private static Regex regexEndOfSentence;
-        private static Regex regexAllLetters;
-        private static Regex regexPunctuationRemover;
-        private static Regex regexBorkedElipsesFixer;
-
-        private static string AddReactionToLine(string vanillaLine, string modifiedLine, bool keepCasing, Random random)
-        {
-            string finalString = "";
-            bool dangerousLine = false;
-
-            //initialize reactions/regex if this is first run
-            if (ReactionList == null)
-            {
-                string rawReactionDefinitions = MERUtilities.GetStaticTextFile("reactiondefinitions.xml");
-                var reactionXml = new StringReader(rawReactionDefinitions);
-                XmlSerializer serializer = new XmlSerializer(typeof(List<Reaction>), new XmlRootAttribute("ReactionDefinitions"));
-                ReactionList = (List<Reaction>)serializer.Deserialize(reactionXml);
-
-                regexEndOfSentence = new Regex(@"(?<![M| |n][M|D|r][s|r]\.)(?<!(,""))(?<=[.!?""])(?= [A-Z])", RegexOptions.Compiled);
-                regexAllLetters = new Regex("[a-zA-Z]", RegexOptions.Compiled);
-                regexPunctuationRemover = new Regex("(?<![D|M|r][w|r|s])[.!?](?!.)", RegexOptions.Compiled);
-                regexBorkedElipsesFixer = new Regex("(?<!\\.)\\.\\.(?=\\s|$)", RegexOptions.Compiled);
-            }
-
-            if (modifiedLine.Length < 2 || regexAllLetters.Matches(modifiedLine).Count == 0 || vanillaLine.Contains('{'))
-            {
-                //I should go.
-                return modifiedLine;
-            }
-
-            char[] dangerousCharacters = { '<', '\n' };
-            if (modifiedLine.IndexOfAny(dangerousCharacters) >= 0 || vanillaLine.Length > 200)
-            {
-                dangerousLine = true;
-            }
-
-            //split strings into sentences for processing
-            List<string> splitVanilla = new List<string>();
-            List<string> splitModified = new List<string>();
-
-            MatchCollection regexMatches = regexEndOfSentence.Matches(vanillaLine);
-            int modOffset = 0;
-
-            //for each regex match in the vanilla line:
-            for (int matchIndex = 0; matchIndex <= regexMatches.Count; matchIndex++)
-            {
-                int start;
-                int stop;
-
-                //vanilla sentence splitting
-                //find indexes for start and stop from surrounding regexMatches
-                if (regexMatches.Count == 0)
-                {
-                    start = 0;
-                    stop = vanillaLine.Length;
-                }
-                else if (matchIndex == 0)
-                {
-                    start = 0;
-                    stop = regexMatches[matchIndex].Index;
-                }
-                else if (matchIndex == regexMatches.Count)
-                {
-                    start = regexMatches[matchIndex - 1].Index;
-                    stop = vanillaLine.Length;
-                }
-                else
-                {
-                    start = regexMatches[matchIndex - 1].Index;
-                    stop = regexMatches[matchIndex].Index;
-                }
-
-                splitVanilla.Add(vanillaLine.Substring(start, stop - start));
-
-                //modified sentence splitting
-                int modStart = start + modOffset;
-                int modStop = stop + modOffset;
-
-                //step through sentence looking for punctuation or EOL
-                while (!((".!?\"").Contains(modifiedLine[modStop - 1])) && ((modStop - 1) < (modifiedLine.Length - 1)))
-                {
-                    modOffset++;
-                    modStop++;
-                }
-
-                //step through sentence looking for next space character or EOL
-                while (!(modifiedLine[modStop - 1].Equals(' ')) && ((modStop - 1) < (modifiedLine.Length - 1)))
-                {
-                    modOffset++;
-                    modStop++;
-                }
-
-                //if we found a space, step back
-                if (modStop < modifiedLine.Length)
-                {
-                    modOffset--;
-                    modStop--;
-                }
-
-                splitModified.Add(modifiedLine.Substring(modStart, modStop - modStart));
-            }
-
-            //reaction handling loop
-            for (int i = 0; i < splitVanilla.Count; i++)
-            {
-                string sv = splitVanilla[i];
-                string sm = splitModified[i];
-
-                //calculate scores
-                foreach (Reaction r in ReactionList)
-                {
-                    r.keywordScore = 0;
-
-                    string s = (r.properties.Contains("comparetomodified") ? sm : sv);
-                    foreach (string keyword in r.keywords)
-                    {
-                        //if the keyword contains a capital letter, it's case sensitive
-                        if (s.Contains(keyword, (keyword.Any(char.IsUpper) ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase)))
-                        {
-                            r.EarnPoint();
-                        }
-                    }
-
-                    //question check, done here to make it a semi-random point
-                    if (s.Contains('?') && r.properties.Contains("question") && ThreadSafeRandom.Next(10) == 0)
-                    {
-                        r.EarnPoint();
-                    }
-
-                    //exclamation check
-                    if (s.Contains('!') && r.properties.Contains("exclamation") && ThreadSafeRandom.Next(10) == 0)
-                    {
-                        r.EarnPoint();
-                    }
-                }
-
-                //determine winner
-                ReactionList.Shuffle(); //in case of a tie
-                Reaction winningReaction = new Reaction();
-                foreach (Reaction r in ReactionList)
-                {
-                    if (r.properties.Contains("nolower") && !keepCasing)
-                    {
-                        //reaction is not lowercase safe and lowercase is enabled
-                        continue;
-                    }
-
-                    if (r.properties.Contains("dangerous") && dangerousLine)
-                    {
-                        //reaction is dangerous and this is a dangerous string
-                        continue;
-                    }
-
-                    if (!r.properties.Contains("lowpriority"))
-                    {
-                        if ((r.keywordScore >= winningReaction.keywordScore))
-                        {
-                            winningReaction = r;
-                        }
-                    }
-                    else
-                    {
-                        if ((r.keywordScore > winningReaction.keywordScore))
-                        {
-                            winningReaction = r;
-                        }
-                    }
-                }
-
-                //winner processing if one exists
-                if (winningReaction.keywordScore > 0)
-                {
-                    //we have a winner!! congwatuwations ^_^
-                    if (!winningReaction.properties.Contains("easteregg"))
-                    {
-                        //standard winner processing. remove punctuation, apply face to line
-                        sm = regexPunctuationRemover.Replace(sm, "");
-                        sm += " " + winningReaction.GetFace(random);
-
-                        if (!keepCasing)
-                        {
-                            sm = sm.ToLower();
-                        }
-                    }
-                    else
-                    {
-                        //easter egg processing
-                        switch (winningReaction.name)
-                        {
-                            case "reee":
-                                //SAREN REEEEE
-                                //technically should be WEEEEEE. Still funny, but WEEEEE isn't the meme.
-                                string reee = "Sawen REEEEE";
-
-                                for (int e = 0; e < ThreadSafeRandom.Next(8); e++)
-                                {
-                                    reee += 'E';
-                                }
-
-                                if (!keepCasing)
-                                {
-                                    reee = reee.ToLower();
-                                }
-
-                                sm = Regex.Replace(sm, "(s|S)aw*en", reee);
-                                break;
-
-                            case "finger":
-                                //Sovereign t('.'t)
-                                string finger = "Soveweign t('.'t)";
-
-                                if (!keepCasing)
-                                {
-                                    finger = finger.ToLower();
-                                }
-
-                                sm = Regex.Replace(sm, "(S|s)ovew*eign", finger);
-                                break;
-
-                            case "jason":
-                                //Jacob? Who?
-                                string jason = winningReaction.GetFace(random);
-
-                                if (!keepCasing)
-                                {
-                                    jason = jason.ToLower();
-                                }
-
-                                sm = Regex.Replace(sm, "(J|j)acob", jason);
-                                break;
-
-                            case "shitpost":
-                                //We ArE hArBiNgEr
-                                bool flipflop = true;
-                                string sHiTpOsT = "";
-                                foreach (char c in sm.ToCharArray())
-                                {
-                                    if (flipflop)
-                                    {
-                                        sHiTpOsT += char.ToUpper(c);
-                                    }
-                                    else
-                                    {
-                                        sHiTpOsT += char.ToLower(c);
-                                    }
-                                    flipflop = !flipflop;
-                                }
-                                sm = sHiTpOsT;
-                                break;
-
-                            case "kitty":
-                                //nyaaaa =^.^=
-                                string nyaSentence = "";
-                                string[] words = sm.Split(' ');
-                                for (int w = 0; w < words.Length; w++) //each word in sentence
-                                {
-                                    foreach (string k in winningReaction.keywords) //each keyword in reaction
-                                    {
-                                        //semi-random otherwise it's EVERYWHERE
-                                        if (words[w].Contains(k, StringComparison.OrdinalIgnoreCase) && ThreadSafeRandom.Next(5) == 0)
-                                        {
-                                            words[w] = Regex.Replace(words[w], "[.!?]", "");
-                                            words[w] += " " + winningReaction.GetFace(random);
-                                        }
-                                    }
-                                    nyaSentence += words[w] + " ";
-                                }
-                                nyaSentence = nyaSentence.Remove(nyaSentence.Length - 1, 1); //string will always have a trailing space
-                                sm = nyaSentence;
-                                break;
-
-                            default:
-                                Debug.WriteLine("Easter egg reaction happened, but it was left unhandled!");
-                                break;
-                        }
-                    }
-                }
-                finalString += sm;
-            }
-
-            //borked elipses removal
-            finalString = regexBorkedElipsesFixer.Replace(finalString, "");
-
-            //do punctuation duplication thing because it's funny
-            foreach (char c in uwuPunctuationDuplicateChars)
-            {
-                if (finalString.Contains(c))
-                {
-                    int rnd = ThreadSafeRandom.Next(4);
-                    switch (rnd)
-                    {
-                        case 0:
-                            finalString = finalString.Replace(c.ToString(), String.Concat(c, c));
-                            break;
-                        case 1:
-                            finalString = finalString.Replace(c.ToString(), String.Concat(c, c, c));
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-
-            //Debug.WriteLine("----------\nreaction input:  " + vanillaLine);
-            //Debug.WriteLine("reaction output: " + finalString);
-            return finalString;
-        }
-
-        #endregion
-
-        */
-
-// I think this is done better with ME2R code
-/*
-        private void RandomizeInterpPawns(ExportEntry export, Random random)
-        {
-            var variableLinks = export.GetProperty<ArrayProperty<StructProperty>>("VariableLinks");
-
-            List<ObjectProperty> pawnsToShuffle = new List<ObjectProperty>();
-            var playerRefs = new List<ExportEntry>();
-            foreach (var variableLink in variableLinks)
-            {
-                var expectedType = variableLink.GetProp<ObjectProperty>("ExpectedType");
-                var expectedTypeStr = export.FileRef.getEntry(expectedType.Value).ObjectName;
-                if (expectedTypeStr == "SeqVar_Object" || expectedTypeStr == "SeqVar_Player" || expectedTypeStr == "BioSeqVar_ObjectFindByTag")
-                {
-                    //Investigate the links
-                    var linkedVariables = variableLink.GetProp<ArrayProperty<ObjectProperty>>("LinkedVariables");
-                    foreach (var objRef in linkedVariables)
-                    {
-                        var linkedObj = export.FileRef.GetUExport(objRef.Value).GetProperty<ObjectProperty>("ObjValue");
-                        if (linkedObj != null)
-                        {
-                            var linkedObjectEntry = export.FileRef.getEntry(linkedObj.Value);
-                            var linkedObjName = linkedObjectEntry.ObjectName;
-                            if (linkedObjName == "BioPawn" && linkedObjectEntry is ExportEntry bioPawnExport)
-                            {
-                                var flyingpawn = bioPawnExport.GetProperty<BoolProperty>("bCanFly")?.Value;
-                                if (flyingpawn == null || flyingpawn == false)
-                                {
-                                    pawnsToShuffle.Add(objRef); //pointer to this node
-                                }
-                            }
-                        }
-
-                        string className = export.FileRef.GetUExport(objRef.Value).ClassName;
-                        if (className == "SeqVar_Player")
-                        {
-                            playerRefs.Add(export.FileRef.GetUExport(objRef.Value));
-                            pawnsToShuffle.Add(objRef); //pointer to this node
-                        }
-                        else if (className == "BioSeqVar_ObjectFindByTag")
-                        {
-                            var tagToFind = export.FileRef.GetUExport(objRef.Value).GetProperty<StrProperty>("m_sObjectTagToFind")?.Value;
-                            if (tagToFind != null && acceptableTagsForPawnShuffling.Contains(tagToFind))
-                            {
-                                pawnsToShuffle.Add(objRef); //pointer to this node
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (pawnsToShuffle.Count > 1)
-            {
-                MERLog.Information("Randomizing pawns in interp: " + export.GetFullPath);
-                foreach (var refx in playerRefs)
-                {
-                    refx.WriteProperty(new BoolProperty(true, "bReturnsPawns")); //Ensure the object returns pawns. It should, but maybe it doesn't.
-                }
-
-                var newAssignedValues = pawnsToShuffle.Select(x => x.Value).ToList();
-                newAssignedValues.Shuffle(random);
-                for (int i = 0; i < pawnsToShuffle.Count; i++)
-                {
-                    pawnsToShuffle[i].Value = newAssignedValues[i];
-                }
-                export.WriteProperty(variableLinks);
-            }
-        }
-*/
-        
-/*
-        private void scaleHeadMesh(ExportEntry meshRef, float headScale)
-        {
-            MERLog.Information("Randomizing headmesh for " + meshRef.GetIndexedFullPath);
-            var drawScale = meshRef.GetProperty<FloatProperty>("Scale");
-            var drawScale3D = meshRef.GetProperty<StructProperty>("Scale3D");
-            if (drawScale != null)
-            {
-                drawScale.Value = headScale * drawScale.Value;
-                meshRef.WriteProperty(drawScale);
-            }
-            else if (drawScale3D != null)
-            {
-                PropertyCollection p = drawScale3D.Properties;
-                p.AddOrReplaceProp(new FloatProperty(headScale, "X"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Y"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Z"));
-                meshRef.WriteProperty(drawScale3D);
+                MERLog.Information("-------------------------STARTING RANDOMIZER (MULTI THREAD)--------------------------");
             }
             else
             {
-                FloatProperty scale = new FloatProperty(headScale, "Scale");
-                /*
-                PropertyCollection p = new PropertyCollection();
-                p.AddOrReplaceProp(new FloatProperty(headScale, "X"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Y"));
-                p.AddOrReplaceProp(new FloatProperty(headScale, "Z"));
-                meshRef.WriteProperty(new StructProperty("Vector", p, "Scale3D", true));*/
-/*
-                meshRef.WriteProperty(scale);
+                MERLog.Information($"------------------------STARTING RANDOMIZER WITH SEED {op.Seed} (SINGLE THREAD)--------------------------");
             }
+            randomizationWorker.RunWorkerAsync();
+            op.SetTaskbarState?.Invoke(MTaskbarState.Indeterminate);
         }
-        /*
-        private void RandomizeInterpTrackMove(ExportEntry export, Random random, double amount)
+
+        private void Randomization_Completed(object? sender, RunWorkerCompletedEventArgs e)
         {
-            MERLog.Information("Randomizing movement interpolations for " + export.UIndex + ": " + export.GetIndexedFullPath);
-            var props = export.GetProperties();
-            var posTrack = props.GetProp<StructProperty>("PosTrack");
-            if (posTrack != null)
+            // not implemented
+            SelectedOptions?.SetRandomizationInProgress?.Invoke(false);
+        }
+
+
+        //        private void Randomization_Completed(object sender, RunWorkerCompletedEventArgs e)
+        //        {
+        //            if (e.Error != null)
+        //            {
+        //                MERLog.Exception(e.Error, @"Randomizer thread exited with exception!");
+        //                SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizer failed with error: {e.Error.Message}, please report to Mgamerz");
+        //                TelemetryInterposer.TrackError(new Exception("Randomizer thread exited with exception", e.Error));
+        //            }
+        //            else
+        //            {
+        //                TelemetryInterposer.TrackEvent("Randomization completed");
+        //                SelectedOptions.SetCurrentOperationText?.Invoke("Randomization complete");
+        //            }
+        //            CommandManager.InvalidateRequerySuggested();
+        //            SelectedOptions.SetTaskbarState?.Invoke(MTaskbarState.None);
+        //            SelectedOptions.SetRandomizationInProgress?.Invoke(false);
+        //        }
+
+        private void PerformRandomization(object sender, DoWorkEventArgs e)
+        {
+            MemoryManager.SetUsePooledMemory(true, false, false, (int)FileSize.KibiByte * 8, 4, 2048, false);
+            //ResetClasses();
+            SelectedOptions.SetRandomizationInProgress?.Invoke(true);
+            SelectedOptions.SetCurrentOperationText?.Invoke("Initializing randomizer");
+            SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+            var specificRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformSpecificRandomizationDelegate != null).ToList();
+            var perFileRandomizers = SelectedOptions.SelectedOptions.Where(x => x.PerformFileSpecificRandomization != null).ToList();
+            var perExportRandomizers = SelectedOptions.SelectedOptions.Where(x => x.IsExportRandomizer).ToList();
+
+            // MERLog randomizers
+            MERLog.Information("Randomizers used in this pass:");
+            foreach (var sr in specificRandomizers.Concat(perFileRandomizers).Concat(perExportRandomizers).Distinct())
             {
-                var points = posTrack.GetProp<ArrayProperty<StructProperty>>("Points");
-                if (points != null)
+                MERLog.Information($" - {sr.HumanName}");
+                if (sr.SubOptions != null)
                 {
-                    foreach (StructProperty s in points)
+                    foreach (var subR in sr.SubOptions)
                     {
-                        var outVal = s.GetProp<StructProperty>("OutVal");
-                        if (outVal != null)
-                        {
-                            FloatProperty x = outVal.GetProp<FloatProperty>("X");
-                            FloatProperty y = outVal.GetProp<FloatProperty>("Y");
-                            FloatProperty z = outVal.GetProp<FloatProperty>("Z");
-                            x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                            y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                            z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount, 1 + amount);
-                        }
+                        MERLog.Information($"   - {subR.HumanName}");
                     }
                 }
             }
 
-            var eulerTrack = props.GetProp<StructProperty>("EulerTrack");
-            if (eulerTrack != null)
+            Exception rethrowException = null;
+            try
             {
-                var points = eulerTrack.GetProp<ArrayProperty<StructProperty>>("Points");
-                if (points != null)
+                MERFileSystem.InitMERFS(SelectedOptions);
+
+                // Install ASIs required to make game work with DLC
+                var asigame = new ASIGame(SelectedOptions.RandomizationTarget);
+                if (SelectedOptions.RandomizationTarget.Game == MEGame.ME1)
                 {
-                    foreach (StructProperty s in points)
+                    var asiList = ASIManager.MasterME1ASIUpdateGroups;
+                    ASIManager.InstallASIToTarget(asiList.Find(x=>x.UpdateGroupId == ASIModIDs.ME1_DLC_MOD_ENABLER), SelectedOptions.RandomizationTarget);
+                }
+                else if (SelectedOptions.RandomizationTarget.Game == MEGame.LE1)
+                {
+                    var asiList = ASIManager.MasterLE1ASIUpdateGroups;
+                    ASIManager.InstallASIToTarget(asiList.Find(x => x.UpdateGroupId == ASIModIDs.LE1_AUTOTOC), SelectedOptions.RandomizationTarget);
+                    ASIManager.InstallASIToTarget(asiList.Find(x => x.UpdateGroupId == ASIModIDs.LE1_AUTOLOAD_ENABLER), SelectedOptions.RandomizationTarget);
+                }
+                else
+                {
+                    throw new Exception("CANNOT RANDOMIZE THIS GAME");
+                }
+
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+
+                // Prepare the textures
+                //if (SelectedOptions.RandomizationTarget.Game == MEGame.ME2)
+                //{
+                //    ME2Textures.SetupME2Textures(SelectedOptions.RandomizationTarget);
+                //}
+                //else
+                //{
+                //    LE2Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
+                //}
+
+                void srUpdate(object? o, EventArgs eventArgs)
+                {
+                    if (o is RandomizationOption option)
                     {
-                        var outVal = s.GetProp<StructProperty>("OutVal");
-                        if (outVal != null)
+                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(option.ProgressIndeterminate);
+                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(option.ProgressValue, option.ProgressMax);
+                        if (option.CurrentOperation != null)
                         {
-                            FloatProperty x = outVal.GetProp<FloatProperty>("X");
-                            FloatProperty y = outVal.GetProp<FloatProperty>("Y");
-                            FloatProperty z = outVal.GetProp<FloatProperty>("Z");
-                            if (x.Value != 0)
-                            {
-                                x.Value = x.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
-                            }
-                            else
-                            {
-                                x.Value = ThreadSafeRandom.NextFloat(0, 360);
-                            }
-
-                            if (y.Value != 0)
-                            {
-                                y.Value = y.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
-                            }
-                            else
-                            {
-                                y.Value = ThreadSafeRandom.NextFloat(0, 360);
-                            }
-
-                            if (z.Value != 0)
-                            {
-                                z.Value = z.Value * ThreadSafeRandom.NextFloat(1 - amount * 3, 1 + amount * 3);
-                            }
-                            else
-                            {
-                                z.Value = ThreadSafeRandom.NextFloat(0, 360);
-                            }
+                            SelectedOptions.SetCurrentOperationText?.Invoke(option.CurrentOperation);
                         }
                     }
                 }
-            }
 
-            export.WriteProperties(props);
-        }
-
-        public string GetResourceFileText(string filename, string assemblyName)
-        {
-            string result = string.Empty;
-
-            using (Stream stream =
-                System.Reflection.Assembly.Load(assemblyName).GetManifestResourceStream($"{assemblyName}.{filename}"))
-            {
-                using (StreamReader sr = new StreamReader(stream))
+                // Pass 1: All randomizers that are file specific and are not post-run
+                foreach (var sr in specificRandomizers.Where(x => !x.IsPostRun))
                 {
-                    result = sr.ReadToEnd();
+                    sr.OnOperationUpdate += srUpdate;
+                    MERLog.Information($"Running specific randomizer {sr.HumanName}");
+                    SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
+                    sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
+                    sr.OnOperationUpdate -= srUpdate;
                 }
+
+                // Pass 2: All exports
+                if (perExportRandomizers.Any() || perFileRandomizers.Any())
+                {
+                    SelectedOptions.SetCurrentOperationText?.Invoke("Getting list of files...");
+                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+
+                    // we only want pcc files (me2/me3). no upks
+                    var files = MELoadedFiles.GetFilesLoadedInGame(SelectedOptions.RandomizationTarget.Game, true, false, false, SelectedOptions.RandomizationTarget.TargetPath).Values.Where(x => !MERFileSystem.filesToSkip.Contains(Path.GetFileName(x))).ToList();
+
+                    SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(false);
+
+                    var currentFileNumber = 0;
+                    var totalFilesCount = files.Count;
+
+#if !DEBUG
+                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 4 : 1 }, (file) =>
+#else
+                    Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = SelectedOptions.UseMultiThread ? 1 : 1 }, (file) =>
+#endif
+                    {
+
+                        var name = Path.GetFileNameWithoutExtension(file);
+                        if (SpecializedFiles.Contains(name, StringComparer.InvariantCultureIgnoreCase)) return; // Do not run randomization on this file as it's only done by specialized randomizers (e.g. char creator)
+
+                        Interlocked.Increment(ref currentFileNumber);
+                        SelectedOptions.SetOperationProgressBarProgress?.Invoke(currentFileNumber, totalFilesCount);
+                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing game files [{currentFileNumber}/{files.Count}]");
+
+#if DEBUG
+                        if (true
+                //&& false //uncomment to disable filtering
+                //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
+                && !file.Contains("STA", StringComparison.InvariantCultureIgnoreCase)
+                )
+                            return;
+#endif
+                        // Skip NON INT
+                        var localization = name.GetUnrealLocalization();
+                        if (localization != MELocalization.None && localization != MELocalization.INT)
+                            return;
+
+                        try
+                        {
+                            //Log.Information($@"Opening package {file}");
+                            var package = MERFileSystem.OpenMEPackage(file);
+                            //Debug.WriteLine(file);
+                            foreach (var rp in perFileRandomizers)
+                            {
+                                // Specific randomization pass before the exports are processed
+                                rp.PerformFileSpecificRandomization(SelectedOptions.RandomizationTarget, package, rp);
+                            
+                            }
+
+                            if (perExportRandomizers.Any())
+                            {
+                                for (int i = 0; i < package.ExportCount; i++)
+                                //                    foreach (var exp in package.Exports.ToList()) //Tolist cause if we add export it will cause modification
+                                {
+                                    var exp = package.Exports[i];
+                                    foreach (var r in perExportRandomizers)
+                                    {
+                                        r.PerformRandomizationOnExportDelegate(SelectedOptions.RandomizationTarget, exp, r);
+                                    }
+                                }
+                            }
+
+                            MERFileSystem.SavePackage(package);
+                        }
+                        catch (Exception e)
+                        {
+                            MERLog.Error($@"Exception occurred in per-file/export randomization: {e.Message}");
+                            TelemetryInterposer.TrackError(new Exception("Exception occurred in per-file/export randomizer", e));
+                            Debugger.Break();
+                        }
+                    });
+                }
+
+
+                // Pass 3: All randomizers that are file specific and are not post-run
+                foreach (var sr in specificRandomizers.Where(x => x.IsPostRun))
+                {
+                    try
+                    {
+                        sr.OnOperationUpdate += srUpdate;
+                        SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+                        MERLog.Information($"Running post-run specific randomizer {sr.HumanName}");
+                        SelectedOptions.SetCurrentOperationText?.Invoke($"Randomizing {sr.HumanName}");
+                        sr.PerformSpecificRandomizationDelegate?.Invoke(SelectedOptions.RandomizationTarget, sr);
+                        sr.OnOperationUpdate -= srUpdate;
+                    }
+                    catch (Exception ex)
+                    {
+                        TelemetryInterposer.TrackError(new Exception($"Exception occurred in post-run specific randomizer {sr.HumanName}", ex));
+                    }
+                }
+
+                sw.Stop();
+                MERLog.Information($"Randomization time: {sw.Elapsed.ToString()}");
+
+                SelectedOptions.SetOperationProgressBarIndeterminate?.Invoke(true);
+                SelectedOptions.SetCurrentOperationText?.Invoke("Finishing up");
+                SelectedOptions.NotifyDLCComponentInstalled?.Invoke(true);
+            }
+            catch (Exception exception)
+            {
+                MERLog.Exception(exception, "Unhandled Exception in randomization thread:");
+                rethrowException = exception;
             }
 
-            return result;
+            // Close out files and free memory
+            TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
+            CoalescedHandler.EndHandler();
+            TLKBuilder.EndHandler();
+            MERFileSystem.Finalize(SelectedOptions);
+            //ResetClasses();
+            MemoryManager.ResetMemoryManager();
+            MemoryManager.SetUsePooledMemory(false);
+
+            // Re-throw the unhandled exception after MERFS has closed
+            if (rethrowException != null)
+                throw rethrowException;
         }
 
-
-        */
-
-        
-
-        
-
-
-        //static readonly List<char> englishVowels = new List<char>(new[] { 'a', 'e', 'i', 'o', 'u' });
-        //static readonly List<char> upperCaseVowels = new List<char>(new[] { 'A', 'E', 'I', 'O', 'U' });
-
-        ///// <summary>
-        ///// Swap the vowels around
-        ///// </summary>
-        ///// <param name="Tlks"></param>
-        //private void MakeTextPossiblyScottish(List<TalkFile> Tlks, Random random, bool updateProgressbar)
-        //{
-        //    MERLog.Information("Randomizing vowels");
-        //    if (scottishVowelOrdering == null)
-        //    {
-        //        scottishVowelOrdering = new List<char>(new char[] { 'a', 'e', 'i', 'o', 'u' });
-        //        scottishVowelOrdering.Shuffle(random);
-        //        upperScottishVowelOrdering = new List<char>();
-        //        foreach (var c in scottishVowelOrdering)
+        //        /// <summary>
+        //        /// Ensures things are set back to normal before first run
+        //        /// </summary>
+        //        private void ResetClasses()
         //        {
-        //            upperScottishVowelOrdering.Add(char.ToUpper(c, CultureInfo.InvariantCulture));
+        //            RMorphTarget.ResetClass();
+        //            SquadmateHead.ResetClass();
+        //            PawnPorting.ResetClass();
+        //            NPCHair.ResetClass();
         //        }
-        //    }
-
-        //    int currentTlkIndex = 0;
-        //    foreach (TalkFile tf in Tlks)
-        //    {
-        //        currentTlkIndex++;
-        //        int max = tf.StringRefs.Count();
-        //        int current = 0;
-        //        if (updateProgressbar)
-        //        {
-        //            option.CurrentOperation = $"Randomizing vowels [{currentTlkIndex}/{Tlks.Count()}]";
-        //            option.ProgressMax = tf.StringRefs.Length;
-        //            option.ProgressIndeterminate = false;
-        //        }
-
-        //        foreach (var sref in tf.StringRefs)
-        //        {
-        //            current++;
-        //            if (tf.TlksIdsToNotUpdate.Contains(sref.StringID)) continue; //This string has already been updated and should not be modified.
-        //            if (updateProgressbar)
-        //            {
-        //                option.ProgressValue = current;
-        //            }
-
-        //            if (!string.IsNullOrWhiteSpace(sref.Data))
-        //            {
-        //                string originalString = sref.Data;
-        //                if (originalString.Length == 1)
-        //                {
-        //                    continue; //Don't modify I, A
-        //                }
-
-        //                string[] words = originalString.Split(' ');
-        //                for (int j = 0; j < words.Length; j++)
-        //                {
-        //                    string word = words[j];
-        //                    if (word.Length == 1)
-        //                    {
-        //                        continue; //Don't modify I, A
-        //                    }
-
-        //                    if (word.StartsWith("%") || word.StartsWith("<CUSTOM"))
-        //                    {
-        //                        Debug.WriteLine($"Skipping {word}");
-        //                        continue; // Don't modify tokens
-        //                    }
-
-        //                    char[] newStringAsChars = word.ToArray();
-        //                    for (int i = 0; i < word.Length; i++)
-        //                    {
-        //                        //Undercase
-        //                        var vowelIndex = englishVowels.IndexOf(word[i]);
-        //                        if (vowelIndex >= 0)
-        //                        {
-        //                            if (i + 1 < word.Length && englishVowels.Contains(word[i + 1]))
-        //                            {
-        //                                continue; //don't modify dual vowel first letters.
-        //                            }
-        //                            else
-        //                            {
-        //                                newStringAsChars[i] = scottishVowelOrdering[vowelIndex];
-        //                            }
-        //                        }
-        //                        else
-        //                        {
-        //                            var upperVowelIndex = upperCaseVowels.IndexOf(word[i]);
-        //                            if (upperVowelIndex >= 0)
-        //                            {
-        //                                if (i + 1 < word.Length && upperCaseVowels.Contains(word[i + 1]))
-        //                                {
-        //                                    continue; //don't modify dual vowel first letters.
-        //                                }
-        //                                else
-        //                                {
-        //                                    newStringAsChars[i] = upperScottishVowelOrdering[upperVowelIndex];
-        //                                }
-        //                            }
-        //                        }
-        //                    }
-
-        //                    words[j] = new string(newStringAsChars);
-        //                }
-
-        //                string rebuiltStr = string.Join(" ", words);
-        //                tf.replaceString(sref.StringID, rebuiltStr);
-        //            }
-        //        }
-        //    }
-        //}
-
-
-
-
-
-
 
 
         /// <summary>
-        /// Randomizes bio morph faces in a specified file. Will check if file exists first
+        /// Sets the options up that can be selected and their methods they call
         /// </summary>
-        /// <param name="file"></param>
-        /// <param name="random"></param>
-        //private void RandomizeBioMorphFaceWrapper(string file, Random random)
-        //{
-        //    if (File.Exists(file))
-        //    {
-        //        ME1Package package = MERFileSystem.OpenMEPackage(file);
-        //        {
-        //            foreach (ExportEntry export in package.Exports)
-        //            {
-        //                if (export.ClassName == "BioMorphFace")
-        //                {
-        //                    RandomizeBioMorphFace(export, random);
-        //                }
-        //            }
-        //        }
-        //        ModifiedFiles[package.FileName] = package.FileName;
-        //        package.save();
-        //    }
-        //}
-
-        
- /*
-        private void RandomizeTint(Random random, StructProperty tint, bool randomizeAlpha)
+        /// <param name="RandomizationGroups"></param>
+        public static void SetupOptions(ObservableCollectionExtended<RandomizationGroup> RandomizationGroups, Action<RandomizationOption> optionChangingDelegate)
         {
-            var a = tint.GetProp<FloatProperty>("A");
-            var r = tint.GetProp<FloatProperty>("R");
-            var g = tint.GetProp<FloatProperty>("G");
-            var b = tint.GetProp<FloatProperty>("B");
-
-            float totalTintValue = r + g + b;
-
-            //Randomizing hte pick order will ensure we get a random more-dominant first color (but only sometimes).
-            //e.g. if e went in R G B order red would always have a chance at a higher value than the last picked item
-            List<FloatProperty> randomOrderChooser = new List<FloatProperty>();
-            randomOrderChooser.Add(r);
-            randomOrderChooser.Add(g);
-            randomOrderChooser.Add(b);
-            randomOrderChooser.Shuffle(random);
-
-            randomOrderChooser[0].Value = ThreadSafeRandom.NextFloat(0, totalTintValue);
-            totalTintValue -= randomOrderChooser[0].Value;
-
-            randomOrderChooser[1].Value = ThreadSafeRandom.NextFloat(0, totalTintValue);
-            totalTintValue -= randomOrderChooser[1].Value;
-
-            randomOrderChooser[2].Value = totalTintValue;
-            if (randomizeAlpha)
+#if DEBUG
+            //EnemyPowerChanger.Init(null); // Load the initial list
+            //EnemyWeaponChanger.Preboot(); // Load the initial list
+#endif
+            RandomizationGroups.Add(new RandomizationGroup()
             {
-                a.Value = ThreadSafeRandom.NextFloat(0, 1);
-            }
-        }
- */
-
-        ///// <summary>
-        ///// Randomizes the planet-level galaxy map view. 
-        ///// </summary>
-        ///// <param name="export">2DA Export</param>
-        ///// <param name="random">Random number generator</param>
-        //private void RandomizeWeaponStats(ExportEntry export, Random random)
-        //{
-        //    option.CurrentOperation = "Randomizing Item Levels (only partially implemented)";
-
-
-        //    //Debug.WriteLine("Randomizing Items - Item Effect Levels");
-        //    Bio2DA itemeffectlevels2da = new Bio2DA(export);
-
-            
-        //    //Randomize 
-        //    //for (int row = 0; row < itemeffectlevels2da.RowNames.Count(); row++)
-        //    //{
-        //    //    Bio2DACell propertyCell = itemeffectlevels2da[row, 2];
-        //    //    if (propertyCell != null)
-        //    //    {
-        //    //        int gameEffect = propertyCellIntValue;
-        //    //        switch (gameEffect)
-        //    //        {
-        //    //            case 15:
-        //    //                //GE_Weap_Damage
-        //    //                ItemEffectLevels.Randomize_GE_Weap_Damage(itemeffectlevels2da, row, random);
-        //    //                break;
-        //    //            case 17:
-        //    //                //GE_Weap_RPS
-        //    //                ItemEffectLevels.Randomize_GE_Weap_RPS(itemeffectlevels2da, row, random);
-        //    //                break;
-        //    //            case 447:
-        //    //                //GE_Weap_Projectiles
-        //    //                ItemEffectLevels.Randomize_GE_Weap_PhysicsForce(itemeffectlevels2da, row, random);
-        //    //                break;
-        //    //            case 1199:
-        //    //                //GE_Weap_HeatPerShot
-        //    //                ItemEffectLevels.Randomize_GE_Weap_HeatPerShot(itemeffectlevels2da, row, random);
-        //    //                break;
-        //    //            case 1201:
-        //    //                //GE_Weap_HeatLossRate
-        //    //                ItemEffectLevels.Randomize_GE_Weap_HeatLossRate(itemeffectlevels2da, row, random);
-        //    //                break;
-        //    //            case 1259:
-        //    //                //GE_Weap_HeatLossRateOH
-        //    //                ItemEffectLevels.Randomize_GE_Weap_HeatLossRateOH(itemeffectlevels2da, row, random);
-        //    //                break;
-        //    //        }
-        //    //    }
-        //    //}
-
-        //    itemeffectlevels2da.Write2DAToExport();
-        //}
-
-
-
-      
-
-        
-        //public bool RunMapRandomizerPass
-        //{
-        //    get => mainWindow.RANDSETTING_PAWN_MAPFACES
-        //           || mainWindow.RANDSETTING_MISC_MAPPAWNSIZES
-        //           || mainWindow.RANDSETTING_MISC_HAZARDS
-        //           || mainWindow.RANDSETTING_MISC_INTERPS
-        //           || mainWindow.RANDSETTING_MISC_INTERPPAWNS
-        //           || mainWindow.RANDSETTING_MISC_ENEMYAIDISTANCES
-        //           || mainWindow.RANDSETTING_GALAXYMAP_PLANETNAMEDESCRIPTION
-        //           || mainWindow.RANDSETTING_MISC_HEIGHTFOG
-        //           || mainWindow.RANDSETTING_PAWN_FACEFX
-        //           || mainWindow.RANDSETTING_WACK_SCOTTISH
-        //           || mainWindow.RANDSETTING_WACK_UWU
-        //           || mainWindow.RANDSETTING_PAWN_MATERIALCOLORS
-        //           || mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION
-        //    ;
-        //}
-
-        //public bool RunMapRandomizerPassAllExports
-        //{
-        //    get => mainWindow.RANDSETTING_PAWN_MAPFACES
-        //           || mainWindow.RANDSETTING_MISC_MAPPAWNSIZES
-        //           || mainWindow.RANDSETTING_MISC_HAZARDS
-        //           | mainWindow.RANDSETTING_MISC_HEIGHTFOG
-        //           || mainWindow.RANDSETTING_PAWN_FACEFX
-        //           || mainWindow.RANDSETTING_MISC_INTERPS
-        //           || mainWindow.RANDSETTING_WACK_SCOTTISH
-        //           || mainWindow.RANDSETTING_WACK_UWU
-        //           || mainWindow.RANDSETTING_PAWN_MATERIALCOLORS
-        //           || mainWindow.RANDSETTING_MISC_INTERPPAWNS
-        //           || mainWindow.RANDSETTING_PAWN_BIOLOOKATDEFINITION
-        //    ;
-        //}
-
-
-
-
-        //private void RandomizeLocation(ExportEntry e, Random random)
-        //{
-        //    SetLocation(e, ThreadSafeRandom.NextFloat(-100000, 100000), ThreadSafeRandom.NextFloat(-100000, 100000), ThreadSafeRandom.NextFloat(-100000, 100000));
-        //}
-
-
-        //public static Point3D GetLocation(ExportEntry export)
-        //{
-        //    float x = 0, y = 0, z = int.MinValue;
-        //    var prop = export.GetProperty<StructProperty>("location");
-        //    if (prop != null)
-        //    {
-        //        foreach (var locprop in prop.Properties)
-        //        {
-        //            switch (locprop)
-        //            {
-        //                case FloatProperty fltProp when fltProp.Name == "X":
-        //                    x = fltProp;
-        //                    break;
-        //                case FloatProperty fltProp when fltProp.Name == "Y":
-        //                    y = fltProp;
-        //                    break;
-        //                case FloatProperty fltProp when fltProp.Name == "Z":
-        //                    z = fltProp;
-        //                    break;
-        //            }
-        //        }
-
-        //        return new Point3D(x, y, z);
-        //    }
-
-        //    return null;
-        //}
-
-        //public class Point3D
-        //{
-        //    public double X { get; set; }
-        //    public double Y { get; set; }
-        //    public double Z { get; set; }
-
-        //    public Point3D()
-        //    {
-
-        //    }
-
-        //    public Point3D(double X, double Y, double Z)
-        //    {
-        //        this.X = X;
-        //        this.Y = Y;
-        //        this.Z = Z;
-        //    }
-
-        //    public double getDistanceToOtherPoint(Point3D other)
-        //    {
-        //        double deltaX = X - other.X;
-        //        double deltaY = Y - other.Y;
-        //        double deltaZ = Z - other.Z;
-
-        //        return Math.Sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-        //    }
-
-        //    public override string ToString()
-        //    {
-        //        return $"{X},{Y},{Z}";
-        //    }
-        //}
-
-        /*
-        
-        private string[] aiTypes =
-        {
-            "BioAI_Krogan", "BioAI_Assault", "BioAI_AssaultDrone", "BioAI_Charge", "BioAI_Commander", "BioAI_Destroyer", "BioAI_Drone",
-            "BioAI_GunShip", "BioAI_HumanoidMinion", "BioAI_Juggernaut", "BioAI_Melee", "BioAI_Mercenary", "BioAI_Rachnii", "BioAI_Sniper"
-        };
-
-
-
-        private void RandomizeAINames(ME1Package pacakge, Random random)
-        {
-            bool forcedCharge = ThreadSafeRandom.Next(8) == 0;
-            for (int i = 0; i < pacakge.NameCount; i++)
-            {
-                NameReference n = pacakge.getNameEntry(i);
-
-                //Todo: Test Saren Hopper AI. Might be interesting to force him to change types.
-                if (aiTypes.Contains(n.Name))
+                GroupName = "Faces",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    string newAiType = forcedCharge ? "BioAI_Charge" : aiTypes[ThreadSafeRandom.Next(aiTypes.Length)];
-                    MERLog.Information("Reassigning AI type in " + Path.GetFileName(pacakge.FileName) + ", " + n + " -> " + newAiType);
-                    pacakge.replaceName(i, newAiType);
-                    pacakge.ShouldSave = true;
+#if DEBUG
+                    //new RandomizationOption()
+                    //{
+                    //    Description="Runs debug code randomization",
+                    //    HumanName = "Debug randomizer",
+                    //    PerformRandomizationOnExportDelegate = DebugTools.DebugRandomizer.RandomizeExport,
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    //},
+#endif
+                    new RandomizationOption()
+                    {
+                        Description="Changes facial animation. The best feature of MER",
+                        HumanName = "FaceFX animation", Ticks = "1,2,3,4,5", HasSliderOption = true, IsRecommended = true, SliderToTextConverter = rSetting =>
+                            rSetting switch
+                            {
+                                1 => "Oblivion",
+                                2 => "Knights of the old Republic",
+                                3 => "Sonic Adventure",
+                                4 => "Source filmmaker",
+                                _ => "Error"
+                            },
+                        SliderTooltip = "Higher settings yield more extreme facial animation values. Default value is Sonic Adventure",
+                        SliderValue = 3, // This must come after the converter
+                        PerformRandomizationOnExportDelegate = RSharedFaceFXAnimSet.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },
+                    /*new RandomizationOption() {HumanName = "Squadmate heads",
+                        Description = "Changes the heads of your squadmates",
+                        PerformRandomizationOnExportDelegate = SquadmateHead.RandomizeExport2,
+                        PerformFileSpecificRandomization = SquadmateHead.FilePrerun,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        RequiresTLK = true,
+                        StateChangingDelegate=optionChangingDelegate,
+                        MutualExclusiveSet = "SquadHead",
+                        IsRecommended = true
+                    },*/
+                    //new RandomizationOption() {HumanName = "Squadmate faces",
+                    //    Description = "Only works on Wilson and Jacob, unfortunately. Other squadmates are fully modeled",
+                    //    PerformSpecificRandomizationDelegate = RBioMorphFace.RandomizeSquadmateFaces,
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    //    MutualExclusiveSet = "SquadHead",
+                    //    StateChangingDelegate=optionChangingDelegate,
+                    //},
+
+                    new RandomizationOption()
+                    {
+                        HumanName = "NPC faces",
+                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7",
+                        HasSliderOption = true,
+                        IsRecommended = true,
+                        SliderTooltip = "Higher settings yield more ridiculous faces for characters that use the BioFaceMorph system. Default value is 0.3. Does not affect Garrus.",
+                        SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
+                        SliderValue = .3, // This must come after the converter
+                        PerformRandomizationOnExportDelegate = RBioMorphFace.RandomizeExport,
+                        Description="Changes the BioFaceMorph used by most pawns",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    },
+                    // Sadly not used by anything but shepard
+                    // For some reason data is embedded into files even though it's never used there
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "NPC Faces - Extra jacked up",
+                    //    Description = "Changes the MorphTargets that map bones to the face morph system",
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    //    PerformRandomizationOnExportDelegate = RMorphTarget.RandomizeGlobalExport
+                    //},
+                    new RandomizationOption() {HumanName = "Eyes",
+                        Description="Changes the colors of eyes",
+                        IsRecommended = true,
+                        PerformRandomizationOnExportDelegate = RSharedEyes.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    }
                 }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Characters",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+
+                    new RandomizationOption()
+                    {
+                        HumanName = "Animation Set Bones",
+                        PerformRandomizationOnExportDelegate = RSharedBioAnimSetData.RandomizeExport,
+                        SliderToTextConverter = RSharedBioAnimSetData.UIConverter,
+                        HasSliderOption = true,
+                        SliderValue = 1,
+                        Ticks = "1,2,3,4,5",
+                        SliderTooltip = "Higher settings yield more bone randomization. Default value basic bones only.",
+                        Description = "Changes the order of animations mapped to bones. E.g. arm rotation will be swapped with eyes",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                    },
+                    /*
+                    new RandomizationOption() {HumanName = "NPC colors", Description="Changes NPC colors such as skin tone, hair, etc",
+                        PerformRandomizationOnExportDelegate = RMaterialInstance.RandomizeNPCExport2,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "NPC hair", Description="Randomizes the hair on NPCs that have a hair mesh",
+                        PerformRandomizationOnExportDelegate = NPCHair.RandomizeExport,
+                        PerformSpecificRandomizationDelegate = NPCHair.Init,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption() {
+                        HumanName = "Romance",
+                        Description="Randomizes which romance you will get",
+                        PerformSpecificRandomizationDelegate = Romance.PerformRandomization,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
+                    new RandomizationOption() {
+                        HumanName = "Look At Definitions",
+                        Description="Changes how pawns look at things",
+                        PerformRandomizationOnExportDelegate = RBioLookAtDefinition.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {
+                        HumanName = "Look At Targets",
+                        Description="Changes where pawns look",
+                        PerformRandomizationOnExportDelegate = RBioLookAtTarget.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },*/
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Character Creator",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    /*
+                    new RandomizationOption() {
+                        HumanName = "Premade faces",
+                        IsRecommended = true,
+                        Description = "Completely randomizes settings including skin tones and slider values. Adds extra premade faces",
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeCharacterCreator,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = CharacterCreator.SUBOPTIONKEY_CHARCREATOR_NO_COLORS,
+                                HumanName = "Don't randomize colors",
+                                Description = "Prevents changing colors such as skin tone, teeth, eyes, etc",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                                IsOptionOnly = true
+                            }
+                        }
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Iconic FemShep face",
+                        Description="Changes the default FemShep face",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.6,0.7",
+                        HasSliderOption = true,
+                        IsRecommended = true,
+                        SliderTooltip = "Higher settings yield more extreme facial changes. Default value is 0.3.",
+                        SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
+                        SliderValue = .3, // This must come after the converter
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeIconicFemShep
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Iconic MaleShep face",
+                        Description="Changes the bones in default MaleShep face. Due to it being modeled, the changes only occur when the face moves",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        Ticks = "0.25,0.5,1.0,1.25,1.5,2.0",
+                        HasSliderOption = true,
+                        IsRecommended = true,
+                        SliderTooltip = "Higher settings yields further bone position shifting, which can sometimes be undesirable. Default value is 1.0.",
+                        SliderToTextConverter = rSetting => $"Randomization amount: {rSetting}",
+                        SliderValue = 1.0, // This must come after the converter
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizeIconicMaleShep,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = CharacterCreator.SUBOPTIONKEY_MALESHEP_COLORS,
+                                HumanName = "Include colors",
+                                Description = "Also changes colors like skintone, eyes, scars",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                                IsOptionOnly = true
+                            }
+                        }
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Psychological profiles",
+                        Description="Completely changes the backstories of Shepard, with both new stories and continuations from ME1 Randomizer's stories",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        IsRecommended = true,
+                        PerformSpecificRandomizationDelegate = CharacterCreator.RandomizePsychProfiles,
+                        RequiresTLK = true
+                    },*/
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Miscellaneous",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    /*
+                    new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RHolograms.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport, IsRecommended = true},
+                    //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
+                    new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "SizeSixteens mode",
+                        Description = "This option installs a change specific for the streamer SizeSixteens. If you watched his ME1 Randomizer streams, you'll understand the change.",
+                        PerformSpecificRandomizationDelegate = SizeSixteens.InstallSSChanges,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        RequiresTLK = true
+                    },
+                    new RandomizationOption() {HumanName = "NPC names",
+                        Description = "Install a list of names into the game and renames some of the generic NPCs to them. You can install your stream chat members, for example. There are 48 name slots.",
+                        PerformSpecificRandomizationDelegate = CharacterNames.InstallNameSet,
+                        SetupRandomizerDelegate = CharacterNames.SetupRandomizer,
+                        SetupRandomizerButtonText = "Setup",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        RequiresTLK = true
+                    },
+#if DEBUG
+                    new RandomizationOption() {
+                        HumanName = "Skip splash",
+                        Description = "Skips the splash screen",
+                        PerformSpecificRandomizationDelegate = EntryMenu.SetupFastStartup,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        OptionIsSelected = true
+                    },
+#endif
+                    */
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Movement & pawns",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "NPC movement speeds", Description = "Changes non-player movement stats. Can make combat very easy or very difficult", PerformRandomizationOnExportDelegate = RMovementSpeed2DA.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true},
+                    //new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                    new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RBioWaypointSet.RandomizeExport},
+                    //new RandomizationOption() {HumanName = "Hammerhead", IsRecommended = true, Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
+                   // new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by basic non-interactable NPCs. Some may T-pose due to the sheer complexity of this randomizer",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActorMAT.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Pawn sizes", Description = "Changes the size of characters. Will break a lot of things, including bullet collision", PerformRandomizationOnExportDelegate = RBioPawn.RandomizePawnSize,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
+                        Ticks = "0.1,0.2,0.3,0.4,0.5,0.75",
+                        HasSliderOption = true,
+                        SliderTooltip = "Values are added +/- to 1 to generate the range of allowed sizes. For example, 0.1 yields 90-110% size multiplier. Default value is 0.1.",
+                        SliderToTextConverter = x=> $"Maximum size change: {Math.Round(x * 100)}%",
+                        SliderValue = 0.1,
+                    },
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Weapons & Enemies",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    /*
+                    new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
+                    //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Enemy weapons",
+                        Description = "Gives enemies different guns",
+                        // CHANGE TO EQUIPMENT 2DA SCAN GENERIC
+                        PerformRandomizationOnExportDelegate = EnemyWeapon.RandomizeExport,
+                        PerformSpecificRandomizationDelegate = EnemyWeaponChanger.Init,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true,
+                        // Debug stuff.
+#if DEBUG
+                        //HasSliderOption = true,
+                        //Ticks = string.Join(",",Enumerable.Range(-1,EnemyWeaponChanger.AllAvailableWeapons.Count + 1)),
+                        //SliderToTextConverter = x =>
+                        //{
+                        //    if (x < 0)
+                        //        return "All weapons";
+                        //    var idx = (int) x;
+                        //    return EnemyWeaponChanger.AllAvailableWeapons[idx].GunName;
+                        //},
+                        //SliderValue = -1, // End debug stuff
+#endif
+
+
+                    },
+                    new RandomizationOption()
+                    {
+                        // CHANGE TO ENEMY TALENT 2DA
+                        HumanName = "Enemy powers", Description = "Gives enemies different powers", PerformRandomizationOnExportDelegate = EnemyPowerChanger.RandomizeExport, PerformSpecificRandomizationDelegate = EnemyPowerChanger.Init, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, IsRecommended = true,
+                        // Debug stuff.
+#if DEBUG
+                        //HasSliderOption = true,
+                        //Ticks = string.Join(",",Enumerable.Range(-1,EnemyPowerChanger.Powers.Count + 1)),
+                        //SliderToTextConverter = x =>
+                        //{
+                        //    if (x < 0)
+                        //        return "All powers";
+                        //    var idx = (int) x;
+                        //    return EnemyPowerChanger.Powers[idx].PowerName;
+                        //},
+                        //SliderValue = -1, // End debug stuff
+#endif
+                    },*/
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Level-specific",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship, including one sidequest", PerformSpecificRandomizationDelegate = RNormandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    //new RandomizationOption() {HumanName = "Prologue"},
+                    //new RandomizationOption() {HumanName = "Tali Acquisition"}, //sfxgame tla damagetype
+                    new RandomizationOption() {HumanName = "Citadel", Description = "Changes many things across the level", PerformSpecificRandomizationDelegate = RCitadel.PerformRandomization, RequiresTLK = true, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Feros", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = RFeros.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true, RequiresTLK = true},
+                    new RandomizationOption() {HumanName = "Noveria", Description = "Changes the lounge", PerformSpecificRandomizationDelegate = RNoveria.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Opening Sequence", Description = "Improved dancing technique", PerformSpecificRandomizationDelegate = ROpeningSequence.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Eden Prime", Description = "Significantly changes level. Greatly increases difficulty", PerformSpecificRandomizationDelegate = REdenPrime.PerformRandomization, RequiresTLK = true, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Pinnacle Station", Description = "Significantly changes level. Greatly increases difficulty", PerformSpecificRandomizationDelegate = RPinnacleStation.PerformRandomization, RequiresTLK = true, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Bring Down The Sky", Description = "Significantly changes level. Greatly increases difficulty", PerformSpecificRandomizationDelegate = RBringDownTheSky.PerformRandomization, RequiresTLK = true, IsRecommended = true},
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Squad powers",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    // Needs tested if this actually works in LE1. It won't work in ME1 due to hardcoded UI
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "Class powers",
+                    //    Description = "Shuffles the powers of all player classes. Loading an existing save after running this will cause you to lose talent points. Use the refund points button below to adjust your latest save file and reset your powers.",
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    //    IsRecommended = true,
+                    //    PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
+                    //    RequiresTLK = true,
+                    //    SetupRandomizerDelegate = HenchTalents.ResetTalents,
+                    //    SetupRandomizerButtonToolTip = "Allows you to select a save file to remove player power records from.\nThis will wipe all assigned power points and refund the correct amount of talent points to spend.",
+                    //    SetupRandomizerButtonText = "Refund points",
+                    //    /* Will have to implement later as removing gating code is actually complicated
+                    //    SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                    //    {
+                    //        new RandomizationOption()
+                    //        {
+                    //            IsOptionOnly = true,
+                    //            SubOptionKey = HenchTalents.SUBOPTION_HENCHPOWERS_REMOVEGATING,
+                    //            HumanName = "Remove rank-up gating",
+                    //            Description = "Removes the unlock requirement for the second power slot. The final power slot will still be gated by loyalty."
+                    //        }
+                    //    }*/
+                    //},
+
+#if DEBUG
+                    // Needs fixes in porting code...
+                    /*new RandomizationOption()
+                    {
+                        HumanName = "Henchmen powers",
+                        Description = "Shuffles the powers of squadmates. Loading an existing save after running this will cause them to lose talent points. Use the refund points button below to adjust your latest save file and reset their powers.",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true,
+                        PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilities,
+                        SetupRandomizerDelegate = HenchTalents.ResetTalents,
+                        SetupRandomizerButtonToolTip = "Allows you to select a save file to remove henchman records from.\nThis will wipe all henchman powers and refund the correct amount of talent points to spend.\nThis will ALSO reset the weapon they are using the default weapon they use.",
+                        SetupRandomizerButtonText = "Refund points",
+                        RequiresTLK = true,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                SubOptionKey = HenchTalents.SUBOPTION_HENCHPOWERS_REMOVEGATING,
+                                HumanName = "Remove rank-up gating",
+                                Description = "Removes the unlock requirement for the second power slot. The final power slot will still be gated by loyalty."
+                            }
+                        }
+                    },*/
+#endif
+                }
+            });
+
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Gameplay",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption()
+                    {
+                        HumanName = "Enable basic friendly fire",
+                        PerformSpecificRandomizationDelegate = SFXGame.TurnOnFriendlyFire,
+                        Description = "Enables weapons to damage non hostile enemies. You can't directly aim at friendly NPCs.",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Battle Royale Mode",
+                        PerformFileSpecificRandomization = RBattleRoyale.RandomizeFile,
+                        Description = "Everyone that isn't important to the plot wakes up on the wrong side of the bed",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                    },
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "Shepard ragdollable",
+                    //    Description = "Makes Shepard able to be ragdolled from various powers/attacks. Can greatly increase difficulty",
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                    //    PerformSpecificRandomizationDelegate = SFXGame.MakeShepardRagdollable,
+                    //},
+                    // TODO: REIMPLEMENT
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "Remove running camera shake",
+                    //    Description = "Removes the camera shake when running",
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                    //    PerformSpecificRandomizationDelegate = SFXGame.RemoveStormCameraShake,
+                    //},
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "One hit kill",
+                    //    Description = "Makes Shepard die upon taking any damage. Removes bonuses that grant additional health. Extremely difficult, do not mix with other randomizers",
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe,
+                    //    PerformSpecificRandomizationDelegate = OneHitKO.InstallOHKO,
+                    //},
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Level-components",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    // Doesn't seem to work
+                    //                    new RandomizationOption() {HumanName = "Star colors", IsRecommended = true, PerformRandomizationOnExportDelegate = RBioSun.PerformRandomization},
+                    new RandomizationOption() {HumanName = "Fog colors", Description = "Changes colors of fog", IsRecommended = true, PerformRandomizationOnExportDelegate = RSharedHeightFogComponent.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {
+                        HumanName = "Post Processing volumes",
+                        Description = "Changes postprocessing. Likely will make some areas of game unplayable",
+                        PerformRandomizationOnExportDelegate = RPostProcessingVolume.RandomizeExport,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP
+                    },
+                    new RandomizationOption() {HumanName = "Light colors", Description = "Changes colors of dynamic lighting",
+                        PerformRandomizationOnExportDelegate = RSharedLighting.RandomizeExport,
+                        IsRecommended = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
+                    new RandomizationOption() {
+                        HumanName = "Clusters",
+                        Description = "Randomizes positions of clusters",
+                        PerformRandomizationOnExportDelegate = RGalaxyMapClusters2DA.RandomizeClustersXY,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
+                    },
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Text",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {HumanName = "Game over text", PerformSpecificRandomizationDelegate = RSharedTexts.RandomizeGameOverText, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Intro Crawl", PerformSpecificRandomizationDelegate = RSharedTexts.RandomizeOpeningCrawl, RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption()
+                    {
+                        HumanName = "Vowels",
+                        IsPostRun = true,
+                        Description="Changes vowels in text in a consistent manner, making a 'new' language",
+                        PerformSpecificRandomizationDelegate = RSharedTexts.RandomizeVowels,
+                        RequiresTLK = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        MutualExclusiveSet="AllText",
+                        StateChangingDelegate=optionChangingDelegate,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                SubOptionKey = RSharedTexts.SUBOPTIONKEY_VOWELS_HARDMODE,
+                                HumanName = "Hurd Medi",
+                                Description = "Adds an additional 2 consonants to swap (for a total of 4 letter changes). Can make text extremely challenging to read",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
+                                IsOptionOnly = true
+                            }
+                        }
+                    },
+                    new RandomizationOption() {
+                        HumanName = "UwU",
+                        Description="UwUifies all text in the game, often hilarious.",
+                        PerformSpecificRandomizationDelegate = RSharedTexts.UwuifyText,
+                        RequiresTLK = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
+                        MutualExclusiveSet="AllText",
+                        StateChangingDelegate=optionChangingDelegate,
+                        IsPostRun = true,
+                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                        {
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Keep casing",
+                                Description = "Keeps upper and lower casing.",
+                                SubOptionKey = RSharedTexts.SUBOPTIONKEY_UWU_KEEPCASING,
+                            },
+                            new RandomizationOption()
+                            {
+                                IsOptionOnly = true,
+                                HumanName = "Emoticons",
+                                Description = "Adds emoticons based on content of a sentence ^_^\n'Keep casing' recommended.",
+                                Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                                SubOptionKey = RSharedTexts.SUBOPTIONKEY_REACTIONS_ENABLED
+                            }
+                        }
+                    },
+                }
+            });
+
+            RandomizationGroups.Add(new RandomizationGroup()
+            {
+                GroupName = "Wackadoodle",
+                Options = new ObservableCollectionExtended<RandomizationOption>()
+                {
+                    new RandomizationOption() {
+                        HumanName = "Actors in cutscenes",
+                        Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
+                        PerformRandomizationOnExportDelegate = RCutscene.ShuffleCutscenePawns2,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        IsRecommended = true
+                    },
+                    // Due to how stage placement works this doesn't really work very well in this game.
+                    //new RandomizationOption() {
+                    //    HumanName = "Actors in conversations",
+                    //    Description="Swaps pawns around in conversations that have more than 2 participants (rare in this game).",
+                    //    PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport,
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                    //    IsRecommended = true
+                    //},
+                    new RandomizationOption() {
+                            HumanName = "Animation data",
+                            PerformRandomizationOnExportDelegate = RSharedAnimSequence.RandomizeExport,
+                            SliderToTextConverter = RSharedAnimSequence.UIConverter,
+                            HasSliderOption = true,
+                            SliderValue = 1,
+                            Ticks = "1,2",
+                            Description="Shifts rigged bone positions",
+                            IsRecommended = true,
+                            SliderTooltip = "Value determines which bones are used in the remapping. Default value is basic bones only.",
+                            Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Random interpolations",
+                        Description = "Randomly fuzzes interpolation data. Can make game very dizzying on higher values!",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_RIP,
+                        PerformRandomizationOnExportDelegate = RSharedInterpTrackMove.RandomizeExport,
+                        Ticks = "0.025,0.05,0.075,0.1,0.15,0.2,0.3,0.4,0.5",
+                        HasSliderOption = true,
+                        SliderTooltip = "Higher settings yield more extreme position and rotational changes to interpolations. Values above 0.05 are very likely to make the game unplayable. Default value is 0.05.",
+                        SliderToTextConverter = x=> $"Maximum interp change: {Math.Round(x * 100)}%",
+                        SliderValue = 0.05,
+                    },
+                    
+                    /*new RandomizationOption()
+                    {
+                        HumanName = "Conversation Wheel", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExportReplies,
+                        Description = "Changes replies in wheel. Can make conversations hard to exit",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "Actors in conversations",
+                        PerformFileSpecificRandomization = RBioConversation.RandomizePackageActorsInConversation,
+                        Description = "Changes pawn roles in conversations. Somewhat buggy simply due to complexity and restrictions in engine, but can be entertaining",
+                        IsRecommended = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    },*/
+
+                    new RandomizationOption()
+                    {
+                        HumanName = "Music",
+                        PerformRandomizationOnExportDelegate = RMusic2DA.RandomizeExport,
+                        Description = "Changes what music is played in-game. Often plays unfitting music. This does not affect certain areas as some areas have audio not classified as 'Music'.",
+                        IsRecommended = false,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    }
+                }
+            });
+
+            foreach (var g in RandomizationGroups)
+            {
+                g.Options.Sort(x => x.HumanName);
             }
-        }/*
-
-
-        //static float NextFloat(Random random)
-        //{
-        //    double mantissa = (ThreadSafeRandom.NextDouble() * 2.0) - 1.0;
-        //    double exponent = Math.Pow(2.0, ThreadSafeRandom.Next(-3, 20));
-        //    return (float)(mantissa * exponent);
-        //}
-
-        static string GetRandomColorRBGStr(Random random)
-        {
-            return $"RGB({ThreadSafeRandom.Next(255)},{ThreadSafeRandom.Next(255)},{ThreadSafeRandom.Next(255)})";
+            RandomizationGroups.Sort(x => x.GroupName);
         }
-
-        
-
-
     }
-}*/
+}
 #endif

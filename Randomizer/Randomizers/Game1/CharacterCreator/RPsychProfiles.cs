@@ -50,7 +50,7 @@ namespace Randomizer.Randomizers.Game1.CharacterCreator
             MERFileSystem.SavePackage(biog_uiworld);
 
             //Psych Profiles
-            string fileContents = MERUtilities.GetEmbeddedTextAsset("psychprofiles.xml");
+            string fileContents = MEREmbedded.GetEmbeddedTextAsset("psychprofiles.xml");
 
             XElement rootElement = XElement.Parse(fileContents);
             var childhoods = rootElement.Descendants("childhood").Where(x => x.Value != "").Select(x => (x.Attribute("name").Value, string.Join("\n", x.Value.Split('\n').Select(s => s.Trim())))).ToList();

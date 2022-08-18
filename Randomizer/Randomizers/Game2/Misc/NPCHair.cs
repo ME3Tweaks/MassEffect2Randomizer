@@ -14,10 +14,12 @@ namespace Randomizer.Randomizers.Game2.Misc
 {
     class NPCHair
     {
+        private static MERPackageCache cache;
         public static bool Init(GameTarget target, RandomizationOption option)
         {
-            var hmmHir = NonSharedPackageCache.Cache.GetCachedPackage("BIOG_HMM_HIR_PRO_R.pcc");
-            var hmfHir = NonSharedPackageCache.Cache.GetCachedPackage("BIOG_HMF_HIR_PRO.pcc");
+            cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+            var hmmHir = cache.GetCachedPackage("BIOG_HMM_HIR_PRO_R.pcc");
+            var hmfHir = cache.GetCachedPackage("BIOG_HMF_HIR_PRO.pcc");
             //var jenyaHairP = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(Utilities.GetEmbeddedStaticFilesBinaryFile("correctedmeshes.body.JenyaHair.pcc")));
 
             // Prepare items for porting in by forcing all items to use the correct idxLink for relinker
@@ -43,6 +45,8 @@ namespace Randomizer.Randomizers.Game2.Misc
         {
             HairListMale.Clear();
             HairListFemale.Clear();
+            cache?.ReleasePackages();
+            cache = null;
         }
 
         public static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
@@ -150,7 +154,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                             if (export.Archetype is ImportEntry imp)
                             {
                                 // oof
-                                arch = EntryImporter.ResolveImport(imp, MERFileSystem.GetGlobalCache(target));
+                                arch = EntryImporter.ResolveImport(imp, MERCaches.GlobalCommonLookupCache);
                             }
                             hairMeshExp = hairExpSKM;
                             var result = export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) == isArchetypeCheck && CanRandomize(target, arch, true, out _); // look at archetype
