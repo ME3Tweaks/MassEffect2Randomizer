@@ -1,4 +1,5 @@
 ﻿using System.Windows.Media;
+using LegendaryExplorerCore.Packages;
 
 namespace RandomizerUI.Classes
 {

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
@@ -22,22 +24,61 @@ namespace Randomizer.Randomizers.Game1.Misc
     {
         private static IMEPackage TemplatePackage; // Needs way to null out
 
+        private static string[] tagsToNotRandomize = new string[]
+        {
+            // These pawns must not become hostile otherwise you will not be able to advance the plot
+            "sta60_harkin",
+            "sta20_banker", // Barla Von
+            "sta60_garrus", // This conversation must be able to play
+        };
+
         public static bool RandomizeFile(GameTarget target, IMEPackage package, RandomizationOption option)
         {
+            // Disable HideAllWeapons and NonCombatArea effects so you will always have guns.
+            var kismetFixes = package.Exports.Where(x => !x.IsDefaultObject && x.ClassName is "BioSeqAct_HideAllWeapons" or "BioSeqAct_NonCombatArea");
+            foreach (var v in kismetFixes)
+            {
+                if (v.ClassName == "BioSeqAct_HideAllWeapons")
+                {
+                    var varLinks = SeqTools.GetVariableLinksOfNode(v);
+                    var varlink = varLinks.FirstOrDefault(x => x.LinkDesc == "ShouldHideWeapons");
+                    if (varlink != null && varlink.LinkedNodes.Count == 1 && varlink.LinkedNodes[0] is ExportEntry ex)
+                    {
+                        // ShouldHideWeapons = false
+                        ex.WriteProperty(new BoolProperty(false, "bValue"));
+                    }
+                }
+                else if (v.ClassName == "BioSeqAct_NonCombatArea")
+                {
+                    var varLinks = SeqTools.GetVariableLinksOfNode(v);
+                    var varlink = varLinks.FirstOrDefault(x => x.LinkDesc == "EnableCombat");
+                    if (varlink != null && varlink.LinkedNodes.Count == 1 && varlink.LinkedNodes[0] is ExportEntry ex)
+                    {
+                        // EnableCombat = true
+                        ex.WriteProperty(new BoolProperty(true, "bValue"));
+                    }
+                }
+            }
+
+
+
             // todo: Maybe don't make a new 2DA for everything
-            // todo: optmize by not writing/reading full props list.
+            // todo: optimize by not writing/reading full props list.
 
             var bioPawns = package.Exports.Where(x => x.IsA("BioPawn")).ToList();
             var level = package.FindExport("TheWorld.PersistentLevel");
             List<ExportEntry> addedSquads = new List<ExportEntry>();
             foreach (var bp in bioPawns)
             {
-                var behaviorProp = bp.GetProperty<ObjectProperty>("m_oBehavior");
+                var props = bp.GetProperties();
+                var tag = props.GetProp<NameProperty>("Tag");
+                if (tag != null && tagsToNotRandomize.Contains(tag.Value.Instanced))
+                    continue; // We do not randomize this pawn
+                var behaviorProp = props.GetProp<ObjectProperty>("m_oBehavior");
                 if (behaviorProp == null)
                     continue;
 
-                var behavior = behaviorProp.ResolveToEntry(package) as ExportEntry;
-                if (behavior != null)
+                if (behaviorProp.ResolveToEntry(package) is ExportEntry behavior)
                 {
                     var squadProp = behavior.GetProperty<ObjectProperty>("Squad");
                     if (squadProp != null && squadProp.Value != 0)
@@ -149,7 +190,10 @@ namespace Randomizer.Randomizers.Game1.Misc
             strategyArray.Add(sChoice);
         }
 
-
+        /// <summary>
+        /// Configure BioPawn Challenge Scaled Type for Battle Royale
+        /// </summary>
+        /// <param name="bioPawnChallengeScaledType"></param>
         private static void ConfigureBPCSTForBR(ExportEntry bioPawnChallengeScaledType)
         {
             var props = bioPawnChallengeScaledType.GetProperties();

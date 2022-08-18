@@ -52,7 +52,7 @@ namespace RandomizerUI.Classes
             // For UI binding.
             RandomizationOption option = new RandomizationOption();
             option.OnOperationUpdate += srUpdate;
-            dataworker.DoWork += MERDebug.BuildGestureFiles;
+            dataworker.DoWork += MERDebug.DebugPrintActorNames;
             //dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
             mainWindow.ShowProgressPanel = true;
             dataworker.RunWorkerAsync(option);

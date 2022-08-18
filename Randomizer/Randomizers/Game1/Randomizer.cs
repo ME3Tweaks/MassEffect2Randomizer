@@ -223,7 +223,7 @@ namespace Randomizer.Randomizers.Game1
                 //&& false //uncomment to disable filtering
                 //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                 //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
+                && !file.Contains("NOR", StringComparison.InvariantCultureIgnoreCase)
                 && !file.Contains("STA", StringComparison.InvariantCultureIgnoreCase)
                 )
                             return;

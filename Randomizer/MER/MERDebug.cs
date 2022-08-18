@@ -16,6 +16,7 @@ using ME3TweaksCore.Targets;
 using Randomizer.Randomizers;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
+using WinCopies.Util;
 
 namespace Randomizer.MER
 {
@@ -36,9 +37,48 @@ namespace Randomizer.MER
             ScriptTools.InstallScriptToPackage(package, scriptName, "Debug." + scriptName + ".uc", false, saveOnFinish);
         }
 
-        public static void DebugPrintActorNames(object sender, RunWorkerCompletedEventArgs e)
+        public static void DebugPrintActorNames(object sender, DoWorkEventArgs doWorkEventArgs)
         {
 #if DEBUG
+            var option = doWorkEventArgs.Argument as RandomizationOption;
+
+            option.ProgressValue = 0;
+            option.CurrentOperation = "Finding actor names";
+            option.ProgressIndeterminate = false;
+
+#if __GAME1__
+            var game = MEGame.LE1;
+            var files = MELoadedFiles.GetFilesLoadedInGame(game, true, false).Values
+                //.Where(x =>
+                //                    !x.Contains("_LOC_")
+                //&& x.Contains(@"CitHub", StringComparison.InvariantCultureIgnoreCase)
+                //)
+                //.OrderBy(x => x.Contains("_LOC_"))
+                .ToList();
+            option.ProgressMax = files.Count;
+
+            SortedSet<string> actorTypeNames = new SortedSet<string>();
+            TLKBuilder.StartHandler(new GameTarget(game, MEDirectories.GetDefaultGamePath(game), false));
+            foreach (var f in files)
+            {
+                option.IncrementProgressValue();
+                var p = MEPackageHandler.UnsafePartialLoad(f,
+                    x => !x.IsDefaultObject && x.IsA("BioPawn"));
+                foreach (var exp in p.Exports.Where(x => x.IsDataLoaded()))
+                {
+
+                    if (exp.IsA("BioPawn"))
+                    {
+                        var tag = exp.GetProperty<NameProperty>("Tag");
+                        if (tag != null)
+                        {
+                            actorTypeNames.Add(tag.Value.Instanced);
+                        }
+                    }
+                }
+            }
+#endif
+#if __GAME3__
             var game = MEGame.LE3;
             var files = MELoadedFiles.GetFilesLoadedInGame(game, true, false).Values
                 //.Where(x =>
@@ -77,13 +117,13 @@ namespace Randomizer.MER
                 }
 
             }
-
+#endif
             foreach (var atn in actorTypeNames)
             {
                 Debug.WriteLine(atn);
             }
-        }
 #endif
+        }
 
         public static void FindRTPCNames(object sender, DoWorkEventArgs doWorkEventArgs)
         {

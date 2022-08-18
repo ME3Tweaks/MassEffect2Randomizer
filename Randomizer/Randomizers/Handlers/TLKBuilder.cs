@@ -174,7 +174,7 @@ namespace Randomizer.Randomizers.Handlers
             else
             {
                 // Main TLK is Startup
-                Game1GlobalTlkPackages.Add(MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, "Startup_INT")));
+                Game1GlobalTlkPackages.Add(MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, "Startup_INT.pcc")));
 
                 // Mod Tlks
                 foreach (var f in loadedFiles.Where(x => x.Key.Contains("GlobalTlk")))
@@ -207,9 +207,9 @@ namespace Randomizer.Randomizers.Handlers
                 }
             }
 
-            var tlkPackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedAsset("Package", $"BlankTlkPackage.{(target.Game.IsOTGame() ? "upk" : "pcc")}"));
+            var tlkPackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, $"BlankTlkPackage.{(target.Game.IsOTGame() ? "upk" : "pcc")}"));
 
-            MERTalkFile = new ME1TalkFile(tlkPackage.Exports.FirstOrDefault(x => x.ClassName == "BioTlk"));
+            MERTalkFile = new ME1TalkFile(tlkPackage.Exports.FirstOrDefault(x => x.ClassName is "BioTlkFile"));
 #elif __GAME2__
             // Load the basegame TLKs
             var bgPath = M3Directories.GetBioGamePath(target);
