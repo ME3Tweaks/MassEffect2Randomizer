@@ -21,6 +21,11 @@ namespace Randomizer.Randomizers.Game3.Misc
         internal const string EVASION_OPTION = "PAWNCUSTACTION_EVASION";
         internal const string MELEE_OPTION = "PAWNCUSTACTION_MELEE";
 
+        /// <summary>
+        /// If dynamic resources have been prepared
+        /// </summary>
+        private static bool Prepared;
+
         public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
             if (!HasOneSubOptionSelected(option))
@@ -38,27 +43,41 @@ namespace Randomizer.Randomizers.Game3.Misc
 
             if (option.HasSubOptionSelected(EVASION_OPTION) || option.HasSubOptionSelected(MELEE_OPTION))
             {
-                PrepareDynamicResources(target);
+                PrepareCustomActions(target);
+                if (option.HasSubOptionSelected(MELEE_OPTION))
+                {
+                    PatchMeleeToSyncPartner(sfxgame);
+                }
             }
 
             scriptText = SubOptionSubstitute(scriptText, option, EVASION_OPTION, "EVASIONRANDOMIZER",
-                generateEvasionRandomizerScriptText);
-            scriptText = SubOptionSubstitute(scriptText, option, "ALWAYSFALSE"/*MELEE_OPTION*/, "MELEERANDOMIZER",
-                "MeleeRandomizer.uc");
+                generateCAAssignmentScriptText, 54, 4); // 54 is first CA evasion
+            scriptText = SubOptionSubstitute(scriptText, option, MELEE_OPTION, "MELEERANDOMIZER",
+                generateCAAssignmentScriptText, 133, 3); // 133 is first CA melee
 
             ScriptTools.InstallScriptTextToExport(sfxgame.FindExport("SFXAI_Core.Initialize"), scriptText,
                 "SFXAI_Core.Initialize() Pawn Stat Randomizer", MERCaches.GlobalCommonLookupCache);
+
             MERFileSystem.SavePackage(sfxgame);
             return true;
         }
 
-        private static string generateEvasionRandomizerScriptText()
+        /// <summary>
+        /// Makes it so melee attacks pass in the sync partner, so it can be used to sync. this allows things like player heavy melee to be used
+        /// </summary>
+        /// <param name="sfxgame"></param>
+        private static void PatchMeleeToSyncPartner(IMEPackage sfxgame)
         {
-            int baseActionNumber = 54; // Custom action id of the first evasion
+            var script = "public function DoMeleeAttack() { LastCombatActionTime = WorldInfo.GameTimeSeconds; MyBP.StartCustomAction(133, Pawn(FireTarget)); }";
+            ScriptTools.InstallScriptTextToExport(sfxgame.FindExport("SFXAI_Core.DoMeleeAttack"),script,"StandardMeleeSyncPatch", null);
+        }
+
+        private static string generateCAAssignmentScriptText(int startingCA, int numConsecutiveCAs)
+        {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < numConsecutiveCAs; i++)
             {
-                var caIndex = i + baseActionNumber;
+                var caIndex = i + startingCA;
                 sb.AppendLine($"if (MyBP.CustomActionClasses[{caIndex}] != None)");
                 sb.AppendLine("{");
                 var caArray = getArrayForCA(caIndex);
@@ -83,8 +102,9 @@ namespace Randomizer.Randomizers.Game3.Misc
             if (caIndex == 55) return _evadeRightActions;
             if (caIndex == 56) return _evadeForwardActions;
             if (caIndex == 57) return _evadeBackwardsActions;
-
-            // Todo: Add punch and heavy punch CAs
+            if (caIndex == 133) return _punchActions; // Standard Melee
+            if (caIndex == 134) return _punchActions; // Standard Melee Alt
+            if (caIndex == 135) return _syncMeleeActions; // Sync actions
 
             return null;
         }
@@ -95,8 +115,21 @@ namespace Randomizer.Randomizers.Game3.Misc
         private static List<SeekFreeInfo> _evadeForwardActions = new();
         private static List<SeekFreeInfo> _evadeBackwardsActions = new();
         private static List<SeekFreeInfo> _punchActions = new();
-        private static void PrepareDynamicResources(GameTarget target)
+        private static List<SeekFreeInfo> _syncMeleeActions = new(); // Actions usable for sync melee (banshee, brute, etc)
+
+        private static List<SeekFreeInfo> _deathActions = new(); // Not used in MER, but in kismet
+        private static List<SeekFreeInfo> _climbUpActions = new(); // Not used in MER, but in kismet
+        private static List<SeekFreeInfo> _climbDownActions = new(); // Not used in MER, but in kismet
+
+
+        /// <summary>
+        /// Initialization of randomizer - inventory actions we can use
+        /// </summary>
+        /// <param name="target"></param>
+        internal static void PrepareCustomActions(GameTarget target)
         {
+            if (Prepared)
+                return;
             // Extract custom actions packages
             var assets = MEREmbedded.ListEmbeddedAssets("Binary", $"Packages.{target.Game}.CustomActions", false);
             foreach (var asset in assets)
@@ -137,6 +170,26 @@ namespace Randomizer.Randomizers.Game3.Misc
                                 _punchActions.Add(info);
                                 CoalescedHandler.AddDynamicLoadMappingEntry(info);
                                 break;
+                            case "SyncMeleeActions":
+                                info = new SeekFreeInfo(e, filename);
+                                _syncMeleeActions.Add(info);
+                                CoalescedHandler.AddDynamicLoadMappingEntry(info);
+                                break;
+                            case "ClimbUpActions":
+                                info = new SeekFreeInfo(e, filename);
+                                _climbUpActions.Add(info);
+                                CoalescedHandler.AddDynamicLoadMappingEntry(info);
+                                break;
+                            case "ClimbDownActions":
+                                info = new SeekFreeInfo(e, filename);
+                                _climbDownActions.Add(info);
+                                CoalescedHandler.AddDynamicLoadMappingEntry(info);
+                                break;
+                            case "DeathActions":
+                                info = new SeekFreeInfo(e, filename);
+                                _deathActions.Add(info);
+                                CoalescedHandler.AddDynamicLoadMappingEntry(info);
+                                break;
                         }
                     }
                 }
@@ -144,6 +197,8 @@ namespace Randomizer.Randomizers.Game3.Misc
                 // This will essentially count as an extraction. Directly copying would be faster technically...
                 MERFileSystem.SavePackage(customActionPackage, true, forcedFileName: filename);
             }
+
+            Prepared = true;
         }
 
         private static bool HasOneSubOptionSelected(RandomizationOption option)
@@ -186,11 +241,11 @@ namespace Randomizer.Randomizers.Game3.Misc
         /// <param name="stringId"></param>
         /// <param name="scriptName"></param>
         /// <returns></returns>
-        private static string SubOptionSubstitute(string currentScriptText, RandomizationOption option, string optionKey, string stringId, Func<string> getTextDelegate)
+        private static string SubOptionSubstitute(string currentScriptText, RandomizationOption option, string optionKey, string stringId, Func<int, int, string> getTextDelegate, int startingCA, int numConsecutiveCAs)
         {
             if (option.HasSubOptionSelected(optionKey))
             {
-                return currentScriptText.Replace($"%{stringId}%", getTextDelegate());
+                return currentScriptText.Replace($"%{stringId}%", getTextDelegate(startingCA, numConsecutiveCAs));
             }
 
             // Blank it out
@@ -204,6 +259,11 @@ namespace Randomizer.Randomizers.Game3.Misc
             _evadeRightActions.Clear();
             _evadeLeftActions.Clear();
             _punchActions.Clear();
+            _syncMeleeActions.Clear();
+            _climbDownActions.Clear();
+            _climbUpActions.Clear();
+            _deathActions.Clear();
+            Prepared = false;
         }
     }
 }
