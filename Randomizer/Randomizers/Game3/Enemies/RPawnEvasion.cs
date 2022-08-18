@@ -9,10 +9,11 @@ using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
+using WinCopies.Util;
 
 namespace Randomizer.Randomizers.Game3.Misc
 {
-    internal class REnemyPowers
+    internal class RPawnEvasionowers
     {
         public const string OPTION_NEW = "NEW";
         public const string OPTION_VANILLA = "PATCHED";

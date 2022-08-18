@@ -868,13 +868,14 @@ namespace Randomizer.Randomizers.Game1
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true
                     },
-                    new RandomizationOption() {
-                        HumanName = "Actors in conversations",
-                        Description="Swaps pawns around in conversations that have more than 2 participants (rare in this game).",
-                        PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport,
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
-                        IsRecommended = true
-                    },
+                    // Due to how stage placement works this doesn't really work very well in this game.
+                    //new RandomizationOption() {
+                    //    HumanName = "Actors in conversations",
+                    //    Description="Swaps pawns around in conversations that have more than 2 participants (rare in this game).",
+                    //    PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExport,
+                    //    Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                    //    IsRecommended = true
+                    //},
                     new RandomizationOption() {
                             HumanName = "Animation data",
                             PerformRandomizationOnExportDelegate = RSharedAnimSequence.RandomizeExport,
