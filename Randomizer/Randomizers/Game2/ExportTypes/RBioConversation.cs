@@ -110,7 +110,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                             if (connectedItem.ClassName == "SeqVar_Object")
                             {
                                 var objValue = connectedItem.GetProperty<ObjectProperty>("ObjValue");
-                                if (objValue == null && !MERSeqTools.IsAssignedBioPawn(convStart, connectedItem, sequenceObjects))
+                                if (objValue == null && !MERSeqTools.IsAssignedClassType(convStart, connectedItem, sequenceObjects, "BioPawn"))
                                 {
                                     continue; // This is not a shufflable node, it is never assigned anything
                                 }

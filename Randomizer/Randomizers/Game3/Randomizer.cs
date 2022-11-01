@@ -25,6 +25,7 @@ using Randomizer.Randomizers.Game3.Levels;
 using Randomizer.Randomizers.Game3.Misc;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared;
+using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 using Serilog;
 
@@ -679,35 +680,35 @@ namespace Randomizer.Randomizers.Game3
                             }
                         }
                     },
-                    new RandomizationOption()
-                    {
-                        HumanName = "Engineer",
-                        Description = "Changes how the Engineer enemy behaves",
-                        SubOptions = new ObservableCollectionExtended<RandomizationOption>()
-                        {
-                            new RandomizationOption()
-                            {
-                                IsOptionOnly = true,
-                                HumanName = "Place turret anywhere",
-                                Description = "The Engineer can place its turret anywhere, instead of specified locations",
-                                SubOptionKey = RBanshee.OPTION_REVERSE_SIDE_MIXIN
-                            },
-                            new RandomizationOption()
-                            {
-                                IsOptionOnly = true,
-                                HumanName = "No turret suicide",
-                                Description = "Disables the suicide timer on the Engineer turret",
-                                SubOptionKey = RBanshee.OPTION_JUMPDIST_MIXIN
-                            },
-                            new RandomizationOption()
-                            {
-                                IsOptionOnly = true,
-                                HumanName = "Repair anybody",
-                                Description = "Allows the Engineer to heal any teammate, not just the Atlas and Turret",
-                                SubOptionKey = RBanshee.OPTION_IGNOREINVALIDPATHING_MIXIN
-                            }
-                        }
-                    }
+                    //new RandomizationOption()
+                    //{
+                    //    HumanName = "Engineer",
+                    //    Description = "Changes how the Engineer enemy behaves",
+                    //    SubOptions = new ObservableCollectionExtended<RandomizationOption>()
+                    //    {
+                    //        new RandomizationOption()
+                    //        {
+                    //            IsOptionOnly = true,
+                    //            HumanName = "Place turret anywhere",
+                    //            Description = "The Engineer can place its turret anywhere, instead of specified locations",
+                    //            SubOptionKey = RBanshee.OPTION_REVERSE_SIDE_MIXIN
+                    //        },
+                    //        new RandomizationOption()
+                    //        {
+                    //            IsOptionOnly = true,
+                    //            HumanName = "No turret suicide",
+                    //            Description = "Disables the suicide timer on the Engineer turret",
+                    //            SubOptionKey = RBanshee.OPTION_JUMPDIST_MIXIN
+                    //        },
+                    //        new RandomizationOption()
+                    //        {
+                    //            IsOptionOnly = true,
+                    //            HumanName = "Repair anybody",
+                    //            Description = "Allows the Engineer to heal any teammate, not just the Atlas and Turret",
+                    //            SubOptionKey = RBanshee.OPTION_IGNOREINVALIDPATHING_MIXIN
+                    //        }
+                    //    }
+                    //}
                 }
             });
 

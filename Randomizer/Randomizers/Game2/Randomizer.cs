@@ -25,6 +25,7 @@ using Randomizer.Randomizers.Game2.TextureAssets;
 using Randomizer.Randomizers.Game2.TextureAssets.LE2;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared;
+using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 using Serilog;
 
@@ -132,7 +133,16 @@ namespace Randomizer.Randomizers.Game2
             Exception rethrowException = null;
             try
             {
+                // Initialize FileSystem and handlers
                 MERFileSystem.InitMERFS(SelectedOptions);
+
+                // Initialize any special items here
+                if (SelectedOptions.SelectedOptions.Any(x => x.RequiresGestures))
+                {
+                    // Prepare runtime gestures data
+                    GestureManager.Init(SelectedOptions.RandomizationTarget);
+                }
+
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
 
@@ -201,10 +211,10 @@ namespace Randomizer.Randomizers.Game2
 #if DEBUG
                         if (true
                         //&& false //uncomment to disable filtering
-                        //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -556,7 +566,7 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {HumanName = "Player movement speeds", Description = "Changes player movement stats", PerformSpecificRandomizationDelegate = PawnMovementSpeed.RandomizePlayerMovementSpeed, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     //new RandomizationOption() {HumanName = "NPC walking routes", PerformRandomizationOnExportDelegate = RRoute.RandomizeExport}, // Seems very specialized in ME2
                     new RandomizationOption() {HumanName = "Hammerhead", IsRecommended = true, Description = "Changes HammerHead stats",PerformSpecificRandomizationDelegate = HammerHead.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
-                    new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by basic non-interactable NPCs. Some may T-pose due to the sheer complexity of this randomizer",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActorMAT.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning},
+                    new RandomizationOption() {HumanName = "'Lite' pawn animations", IsRecommended = true, Description = "Changes the animations used by basic non-interactable NPCs. Some may T-pose due to the sheer complexity of this randomizer",PerformRandomizationOnExportDelegate = RSFXSkeletalMeshActorMAT.RandomizeBasicGestures, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning, RequiresGestures = true},
                     new RandomizationOption()
                     {
                         HumanName = "Pawn sizes", Description = "Changes the size of characters. Will break a lot of things", PerformRandomizationOnExportDelegate = RBioPawn.RandomizePawnSize,

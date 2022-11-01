@@ -62,6 +62,11 @@ namespace Randomizer.Randomizers.Game3.Misc
             return true;
         }
 
+        private static void PrepareCustomActions(GameTarget target)
+        {
+
+        }
+
         /// <summary>
         /// Makes it so melee attacks pass in the sync partner, so it can be used to sync. this allows things like player heavy melee to be used
         /// </summary>
@@ -98,10 +103,20 @@ namespace Randomizer.Randomizers.Game3.Misc
 
         private static List<SeekFreeInfo> getArrayForCA(int caIndex)
         {
+            if (caIndex == 48) return _climbDownActions; // CA_BoostDownClimbUpWall
+            if (caIndex == 49) return _climbUpActions; // CA_BoostUp
+            if (caIndex == 50) return _climbUpActions; // CA_ClimbUpWall
+            if (caIndex == 51) return _climbDownActions; // CA_ClimbDownWall
+
             if (caIndex == 54) return _evadeLeftActions;
             if (caIndex == 55) return _evadeRightActions;
             if (caIndex == 56) return _evadeForwardActions;
             if (caIndex == 57) return _evadeBackwardsActions;
+
+
+
+            if (caIndex == 120) return _deathActions; // DeathReaction_Standard
+
             if (caIndex == 133) return _punchActions; // Standard Melee
             if (caIndex == 134) return _punchActions; // Standard Melee Alt
             if (caIndex == 135) return _syncMeleeActions; // Sync actions
@@ -115,6 +130,13 @@ namespace Randomizer.Randomizers.Game3.Misc
         private static List<SeekFreeInfo> _evadeForwardActions = new();
         private static List<SeekFreeInfo> _evadeBackwardsActions = new();
         private static List<SeekFreeInfo> _punchActions = new();
+        private static List<SeekFreeInfo> _syncMeleeActions = new();
+
+        private static List<SeekFreeInfo> _climbUpActions = new();
+        private static List<SeekFreeInfo> _climbDownActions = new();
+        private static List<SeekFreeInfo> _deathActions = new();
+
+
         internal static void PrepareDynamicResources(GameTarget target)
         {
             if (Prepared)
@@ -248,10 +270,10 @@ namespace Randomizer.Randomizers.Game3.Misc
             _evadeRightActions.Clear();
             _evadeLeftActions.Clear();
             _punchActions.Clear();
-            _syncMeleeActions.Clear();
-            _climbDownActions.Clear();
-            _climbUpActions.Clear();
-            _deathActions.Clear();
+            //_syncMeleeActions.Clear();
+            //_climbDownActions.Clear();
+            //_climbUpActions.Clear();
+            //_deathActions.Clear();
             Prepared = false;
         }
     }
