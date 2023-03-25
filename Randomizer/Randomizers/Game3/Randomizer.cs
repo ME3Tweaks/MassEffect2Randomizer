@@ -202,11 +202,11 @@ namespace Randomizer.Randomizers.Game3
 #if DEBUG
                         if (true
                         //&& false //uncomment to disable filtering
-                        && !file.Contains("Cat002", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("Cat003", StringComparison.InvariantCultureIgnoreCase)
-                        // && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
-                        // !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
-                        // && !file.Contains("BioNPC", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("Cat002", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("Cat003", StringComparison.InvariantCultureIgnoreCase)
+                         && !file.Contains("CerMir", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("CitSam", StringComparison.InvariantCultureIgnoreCase)
+                         && !file.Contains("Omg", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif

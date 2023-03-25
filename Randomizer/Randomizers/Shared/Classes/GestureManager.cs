@@ -21,6 +21,12 @@ namespace Randomizer.Randomizers.Shared.Classes
     /// </summary>
     class GestureManager
     {
+#if __GAME1__
+        public static readonly string[] RandomGesturePackages =
+        {
+
+        };
+#endif
 #if __GAME2__
         public static readonly string[] RandomGesturePackages =
         {

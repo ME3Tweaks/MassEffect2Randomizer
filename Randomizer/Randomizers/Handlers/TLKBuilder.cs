@@ -217,7 +217,7 @@ namespace Randomizer.Randomizers.Handlers
             var tlkFiles = Directory.GetFiles(bgPath, "*.tlk", SearchOption.AllDirectories);
             foreach (var tlkFile in tlkFiles)
             {
-                if (tlkFile.Contains("DLC_440")) // Change if our module number changes
+                if (tlkFile.Contains($"DLC_{(target.Game == MEGame.LE2 ? 39200 : 440)}")) // Change if our module number changes
                 {
                     var tf = new ME2ME3TalkFile();
                     tf.LoadTlkData(tlkFile);
@@ -265,56 +265,56 @@ namespace Randomizer.Randomizers.Handlers
 #endif
         }
 
-        private void Commit()
-        {
+            private void Commit()
+            {
 #if __GAME1__
             // Game 1 uses embedded TLKs. This method will commit the
             // the GlobalTlk for the DLC component.
 
 #elif __GAME2__ || __GAME3__
 
-            // Write out the TLKs
-            Parallel.ForEach(MERTalkFiles, tf =>
-            {
-                if (tf.IsModified)
+                // Write out the TLKs
+                Parallel.ForEach(MERTalkFiles, tf =>
                 {
-                    var gsTLK = tf as ME2ME3TalkFile;
-                    var hc = new LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression();
-                    hc.LoadInputData(tf.StringRefs);
-                    hc.SaveToFile(gsTLK.FilePath);
-                }
-            });
+                    if (tf.IsModified)
+                    {
+                        var gsTLK = tf as ME2ME3TalkFile;
+                        var hc = new LegendaryExplorerCore.TLK.ME2ME3.HuffmanCompression();
+                        hc.LoadInputData(tf.StringRefs);
+                        hc.SaveToFile(gsTLK.FilePath);
+                    }
+                });
 #endif
 
-            // Free memory
-            MERTalkFile = null;
-            MERTalkFiles = null;
-            LoadedOfficialTalkFiles = null;
-            _updatedTlkStrings = null;
+                // Free memory
+                MERTalkFile = null;
+                MERTalkFiles = null;
+                LoadedOfficialTalkFiles = null;
+                _updatedTlkStrings = null;
 #if __GAME1__
             Game1GlobalTlkPackages = null;
 #endif
-        }
+            }
 
-        private int GetNextID()
-        {
-            return NextDynamicID++;
-        }
-
-        private void InternalReplaceString(int stringid, string newText, MELocalization? localization = null)
-        {
-            foreach (var tf in MERTalkFiles)
+            private int GetNextID()
             {
-                // Check if this string should be replaced in this language
-                if (localization != null && tf.Localization != localization) continue;
-                //Debug.WriteLine($"TLK installing {stringid}: {newText}");
-                lock (syncObj)
+                return NextDynamicID++;
+            }
+
+            private void InternalReplaceString(int stringid, string newText, MELocalization? localization = null)
+            {
+                foreach (var tf in MERTalkFiles)
                 {
-                    //Debug.WriteLine($"ReplaceStr {stringid} to {newText}");
-                    tf.ReplaceString(stringid, newText, true);
+                    // Check if this string should be replaced in this language
+                    if (localization != null && tf.Localization != localization) continue;
+                    //Debug.WriteLine($"TLK installing {stringid}: {newText}");
+                    lock (syncObj)
+                    {
+                        //Debug.WriteLine($"ReplaceStr {stringid} to {newText}");
+                        tf.ReplaceString(stringid, newText, true);
+                    }
                 }
             }
-        }
 
         private object syncObj = new object();
 

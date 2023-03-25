@@ -31,7 +31,7 @@ namespace Randomizer.Randomizers.Game3.Framework
                 option.ProgressValue = 0;
                 option.ProgressMax = npcFiles.Length;
                 option.CurrentOperation = "Randomizing NPCs (Inventory)";
-                foreach (var npcFile in npcFiles)
+                foreach (var npcFile in npcFiles.Where(x=>x.GetUnrealLocalization() == MELocalization.None))
                 {
                     var packageName = Path.GetFileName(npcFile);
                     var npcPackagePath = MERFileSystem.GetPackageFile(target, packageName, false);
