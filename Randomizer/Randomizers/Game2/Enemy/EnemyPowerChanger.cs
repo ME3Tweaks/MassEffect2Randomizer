@@ -17,7 +17,7 @@ using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Enemy
 {
-    class EnemyPowerChanger
+    public class EnemyPowerChanger
     {
         private static string[] PowersToNotSwap = new[]
         {
@@ -66,18 +66,22 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     var powerFilePath = MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName, false);
                     if (powerInfo.IsCorrectedPackage || (powerFilePath != null && File.Exists(powerFilePath)))
                     {
+                        // This can probably be removed; DLC is included in LE2
                         if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(target, powerInfo.FileDependency, false) == null)
                         {
                             MERLog.Information($@"Dependency file {powerInfo.FileDependency} not found, not adding {powerInfo.PowerName} to power selection pool");
                             continue; // Dependency not met
                         }
+                        // End removal area
+
+
                         MERLog.Information($@"Adding {powerInfo.PowerName} to power selection pool");
                         Powers.Add(powerInfo);
                     }
 
                     if (!powerInfo.IsCorrectedPackage && powerFilePath == null)
                     {
-                        MERLog.Information($@"{powerInfo.PowerName} package file not found ({powerInfo.PackageFileName}), weapon not added to weapon pools");
+                        MERLog.Information($@"{powerInfo.PowerName} package file not found ({powerInfo.PackageFileName}), power not added to power randomization pools");
                     }
                 }
             }
@@ -95,21 +99,22 @@ namespace Randomizer.Randomizers.Game2.Enemy
             return true;
         }
 
-        internal class PowerInfo
+        public class PowerInfo
         {
             /// <summary>
             ///  Name of the power
             /// </summary>
             [JsonProperty("powername")]
             public string PowerName { get; set; }
-            [JsonProperty("packagename")]
-            public string PackageName { get; set; } = "SFXGameContent_Powers";
+
+            [JsonProperty("instancedfullpath")]
+            public string InstancedFullPath { get; set; }
+
             [JsonProperty("packagefilename")]
             public string PackageFileName { get; set; }
-            [JsonProperty("sourceuindex")]
-            public int SourceUIndex { get; set; }
+
             [JsonProperty("type")]
-            public EPowerCapabilityType Type { get; set; }
+            internal EPowerCapabilityType Type { get; set; }
 
             /// <summary>
             /// If not null, test if this file exists when loading the power list (essentially a hack DLC check)
@@ -117,13 +122,23 @@ namespace Randomizer.Randomizers.Game2.Enemy
             [JsonProperty("filedependency")]
             public string FileDependency { get; set; }
 
+            /// <summary>
+            /// Maps the power type to the power type enum for categorization
+            /// </summary>
+            /// <param name="classExport"></param>
+            /// <returns></returns>
             private bool MapPowerType(ExportEntry classExport)
             {
                 var uClass = ObjectBinary.From<UClass>(classExport);
                 var defaults = classExport.FileRef.GetUExport(uClass.Defaults);
                 var bct = defaults.GetProperty<EnumProperty>("CapabilityType");
-                if (bct == null)
-                    return false;
+                while (bct == null)
+                {
+                    defaults = defaults.Archetype as ExportEntry;
+                    if (defaults == null)
+                        return false; // We cannot look up the capability type
+                    bct = defaults.GetProperty<EnumProperty>("CapabilityType"); // Look in archetype (superclass of defaults)
+                }
                 switch (bct.Value.Name)
                 {
                     case "BioCaps_AllTypes":
@@ -161,7 +176,6 @@ namespace Randomizer.Randomizers.Game2.Enemy
                         Debugger.Break();
                         return true;
                 }
-
             }
 
             private static bool IsWhitelistedPower(ExportEntry export)
@@ -210,7 +224,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                         || PowerName == "SFXPower_CombatDroneAttack" // Combat drone only
                         || PowerName == "SFXPower_HeavyMechExplosion" // This is not actually used and doesn't seem to work but is on some pawns
                         || PowerName == "SFXPower_CombatDrone" // Player version is way too OP. Enforce NPC version
-                        || PowerName.Contains("Dominate") // This is pointless against player squad
+                        || PowerName.Contains("Dominate") // This is pointless against player squad // But is it REALLY?
                     )
                     )
                 {
@@ -219,38 +233,29 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 }
 
                 PackageFileName = Path.GetFileName(export.FileRef.FilePath);
-                PackageName = export.ParentName;
-                SourceUIndex = export.UIndex;
+                InstancedFullPath = export.InstancedFullPath;
 
-                var hasShaderCache = export.FileRef.FindExport("SeekFreeShaderCache") != null;
-                RequiresStartupPackage = hasShaderCache && !export.FileRef.FilePath.Contains("Startup", StringComparison.InvariantCultureIgnoreCase);
-                ImportOnly = hasShaderCache;
                 IsCorrectedPackage = isCorrectedPackage;
-
-                if (hasShaderCache && !IsWhitelistedPower(export))
-                {
-                    IsUsable = false; // only allow whitelisted DLC powers
-                }
-
                 SetupDependencies(export);
             }
 
             private void SetupDependencies(ExportEntry export)
             {
-                switch (export.ObjectName)
-                {
-                    // Check for 01's as basegame has stub 00 versions
-                    case "SFXPower_Flashbang_NPC":
-                        FileDependency = "BioH_Thief_01.pcc"; // Test for Kasumi DLC
-                        break;
-                    case "SFXPower_ZaeedUnique_Player":
-                        FileDependency = "BioH_Veteran_01.pcc"; // Test for Kasumi DLC
-                        break;
-                }
+                // Not necessary in LE
+                //switch (export.ObjectName)
+                //{
+                //    // Check for 01's as basegame has stub 00 versions
+                //    case "SFXPower_Flashbang_NPC":
+                //        FileDependency = "BioH_Thief_01.pcc"; // Test for Kasumi DLC
+                //        break;
+                //    case "SFXPower_ZaeedUnique_Player":
+                //        FileDependency = "BioH_Veteran_01.pcc"; // Test for Kasumi DLC
+                //        break;
+                //}
             }
 
             /// <summary>
-            /// If this power file is stored in the executable
+            /// If this power file is stored in the executable as it required manual corrections to work
             /// </summary>
             [JsonProperty("iscorrectedpackage")]
             public bool IsCorrectedPackage { get; set; }
@@ -263,11 +268,12 @@ namespace Randomizer.Randomizers.Game2.Enemy
             /// </summary>
             [JsonProperty("importonly")]
             public bool ImportOnly { get; set; }
+
             /// <summary>
             /// If this power requires the package that contains it to be added to the startup list. Used for DLC powers
             /// </summary>
-            [JsonProperty("requiresstartuppackage")]
-            public bool RequiresStartupPackage { get; set; }
+            //[JsonProperty("requiresstartuppackage")]
+            //public bool RequiresStartupPackage { get; set; }
 
             /// <summary>
             /// A list of additional related powers that are required for this power to work, for example Shadow Strike requires teleport and assasination abilities. Full asset paths to power class
@@ -309,7 +315,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
             if (sourcePackage != null)
             {
-                var sourceExport = sourcePackage.GetUExport(powerInfo.SourceUIndex);
+                var sourceExport = sourcePackage.FindExport(powerInfo.InstancedFullPath);
                 if (!sourceExport.InheritsFrom("SFXPower") || sourceExport.IsDefaultObject)
                 {
                     throw new Exception("Wrong setup!");
@@ -321,72 +327,42 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
                 var newParent = EntryExporter.PortParents(sourceExport, targetPackage);
                 IEntry newEntry;
-                if (powerInfo.ImportOnly)
+#if DEBUG
+                // DEBUG ONLY-----------------------------------
+                //var defaults = sourceExport.GetDefaults();
+                //defaults.RemoveProperty("VFX");
+                //var vfx = defaults.GetProperty<ObjectProperty>("VFX").ResolveToEntry(sourcePackage) as ExportEntry;
+                //vxx.RemoveProperty("PlayerCrust");
+                //vfx.FileRef.GetUExport(1544).RemoveProperty("oPrefab");
+
+                ////vfx = defaults.FileRef.GetUExport(6211); // Prefab
+                ////vfx.RemoveProperty("WorldImpactVisualEffect");
+                //MERPackageCache cached = new MERPackageCache();
+                //EntryExporter.ExportExportToPackage(vfx, targetPackage, out newEntry, cached);
+                //PackageTools.AddReferencesToWorld(targetPackage, new [] {newEntry as ExportEntry});
+
+                //return null;
+
+
+                // END DEBUG ONLY--------------------------------
+#endif
+                List<EntryStringPair> relinkResults = null;
+                if ((powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
                 {
-                    //Debug.WriteLine($"ImportOnly in file {targetPackage.FilePath}");
-                    if (powerInfo.RequiresStartupPackage)
-                    {
-                        ThreadSafeDLCStartupPackage.AddStartupPackage(Path.GetFileNameWithoutExtension(powerInfo.PackageFileName));
-                        if (powerInfo.IsCorrectedPackage)
-                        {
-                            // File must be added to MERFS DLC
-                            var outP = Path.Combine(MERFileSystem.DLCModCookedPath, powerInfo.PackageFileName);
-                            if (!File.Exists(outP))
-                            {
-                                sourcePackage.Save(outP, true);
-                            }
-                        }
-                    }
-
-                    newEntry = PackageTools.CreateImportForClass(sourceExport, targetPackage, newParent);
-
-                    // Port in extra imports so the calling class can reference them as necessary.
-                    foreach (var addlPow in powerInfo.AdditionalRequiredPowers)
-                    {
-                        var addlSourceExp = sourcePackage.FindExport(addlPow);
-                        PackageTools.CreateImportForClass(addlSourceExp, targetPackage, EntryExporter.PortParents(addlSourceExp, targetPackage));
-                    }
-
+                    // Faster this way, without having to check imports
+                    relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
+                        newParent, true, new RelinkerOptionsPackage(), out newEntry); // TODO: CACHE?
                 }
                 else
                 {
-#if DEBUG
-                    // DEBUG ONLY-----------------------------------
-                    //var defaults = sourceExport.GetDefaults();
-                    //defaults.RemoveProperty("VFX");
-                    //var vfx = defaults.GetProperty<ObjectProperty>("VFX").ResolveToEntry(sourcePackage) as ExportEntry;
-                    //vxx.RemoveProperty("PlayerCrust");
-                    //vfx.FileRef.GetUExport(1544).RemoveProperty("oPrefab");
+                    // MEMORY SAFE (resolve imports to exports)
+                    MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+                    relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
+                }
 
-                    ////vfx = defaults.FileRef.GetUExport(6211); // Prefab
-                    ////vfx.RemoveProperty("WorldImpactVisualEffect");
-                    //MERPackageCache cached = new MERPackageCache();
-                    //EntryExporter.ExportExportToPackage(vfx, targetPackage, out newEntry, cached);
-                    //PackageTools.AddReferencesToWorld(targetPackage, new [] {newEntry as ExportEntry});
-
-                    //return null;
-
-
-                    // END DEBUG ONLY--------------------------------
-#endif
-                    List<EntryStringPair> relinkResults = null;
-                    if ((powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
-                    {
-                        // Faster this way, without having to check imports
-                        relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
-                            newParent, true, new RelinkerOptionsPackage(), out newEntry); // TODO: CACHE?
-                    }
-                    else
-                    {
-                        // MEMORY SAFE (resolve imports to exports)
-                        MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
-                        relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
-                    }
-
-                    if (relinkResults.Any())
-                    {
-                        Debugger.Break();
-                    }
+                if (relinkResults.Any())
+                {
+                    Debugger.Break();
                 }
 
                 return newEntry;
@@ -514,7 +490,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     // It's a different power.
 
                     // See if we need to port this in
-                    var fullName = randomNewPower.PackageName + "." + randomNewPower.PowerName; // SFXGameContent_Powers.SFXPower_Hoops
+                    var fullName = randomNewPower.InstancedFullPath + "." + randomNewPower.PowerName; // SFXGameContent_Powers.SFXPower_Hoops
                     var existingVersionOfPower = export.FileRef.FindEntry(fullName);
 
                     if (existingVersionOfPower != null)

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Packages;
@@ -13,11 +15,16 @@ using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
+using Microsoft.WindowsAPICodePack.PortableDevices.CommandSystem.Object;
+using Newtonsoft.Json;
 using Randomizer.Randomizers;
+using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
+using WinCopies.Diagnostics;
 using WinCopies.Util;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Randomizer.MER
 {
@@ -36,6 +43,295 @@ namespace Randomizer.MER
         {
             Debug.WriteLine($"Installing debug script {scriptName}");
             ScriptTools.InstallScriptToPackage(package, scriptName, "Debug." + scriptName + ".uc", false, saveOnFinish);
+        }
+
+        public static void BuildPowersBank(object sender, DoWorkEventArgs e)
+        {
+#if DEBUG && __GAME2__
+
+            var option = e.Argument as RandomizationOption;
+
+            option.ProgressValue = 0;
+            option.CurrentOperation = "Building powers package";
+            option.ProgressIndeterminate = false;
+
+            // SETUP STAGE 1
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE2, true, false);
+
+            using var powerBank = MEPackageHandler.CreateAndOpenPackage(@"B:\UserProfile\source\repos\ME2Randomizer\Randomizer\Randomizers\Game2\Assets\Binary\Packages\LE2\AllPowers.pcc",
+                               MEGame.LE2);
+
+            List<string> alreadyDonePowers = new List<string>();
+
+            int done = 0;
+            option.ProgressMax = files.Count;
+            foreach (var f in files)
+            {
+                Interlocked.Increment(ref done);
+                option.ProgressValue = done;
+                using var package = MEPackageHandler.OpenMEPackage(f.Value);
+                var powers = package.Exports.Where(x => x.IsClass && !x.IsDefaultObject && x.InheritsFrom("SFXPower"));
+                foreach (var skm in powers.Where(x => !alreadyDonePowers.Contains(x.InstancedFullPath)))
+                {
+                    BuildPowerInfo(skm, powerBank, false);
+                    alreadyDonePowers.Add(skm.InstancedFullPath);
+                }
+            }
+
+            powerBank.Save();
+            return;
+            //mainWindow.CurrentOperationText = "Finding portable powers (stage 1)";
+            //int numdone = 0;
+            //int numtodo = files.Count;
+
+            //mainWindow.ProgressBarIndeterminate = false;
+            //mainWindow.ProgressBar_Bottom_Max = files.Count();
+            //mainWindow.CurrentProgressValue = 0;
+
+            //// PREP WORK
+            //var startupFileCache = MERFileSystem.GetGlobalCache();
+
+            //// Maps instanced full path to list of instances
+            //ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>> mapping =
+            //    new ConcurrentDictionary<string, List<EnemyPowerChanger.PowerInfo>>();
+
+            //// STAGE 1====================
+
+            //// Corrected, embedded powers that required file coalescing for portability or other corrections in order to work on enemies
+            //var correctedPowers = MERUtilities.ListStaticAssets("binary.correctedloadouts.powers");
+            //foreach (var cg in correctedPowers)
+            //{
+            //    var pData = MERUtilities.GetEmbeddedStaticFile(cg, true);
+            //    var package = MEPackageHandler.OpenMEPackageFromStream(new MemoryStream(pData),
+            //        MERUtilities.GetFilenameFromAssetName(cg)); //just any path
+            //    var sfxPowers =
+            //        package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
+            //    foreach (var sfxPow in sfxPowers)
+            //    {
+            //        BuildPowerInfo(sfxPow, mapping, package, startupFileCache, null, true);
+            //    }
+            //}
+
+            //Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
+            //{
+            //    mainWindow.CurrentOperationText = $"Finding portable powers (stage 1) [{numdone}/{numtodo}]";
+            //    Interlocked.Increment(ref numdone);
+            //    MERPackageCache localCache = new MERPackageCache();
+            //    var package = MEPackageHandler.OpenMEPackage(file);
+            //    var powers = package.Exports.Where(x => x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject);
+            //    foreach (var skm in powers.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
+            //    {
+            //        // See if power is fully defined in package?
+            //        var classInfo = ObjectBinary.From<UClass>(skm);
+            //        if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+            //            continue; // This class cannot be used as a power, it is abstract
+
+            //        var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
+            //        var importDependencies = dependencies.OfType<ImportEntry>().ToList();
+            //        var usable = CheckImports(importDependencies, package, startupFileCache, localCache,
+            //            out var missingImport);
+            //        if (usable)
+            //        {
+            //            var pi = new EnemyPowerChanger.PowerInfo(skm, false);
+
+            //            if (pi.IsUsable)
+            //            {
+            //                Debug.WriteLine($"Usable power: {skm.InstancedFullPath} in {package.FilePath}");
+            //                if (!mapping.TryGetValue(skm.InstancedFullPath, out var instanceList))
+            //                {
+            //                    instanceList = new List<EnemyPowerChanger.PowerInfo>();
+            //                    mapping[skm.InstancedFullPath] = instanceList;
+            //                }
+
+            //                instanceList.Add(pi);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            //Debug.WriteLine($"Not usable power: {skm.InstancedFullPath} in {package.FilePath}");
+            //        }
+            //    }
+
+            //    mainWindow.CurrentProgressValue = numdone;
+            //});
+
+            //// PHASE 2
+
+            //files = MELoadedFiles.GetFilesLoadedInGame(MEGame.ME2, true, false).Values
+            //    .Where(x => x.Contains("BioD")
+            //                || x.Contains("BioP"))
+            //    .ToList();
+            //mainWindow.CurrentOperationText = "Finding portable powers (Stage 2)";
+            //numdone = 0;
+            //numtodo = files.Count;
+
+            //mainWindow.ProgressBarIndeterminate = false;
+            //mainWindow.ProgressBar_Bottom_Max = files.Count();
+            //mainWindow.CurrentProgressValue = 0;
+
+            //Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 3 }, (file) =>
+            //{
+            //    mainWindow.CurrentOperationText = $"Finding portable powers (Stage 2) [{numdone}/{numtodo}]";
+            //    Interlocked.Increment(ref numdone);
+            //    if (!file.Contains("BioD"))
+            //        return; // BioD only
+            //    MERPackageCache localCache = new MERPackageCache();
+            //    var package = MEPackageHandler.OpenMEPackage(file);
+            //    var powers = package.Exports.Where(x =>
+            //        x.InheritsFrom("SFXPower") && x.IsClass && !x.IsDefaultObject &&
+            //        !mapping.ContainsKey(x.InstancedFullPath));
+            //    foreach (var skm in powers.Where(x => !mapping.ContainsKey(x.InstancedFullPath)))
+            //    {
+            //        // See if power is fully defined in package?
+            //        var classInfo = ObjectBinary.From<UClass>(skm);
+            //        if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+            //            continue; // This class cannot be used as a power, it is abstract
+
+            //        var dependencies = EntryImporter.GetAllReferencesOfExport(skm);
+            //        var importDependencies = dependencies.OfType<ImportEntry>().ToList();
+            //        var usable = CheckImports(importDependencies, package, startupFileCache, localCache,
+            //            out var missingImport);
+            //        if (usable)
+            //        {
+            //            var pi = new EnemyPowerChanger.PowerInfo(skm, false);
+
+            //            if (pi.IsUsable)
+            //            {
+            //                Debug.WriteLine($"Usable power: {skm.InstancedFullPath} in {package.FilePath}");
+            //                if (!mapping.TryGetValue(skm.InstancedFullPath, out var instanceList))
+            //                {
+            //                    instanceList = new List<EnemyPowerChanger.PowerInfo>();
+            //                    mapping[skm.InstancedFullPath] = instanceList;
+            //                }
+
+            //                instanceList.Add(pi);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            //Debug.WriteLine($"Not usable power: {skm.InstancedFullPath} in {package.FilePath}");
+            //        }
+            //    }
+
+            //    mainWindow.CurrentProgressValue = numdone;
+            //});
+
+
+            //// PERFORM REDUCE OPERATION
+
+            //// Count the number of times a file is referenced for a power
+            //Dictionary<string, int> fileUsages = new Dictionary<string, int>();
+            //foreach (var powerPair in mapping)
+            //{
+            //    foreach (var powerInfo in powerPair.Value)
+            //    {
+            //        if (!fileUsages.TryGetValue(powerInfo.PackageFileName, out var fileUsageInt))
+            //        {
+            //            fileUsages[powerInfo.PackageFileName] = 1;
+            //        }
+            //        else
+            //        {
+            //            fileUsages[powerInfo.PackageFileName] = fileUsageInt + 1;
+            //        }
+            //    }
+            //}
+
+            //// Sort file usages by count, highest to lowest
+            //var powerListSS = fileUsages.Select(x => (x.Key, x.Value)).ToList();
+            //powerListSS = powerListSS.OrderByDescending(x => x.Value).ToList();
+            //var powerList = powerListSS.Select(x => x.Key).ToList(); // Drop the tuple part, we don't care about it
+
+            // Build power info list
+            //List<EnemyPowerChanger.PowerInfo> powerInfos = new List<EnemyPowerChanger.PowerInfo>();
+
+            //foreach (var powerFile in powerList)
+            //{
+            //    // Get powers that are in this file
+            //    var items = mapping.Where(x => x.Value.Any(x => x.PackageFileName == powerFile)).ToList();
+            //    foreach (var item in items)
+            //    {
+            //        powerInfos.Add(item.Value.FirstOrDefault(x => x.PackageFileName == powerFile));
+            //        mapping.Remove(item.Key, out var removedItem);
+            //    }
+            //}
+            //var jsonList = JsonConvert.SerializeObject(powerInfos, Formatting.Indented);
+            //File.WriteAllText(@"B:\UserProfile\source\repos\ME2Randomizer\Randomizer\Randomizers\Game2\Assets\Text\powerlistle2.json",
+            //    jsonList);
+
+
+            // Coagulate stuff
+            //Dictionary<string, int> counts = new Dictionary<string, int>();
+            //foreach (var v in listM)
+            //{
+            //    foreach (var k in v.Value)
+            //    {
+            //        int existingC = 0;
+            //        counts.TryGetValue(k, out existingC);
+            //        existingC++;
+            //        counts[k] = existingC;
+            //    }
+            //}
+
+            //foreach (var count in counts.OrderBy(x => x.Key))
+            //{
+            //    Debug.WriteLine($"{count.Key}\t\t\t{count.Value}");
+            //}
+#endif
+        }
+
+        [Conditional("DEBUG")]
+        public static void BuildPowerInfo(ExportEntry powerExport, IMEPackage powerBank, bool isCorrectedPackage)
+        {
+#if __GAME2__
+            // See if power is fully defined in package?
+            var classInfo = ObjectBinary.From<UClass>(powerExport);
+            if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
+                return; // This class cannot be used as a power, it is abstract
+
+            var dependencies = EntryImporter.GetAllReferencesOfExport(powerExport);
+            //var importDependencies = dependencies.OfType<ImportEntry>().ToList();
+            //var usable = CheckImports(importDependencies, package, startupFileCache, localCache, out var missingImport);
+            //if (usable)
+            {
+                //if (powerExport.ObjectName.Name == "SFXPower_Flashbang_NPC")
+                //    Debugger.Break();
+                var pi = new EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
+                //if ((pi.RequiresStartupPackage && !pi.PackageFileName.StartsWith("SFX")))
+                //{
+                //    // We do not allow startup files that have levels
+                //    pi.IsUsable = false;
+                //}
+
+                if (pi.IsUsable)
+                {
+                    Debug.WriteLine($"Usable sfxpower being ported {powerExport.InstancedFullPath} in {Path.GetFileName(powerExport.FileRef.FilePath)}");
+                    //if (!mapping.TryGetValue(powerExport.InstancedFullPath, out var instanceList))
+                    //{
+                    //    instanceList = new List<EnemyPowerChanger.PowerInfo>();
+                    //    mapping[powerExport.InstancedFullPath] = instanceList;
+                    //}
+
+                    //instanceList.Add(pi);
+                    EntryExporter.ExportExportToPackage(powerExport, powerBank, out _);
+                }
+                else
+                {
+                    Debug.WriteLine($"Denied power {pi.PowerName}");
+                }
+            }
+            //else
+            //{
+            //    Debug.WriteLine($"Not usable power: {powerExport.InstancedFullPath} in {Path.GetFileName(package.FilePath)}, missing import {missingImport.FullPath}");
+            //    if (mapping.ContainsKey(powerExport.InstancedFullPath))
+            //    {
+            //        UnusablePowers.Remove(powerExport.InstancedFullPath, out _);
+            //    }
+            //    else
+            //    {
+            //        UnusablePowers[powerExport.InstancedFullPath] = missingImport.FullPath;
+            //    }
+            //}
+#endif
         }
 
         public static void DebugPrintActorNames(object sender, DoWorkEventArgs doWorkEventArgs)
@@ -285,11 +581,11 @@ namespace Randomizer.MER
                 option.ProgressValue++;
                 var p = MEPackageHandler.OpenMEPackage(f);
                 var gesturesPackageExports = p.Exports.Where(
-                    x => x.idxLink == 0 && x.ClassName == "Package" 
+                    x => x.idxLink == 0 && x.ClassName == "Package"
                                         && GestureManager.IsGestureGroupPackage(x.InstancedFullPath)).Select(x => x.UIndex).ToList();
 
                 // Get list of exports under these packages
-                foreach (var exp in p.Exports.Where(x => gesturesPackageExports.Contains(x.idxLink) && (x.ClassName == "AnimSet" || x.ClassName=="AnimSequence")))
+                foreach (var exp in p.Exports.Where(x => gesturesPackageExports.Contains(x.idxLink) && (x.ClassName == "AnimSet" || x.ClassName == "AnimSequence")))
                 {
                     var destFile = Path.Combine(gestureSaveF, exp.Parent.ObjectName.Name + ".pcc");
                     IMEPackage gestPackage = gestureCache.GetCachedPackage(destFile, false);
