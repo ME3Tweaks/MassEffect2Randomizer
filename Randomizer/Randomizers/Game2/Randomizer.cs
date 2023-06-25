@@ -204,7 +204,7 @@ namespace Randomizer.Randomizers.Game2
                         //&& !file.Contains("OmgHub", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif

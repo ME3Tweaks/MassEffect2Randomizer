@@ -253,7 +253,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
 
         public static Gesture InstallRandomFilteredGestureAsset(GameTarget target, IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
         {
-            var gestureFiles = MERUtilities.ListStaticPackageAssets(target, "Gestures", false);
+            var gestureFiles = MERUtilities.ListStaticPackageAssets(target, "Gestures", false, true);
 
             // Special and package file filtering
             if (mainPackagesAllowed != null)

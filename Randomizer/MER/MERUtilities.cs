@@ -192,7 +192,7 @@ namespace Randomizer.MER
         /// <param name="target"></param>
         /// <param name="includeSpecial"></param>
         /// <returns></returns>
-        public static List<string> ListStaticPackageAssets(GameTarget target, string assetFolderName, bool includeSubitems)
+        public static List<string> ListStaticPackageAssets(GameTarget target, string assetFolderName, bool includeSubitems, bool stripPrefix = false)
         {
             var GameText = $"Game{target.Game.ToMEMGameNum()}"; // MEM Game num is 1 2 3 only.
             var items = Assembly.GetExecutingAssembly().GetManifestResourceNames();
@@ -209,7 +209,11 @@ namespace Randomizer.MER
                     }
                 }
             }
-
+            if (stripPrefix)
+            {
+                var preLen = $"Randomizer.Randomizers.{GameText}.Assets.Binary.Packages.{target.Game}.".Length;
+                return itemsL.Select(x => prefix.Substring(preLen) + '.' + x).ToList();
+            }
             return itemsL.Select(x => prefix + '.' + x).ToList();
         }
 

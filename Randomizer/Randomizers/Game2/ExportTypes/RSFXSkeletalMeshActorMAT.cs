@@ -18,7 +18,6 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
     class RSFXSkeletalMeshActorMAT
     {
         private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && exp.ClassName == "SFXSkeletalMeshActorMAT" && !exp.ObjectName.Name.Contains("Dead", StringComparison.InvariantCultureIgnoreCase);
-        private static string[] smaKeywords = new[] { "Dancing", "Dance", "Angry", "Cursing", "Fearful", "ROM", "Drunk", "Kiss", "Headbutt", "Hugging", "Consoling", "Come_Here", "Cough", "Count", "Bhand_Slapped" };
 
         public static bool RandomizeBasicGestures(GameTarget target, ExportEntry export, RandomizationOption option)
         {
@@ -44,9 +43,12 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                     while (numAnimationsSupported > 0)
                     {
                         // should we make sure they're unique?
-                        var randGest = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, export.FileRef, 2, filterKeywords: smaKeywords, blacklistedKeywords: null, mainPackagesAllowed: null, includeSpecial: true);
+                        
+                        // Install gesture
+                        var randGest = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, export.FileRef, 2, filterKeywords: null, blacklistedKeywords: null, mainPackagesAllowed: null, includeSpecial: true);
                         InstallDynamicAnimSetRefForSkeletalMesh(smc, randGest);
                         installedGestures.Add(randGest);
+                        
                         numAnimationsSupported--;
                     }
                     animationPackagesCache.ReleasePackages();

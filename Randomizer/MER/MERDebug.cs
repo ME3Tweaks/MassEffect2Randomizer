@@ -15,6 +15,7 @@ using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Randomizer.Randomizers;
 using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 using WinCopies.Util;
 
@@ -45,6 +46,7 @@ namespace Randomizer.MER
             option.ProgressValue = 0;
             option.CurrentOperation = "Finding actor names";
             option.ProgressIndeterminate = false;
+            SortedSet<string> actorTypeNames = new SortedSet<string>();
 
 #if __GAME1__
             var game = MEGame.LE1;
@@ -57,7 +59,6 @@ namespace Randomizer.MER
                 .ToList();
             option.ProgressMax = files.Count;
 
-            SortedSet<string> actorTypeNames = new SortedSet<string>();
             TLKBuilder.StartHandler(new GameTarget(game, MEDirectories.GetDefaultGamePath(game), false));
             foreach (var f in files)
             {
@@ -90,7 +91,6 @@ namespace Randomizer.MER
 
             // PackageName -> GesturePackage
             int i = 0;
-            SortedSet<string> actorTypeNames = new SortedSet<string>();
             TLKBuilder.StartHandler(new GameTarget(game, MEDirectories.GetDefaultGamePath(game), false));
             foreach (var f in files)
             {
@@ -251,8 +251,8 @@ namespace Randomizer.MER
 
         public static void BuildGestureFiles(object? sender, DoWorkEventArgs e)
         {
-#if DEBUG && __GAME3__
-            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE3, true, false).Values
+#if DEBUG && __GAME2__
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE2, true, false).Values
                 //.Where(x =>
                 //                    !x.Contains("_LOC_")
                 //&& x.Contains(@"CitHub", StringComparison.InvariantCultureIgnoreCase)
@@ -260,13 +260,13 @@ namespace Randomizer.MER
                 .OrderBy(x => x.Contains("_LOC_"))
                 .ToList();
             RandomizationOption option = (RandomizationOption)e.Argument;
-            var game = MEGame.LE3;
+            var game = MEGame.LE2;
             var target = new GameTarget(game, MEDirectories.GetDefaultGamePath(game), true);
             GestureManager.Init(target, false);
 
 
             // PackageName -> GesturePackage
-            var gestureSaveF = @"C:\Users\mgame\source\repos\ME2Randomizer\Randomizer\Randomizers\Game3\Assets\Binary\Packages\LE3\Gestures";
+            var gestureSaveF = @"C:\Users\mgame\source\repos\ME3Tweaks\MassEffectRandomizerShared\Randomizer\Randomizers\Game2\Assets\Binary\Packages\LE2\Gestures";
 
             option.CurrentOperation = "Finding gesture animations";
             option.ProgressMax = files.Count;
