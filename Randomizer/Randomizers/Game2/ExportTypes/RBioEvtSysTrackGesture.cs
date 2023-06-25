@@ -251,86 +251,90 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             };
         }
 
+
+
+
         public static Gesture InstallRandomFilteredGestureAsset(GameTarget target, IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
         {
             var gestureFiles = MERUtilities.ListStaticPackageAssets(target, "Gestures", false, true);
 
-            // Special and package file filtering
-            if (mainPackagesAllowed != null)
-            {
-                var newList = new List<string>();
-                foreach (var gf in gestureFiles)
+                // Special and package file filtering
+                if (mainPackagesAllowed != null)
                 {
-                    if (includeSpecial && gf.Contains("gestures.special."))
+                    var newList = new List<string>();
+                    foreach (var gf in gestureFiles)
                     {
-                        newList.Add(gf);
-                        continue;
+                        if (includeSpecial && gf.Contains("gestures.special."))
+                        {
+                            newList.Add(gf);
+                            continue;
+                        }
+
+                        var packageName = Path.GetFileNameWithoutExtension(MEREmbedded.GetFilenameFromAssetName(gf));
+                        if (mainPackagesAllowed.Contains(packageName))
+                        {
+                            newList.Add(gf);
+                            continue;
+                        }
                     }
 
-                    var packageName = Path.GetFileNameWithoutExtension(MEREmbedded.GetFilenameFromAssetName(gf));
-                    if (mainPackagesAllowed.Contains(packageName))
+                    gestureFiles = newList;
+                }
+
+                // Pick a random package
+                var randGestureFile = gestureFiles.RandomElement();
+                var hasCache = cache != null;
+                cache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+                var gPackage = cache.GetCachedPackageEmbedded(target.Game, $"Gestures.{MEREmbedded.GetFilenameFromAssetName(randGestureFile)}"); // NEEDS FIXED! It's a full path
+                List<ExportEntry> options;
+                if (filterKeywords != null && blacklistedKeywords != null)
+                {
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                          && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)
+                                                          && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
+                }
+                else if (filterKeywords != null)
+                {
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                          && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)).ToList();
+                }
+                else if (blacklistedKeywords != null)
+                {
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                          && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
+                }
+                else
+                {
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
+                }
+
+                if (options.Any())
+                {
+                    // Pick a random element
+                    var randomGestureExport = options.RandomElement();
+
+                    // Filter it out if we cannot use it
+                    var seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
+
+                    int numRetries = 7;
+                    while (seqLength < minLength && numRetries >= 0)
                     {
-                        newList.Add(gf);
-                        continue;
+                        randomGestureExport = options.RandomElement();
+                        seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
+                        numRetries--;
                     }
+
+                    var portedInExp = PackageTools.PortExportIntoPackage(target, targetPackage, randomGestureExport);
+                    if (!hasCache)
+                    {
+                        cache.ReleasePackages();
+                    }
+
+                    return new Gesture(portedInExp);
                 }
 
-                gestureFiles = newList;
+                return null;
             }
-
-            // Pick a random package
-            var randGestureFile = gestureFiles.RandomElement();
-            var hasCache = cache != null;
-            cache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
-            var gPackage = cache.GetCachedPackageEmbedded(target.Game, randGestureFile); // NEEDS FIXED! It's a full path
-            List<ExportEntry> options;
-            if (filterKeywords != null && blacklistedKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)
-                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
-            }
-            else if (filterKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)).ToList();
-            }
-            else if (blacklistedKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
-            }
-            else
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
-            }
-
-            if (options.Any())
-            {
-                // Pick a random element
-                var randomGestureExport = options.RandomElement();
-
-                // Filter it out if we cannot use it
-                var seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-
-                int numRetries = 7;
-                while (seqLength < minLength && numRetries >= 0)
-                {
-                    randomGestureExport = options.RandomElement();
-                    seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-                    numRetries--;
-                }
-
-                var portedInExp = PackageTools.PortExportIntoPackage(target, targetPackage, randomGestureExport);
-                if (!hasCache)
-                {
-                    cache.ReleasePackages();
-                }
-
-                return new Gesture(portedInExp);
-            }
-
-            return null;
         }
     }
 }

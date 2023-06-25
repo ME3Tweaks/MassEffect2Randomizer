@@ -118,10 +118,10 @@ namespace Randomizer.MER
 
             }
 #endif
-            foreach (var atn in actorTypeNames)
-            {
-                Debug.WriteLine(atn);
-            }
+            //foreach (var atn in actorTypeNames)
+            //{
+            //    Debug.WriteLine(atn);
+            //}
 #endif
         }
 
@@ -266,7 +266,7 @@ namespace Randomizer.MER
 
 
             // PackageName -> GesturePackage
-            var gestureSaveF = @"C:\Users\mgame\source\repos\ME3Tweaks\MassEffectRandomizerShared\Randomizer\Randomizers\Game2\Assets\Binary\Packages\LE2\Gestures";
+            var gestureSaveF = @"C:\Users\mgame\source\repos\ME2Randomizer\Randomizer\Randomizers\Game3\Assets\Binary\Packages\LE3\Gestures";
 
             option.CurrentOperation = "Finding gesture animations";
             option.ProgressMax = files.Count;

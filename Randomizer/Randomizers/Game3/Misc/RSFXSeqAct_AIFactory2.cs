@@ -42,6 +42,8 @@ namespace Randomizer.Randomizers.Game3.Misc
                         var types = structProperty.GetProp<ArrayProperty<ObjectProperty>>("Types");
                         foreach (var type in types)
                         {
+                            if (type.Value == 0)
+                                continue; // Skip an empty type
                             var r = type.ResolveToEntry(export.FileRef);
                             if (r.ObjectName.Name.Contains("Dummy", StringComparison.InvariantCultureIgnoreCase))
                             {

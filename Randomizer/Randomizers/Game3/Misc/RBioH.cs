@@ -182,8 +182,8 @@ namespace Randomizer.Randomizers.Game3.Misc
             var henchPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, sourceFile));
 
 
-            var levelActors = henchPackage.GetLevelBinary().Actors.Where(x => x.value > 0)
-                .Select(x => henchPackage.GetUExport(x.value)).ToList();
+            var levelActors = henchPackage.GetLevelBinary().Actors.Where(x => x > 0)
+                .Select(x => henchPackage.GetUExport(x)).ToList();
 
             var pawn = levelActors.FirstOrDefault(x => x.ClassName == "SFXStuntActor"); // NonCombat
             pawn ??= levelActors.FirstOrDefault(x => x.IsA("SFXPawn")); // Combat, Explore

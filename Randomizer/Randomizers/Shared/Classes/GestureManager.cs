@@ -8,28 +8,48 @@ using Randomizer.MER;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO;
+using LegendaryExplorerCore.Misc;
+using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
+using LegendaryExplorerCore.Unreal;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.Collections;
+using ME3TweaksCore.Targets;
+using Randomizer.MER;
 
 namespace Randomizer.Randomizers.Shared.Classes
 {
+
     /// <summary>
     /// Helper class for dealing with Gestures
     /// </summary>
     class GestureManager
     {
+#if __GAME1__
+        public static readonly string[] RandomGesturePackages =
+        {
+
+        };
+#endif
 #if __GAME2__
         public static readonly string[] RandomGesturePackages =
         {
-            "HMF_DL_StandingDefault",
-            "HMF_DP_Alt",
-            "HMF_DP_PoundFist",
-            "HMF_DP_HandsFace",
-            // Todo: More
+            "HMM_DP_ArmsCross",
+            "HMM_AM_Towny",
+            "HMF_AM_Towny",
+            "HMM_DL_HandChop",
+            "HMM_DL_Smoking",
+            "HMM_FC_Angry"
+            // A lot more need to be added from the list
         };
-#elif __GAME3__
+#endif
+
+
+#if __GAME3__
         public static readonly string[] RandomGesturePackages =
         {
             // KID ANIMATION
@@ -222,8 +242,8 @@ namespace Randomizer.Randomizers.Shared.Classes
                     randomGesturePackage = GetGesturePackage(gestureGroup);
                 }
                 var candidates = randomGesturePackage.Exports.Where(x => x.ClassName == "AnimSequence" && x.ParentName == mapAnimSetOwners[gestureGroup]
-                                                                                                       && x.ObjectName.Name.StartsWith(gestureGroup + "_")
-                                                                                                       && !x.ObjectName.Name.StartsWith(gestureGroup + "_Alt") // This is edge case for animation names
+                                                                                                       && x.ObjectName.Name.StartsWith(gestureGroup+"_")
+                                                                                                       && !x.ObjectName.Name.StartsWith(gestureGroup+"_Alt") // This is edge case for animation names
                                                                                                        ).ToList();
                 var randGesture = candidates.RandomElement();
 
@@ -269,7 +289,7 @@ namespace Randomizer.Randomizers.Shared.Classes
 
             BioDynamicAnimSet bin = new BioDynamicAnimSet()
             {
-                SequenceNamesToUnkMap = new OrderedMultiValueDictionary<NameReference, int>(1)
+                SequenceNamesToUnkMap = new UMultiMap<NameReference, int>(1)
                 {
                     {gestInfo.GestureName, 1} // If we ever add support for multiple we do it here.
                 }

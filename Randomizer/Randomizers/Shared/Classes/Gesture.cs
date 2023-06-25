@@ -8,6 +8,9 @@ using LegendaryExplorerCore.Unreal;
 
 namespace Randomizer.Randomizers.Shared.Classes
 {
+    // Old code maybe?
+
+
     public class Gesture
     {
         public string GestureSet { get; set; }
