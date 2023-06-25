@@ -40,7 +40,7 @@ namespace Randomizer.Randomizers.Utility
 
             stream.Filename = ""; // Just make sure it's not set to null so internal code thinks this is not Pcc stored.
             stream.DataSize = streamInfo.DataSize;
-            stream.Unk1 = stream.Unk2 = stream.Unk3 = stream.Unk4 = stream.Unk5 = 1;
+            stream.Unk1 = stream.Unk2 = stream.Unk3 = stream.Unk4 = stream.BulkDataFlags = 1; // Bulk Data Flags changed on commit update, may need changed
             stream.UnkGuid = streamInfo.UnkGuid;
             stream.DataOffset = streamInfo.DataOffset;
 

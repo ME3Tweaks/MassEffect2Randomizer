@@ -10,6 +10,7 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.Collections;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
@@ -280,7 +281,7 @@ namespace Randomizer.Randomizers.Shared.Classes
 
             BioDynamicAnimSet bin = new BioDynamicAnimSet()
             {
-                SequenceNamesToUnkMap = new OrderedMultiValueDictionary<NameReference, int>(1)
+                SequenceNamesToUnkMap = new UMultiMap<NameReference, int>(1)
                 {
                     {gestInfo.GestureName, 1} // If we ever add support for multiple we do it here.
                 }

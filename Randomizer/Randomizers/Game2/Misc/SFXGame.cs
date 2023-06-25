@@ -23,7 +23,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             {
                 var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
                 var upa = sfxgameP.GetUExport(29126); //UpdatePlayerAccuracy
-                var md5 = MUtilities.CalculateMD5(new MemoryStream(upa.Data));
+                var md5 = MUtilities.CalculateHash(new MemoryStream(upa.Data));
                 return md5 == "315324313211026536f3cab95a1101d4"; // ME2Controller 1.7.2
             }
 

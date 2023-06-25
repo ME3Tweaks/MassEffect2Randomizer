@@ -709,7 +709,6 @@ namespace Randomizer.Randomizers.Game2
                 GroupName = "Gameplay",
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
-                    new RandomizationOption() {HumanName = "Skip minigames", Description = "Skip all minigames. Doesn't even load the UI, just skips them entirely", PerformRandomizationOnExportDelegate = SkipMiniGames.DetectAndSkipMiniGameSeqRefs, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal},
                     new RandomizationOption()
                     {
                         HumanName = "Enable basic friendly fire",
@@ -733,21 +732,7 @@ namespace Randomizer.Randomizers.Game2
                         Description = "Makes Shepard able to be ragdolled from various powers/attacks. Can greatly increase difficulty",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         PerformSpecificRandomizationDelegate = SFXGame.MakeShepardRagdollable,
-                    },
-                    new RandomizationOption()
-                    {
-                        HumanName = "Remove running camera shake",
-                        Description = "Removes the camera shake when running",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        PerformSpecificRandomizationDelegate = SFXGame.RemoveStormCameraShake,
-                    },
-                    new RandomizationOption()
-                    {
-                        HumanName = "One hit kill",
-                        Description = "Makes Shepard die upon taking any damage. Removes bonuses that grant additional health. Extremely difficult, do not mix with other randomizers",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe,
-                        PerformSpecificRandomizationDelegate = OneHitKO.InstallOHKO,
-                    },
+                    }
                 }
             });
 
@@ -837,7 +822,7 @@ namespace Randomizer.Randomizers.Game2
                         }
                     },
                     new RandomizationOption() {HumanName = "UwU",
-                        Description="UwUifies all text in the game, often hilarious. Based on Jade's OwO mod", PerformSpecificRandomizationDelegate = RSharedTexts.UwuifyText,
+                        Description="UwUifies all text in the game, often hilarious", PerformSpecificRandomizationDelegate = RSharedTexts.UwuifyText,
                         RequiresTLK = true, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, MutualExclusiveSet="AllText",
                         StateChangingDelegate=optionChangingDelegate,
                         IsPostRun = true,
@@ -847,7 +832,7 @@ namespace Randomizer.Randomizers.Game2
                             {
                                 IsOptionOnly = true,
                                 HumanName = "Keep casing",
-                                Description = "Keeps upper and lower casing.",
+                                Description = "Keeps upper and lower casing",
                                 SubOptionKey = RSharedTexts.SUBOPTIONKEY_UWU_KEEPCASING,
                             },
                             new RandomizationOption()
