@@ -66,15 +66,6 @@ namespace RandomizerUI.Classes.Controllers
                         }
                     }
 
-#if __GAME2__
-                    var isControllerModInstalled = target.Game.IsOTGame() && Randomizer.Randomizers.Game2.Misc.SFXGame.IsControllerBasedInstall(target);
-                    if (isControllerModInstalled)
-                    {
-                        // We must also restore Coalesced.ini or it will reference a UI that is no longer available and game will not boot
-                        MERLog.Information(@"Controller based install detected, also restoring Coalesced.ini to prevent startup crash");
-                        File.Copy(Path.Combine(backupPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), Path.Combine(target.TargetPath, "BioGame", "Config", "PC", "Cooked", "Coalesced.ini"), true);
-                    }
-#endif
                     // Delete basegame TFC
                     var baseTFC = MERFileSystem.GetTFCPath(target, false);
                     if (File.Exists(baseTFC))
