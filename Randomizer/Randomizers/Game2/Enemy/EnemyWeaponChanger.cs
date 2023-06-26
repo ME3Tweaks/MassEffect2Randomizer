@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
@@ -13,6 +14,8 @@ using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Newtonsoft.Json;
 using Randomizer.MER;
+using Randomizer.Randomizers.Game2.Misc;
+using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Enemy
@@ -65,7 +68,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
 
         /// <summary>
-        /// Hack to force power lists to load with only a single check
+        /// Initializes weapon randomizer, including installing required changes to SFXGame.pcc
         /// </summary>
         /// <param name="option"></param>
         /// <returns></returns>
@@ -73,11 +76,34 @@ namespace Randomizer.Randomizers.Game2.Enemy
         {
             MERLog.Information(@"Preloading weapon data");
             LoadGuns(target);
-            WeaponAnimsPackage = MERFileSystem.GetStartupPackage(target);
-            WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
 
-            MERLog.Information(@"Installing weapon animations startup package");
-            MERFileSystem.InstallStartupPackage(target); // Contains weapon animations
+            var sfxGame = SFXGame.GetSFXGame(target);
+
+            // Add SFXLoadoutDataMER subclass
+            var classText = MEREmbedded.GetEmbeddedTextAsset(@"Classes.SFXLoadoutDataMER.uc");
+            PackageTools.CreateNewClass(sfxGame, @"SFXLoadoutDataMER", classText);
+
+            // Patch the loadout generation method
+            var functionText = MEREmbedded.GetEmbeddedTextAsset(@"Functions.GenerateInventoryFromLoadout.uc");
+            ScriptTools.InstallScriptTextToExport(sfxGame.FindExport("BioPawn.GenerateInventoryFromLoadout"), functionText, "MERWeaponRandomization", new MERPackageCache(target, null, false));
+
+            MERFileSystem.SavePackage(sfxGame);
+
+            var bioWeapon = CoalescedHandler.GetIniFile(@"BioWeapon.ini");
+            var sfxLoadoutDataMER = bioWeapon.GetOrAddSection(@"SFXGame.SFXLoadoutDataMER");
+            var enemyWeaponsList = MEREmbedded.GetEmbeddedTextAsset(@"enemyweaponifps.txt")
+                .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var ew in enemyWeaponsList)
+            {
+                sfxLoadoutDataMER.AddEntryIfUnique(new CoalesceProperty(@"RandomWeaponOptions", new CoalesceValue(ew, CoalesceParseAction.AddUnique)));
+            }
+
+            // WeaponAnimsPackage = MERFileSystem.GetStartupPackage(target);
+            // WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
+
+            // MERLog.Information(@"Installing weapon animations startup package");
+            // MERFileSystem.InstallStartupPackage(target); // Contains weapon animations
             return true;
         }
 
@@ -426,7 +452,8 @@ namespace Randomizer.Randomizers.Game2.Enemy
             if (wrtype == EWRType.Loadout)
                 return RandomizeWeaponLoadout(target, export, option);
             else if (wrtype == EWRType.ApprBody)
-                return InstallWeaponAnims(export, option);
+                return true;
+            //                return InstallWeaponAnims(export, option);
             // This seems kind of pointless so we're not going to enable it
             //else if (wrtype == EWRType.SetWeapon)
             //    return SetWeaponSeqAct(export, option);
@@ -537,8 +564,6 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
         private static bool RandomizeWeaponLoadout(GameTarget target, ExportEntry export, RandomizationOption option)
         {
-
-
             // Check for blacklisted changes
             // HACK FOR NOW until we have better solution in place
             if (export.ObjectName.Name.Contains("HammerHead", StringComparison.InvariantCultureIgnoreCase))
@@ -549,80 +574,79 @@ namespace Randomizer.Randomizers.Game2.Enemy
             var guns = export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons");
             if (guns.Count == 1) //Randomizing multiple guns could be difficult and I'm not sure enemies ever change their weapons.
             {
-                var gun = guns[0];
-                if (gun.Value == 0) return false; // Null entry in weapons list
-                var allowedGuns = GetAllowedWeaponsForLoadout(export);
-                if (allowedGuns.Any())
-                {
-                    var randomNewGun = allowedGuns.RandomElementByWeight(x => x.Weight);
-                    if (option.HasSliderOption && option.SliderValue >= 0)
-                    {
-                        randomNewGun = AllAvailableWeapons[(int)option.SliderValue];
-                    }
-                    //if (ThreadSafeRandom.Next(1) == 0)
-                    //{
-                    //    randomNewGun = allowedGuns.FirstOrDefault(x => x.GunName.Contains("GrenadeLauncher"));
-                    //}
-
-                    var originalGun = gun.ResolveToEntry(export.FileRef);
-                    if (randomNewGun.GunName != originalGun.ObjectName)
-                    {
-                        var gunInfo = randomNewGun;
-                        MERLog.Information($@"Changing gun {export.ObjectName} => {randomNewGun.GunName}");
-                        // It's a different gun.
-
-                        // See if we need to port this in
-                        var fullName = gunInfo.PackageName + "." + randomNewGun.GunName;
-                        var repoint = export.FileRef.FindEntry(fullName);
-
-                        if (repoint != null)
-                        {
-                            // Gun does not need ported in
-                            gun.Value = repoint.UIndex;
-                        }
-                        else
-                        {
-                            // Gun needs ported in
-                            var newEntry = PortWeaponIntoPackage(target, export.FileRef, randomNewGun);
-                            gun.Value = newEntry.UIndex;
-                        }
-
-                        //if (!tried)
-                        export.WriteProperty(guns);
-                        var pName = Path.GetFileName(export.FileRef.FilePath);
-
-                        // If this is not a master or localization file (which are often used for imports) 
-                        // Change the number around so it will work across packages.
-                        // May need disabled if game becomes unstable.
-
-                        // We check if less than 10 as it's very unlikely there will be more than 10 loadouts in a non-persistent package
-                        // if it's > 10 it's likely already a memory-changed item by MER
-                        var isPersistentPackage = PackageTools.IsPersistentPackage(pName);
-                        if (export.indexValue < 10 && !isPersistentPackage && !PackageTools.IsLocalizationPackage(pName))
-                        {
-                            export.ObjectName = new NameReference(export.ObjectName, ThreadSafeRandom.Next(2000) + 10);
-                        }
-                        else if (isPersistentPackage && originalGun.UIndex > 0)
-                        {
-                            // Make sure we add the original gun to the list of referenced memory objects
-                            // so subfiles that depend on this gun existing don't crash the game!
-                            var world = export.FileRef.FindExport("TheWorld");
-                            var worldBin = ObjectBinary.From<World>(world);
-                            var extraRefs = worldBin.ExtraReferencedObjects.ToList();
-                            extraRefs.Add(originalGun.UIndex);
-                            worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
-                            world.WriteBinary(worldBin);
-                        }
-
-
-                        tried = true;
-                    }
-                }
+                var classRef = EntryImporter.EnsureClassIsInFile(export.FileRef, "SFXLoadoutDataMER", new RelinkerOptionsPackage(), target.TargetPath);
+                export.Class = classRef;
                 return true;
-            }
+                //var gun = guns[0];
+                //if (gun.Value == 0) return false; // Null entry in weapons list
+                //var allowedGuns = GetAllowedWeaponsForLoadout(export);
+                //if (allowedGuns.Any())
+                //{
+                //    var randomNewGun = allowedGuns.RandomElementByWeight(x => x.Weight);
+                //    if (option.HasSliderOption && option.SliderValue >= 0)
+                //    {
+                //        randomNewGun = AllAvailableWeapons[(int)option.SliderValue];
+                //    }
+                //    //if (ThreadSafeRandom.Next(1) == 0)
+                //    //{
+                //    //    randomNewGun = allowedGuns.FirstOrDefault(x => x.GunName.Contains("GrenadeLauncher"));
+                //    //}
 
+                //    var originalGun = gun.ResolveToEntry(export.FileRef);
+                //    if (randomNewGun.GunName != originalGun.ObjectName)
+                //    {
+                //        var gunInfo = randomNewGun;
+                //        MERLog.Information($@"Changing gun {export.ObjectName} => {randomNewGun.GunName}");
+                //        // It's a different gun.
+
+                //        // See if we need to port this in
+                //        var fullName = gunInfo.PackageName + "." + randomNewGun.GunName;
+                //        var repoint = export.FileRef.FindEntry(fullName);
+
+                //        if (repoint != null)
+                //        {
+                //            // Gun does not need ported in
+                //            gun.Value = repoint.UIndex;
+                //        }
+                //        else
+                //        {
+                //            // Gun needs ported in
+                //            var newEntry = PortWeaponIntoPackage(target, export.FileRef, randomNewGun);
+                //            gun.Value = newEntry.UIndex;
+                //        }
+
+                //        //if (!tried)
+                //        export.WriteProperty(guns);
+                //        var pName = Path.GetFileName(export.FileRef.FilePath);
+
+                //        // If this is not a master or localization file (which are often used for imports) 
+                //        // Change the number around so it will work across packages.
+                //        // May need disabled if game becomes unstable.
+
+                //        // We check if less than 10 as it's very unlikely there will be more than 10 loadouts in a non-persistent package
+                //        // if it's > 10 it's likely already a memory-changed item by MER
+                //        var isPersistentPackage = PackageTools.IsPersistentPackage(pName);
+                //        if (export.indexValue < 10 && !isPersistentPackage && !PackageTools.IsLocalizationPackage(pName))
+                //        {
+                //            export.ObjectName = new NameReference(export.ObjectName, ThreadSafeRandom.Next(2000) + 10);
+                //        }
+                //        else if (isPersistentPackage && originalGun.UIndex > 0)
+                //        {
+                //            // Make sure we add the original gun to the list of referenced memory objects
+                //            // so subfiles that depend on this gun existing don't crash the game!
+                //            var world = export.FileRef.FindExport("TheWorld");
+                //            var worldBin = ObjectBinary.From<World>(world);
+                //            var extraRefs = worldBin.ExtraReferencedObjects.ToList();
+                //            extraRefs.Add(originalGun.UIndex);
+                //            worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
+                //            world.WriteBinary(worldBin);
+                //        }
+
+
+                //        tried = true;
+                //    }
+            }
             return false;
         }
     }
-
 }

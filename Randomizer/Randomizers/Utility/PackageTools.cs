@@ -9,6 +9,9 @@ using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.UnrealScript;
+using LegendaryExplorerCore.UnrealScript.Compiling.Errors;
+using LegendaryExplorerCore.UnrealScript.Language.Tree;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 
@@ -232,6 +235,42 @@ namespace Randomizer.Randomizers.Utility
             sourceCache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
             var sourcePackage = sourceCache.GetCachedPackage(MERFileSystem.GetPackageFile(target, sourceItem.FilePath));
             return PortExportIntoPackage(target, package, sourcePackage.FindExport(sourceItem.EntryPath));
+        }
+
+        /// <summary>
+        /// Attempts to create a new class
+        /// </summary>
+        /// <param name="Pcc"></param>
+        /// <param name="className"></param>
+        /// <param name="classText"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateNewClass(IMEPackage Pcc, string className, string classText, ExportEntry parent = null)
+        {
+            var fileLib = new FileLib(Pcc);
+            if (!fileLib.Initialize())
+            {
+                MERLog.Error(@"Error initializing filelib for new class: ");
+                foreach (var l in fileLib.InitializationLog.AllErrors)
+                {
+                    MERLog.Error(l.Message);
+                }
+                return null;
+            }
+
+
+            (ASTNode node, MessageLog log) = UnrealScriptCompiler.CompileClass(Pcc, classText, fileLib, parent: parent);
+            if (log.HasErrors)
+            {
+                MERLog.Error(@"Error creating new class: ");
+                foreach (var l in log.AllErrors)
+                {
+                    MERLog.Error(l.Message);
+                }
+                return null;
+            }
+            string fullPath = parent is null ? className : $"{parent.InstancedFullPath}.{className}";
+            return Pcc.FindExport(fullPath);
         }
     }
 }

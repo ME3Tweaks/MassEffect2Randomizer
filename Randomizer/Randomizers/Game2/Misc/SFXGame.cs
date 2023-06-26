@@ -10,29 +10,21 @@ namespace Randomizer.Randomizers.Game2.Misc
 {
     public class SFXGame
     {
-        /// <summary>
-        /// Determines if this is an ME2Controller-mod based install, which can change the behavior of the application to fit the different UI
-        /// </summary>
-        /// <returns></returns>
-        public static bool IsControllerBasedInstall(GameTarget target)
+        public static IMEPackage GetSFXGame(GameTarget target)
         {
-            if (target == null) return false;
-
-            var sfxgame = Path.Combine(target.TargetPath, "BioGame", "CookedPC", "SFXGame.pcc");
+            var sfxgame = Path.Combine(target.TargetPath, "BioGame", "CookedPCConsole", "SFXGame.pcc");
             if (File.Exists(sfxgame))
             {
-                var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
-                var upa = sfxgameP.GetUExport(29126); //UpdatePlayerAccuracy
-                var md5 = MUtilities.CalculateHash(new MemoryStream(upa.Data));
-                return md5 == "315324313211026536f3cab95a1101d4"; // ME2Controller 1.7.2
+                return MEPackageHandler.OpenMEPackage(sfxgame);
             }
 
-            return false;
+            return null;
         }
+
 
         public static bool MakeShepardRagdollable(GameTarget target, RandomizationOption option)
         {
-            var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc"));
+            var sfxgame = GetSFXGame(target);
 
             // Add ragdoll power to shep
             var sfxplayercontrollerDefaults = sfxgame.GetUExport(30777);
@@ -51,7 +43,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
         public static bool TurnOnFriendlyFire(GameTarget target, RandomizationOption option)
         {
-            var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc"));
+            var sfxgame = GetSFXGame(target);
             var md = sfxgame.GetUExport(21353);
             var patched = md.Data;
             for (int i = 0x0285; i < 0x0317; i++)
@@ -79,21 +71,5 @@ namespace Randomizer.Randomizers.Game2.Misc
         }
 
         public const string SUBOPTIONKEY_CARELESSFF = "CarelessMode";
-
-        public static bool RemoveStormCameraShake(GameTarget target, RandomizationOption arg)
-        {
-            var sfxgame = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, "SFXGame.pcc"));
-
-            // SFXCameraMode_CombatStorm
-            var md = sfxgame.GetUExport(25096);
-            md.WriteProperty(new BoolProperty(false, "bIsCameraShakeEnabled"));
-
-            //SFXCameraMode_ExporeStorm
-            md = sfxgame.GetUExport(25116);
-            md.WriteProperty(new BoolProperty(false, "bIsCameraShakeEnabled"));
-
-            MERFileSystem.SavePackage(sfxgame);
-            return true;
-        }
     }
 }

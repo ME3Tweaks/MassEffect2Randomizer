@@ -83,7 +83,7 @@ namespace Randomizer.Randomizers.Handlers
             foreach (var ini in IniFiles)
             {
                 // Write it out to disk. Might need to check BOM
-                File.WriteAllText(Path.Combine(MERFileSystem.DLCModCookedPath, ini.Key), ini.Value.ToString());
+                File.WriteAllText(Path.Combine(MERFileSystem.DLCModCookedPath, Path.GetFileNameWithoutExtension(ini.Key) + @".ini"), CoalesceAsset.ToIni(ini.Value).ToString());
             }
 #elif __GAME3__
             foreach (var f in IniFiles)
