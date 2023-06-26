@@ -99,11 +99,14 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 sfxLoadoutDataMER.AddEntryIfUnique(new CoalesceProperty(@"RandomWeaponOptions", new CoalesceValue(ew, CoalesceParseAction.AddUnique)));
             }
 
-            // WeaponAnimsPackage = MERFileSystem.GetStartupPackage(target);
-            // WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
 
-            // MERLog.Information(@"Installing weapon animations startup package");
-            // MERFileSystem.InstallStartupPackage(target); // Contains weapon animations
+            // Add animations
+            MERLog.Information(@"Installing weapon animations startup package");
+            WeaponAnimsPackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(MEGame.LE2, @"Weapons.Startup_LE2R_WeaponAnims.pcc"), @"Startup_LE2R_WeaponAnims.pcc");
+            MERFileSystem.SavePackage(WeaponAnimsPackage); // Install startup file
+            ThreadSafeDLCStartupPackage.AddStartupPackage(@"Startup_LE2R_WeaponAnims"); // Make it referencable via imports
+
+            WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
             return true;
         }
 
@@ -116,7 +119,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
         }
 
         /// <summary>
-        /// Converts an AnimSet export to an import
+        /// Converts an AnimSet export to an import (from a startup package)
         /// </summary>
         /// <param name="origEntry"></param>
         /// <param name="targetPackage"></param>
@@ -452,8 +455,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             if (wrtype == EWRType.Loadout)
                 return RandomizeWeaponLoadout(target, export, option);
             else if (wrtype == EWRType.ApprBody)
-                return true;
-            //                return InstallWeaponAnims(export, option);
+                return InstallWeaponAnims(export, option);
             // This seems kind of pointless so we're not going to enable it
             //else if (wrtype == EWRType.SetWeapon)
             //    return SetWeaponSeqAct(export, option);
