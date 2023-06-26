@@ -55,10 +55,12 @@ namespace Randomizer.MER
             option.CurrentOperation = "Building powers package";
             option.ProgressIndeterminate = false;
 
+            var allIFPs = File.ReadAllLines(@"C:\Users\mgame\source\repos\ME3Tweaks\MassEffectRandomizerShared\Randomizer\Randomizers\Game2\Dev\PowerIFPs.txt");
+
             // SETUP STAGE 1
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE2, true, false);
 
-            using var powerBank = MEPackageHandler.CreateAndOpenPackage(@"B:\UserProfile\source\repos\ME2Randomizer\Randomizer\Randomizers\Game2\Assets\Binary\Packages\LE2\AllPowers.pcc",
+            using var powerBank = MEPackageHandler.CreateAndOpenPackage(@"C:\users\public\AllPowers.pcc",
                                MEGame.LE2);
 
             List<string> alreadyDonePowers = new List<string>();
@@ -70,15 +72,23 @@ namespace Randomizer.MER
                 Interlocked.Increment(ref done);
                 option.ProgressValue = done;
                 using var package = MEPackageHandler.OpenMEPackage(f.Value);
-                var powers = package.Exports.Where(x => x.IsClass && !x.IsDefaultObject && x.InheritsFrom("SFXPower"));
+                var powers = package.Exports.Where(x => x.IsClass && !x.IsDefaultObject && allIFPs.Contains(x.InstancedFullPath));
                 foreach (var skm in powers.Where(x => !alreadyDonePowers.Contains(x.InstancedFullPath)))
                 {
+                    // Add to power bank file
                     BuildPowerInfo(skm, powerBank, false);
+                    option.CurrentOperation = $"Building powers package ({alreadyDonePowers.Count}/{allIFPs.Length} powers done)";
                     alreadyDonePowers.Add(skm.InstancedFullPath);
                 }
             }
 
+            foreach (var v in alreadyDonePowers)
+            {
+                Debug.WriteLine(v);
+            }
+
             powerBank.Save();
+            Debug.WriteLine("DONE");
             return;
             //mainWindow.CurrentOperationText = "Finding portable powers (stage 1)";
             //int numdone = 0;

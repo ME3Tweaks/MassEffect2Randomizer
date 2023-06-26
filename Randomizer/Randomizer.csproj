@@ -62,16 +62,29 @@
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(Configuration)'=='Game2Debug'">
+		<!-- Only include these in dev builds -->
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.json" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.txt" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.xml" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.zip" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.pcc" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.png" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.jpg" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.uc" />
+		<EmbeddedResource Include="Randomizers\Game2\Dev\**\*.afc" />
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.json" />
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.txt" />
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.xml" />
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.zip" />
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.pcc" />
-		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
-		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
-		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
-		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.afc" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.png" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.jpg" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.uc" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.afc" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">

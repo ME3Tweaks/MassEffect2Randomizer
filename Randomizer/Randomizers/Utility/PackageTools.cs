@@ -191,7 +191,7 @@ namespace Randomizer.Randomizers.Utility
             var theWorld = package.FindExport("TheWorld");
             var world = ObjectBinary.From<World>(theWorld);
             var extarRefs = world.ExtraReferencedObjects.ToList();
-            extarRefs.AddRange(newRefs.Select(x => x.UIndex));
+            extarRefs.AddRange(newRefs.Where(x => x != null).Select(x => x.UIndex));
             world.ExtraReferencedObjects = extarRefs.Distinct().ToArray();
             theWorld.WriteBinary(world);
         }
@@ -204,7 +204,7 @@ namespace Randomizer.Randomizers.Utility
         public static ExportEntry CreateObjectReferencer(IMEPackage package)
         {
             var rop = new RelinkerOptionsPackage() { Cache = new PackageCache() };
-            var referencer = new ExportEntry(package, 0, package.GetNextIndexedName("ObjectReferencer"), properties: new PropertyCollection(){ new ArrayProperty<ObjectProperty>("ReferencedObjects")})
+            var referencer = new ExportEntry(package, 0, package.GetNextIndexedName("ObjectReferencer"), properties: new PropertyCollection() { new ArrayProperty<ObjectProperty>("ReferencedObjects") })
             {
                 Class = EntryImporter.EnsureClassIsInFile(package, "ObjectReferencer", rop)
             };

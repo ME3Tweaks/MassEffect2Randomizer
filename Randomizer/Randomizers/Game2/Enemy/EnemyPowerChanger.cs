@@ -54,37 +54,64 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
         public static List<PowerInfo> Powers;
 
+        /// <summary>
+        /// Bank package that contains all powers, this suppresses a lot of I/O and memory allocations and uses fixed size memory
+        /// </summary>
+        private static IMEPackage PowerBank;
+
         public static void LoadPowers(GameTarget target)
         {
             if (Powers == null)
             {
-                string fileContents = MEREmbedded.GetEmbeddedTextAsset("powerlistme2.json");
+                // Load the power bank
+                PowerBank = MEPackageHandler.OpenMEPackageFromStream(
+                    MEREmbedded.GetEmbeddedPackage(MEGame.LE2, @"Powers.EnemyPowersBank.pcc"), @"EnemyPowersBank.pcc");
+                string fileContents = MEREmbedded.GetEmbeddedTextAsset("powerlistle2.txt");
+                var whitelistedPowers = fileContents.Split(
+                    new string[] { "\r\n", "\r", "\n" },
+                    StringSplitOptions.None
+                ).ToList();
+                
+                // Inventory the powerlist for use
                 Powers = new List<PowerInfo>();
-                var powermanifest = JsonConvert.DeserializeObject<List<PowerInfo>>(fileContents);
-                foreach (var powerInfo in powermanifest)
+                foreach (var exp in whitelistedPowers)
                 {
-                    var powerFilePath = MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName, false);
-                    if (powerInfo.IsCorrectedPackage || (powerFilePath != null && File.Exists(powerFilePath)))
+                    var pExp = PowerBank.FindExport(exp);
+                    if (pExp != null)
                     {
-                        // This can probably be removed; DLC is included in LE2
-                        if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(target, powerInfo.FileDependency, false) == null)
-                        {
-                            MERLog.Information($@"Dependency file {powerInfo.FileDependency} not found, not adding {powerInfo.PowerName} to power selection pool");
-                            continue; // Dependency not met
-                        }
-                        // End removal area
-
-
-                        MERLog.Information($@"Adding {powerInfo.PowerName} to power selection pool");
-                        Powers.Add(powerInfo);
+                        Powers.Add(new PowerInfo(pExp, false));
                     }
-
-                    if (!powerInfo.IsCorrectedPackage && powerFilePath == null)
+                    else
                     {
-                        MERLog.Information($@"{powerInfo.PowerName} package file not found ({powerInfo.PackageFileName}), power not added to power randomization pools");
+                        Debug.WriteLine($"POWER ExP NOT FOUND: {exp}");
                     }
                 }
             }
+
+
+            //foreach (var powerInfo in powermanifest)
+            //{
+            //    var powerFilePath = MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName, false);
+            //    if (powerInfo.IsCorrectedPackage || (powerFilePath != null && File.Exists(powerFilePath)))
+            //    {
+            //        // This can probably be removed; DLC is included in LE2
+            //        if (powerInfo.FileDependency != null && MERFileSystem.GetPackageFile(target, powerInfo.FileDependency, false) == null)
+            //        {
+            //            MERLog.Information($@"Dependency file {powerInfo.FileDependency} not found, not adding {powerInfo.PowerName} to power selection pool");
+            //            continue; // Dependency not met
+            //        }
+            //        // End removal area
+
+
+            //        MERLog.Information($@"Adding {powerInfo.PowerName} to power selection pool");
+            //        Powers.Add(powerInfo);
+            //    }
+
+            //    if (!powerInfo.IsCorrectedPackage && powerFilePath == null)
+            //    {
+            //        MERLog.Information($@"{powerInfo.PowerName} package file not found ({powerInfo.PackageFileName}), power not added to power randomization pools");
+            //    }
+            //}
         }
 
         /// <summary>
@@ -110,27 +137,21 @@ namespace Randomizer.Randomizers.Game2.Enemy
             [JsonProperty("instancedfullpath")]
             public string InstancedFullPath { get; set; }
 
-            [JsonProperty("packagefilename")]
-            public string PackageFileName { get; set; }
+            [JsonIgnore]
+            public ExportEntry PowerExport { get; set; }
 
             [JsonProperty("type")]
             internal EPowerCapabilityType Type { get; set; }
-
-            /// <summary>
-            /// If not null, test if this file exists when loading the power list (essentially a hack DLC check)
-            /// </summary>
-            [JsonProperty("filedependency")]
-            public string FileDependency { get; set; }
 
             /// <summary>
             /// Maps the power type to the power type enum for categorization
             /// </summary>
             /// <param name="classExport"></param>
             /// <returns></returns>
-            private bool MapPowerType(ExportEntry classExport)
+            private bool MapPowerType()
             {
-                var uClass = ObjectBinary.From<UClass>(classExport);
-                var defaults = classExport.FileRef.GetUExport(uClass.Defaults);
+                var uClass = ObjectBinary.From<UClass>(PowerExport);
+                var defaults = PowerExport.FileRef.GetUExport(uClass.Defaults);
                 var bct = defaults.GetProperty<EnumProperty>("CapabilityType");
                 while (bct == null)
                 {
@@ -195,7 +216,11 @@ namespace Randomizer.Randomizers.Game2.Enemy
             public PowerInfo(ExportEntry export, bool isCorrectedPackage)
             {
                 PowerName = export.ObjectName;
-                if (!MapPowerType(export) && !IsWhitelistedPower(export))
+                PowerExport = export;
+                InstancedFullPath = export.InstancedFullPath;
+                // PackageFileName = Path.GetFileName(export.FileRef.FilePath);
+
+                if (!MapPowerType() && !IsWhitelistedPower(export))
                 {
                     // Whitelisted powers bypass this check
                     // Powers that do not list a capability type are subclasses. We will not support using these
@@ -232,8 +257,6 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     return; // Do not use ammo or base powers as they're player only in the usable code
                 }
 
-                PackageFileName = Path.GetFileName(export.FileRef.FilePath);
-                InstancedFullPath = export.InstancedFullPath;
 
                 IsCorrectedPackage = isCorrectedPackage;
                 SetupDependencies(export);
@@ -301,21 +324,21 @@ namespace Randomizer.Randomizers.Game2.Enemy
         /// <param name="powerInfo"></param>
         /// <param name="additionalPowers">A list of additioanl powers that are referenced when this powerinfo is an import only power (prevent re-opening package)</param>
         /// <returns></returns>
-        public static IEntry PortPowerIntoPackage(GameTarget target, IMEPackage targetPackage, PowerInfo powerInfo, out IMEPackage sourcePackage)
+        public static IEntry PortPowerIntoPackage(GameTarget target, IMEPackage targetPackage, PowerInfo powerInfo)
         {
-            if (powerInfo.IsCorrectedPackage)
-            {
-                var sourceData = MEREmbedded.GetEmbeddedPackage(target.Game, "correctedloadouts.powers." + powerInfo.PackageFileName);
-                sourcePackage = MEPackageHandler.OpenMEPackageFromStream(sourceData);
-            }
-            else
-            {
-                sourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName));
-            }
+            //if (powerInfo.IsCorrectedPackage)
+            //{
+            //    var sourceData = MEREmbedded.GetEmbeddedPackage(target.Game, "correctedloadouts.powers." + powerInfo.PackageFileName);
+            //    sourcePackage = MEPackageHandler.OpenMEPackageFromStream(sourceData);
+            //}
+            //else
+            //{
+            //    sourcePackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName));
+            //}
 
-            if (sourcePackage != null)
-            {
-                var sourceExport = sourcePackage.FindExport(powerInfo.InstancedFullPath);
+            //if (sourcePackage != null)
+            //{
+                var sourceExport = powerInfo.PowerExport;
                 if (!sourceExport.InheritsFrom("SFXPower") || sourceExport.IsDefaultObject)
                 {
                     throw new Exception("Wrong setup!");
@@ -347,18 +370,18 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 // END DEBUG ONLY--------------------------------
 #endif
                 List<EntryStringPair> relinkResults = null;
-                if ((powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
-                {
+                //if ((powerInfo.IsCorrectedPackage || (PackageTools.IsPersistentPackage(powerInfo.PackageFileName) && MERFileSystem.GetPackageFile(target, powerInfo.PackageFileName.ToLocalizedFilename()) == null)))
+                //{
                     // Faster this way, without having to check imports
                     relinkResults = EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceExport, targetPackage,
                         newParent, true, new RelinkerOptionsPackage(), out newEntry); // TODO: CACHE?
-                }
-                else
-                {
-                    // MEMORY SAFE (resolve imports to exports)
-                    MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
-                    relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
-                }
+                //}
+                //else
+                //{
+                //    // MEMORY SAFE (resolve imports to exports)
+                //    MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+                //    relinkResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, cache);
+                //}
 
                 if (relinkResults.Any())
                 {
@@ -366,8 +389,8 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 }
 
                 return newEntry;
-            }
-            return null; // No package was found
+            //}
+            //return null; // No package was found
         }
 
         // This can probably be changed later
@@ -375,7 +398,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                                                                                         && !export.ObjectName.Name.Contains("Drone") // We don't modify drone powers
                                                                                         && !export.ObjectName.Name.Contains("NonCombat") // Non combat enemies won't use powers so this is just a waste of time
                                                                                         && export.ObjectName.Name != "Loadout_None" // Loadout_None has nothing, don't bother giving it anything
-                                                                && Path.GetFileName(export.FileRef.FilePath).StartsWith("Bio");
+                                                                && Path.GetFileName(export.FileRef.FilePath).StartsWith("Bio"); // Must be part of a level, not a squadmate, player, etc
 
         internal static bool RandomizeExport(GameTarget target, ExportEntry export, RandomizationOption option)
         {
@@ -391,7 +414,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             {
                 // This loadout has no powers!
                 // Randomly give them some powers.
-                if (ThreadSafeRandom.Next(1) == 0)
+                if (ThreadSafeRandom.Next(1) == 0) // Be sure to change this for release build, as this is always true
                 {
                     // unlimited power
                     List<ObjectProperty> blankPows = new List<ObjectProperty>();
@@ -412,8 +435,13 @@ namespace Randomizer.Randomizers.Game2.Enemy
             foreach (var power in powers.ToList())
             {
                 if (power.Value == 0) return false; // Null entry in weapons list
+
+
+                // We must first perform a bunch of checks to make sure this power is OK to randomize
+                // as a lot of AI depends on specific powers; we will not change those ones
+                #region CHECK FOR UNRANDOMIZABLE POWERS ON LOADOUT
                 IEntry existingPowerEntry = null;
-                if (power.Value != int.MinValue)
+                if (power.Value != int.MinValue) // MinValue is MER's version of a 'blank' since we cannot use 0
                 {
                     // Husk AI kinda depends on melee or they just kinda breath on you all creepy like
                     // We'll give them a chance to change it up though
@@ -432,7 +460,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
                 // DEBUG
                 PowerInfo randomNewPower = Powers.RandomElement();
-                //if (option.SliderValue < 0)
+                //if (option.SliderValue < 0) // This lets us select a specific power
                 //{
                 //    randomNewPower = Powers.RandomElement();
                 //}
@@ -478,6 +506,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     }
                 }
                 #endregion
+                #endregion
 
                 // CHANGE THE POWER
                 if (existingPowerEntry == null || randomNewPower.PowerName != existingPowerEntry.ObjectName)
@@ -490,30 +519,24 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     // It's a different power.
 
                     // See if we need to port this in
-                    var fullName = randomNewPower.InstancedFullPath + "." + randomNewPower.PowerName; // SFXGameContent_Powers.SFXPower_Hoops
-                    var existingVersionOfPower = export.FileRef.FindEntry(fullName);
+                    var existingVersionOfPower = export.FileRef.FindEntry(randomNewPower.InstancedFullPath);
 
                     if (existingVersionOfPower != null)
                     {
-                        // Power does not need ported in
+                        // Power does not need ported in, already in package
                         power.Value = existingVersionOfPower.UIndex;
                     }
                     else
                     {
                         // Power needs ported in
-                        power.Value = PortPowerIntoPackage(target, export.FileRef, randomNewPower, out _)?.UIndex ?? int.MinValue;
+                        power.Value = PortPowerIntoPackage(target, export.FileRef, randomNewPower)?.UIndex ?? int.MinValue;
                     }
 
                     if (existingPowerEntry != null && existingPowerEntry.UIndex > 0 && PackageTools.IsPersistentPackage(export.FileRef.FilePath))
                     {
                         // Make sure we add the original power to the list of referenced memory objects
                         // so subfiles that depend on this power existing don't crash the game!
-                        var world = export.FileRef.FindExport("TheWorld");
-                        var worldBin = ObjectBinary.From<World>(world);
-                        var extraRefs = worldBin.ExtraReferencedObjects.ToList();
-                        extraRefs.Add(existingPowerEntry.UIndex);
-                        worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
-                        world.WriteBinary(worldBin);
+                        PackageTools.AddReferencesToWorld(export.FileRef, new[] { existingPowerEntry as ExportEntry });
                     }
 
                     foreach (var addlPow in randomNewPower.AdditionalRequiredPowers)
@@ -554,7 +577,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
 #endif
             export.WriteProperty(powers);
 
-            // Our precalculated map should have accounted for imports already, so we odn't need to worry about missing imports upstream
+            // Our precalculated map should have accounted for imports already, so we don't need to worry about missing imports upstream
             // If this is not a master or localization file (which are often used for imports) 
             // Change the number around so it will work across packages.
             // May need disabled if game becomes unstable.

@@ -211,7 +211,7 @@ namespace Randomizer.Randomizers.Game2
 #if DEBUG
                         if (true
                         //&& false //uncomment to disable filtering
-                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)

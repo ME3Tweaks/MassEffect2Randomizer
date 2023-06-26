@@ -12,7 +12,7 @@ namespace RandomizerUI.Classes
 
     class MERSettings
     {
-        private const string RegistryKeyPath = @"HKEY_CURRENT_USER\Software\MassEffectRandomizer";
+        public const string RegistryKeyPath = @"HKEY_CURRENT_USER\Software\MassEffectRandomizer";
 #if __GAME1__
         private const string SettingPrefix = "ME1-";
 #elif __GAME2__
@@ -20,6 +20,14 @@ namespace RandomizerUI.Classes
 #elif __GAME3__
         private const string SettingPrefix = "ME3-";
 #endif
+
+        /// <summary>
+        /// Creates the key for settings
+        /// </summary>
+        public static void InitRegistryKey()
+        {
+            RegistryHandler.CreateRegistryPath(RegistryKeyPath);
+        }
 
         public static void WriteSettingString(ESetting setting, string data)
         {

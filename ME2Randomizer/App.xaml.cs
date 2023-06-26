@@ -63,6 +63,8 @@ namespace RandomizerUI
 #elif __GAME3__
             MCoreFilesystem.AppDataFolderName = "ME3Randomizer";
 #endif
+
+            MERSettings.InitRegistryKey();
         }
 
         public App() : base()
