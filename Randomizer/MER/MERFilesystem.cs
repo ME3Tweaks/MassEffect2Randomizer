@@ -77,7 +77,7 @@ namespace Randomizer.MER
 #if !__GAME1__
             if (options.RandomizationTarget.Game.IsGame2() || options.RandomizationTarget.Game.IsGame3())
             {
-                CoalescedHandler.StartHandler();
+                CoalescedHandler.StartHandler(options.RandomizationTarget.Game);
             }
 #endif
 
@@ -140,7 +140,7 @@ namespace Randomizer.MER
             {
                 MERUtilities.InventoryCustomClass(startupClass);
             }
-            
+
             // Add the startup file to the global lookup cache because this will often be looked into 
             // with randomizer design for things like sequence object creation.
             MERCaches.GlobalCommonLookupCache.InsertIntoCache(packageForInventory);
@@ -294,7 +294,7 @@ namespace Randomizer.MER
         }
 
         private static bool installedStartupPackage;
-        
+
         /// <summary>
         /// Gets a specific file from the game, bypassing the MERFS system.
         /// </summary>
