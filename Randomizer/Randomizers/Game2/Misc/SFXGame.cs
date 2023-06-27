@@ -5,6 +5,7 @@ using LegendaryExplorerCore.Unreal.BinaryConverters;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Misc
 {
@@ -27,15 +28,14 @@ namespace Randomizer.Randomizers.Game2.Misc
             var sfxgame = GetSFXGame(target);
 
             // Add ragdoll power to shep
-            var sfxplayercontrollerDefaults = sfxgame.GetUExport(30777);
+            var sfxplayercontrollerDefaults = sfxgame.FindExport(@"Default__SFXPlayerController");
             var cac = sfxplayercontrollerDefaults.GetProperty<ArrayProperty<ObjectProperty>>("CustomActionClasses");
-            cac[5].Value = 25988; //SFXCustomActionRagdoll
+            cac[5].Value = sfxgame.FindExport(@"SFXCustomAction_Ragdoll").UIndex; //SFXCustomAction_Ragdoll in this slot
             sfxplayercontrollerDefaults.WriteProperty(cac);
 
             // Update power script design and patch out player physics level
-            var sd = sfxgame.GetUExport(14353).Data;
-            OneHitKO.NopRange(sd, 0x62, 0x27);
-            sfxgame.GetUExport(14353).Data = sd;
+            var sd = sfxgame.FindExport(@"BioPowerScriptDesign.GetPhysicsLevel");
+            ScriptTools.InstallScriptTextToExport(sd, MEREmbedded.GetEmbeddedTextAsset(@"Functions.GetPhysicsLevel.uc"), "GetPhysicsLevel", new MERPackageCache(target, null, false));
 
             MERFileSystem.SavePackage(sfxgame);
             return true;
