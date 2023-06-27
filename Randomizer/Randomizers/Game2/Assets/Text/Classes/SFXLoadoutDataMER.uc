@@ -5,6 +5,7 @@
 // Variables
 var config array<string> RandomWeaponOptions;
 var array<Class<SFXWeapon>> OldReferences;
+// var transient bool HasBeenRandomizedAlready; // Single randomization mode
 
 // Functions
 function RandomizeWeapons()
@@ -14,6 +15,11 @@ function RandomizeWeapons()
     local int existingIndex;
     local int I;
     local Class<SFXWeapon> NewWeapon;
+    
+    //if (HasBeenRandomizedAlready){ 
+    //    LogInternal("Has already been randomized, not randomizing loadout again"); 
+    //    return;
+    //}
     
     if (RandomWeaponOptions.Length > Weapons.Length)
     {
@@ -38,10 +44,12 @@ function RandomizeWeapons()
             continue;
         }
     }
+    LogInternal("Randomized loadout");
+    // HasBeenRandomizedAlready = true;
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.
 defaultproperties
 {
-    RandomWeaponOptions = ("SFXGameContent_Inventory.SFXWeapon_GethPulseRifle", "SFXGameContent_Inventory.SFXHeavyWeapon_MissileLauncher", "SFXGameContent_Inventory.SFXHeavyWeapon_GrenadeLauncher")
+    // RandomWeaponOptions = ("SFXGameContent_Inventory.SFXWeapon_GethPulseRifle", "SFXGameContent_Inventory.SFXHeavyWeapon_MissileLauncher", "SFXGameContent_Inventory.SFXHeavyWeapon_GrenadeLauncher")
 }

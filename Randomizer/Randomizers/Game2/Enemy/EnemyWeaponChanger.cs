@@ -96,14 +96,28 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
             foreach (var ew in enemyWeaponsList)
             {
-                sfxLoadoutDataMER.AddEntryIfUnique(new CoalesceProperty(@"RandomWeaponOptions", new CoalesceValue(ew, CoalesceParseAction.AddUnique)));
+                // Lines starting with // are 'commented' out - mainly so during dev
+                // we can force specific lines
+                if (!ew.StartsWith("//"))
+                {
+                    sfxLoadoutDataMER.AddEntryIfUnique(new CoalesceProperty(@"RandomWeaponOptions",
+                        new CoalesceValue(ew, CoalesceParseAction.AddUnique)));
+                }
             }
+
+            // Extract all weapon randomizer packages
+            MEREmbedded.ExtractEmbeddedBinaryFolder(@"Packages.LE2.Weapons");
+
+            // Add corrected weapons here
+            CoalescedHandler.AddDynamicLoadMappingEntry(new SeekFreeInfo() { EntryPath = @"SFXGameContentMER.SFXHeavyWeapon_Blackstorm_MER", SeekFreePackage = @"SFXHeavyWeapon_Blackstorm_MER" });
+            CoalescedHandler.AddDynamicLoadMappingEntry(new SeekFreeInfo() { EntryPath = @"SFXGameContent_Inventory.SFXWeapon_GethMiniGun", SeekFreePackage = @"SFXWeapon_GethMiniGun" });
 
 
             // Add animations
             MERLog.Information(@"Installing weapon animations startup package");
             WeaponAnimsPackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(MEGame.LE2, @"Weapons.Startup_LE2R_WeaponAnims.pcc"), @"Startup_LE2R_WeaponAnims.pcc");
-            MERFileSystem.SavePackage(WeaponAnimsPackage); // Install startup file
+
+            // Add animation to startup
             ThreadSafeDLCStartupPackage.AddStartupPackage(@"Startup_LE2R_WeaponAnims"); // Make it referencable via imports
 
             WeaponAnimationsArrayProp = WeaponAnimsPackage.FindExport("WeaponAnimData").GetProperty<ArrayProperty<StructProperty>>("WeaponAnimSpecs");
@@ -576,11 +590,19 @@ namespace Randomizer.Randomizers.Game2.Enemy
             var guns = export.GetProperty<ArrayProperty<ObjectProperty>>("Weapons");
             if (guns.Count == 1) //Randomizing multiple guns could be difficult and I'm not sure enemies ever change their weapons.
             {
+                var gun = guns[0];
+                if (gun.Value == 0) return false; // Null entry in weapons list
+
+                // Set to class that will be randomized
                 var classRef = EntryImporter.EnsureClassIsInFile(export.FileRef, "SFXLoadoutDataMER", new RelinkerOptionsPackage(), target.TargetPath);
                 export.Class = classRef;
-                return true;
-                //var gun = guns[0];
-                //if (gun.Value == 0) return false; // Null entry in weapons list
+
+                //var pName = Path.GetFileName(export.FileRef.FilePath);
+                //var isPersistentPackage = PackageTools.IsPersistentPackage(pName);
+
+                // Ensure unique loadout object
+                //export = EntryCloner.CloneEntry(export); // Clone it to make it memory unique for randomization
+
                 //var allowedGuns = GetAllowedWeaponsForLoadout(export);
                 //if (allowedGuns.Any())
                 //{
@@ -594,7 +616,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 //    //    randomNewGun = allowedGuns.FirstOrDefault(x => x.GunName.Contains("GrenadeLauncher"));
                 //    //}
 
-                //    var originalGun = gun.ResolveToEntry(export.FileRef);
+                // var originalGun = gun.ResolveToEntry(export.FileRef);
                 //    if (randomNewGun.GunName != originalGun.ObjectName)
                 //    {
                 //        var gunInfo = randomNewGun;
@@ -619,32 +641,30 @@ namespace Randomizer.Randomizers.Game2.Enemy
 
                 //        //if (!tried)
                 //        export.WriteProperty(guns);
-                //        var pName = Path.GetFileName(export.FileRef.FilePath);
 
-                //        // If this is not a master or localization file (which are often used for imports) 
-                //        // Change the number around so it will work across packages.
-                //        // May need disabled if game becomes unstable.
+                // If this is not a master or localization file (which are often used for imports) 
+                // Change the number around so it will work across packages.
+                // May need disabled if game becomes unstable.
 
-                //        // We check if less than 10 as it's very unlikely there will be more than 10 loadouts in a non-persistent package
-                //        // if it's > 10 it's likely already a memory-changed item by MER
-                //        var isPersistentPackage = PackageTools.IsPersistentPackage(pName);
-                //        if (export.indexValue < 10 && !isPersistentPackage && !PackageTools.IsLocalizationPackage(pName))
-                //        {
-                //            export.ObjectName = new NameReference(export.ObjectName, ThreadSafeRandom.Next(2000) + 10);
-                //        }
-                //        else if (isPersistentPackage && originalGun.UIndex > 0)
-                //        {
-                //            // Make sure we add the original gun to the list of referenced memory objects
-                //            // so subfiles that depend on this gun existing don't crash the game!
-                //            var world = export.FileRef.FindExport("TheWorld");
-                //            var worldBin = ObjectBinary.From<World>(world);
-                //            var extraRefs = worldBin.ExtraReferencedObjects.ToList();
-                //            extraRefs.Add(originalGun.UIndex);
-                //            worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
-                //            world.WriteBinary(worldBin);
-                //        }
+                // We check if less than 10 as it's very unlikely there will be more than 10 loadouts in a non-persistent package
+                // if it's > 10 it's likely already a memory-changed item by MER
+                //if (export.indexValue < 10 && !isPersistentPackage && !PackageTools.IsLocalizationPackage(pName))
+                //{
+                //    export.ObjectName = new NameReference(export.ObjectName, ThreadSafeRandom.Next(4000) + 10);
+                //}
+                //else if (isPersistentPackage && originalGun.UIndex > 0)
+                //{
+                //    // Make sure we add the original gun to the list of referenced memory objects
+                //    // so subfiles that depend on this gun existing don't crash the game!
+                //    var world = export.FileRef.FindExport("TheWorld");
+                //    var worldBin = ObjectBinary.From<World>(world);
+                //    var extraRefs = worldBin.ExtraReferencedObjects.ToList();
+                //    extraRefs.Add(originalGun.UIndex);
+                //    worldBin.ExtraReferencedObjects = extraRefs.Distinct().ToArray(); // Filter out duplicates that may have already been in package
+                //    world.WriteBinary(worldBin);
+                //}
 
-
+                return true;
                 //        tried = true;
                 //    }
             }
