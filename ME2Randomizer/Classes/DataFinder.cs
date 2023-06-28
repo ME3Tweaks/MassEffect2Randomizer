@@ -52,7 +52,8 @@ namespace RandomizerUI.Classes
             // For UI binding.
             RandomizationOption option = new RandomizationOption();
             option.OnOperationUpdate += srUpdate;
-            dataworker.DoWork += MERDebug.BuildPowersBank;
+            dataworker.DoWork += MERDebug.BuildHenchPowers;
+            //dataworker.DoWork += MERDebug.BuildPowersBank;
             //dataworker.DoWork += MERDebug.BuildGestureFiles;
             //dataworker.RunWorkerCompleted += MERDebug.DebugPrintActorNames;
             dataworker.RunWorkerAsync(option);

@@ -683,7 +683,7 @@ namespace Randomizer.Randomizers.Game2
                         Description = "Shuffles the powers of squadmates. Loading an existing save after running this will cause them to lose talent points. Use the refund points button below to adjust your latest save file and reset their powers.",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true,
-                        PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilities,
+                        PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilitiesLE2,
                         SetupRandomizerDelegate = HenchTalents.ResetTalents,
                         SetupRandomizerButtonToolTip = "Allows you to select a save file to remove henchman records from.\nThis will wipe all henchman powers and refund the correct amount of talent points to spend.\nThis will ALSO reset the weapon they are using the default weapon they use.",
                         SetupRandomizerButtonText = "Refund points",

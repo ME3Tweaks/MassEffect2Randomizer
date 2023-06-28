@@ -111,6 +111,8 @@
 		<None Remove="Randomizers\Game2\Assets\Text\Classes\SFXLoadoutDataMER.uc" />
 		<None Remove="Randomizers\Game2\Assets\Text\Functions\GenerateInventoryFromLoadout.uc" />
 		<None Remove="Randomizers\Game2\Assets\Text\Functions\GetPhysicsLevel.uc" />
+		<None Remove="Randomizers\Game2\Assets\Text\Powers\BasePowerIFPs.txt" />
+		<None Remove="Randomizers\Game2\Assets\Text\Powers\EvolvedHenchPowerIFPs.txt" />
 		<None Remove="Randomizers\Game3\Assets\Starterkit\le3starterkit.zip" />
 		<None Remove="Randomizers\Game3\Assets\Text\imagecredits.txt" />
 		<None Remove="Randomizers\Game3\Assets\Text\Scripts\Debug\BioCheatManager.ProfilePower.uc" />

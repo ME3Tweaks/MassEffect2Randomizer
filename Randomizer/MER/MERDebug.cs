@@ -55,13 +55,15 @@ namespace Randomizer.MER
             option.CurrentOperation = "Building powers package";
             option.ProgressIndeterminate = false;
 
-            var allIFPs = File.ReadAllLines(@"C:\Users\mgame\source\repos\ME3Tweaks\MassEffectRandomizerShared\Randomizer\Randomizers\Game2\Dev\PowerIFPs.txt");
+            //var allIFPs =
+            //    File.ReadAllLines(
+            //        @"C:\Users\mgame\source\repos\ME3Tweaks\MassEffectRandomizerShared\Randomizer\Randomizers\Game2\Dev\PowerIFPs.txt");
 
             // SETUP STAGE 1
             var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE2, true, false);
 
             using var powerBank = MEPackageHandler.CreateAndOpenPackage(@"C:\users\public\AllPowers.pcc",
-                               MEGame.LE2);
+                MEGame.LE2);
 
             List<string> alreadyDonePowers = new List<string>();
 
@@ -72,12 +74,13 @@ namespace Randomizer.MER
                 Interlocked.Increment(ref done);
                 option.ProgressValue = done;
                 using var package = MEPackageHandler.OpenMEPackage(f.Value);
-                var powers = package.Exports.Where(x => x.IsClass && !x.IsDefaultObject && allIFPs.Contains(x.InstancedFullPath));
+                var powers = package.Exports.Where(x =>
+                    x.IsClass && !x.IsDefaultObject && x.InheritsFrom(@"SFXPower"));
                 foreach (var skm in powers.Where(x => !alreadyDonePowers.Contains(x.InstancedFullPath)))
                 {
                     // Add to power bank file
                     BuildPowerInfo(skm, powerBank, false);
-                    option.CurrentOperation = $"Building powers package ({alreadyDonePowers.Count}/{allIFPs.Length} powers done)";
+                    option.CurrentOperation = $"Building powers package ({alreadyDonePowers.Count} powers done)";
                     alreadyDonePowers.Add(skm.InstancedFullPath);
                 }
             }
@@ -298,7 +301,7 @@ namespace Randomizer.MER
             if (classInfo.ClassFlags.Has(UnrealFlags.EClassFlags.Abstract))
                 return; // This class cannot be used as a power, it is abstract
 
-            var dependencies = EntryImporter.GetAllReferencesOfExport(powerExport);
+            // var dependencies = EntryImporter.GetAllReferencesOfExport(powerExport);
             //var importDependencies = dependencies.OfType<ImportEntry>().ToList();
             //var usable = CheckImports(importDependencies, package, startupFileCache, localCache, out var missingImport);
             //if (usable)
@@ -312,22 +315,23 @@ namespace Randomizer.MER
                 //    pi.IsUsable = false;
                 //}
 
-                if (pi.IsUsable)
-                {
-                    Debug.WriteLine($"Usable sfxpower being ported {powerExport.InstancedFullPath} in {Path.GetFileName(powerExport.FileRef.FilePath)}");
-                    //if (!mapping.TryGetValue(powerExport.InstancedFullPath, out var instanceList))
-                    //{
-                    //    instanceList = new List<EnemyPowerChanger.PowerInfo>();
-                    //    mapping[powerExport.InstancedFullPath] = instanceList;
-                    //}
+                //if (pi.IsUsable)
+                //{
+                Debug.WriteLine(
+                    $"Usable sfxpower being ported {powerExport.InstancedFullPath} in {Path.GetFileName(powerExport.FileRef.FilePath)}");
+                //if (!mapping.TryGetValue(powerExport.InstancedFullPath, out var instanceList))
+                //{
+                //    instanceList = new List<EnemyPowerChanger.PowerInfo>();
+                //    mapping[powerExport.InstancedFullPath] = instanceList;
+                //}
 
-                    //instanceList.Add(pi);
-                    EntryExporter.ExportExportToPackage(powerExport, powerBank, out _);
-                }
-                else
-                {
-                    Debug.WriteLine($"Denied power {pi.PowerName}");
-                }
+                //instanceList.Add(pi);
+                EntryExporter.ExportExportToPackage(powerExport, powerBank, out _);
+                //}
+                //else
+                //{
+                //   Debug.WriteLine($"Denied power {pi.PowerName}");
+                //}
             }
             //else
             //{
@@ -454,7 +458,8 @@ namespace Randomizer.MER
                     {
                         foreach (var rtpc in rtpcs)
                         {
-                            rtpcStrings.Add($"{rtpc.GetProp<StrProperty>("RTPCName").Value}: {rtpc.GetProp<FloatProperty>("RTPCValue").Value}");
+                            rtpcStrings.Add(
+                                $"{rtpc.GetProp<StrProperty>("RTPCName").Value}: {rtpc.GetProp<FloatProperty>("RTPCValue").Value}");
                         }
                     }
                 }
@@ -493,7 +498,8 @@ namespace Randomizer.MER
                     continue; // These are already cooked seek free
 
                 var file = MERFileSystem.OpenMEPackageTablesOnly(f.Value);
-                foreach (var exp in file.Exports.Where(x => !x.IsDefaultObject && x.ClassName == "Package" && x.idxLink == 0))
+                foreach (var exp in file.Exports.Where(x =>
+                             !x.IsDefaultObject && x.ClassName == "Package" && x.idxLink == 0))
                 {
                     // Don't add blanks
                     if (file.Exports.Any(x => x.idxLink == exp.UIndex))
@@ -516,7 +522,9 @@ namespace Randomizer.MER
 
             // var decookPackagesList = File.ReadAllLines(@"B:\DecookedGames\LE3TopLevelPackages.txt");
 
-            using var globalCache = MERCaches.GlobalCommonLookupCache; // This way of accessing will not work in release builds.
+            using var
+                globalCache =
+                    MERCaches.GlobalCommonLookupCache; // This way of accessing will not work in release builds.
 
             option.ProgressValue = 0;
             option.ProgressMax = topLevelPackages.Count;
@@ -537,13 +545,19 @@ namespace Randomizer.MER
                 var decookedPackage = MEPackageHandler.OpenMEPackage(decookedPackagePath);
                 foreach (var tableOnlyPackage in fileToTablesOnlyPackage)
                 {
-                    if (tableOnlyPackage.Value.Exports.Any(x => x.InstancedFullPath.StartsWith(topLevelNameBase, StringComparison.InvariantCultureIgnoreCase) && decookedPackage.FindEntry(x.InstancedFullPath) == null))
+                    if (tableOnlyPackage.Value.Exports.Any(x =>
+                            x.InstancedFullPath.StartsWith(topLevelNameBase,
+                                StringComparison.InvariantCultureIgnoreCase) &&
+                            decookedPackage.FindEntry(x.InstancedFullPath) == null))
                     {
                         var package = MEPackageHandler.OpenMEPackage(tableOnlyPackage.Value.FilePath);
                         using PackageCache localCache = new PackageCache();
-                        foreach (var itemToPort in package.Exports.Where(x => x.InstancedFullPath.StartsWith(topLevelNameBase, StringComparison.InvariantCultureIgnoreCase)).ToList())
+                        foreach (var itemToPort in package.Exports.Where(x =>
+                                     x.InstancedFullPath.StartsWith(topLevelNameBase,
+                                         StringComparison.InvariantCultureIgnoreCase)).ToList())
                         {
-                            EntryExporter.ExportExportToPackage(itemToPort, decookedPackage, out var _, globalCache, localCache);
+                            EntryExporter.ExportExportToPackage(itemToPort, decookedPackage, out var _, globalCache,
+                                localCache);
                         }
                     }
                 }
@@ -572,7 +586,8 @@ namespace Randomizer.MER
 
 
             // PackageName -> GesturePackage
-            var gestureSaveF = @"C:\Users\mgame\source\repos\ME2Randomizer\Randomizer\Randomizers\Game3\Assets\Binary\Packages\LE3\Gestures";
+            var gestureSaveF =
+                @"C:\Users\mgame\source\repos\ME2Randomizer\Randomizer\Randomizers\Game3\Assets\Binary\Packages\LE3\Gestures";
 
             option.CurrentOperation = "Finding gesture animations";
             option.ProgressMax = files.Count;
@@ -591,11 +606,14 @@ namespace Randomizer.MER
                 option.ProgressValue++;
                 var p = MEPackageHandler.OpenMEPackage(f);
                 var gesturesPackageExports = p.Exports.Where(
-                    x => x.idxLink == 0 && x.ClassName == "Package"
-                                        && GestureManager.IsGestureGroupPackage(x.InstancedFullPath)).Select(x => x.UIndex).ToList();
+                        x => x.idxLink == 0 && x.ClassName == "Package"
+                                            && GestureManager.IsGestureGroupPackage(x.InstancedFullPath))
+                    .Select(x => x.UIndex).ToList();
 
                 // Get list of exports under these packages
-                foreach (var exp in p.Exports.Where(x => gesturesPackageExports.Contains(x.idxLink) && (x.ClassName == "AnimSet" || x.ClassName == "AnimSequence")))
+                foreach (var exp in p.Exports.Where(x =>
+                             gesturesPackageExports.Contains(x.idxLink) &&
+                             (x.ClassName == "AnimSet" || x.ClassName == "AnimSequence")))
                 {
                     var destFile = Path.Combine(gestureSaveF, exp.Parent.ObjectName.Name + ".pcc");
                     IMEPackage gestPackage = gestureCache.GetCachedPackage(destFile, false);
@@ -606,7 +624,9 @@ namespace Randomizer.MER
                         gestPackage = MEPackageHandler.OpenMEPackage(destFile);
                         gestureCache.InsertIntoCache(gestPackage);
                     }
-                    EntryExporter.ExportExportToPackage(exp, gestPackage, out var _, MERCaches.GlobalCommonLookupCache, cache);
+
+                    EntryExporter.ExportExportToPackage(exp, gestPackage, out var _, MERCaches.GlobalCommonLookupCache,
+                        cache);
                 }
             }
 
@@ -617,6 +637,75 @@ namespace Randomizer.MER
 
             MERCaches.Cleanup();
 #endif
+        }
+
+        public static void BuildHenchPowers(object sender, DoWorkEventArgs e)
+        {
+            bool evolutions = false;
+            var files = MELoadedFiles.GetFilesLoadedInGame(MEGame.LE2, true, false).Values
+                .Where(x =>
+                    x.Contains(@"BioD_ArvLvl1.pcc") ||
+                    (
+                    x.Contains("BioH_")
+                    && x.Contains("_00")
+                    && !x.Contains(@"_END_")
+                )
+                    && !x.Contains(@"_LOC_"))
+                //&& x.Contains(@"CitHub", StringComparison.InvariantCultureIgnoreCase)
+                //)
+                .ToList();
+            var squadmatePowerIFPs = new List<string>();
+
+            foreach (var file in files)
+            {
+                Debug.WriteLine(file);
+            }
+
+            foreach (var file in files)
+            {
+                using var package = MEPackageHandler.OpenMEPackage(file);
+                var loadouts = package.Exports.Where(x => x.ClassName == @"SFXPlayerSquadLoadoutData");
+                foreach (var loadout in loadouts)
+                {
+                    var powers = loadout.GetProperty<ArrayProperty<ObjectProperty>>(@"Powers");
+                    foreach (var powerObj in powers)
+                    {
+                        var power = powerObj.ResolveToEntry(package) as ExportEntry;
+
+                        if (evolutions)
+                        {
+                            power = power.GetDefaults();
+                            var ePower1 =
+                                power.GetProperty<ObjectProperty>(@"EvolvedPowerClass1")
+                                    ?.ResolveToEntry(package) as ExportEntry;
+                            var ePower2 =
+                                power.GetProperty<ObjectProperty>(@"EvolvedPowerClass2")
+                                    ?.ResolveToEntry(package) as ExportEntry;
+
+                            if (ePower1 != null)
+                            {
+                                squadmatePowerIFPs.Add(ePower1.InstancedFullPath);
+                            }
+
+                            if (ePower2 != null)
+                            {
+                                squadmatePowerIFPs.Add(ePower2.InstancedFullPath);
+                            }
+                        }
+                        else
+                        {
+                            if (power.ObjectName.Instanced.Contains(@"Loyalty"))
+                                continue; // We don't do these
+                            squadmatePowerIFPs.Add(power.InstancedFullPath);
+                        }
+                    }
+                }
+            }
+
+            foreach (var sPower in squadmatePowerIFPs)
+            {
+                Debug.WriteLine(sPower);
+            }
         }
     }
 }
