@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using Randomizer.MER;
@@ -74,6 +75,7 @@ namespace Randomizer.Randomizers.Game2.Talents
         public HTalent(ExportEntry powerClass, bool isEvolution = false, bool isFixedPower = false)
         {
             PowerExport = powerClass;
+            OriginalPowerName = powerClass.ObjectName;
             IsEvolution = isEvolution;
 
             CondenseTalentProperties(powerClass);
@@ -232,6 +234,27 @@ namespace Randomizer.Randomizers.Game2.Talents
                 evos.Add(new HTalent(evo2prop, true));
             }
             return evos;
+        }
+
+        /// <summary>
+        /// The name of the power when this object was constructed
+        /// </summary>
+        private NameReference OriginalPowerName;
+
+        /// <summary>
+        /// Sets the source name of the power export back to the original, used when porting to differentiate duplicate 
+        /// </summary>
+        public void ResetSourcePowerName()
+        {
+            PowerExport.ObjectName = OriginalPowerName;
+            PowerExport.GetDefaults().ObjectName = $"Defaults__{OriginalPowerName}";
+        }
+
+        public void SetUniqueName(string henchInfoHenchUiName)
+        {
+            PowerExport.ObjectName = new NameReference($"{PowerExport.ObjectName.Name}_{henchInfoHenchUiName.UpperFirst()}_MER");
+            PowerExport.GetDefaults().ObjectName = new NameReference($"Defaults__{PowerExport.ObjectName.Name}_{henchInfoHenchUiName.UpperFirst()}_MER");
+
         }
     }
 }

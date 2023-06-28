@@ -37,6 +37,8 @@ namespace Randomizer.Randomizers.Game2.Misc
             bool removeRank2Gating = option.HasSubOptionSelected(SUBOPTION_HENCHPOWERS_REMOVEGATING);
 
             option.CurrentOperation = "Building new henchmen loadouts";
+            option.ProgressValue = 0;
+            option.ProgressIndeterminate = true;
 
             // Load the startup override package from assets for filling out
             var loadoutPackage = MEREmbedded.GetEmbeddedPackage(MEGame.LE2, @"Powers.Startup_LE2R_HenchLoadouts.pcc");
@@ -70,54 +72,8 @@ namespace Randomizer.Randomizers.Game2.Misc
                 }
             }
 
-            #region Build power pool
-
-            int numDone = 0;
-            option.ProgressValue = 0;
-            option.CurrentOperation = "Building henchmen power sets";
 
 
-            //    var henchLoadoutName = loadout.ObjectName.Instanced.Substring(6); // Remove 'hench_'
-            //    HenchLoadoutInfo hli = new HenchLoadoutInfo() { LoadoutIFP = loadout.InstancedFullPath };
-
-            //    // Inventory the powers
-            //    var powers = loadout.GetProperty<ArrayProperty<ObjectProperty>>("Powers").Select(x => x.ResolveToEntry(loadout.FileRef) as ExportEntry).ToList();
-            //    int numContributed = 0;
-            //    foreach (var p in powers)
-            //    {
-            //        //if (CanBeShuffled(p, out var usi))
-            //        //{
-            //        if (hli.LoadoutIFP == "BioChar_Loadouts.Henchmen.hench_Morinth")
-            //        {
-            //            p.CondenseArchetypes(); // makes porting work better by removing Samara's parent power which can be used
-            //        }
-
-            //        var htalent = new HTalent(p);
-            //        if (htalent.IsPassive)
-            //        {
-            //            passiveStrs.Add(htalent.PassiveDescriptionString);
-            //            passiveStrs.Add(htalent.PassiveTalentDescriptionString);
-            //            passiveStrs.Add(htalent.PassiveRankDescriptionString);
-            //        }
-
-            //        talentPoolMaster.Add(htalent);
-
-            //        var evolutions = htalent.GetEvolutions();
-            //        evolvedTalentPoolMaster.AddRange(evolutions);
-            //        numContributed++;
-            //    }
-            //        else if (usi.Pawn != null && usi.Pawn.Equals(henchInfo.Key, StringComparison.InvariantCultureIgnoreCase))
-            //    {
-            //        hli.FixedPowers.Add(new HTalent(p, isFixedPower: true));
-
-            //        if (usi.CountsTowardsTalentCount)
-            //        {
-            //            hli.NumPowersToAssign--;
-            //        }
-            //    }
-            //}
-
-            #endregion
 
 
             var allPS = passiveStrs.Distinct().ToList();
@@ -127,10 +83,13 @@ namespace Randomizer.Randomizers.Game2.Misc
             }
 
             // Step 3. Precalculate talent sets that will be assigned
-
+#if DEBUG
+            ThreadSafeRandom.SetSeed(132512);
+#endif
             #region Find compatible power sets
 
             // Populate the hench loadouts
+            option.ProgressIndeterminate = true;
             var henchLoadouts = new List<HenchLoadoutInfo>(); // The resulting loadouts
             foreach (var loadout in loadoutPackageP.Exports.Where(x => x.ClassName == @"SFXPlayerSquadLoadoutData"))
             {
@@ -236,17 +195,18 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             option.CurrentOperation = "Installing randomized henchmen powers";
             option.ProgressValue = 0;
+            option.ProgressIndeterminate = false;
             option.ProgressMax = henchLoadouts.Sum(x => x.NumPowersToAssign);
-            numDone = 0;
             foreach (var henchInfo in henchLoadouts)
             {
                 object tlkSync = new object();
                 MERLog.Information($"Installing talent set for {henchInfo.HenchUIName}");
                 option.CurrentOperation = $"Installing randomized powers for {henchInfo.HenchUIName}";
+                // henchInfo.SetPowersToUniqueNames();
                 // We force a large GC here cause this loop can make like 7GB, I'll take the timing hit 
                 // to reduce memory usage
-                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-                GC.Collect();
+                //GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                //GC.Collect();
 
                 ////foreach (var loadout in assets)
                 ////{
@@ -275,10 +235,16 @@ namespace Randomizer.Randomizers.Game2.Misc
                     // Lists for updating the class description in the character creator
                     foreach (var talentSetBasePower in talentSet.Powers)
                     {
+                        var savedProperties = talentSetBasePower.PowerExport.GetDefaults().GetProperties();
+                        var newProperties = talentSetBasePower.PowerExport.GetDefaults().GetProperties();
+                        newProperties.RemoveNamedProperty(@"EvolvedPowerClass1"); // Do not bring over evos in this round
+                        newProperties.RemoveNamedProperty(@"EvolvedPowerClass2"); // Do not bring over evos in this round
                         var portedPower = PackageTools.PortExportIntoPackage(target, loadout.FileRef,
                             talentSetBasePower.PowerExport);
                         powersList.Add(new ObjectProperty(portedPower.UIndex));
 
+                        talentSetBasePower.PowerExport.GetDefaults().WriteProperties(savedProperties); // restore properties
+                        option.IncrementProgressValue();
                         // For each power, change the evolutions
                         var defaults = portedPower.GetDefaults();
                         var props = defaults.GetProperties();
@@ -290,18 +256,30 @@ namespace Randomizer.Randomizers.Game2.Misc
                             EvolvedTalent1 = evolution1,
                             EvolvedTalent2 = evolution2
                         });
+                        if (portedPower.FileRef.FindExport(evolution1.PowerExport.InstancedFullPath) != null)
+                        {
+                            evolution1.SetUniqueName(henchInfo.HenchUIName);
+                        }
+
+                        if (portedPower.FileRef.FindExport(evolution2.PowerExport.InstancedFullPath) != null)
+                        {
+                            evolution2.SetUniqueName(henchInfo.HenchUIName);
+                        }
                         var evo1 = PackageTools.PortExportIntoPackage(target, portedPower.FileRef,
                             evolution1.PowerExport);
                         var evo2 = PackageTools.PortExportIntoPackage(target, portedPower.FileRef,
                             evolution2.PowerExport);
-                        evo1.WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
-                        evo2.WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
+
+                        evolution1.ResetSourcePowerName();
+                        evolution2.ResetSourcePowerName();
+
+                        evo1.GetDefaults().WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
+                        evo2.GetDefaults().WriteProperty(new ArrayProperty<StructProperty>("UnlockRequirements"));
                         props.AddOrReplaceProp(new ObjectProperty(evo1, "EvolvedPowerClass1"));
                         props.AddOrReplaceProp(new ObjectProperty(evo2, "EvolvedPowerClass2"));
 
                         // Update the evolution text via override
-                        var ranksSource =
-                            talentSetBasePower.CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks");
+                        var ranksSource = talentSetBasePower.CondensedProperties.GetProp<ArrayProperty<StructProperty>>("Ranks");
                         if (ranksSource == null)
                         {
                             Debugger.Break();
@@ -473,8 +451,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                             properties.AddOrReplaceProp(new FloatProperty(ThreadSafeRandom.Next(2) + 1, "Rank"));
                         }
                         // VANILLA HENCH CODE
-                        else if (i == 0 || (i == 1 && henchInfo.HenchUIName == "Miranda" ||
-                                            henchInfo.HenchUIName == "Jacob"))
+                        else if (i == 0 || (i == 1 && henchInfo.HenchUIName == "Miranda" || henchInfo.HenchUIName == "Jacob"))
                         {
                             properties.Add(new FloatProperty(1, "Rank"));
                         }
@@ -500,18 +477,16 @@ namespace Randomizer.Randomizers.Game2.Misc
                             // Has unlock dependency on loyalty power
                             // Has unlock dependency on the prior slotted item
                             var dependencies = new ArrayProperty<StructProperty>("UnlockRequirements");
-                            dependencies.AddRange(GetUnlockRequirementsForPower(
-                                loadout.FileRef.FindExport("SFXGameContent_Powers.SFXPower_LoyaltyRequirement"), true));
+                            dependencies.AddRange(GetUnlockRequirementsForPower(loadout.FileRef.FindExport("SFXGameContent_Powers.SFXPower_LoyaltyRequirement"), true));
                             properties.AddOrReplaceProp(dependencies);
                         }
 
                         defaults.WriteProperties(properties);
                     }
                 }
-            }
+                henchInfo.ResetSourcePowerNames();
 
-            Interlocked.Increment(ref numDone);
-            option.ProgressValue = numDone;
+            }
 
             #endregion
 

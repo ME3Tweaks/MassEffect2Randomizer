@@ -201,5 +201,13 @@ namespace Randomizer.Randomizers.Game2.Talents
         {
             HenchTalentSet?.EvolvedPowers.Clear();
         }
+
+        public void ResetSourcePowerNames()
+        {
+            foreach (var pow in HenchTalentSet.Powers)
+            {
+                pow.ResetSourcePowerName();
+            }
+        }
     }
 }
