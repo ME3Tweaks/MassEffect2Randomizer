@@ -247,14 +247,19 @@ namespace Randomizer.Randomizers.Game2.Talents
         public void ResetSourcePowerName()
         {
             PowerExport.ObjectName = OriginalPowerName;
-            PowerExport.GetDefaults().ObjectName = $"Defaults__{OriginalPowerName}";
+            PowerExport.GetDefaults().ObjectName = $"Default__{OriginalPowerName}";
         }
 
+        /// <summary>
+        /// Appends the henchman name and _MER to the end to ensure it's memory unique
+        /// </summary>
+        /// <param name="henchInfoHenchUiName"></param>
         public void SetUniqueName(string henchInfoHenchUiName)
         {
-            PowerExport.ObjectName = new NameReference($"{PowerExport.ObjectName.Name}_{henchInfoHenchUiName.UpperFirst()}_MER");
-            PowerExport.GetDefaults().ObjectName = new NameReference($"Defaults__{PowerExport.ObjectName.Name}_{henchInfoHenchUiName.UpperFirst()}_MER");
-
+            PowerExport.ObjectName = new NameReference($"{OriginalPowerName}_{henchInfoHenchUiName.UpperFirst()}_MER");
+            PowerExport.GetDefaults().ObjectName = new NameReference($"Default__{OriginalPowerName}_{henchInfoHenchUiName.UpperFirst()}_MER");
+            //Debug.WriteLine($"New unique names: {PowerExport.ObjectName}");
+            //Debug.WriteLine($"New unique names DEFAULTS: {PowerExport.GetDefaults().ObjectName}");
         }
     }
 }

@@ -26,12 +26,6 @@ namespace Randomizer.Randomizers.Game2.Misc
     {
         public const string SUBOPTION_HENCHPOWERS_REMOVEGATING = "SUBOPTION_HENCHPOWERS_REMOVEGATING";
 
-        private static string[] NonBioHHenchmenFiles = new[]
-        {
-            "BioD_ArvLvl1.pcc" // Kenson
-        };
-
-
         public static bool ShuffleSquadmateAbilitiesLE2(GameTarget target, RandomizationOption option)
         {
             bool removeRank2Gating = option.HasSubOptionSelected(SUBOPTION_HENCHPOWERS_REMOVEGATING);
@@ -71,10 +65,6 @@ namespace Randomizer.Randomizers.Game2.Misc
                     passiveStrs.Add(htalent.PassiveRankDescriptionString);
                 }
             }
-
-
-
-
 
             var allPS = passiveStrs.Distinct().ToList();
             foreach (var s in allPS)
@@ -299,16 +289,16 @@ namespace Randomizer.Randomizers.Game2.Misc
                                 string rankDescription = null;
                                 while (i <= 2)
                                 {
-                                    var rankDescriptionProp = ranksSource[i].Properties
-                                        .GetProp<StringRefProperty>("Description");
+                                    var rankDescriptionProp = ranksSource[i].Properties.GetProp<StringRefProperty>("Description");
+                                    // UnlockBlurb is not used here.
                                     if (rankDescription == null)
                                     {
-                                        rankDescription =
-                                            henchInfo.GenderizeString(talentSetBasePower.PassiveRankDescriptionString);
+                                        rankDescription = henchInfo.GenderizeString(talentSetBasePower.PassiveRankDescriptionString);
                                         TLKBuilder.ReplaceString(newStringID, rankDescription);
                                     }
 
                                     rankDescriptionProp.Value = newStringID; // written below by addreplaceRanksSource
+                                    //rankUnlockBlurb.Value = newStringID;
                                     i++;
                                 }
                             }
@@ -317,6 +307,8 @@ namespace Randomizer.Randomizers.Game2.Misc
                             {
                                 var evolveRank = ranksSource[3];
                                 var descriptionProp = evolveRank.Properties.GetProp<StringRefProperty>("Description");
+                                var rankUnlockBlurb = evolveRank.Properties.GetProp<StringRefProperty>("UnlockBlurb");
+
                                 if (!TLKBuilder.IsAssignedMERString(descriptionProp.Value))
                                 {
                                     var description =
@@ -327,6 +319,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                                     var newStringID = TLKBuilder.GetNewTLKID();
                                     TLKBuilder.ReplaceString(newStringID, string.Join('\n', descriptionLines));
                                     descriptionProp.Value = newStringID; // written below by addreplaceRanksSource
+                                    rankUnlockBlurb.Value = newStringID; // written below by addreplaceRanksSource
                                 }
                             }
                         }

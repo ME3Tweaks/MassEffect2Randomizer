@@ -108,7 +108,7 @@ namespace Randomizer.Randomizers.Game2.Talents
             // SPECIAL CASES
             // it/its him/his don't line up with female's only having 'her'
 
-            var targetGenderWord = HenchGender == Gender.Male ? " his" : HenchGender == Gender.Female ? " her" : " its";
+            var targetGenderWord = HenchGender == Gender.Male ? " his " : HenchGender == Gender.Female ? " her " : " its ";
 
             // GENERAL GENDER CASES - WILL RESULT IN SOME WEIRD HIM/HIS ISSUES
 
