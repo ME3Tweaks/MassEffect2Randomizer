@@ -100,7 +100,7 @@ namespace Randomizer.Randomizers.Utility
                     (_, log) = UnrealScriptCompiler.CompileFunction(targetExport, scriptText, fl);
                     break;
                 case "State":
-                    (_, log) =UnrealScriptCompiler.CompileState(targetExport, scriptText, fl);
+                    (_, log) = UnrealScriptCompiler.CompileState(targetExport, scriptText, fl);
                     break;
                 case "Class":
                     (_, log) = UnrealScriptCompiler.CompileClass(targetExport.FileRef, scriptText, fl, export: targetExport);
@@ -120,6 +120,61 @@ namespace Randomizer.Randomizers.Utility
                 throw new Exception($"Error compiling {targetExport.ClassName} {targetExport.InstancedFullPath} from file {scriptFileNameForLogging}: {string.Join(Environment.NewLine, log.AllErrors)}");
             }
 
+        }
+
+        /// <summary>
+        /// Installs a class into the listed package, under the named package, or at the root if null. The package is not saved
+        /// </summary>
+        /// <param name="target">The game target that this script can compile against</param>
+        /// <param name="packageToInstallTo">The package to install the class into</param>
+        /// <param name="embeddedClassName">The name of the embedded class file - the class name must match the filename. DO NOT PUT .uc here, it will be added automatically</param>
+        /// <param name="rootPackageName">The IFP of the root package, null if you want the class created at the root of the file</param>
+        public static ExportEntry InstallClassToPackage(GameTarget target, IMEPackage packageToInstallTo, string embeddedClassName, string rootPackageName = null)
+        {
+            var fl = new FileLib(packageToInstallTo);
+            bool initialized = fl.Initialize(gameRootPath: target.TargetPath);
+            if (!initialized)
+            {
+                MERLog.Error($@"FileLib loading failed for package {packageToInstallTo.FileNameNoExtension}:");
+                foreach (var v in fl.InitializationLog.AllErrors)
+                {
+                    MERLog.Error(v.Message);
+                }
+
+                throw new Exception($"Failed to initialize FileLib for package {packageToInstallTo.FilePath}");
+            }
+
+            ExportEntry parentExport = null;
+            if (rootPackageName != null)
+            {
+                parentExport = packageToInstallTo.FindExport(rootPackageName);
+                if (parentExport == null)
+                {
+                    // Create the root package we will instal the class under
+                    parentExport = ExportCreator.CreatePackageExport(packageToInstallTo, rootPackageName);
+                }
+            }
+
+            // Todo: See if the class already exists
+
+            var scriptText = MEREmbedded.GetEmbeddedTextAsset($"Classes.{embeddedClassName}.uc");
+            MessageLog log;
+            (_, log) = UnrealScriptCompiler.CompileClass(packageToInstallTo, scriptText, fl, parent: parentExport);
+
+            if (log.AllErrors.Any())
+            {
+                MERLog.Error($@"Error compiling class {embeddedClassName}:");
+                foreach (var l in log.AllErrors)
+                {
+                    MERLog.Error(l.Message);
+                }
+
+                throw new Exception($"Error compiling {embeddedClassName}: {string.Join(Environment.NewLine, log.AllErrors)}");
+            }
+
+            return parentExport != null
+                ? packageToInstallTo.FindExport($"{parentExport.InstancedFullPath}.{embeddedClassName}")
+                : packageToInstallTo.FindExport(embeddedClassName);
         }
     }
 }

@@ -458,8 +458,6 @@ namespace Randomizer.Randomizers.Game2.Misc
                 int.TryParse(fName.Substring(lastIndex + 1), out henchVersion);
             }
 
-
-
             skelMesh = export.GetProperty<ObjectProperty>("SkeletalMesh");
             if (skelMesh == null || skelMesh.Value == 0)
             {

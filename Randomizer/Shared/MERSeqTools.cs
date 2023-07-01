@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows.Media;
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
@@ -50,7 +52,31 @@ namespace Randomizer.Shared
             nSwitch.WriteProperty(olinks);
             nSwitch.WriteProperty(new IntProperty(numLinks, "LinkCount"));
             return nSwitch;
+        }
 
+        /// <summary>
+        /// Adds a new switch output link. Returns the link number (NOT THE INDEX!!) that you can use 'Link X' as the description for
+        /// </summary>
+        /// <param name="existingSwitch"></param>
+        /// <returns></returns>
+        public static int AddRandomSwitchOutput(ExportEntry existingSwitch)
+        {
+            var outputLinks = existingSwitch.GetProperty<ArrayProperty<StructProperty>>("OutputLinks");
+            int numExistingOutputLinks = 0;
+
+            if (outputLinks == null)
+            {
+                outputLinks = new ArrayProperty<StructProperty>(new List<StructProperty>(), "OutputLinks");
+                existingSwitch.WriteProperty(outputLinks); // Add outputlinks
+            }
+            else
+            {
+                numExistingOutputLinks = outputLinks.Count;
+            }
+
+            KismetHelper.CreateNewOutputLink(existingSwitch, $"Link {numExistingOutputLinks + 1}", null);
+            existingSwitch.WriteProperty(new IntProperty(numExistingOutputLinks + 1, "LinkCount")); // Update the link count
+            return numExistingOutputLinks + 1;
         }
 
         /// <summary>
@@ -286,6 +312,69 @@ namespace Randomizer.Shared
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Creates a new sequence object in the given sequence
+        /// </summary>
+        /// <param name="SelectedSequence"></param>
+        /// <param name="info"></param>
+        public static void CreateNewObject(ExportEntry SelectedSequence, ClassInfo info)
+        {
+            if (SelectedSequence == null)
+            {
+                return;
+            }
+
+            IEntry classEntry;
+            if (SelectedSequence.FileRef.Exports.Any(exp => exp.ObjectName == info.ClassName) || SelectedSequence.FileRef.Imports.Any(imp => imp.ObjectName == info.ClassName) ||
+                GlobalUnrealObjectInfo.GetClassOrStructInfo(SelectedSequence.FileRef.Game, info.ClassName) is { } classInfo && EntryImporter.IsSafeToImportFrom(classInfo.pccPath, SelectedSequence.FileRef.Game, SelectedSequence.FileRef.FilePath))
+            {
+                var rop = new RelinkerOptionsPackage();
+                classEntry = EntryImporter.EnsureClassIsInFile(SelectedSequence.FileRef, info.ClassName, rop);
+            }
+            else
+            {
+                classEntry = EntryImporter.EnsureClassIsInFile(SelectedSequence.FileRef, info.ClassName, new RelinkerOptionsPackage());
+            }
+            if (classEntry is null)
+            {
+                return;
+            }
+            var packageCache = new PackageCache { AlwaysOpenFromDisk = false };
+            packageCache.InsertIntoCache(SelectedSequence.FileRef);
+            var newSeqObj = new ExportEntry(SelectedSequence.FileRef, SelectedSequence, SelectedSequence.FileRef.GetNextIndexedName(info.ClassName), properties: SequenceObjectCreator.GetSequenceObjectDefaults(SelectedSequence.FileRef, info, packageCache))
+            {
+                Class = classEntry,
+            };
+            newSeqObj.ObjectFlags |= UnrealFlags.EObjectFlags.Transactional;
+            SelectedSequence.FileRef.AddExport(newSeqObj);
+            KismetHelper.AddObjectToSequence(newSeqObj, SelectedSequence, true);
+        }
+
+        /// <summary>
+        /// Installs a sequence with no inputs. The sequence should have its own events to trigger itself
+        /// </summary>
+        public static ExportEntry InstallSequenceStandalone(ExportEntry sourceSequence, IMEPackage targetPackage, ExportEntry parentSequence = null)
+        {
+            parentSequence ??= targetPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence");
+            EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceSequence, targetPackage, parentSequence, true, new RelinkerOptionsPackage(), out var newUiSeq);
+            KismetHelper.AddObjectToSequence(newUiSeq as ExportEntry, parentSequence);
+            return newUiSeq as ExportEntry;
+        }
+
+        /// <summary>
+        /// Adds a new delay object to a sequence
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="delay"></param>
+        /// <returns></returns>
+        public static ExportEntry AddDelay(ExportEntry sequence, float delay)
+        {
+            var newDelay = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_Delay");
+            KismetHelper.AddObjectToSequence(newDelay, sequence);
+            newDelay.WriteProperty(new FloatProperty(delay, "Duration"));
+            return newDelay;
         }
     }
 }

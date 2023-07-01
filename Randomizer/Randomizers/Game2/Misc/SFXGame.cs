@@ -35,7 +35,7 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             // Update power script design and patch out player physics level
             var sd = sfxgame.FindExport(@"BioPowerScriptDesign.GetPhysicsLevel");
-            ScriptTools.InstallScriptTextToExport(sd, MEREmbedded.GetEmbeddedTextAsset(@"Functions.GetPhysicsLevel.uc"), "GetPhysicsLevel", new MERPackageCache(target, null, false));
+            ScriptTools.InstallScriptToExport(sd, "GetPhysicsLevel.uc", false, null);
 
             MERFileSystem.SavePackage(sfxgame);
             return true;
@@ -43,28 +43,12 @@ namespace Randomizer.Randomizers.Game2.Misc
 
         public static bool TurnOnFriendlyFire(GameTarget target, RandomizationOption option)
         {
-            var sfxgame = GetSFXGame(target);
-            var md = sfxgame.GetUExport(21353);
-            var patched = md.Data;
-            for (int i = 0x0285; i < 0x0317; i++)
-            {
-                patched[i] = 0x0B; // nop
-            }
-            md.Data = patched;
-
+            // Remove the friendly pawn check
+            var sfxgame = ScriptTools.InstallScriptToPackage(target, "SFXGame.pcc", "SFXGame.ModifyDamage", "SFXGame.ModifyDamage.uc", false);
             if (option.HasSubOptionSelected(SUBOPTIONKEY_CARELESSFF))
             {
-                // Copy a 'return false' over the top of IsFriendlyBlockingSightline
-                var fExport = sfxgame.GetUExport(5723);
-                var fObjBin = ObjectBinary.From<UFunction>(fExport);
-
-                var friendlyBlockingFunc = sfxgame.GetUExport(1203);
-                var fbObjBin = ObjectBinary.From<UFunction>(friendlyBlockingFunc);
-
-                fbObjBin.ScriptBytecodeSize = fObjBin.ScriptBytecodeSize;
-                fbObjBin.ScriptStorageSize = fObjBin.ScriptStorageSize;
-                fbObjBin.ScriptBytes = fObjBin.ScriptBytes;
-                friendlyBlockingFunc.WriteBinary(fbObjBin);
+                // Remove the friendly fire check
+                ScriptTools.InstallScriptToPackage(sfxgame, "BioAiController.IsFriendlyBlockingFireLine", "IsFriendlyBlockingFireLine.uc", false);
             }
             MERFileSystem.SavePackage(sfxgame);
             return true;

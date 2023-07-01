@@ -483,18 +483,18 @@ namespace Randomizer.Randomizers.Game2.Misc
 
             #endregion
 
-            // Randomly pick 3 base powers that are NOT the same base
-            // For each power pick 2 evolutions that are NOT the same power base
-            // A lot of other shit
-
-
-
-
             // Save the new startup package
             MERFileSystem.SavePackage(loadoutPackageP);
 
             // Add the loadouts as a startup package to force overrides
             ThreadSafeDLCStartupPackage.AddStartupPackage(@"Startup_LE2R_HenchLoadouts");
+
+            // Patch the initialize function for henchmen to refund any lost points
+            ScriptTools.InstallScriptToPackage(target, @"SFXGame.pcc", "SFXPawn_Henchman.InitializeHenchman",
+                "InitializeHenchman.uc", false, true);
+
+            // Patch the game tutorial to prevent softlock
+            PatchOutTutorials(target);
 
             return true;
         }
@@ -1083,6 +1083,8 @@ namespace Randomizer.Randomizers.Game2.Misc
 
         private static void PatchOutTutorials(GameTarget target)
         {
+            // This is LE2 specific
+
             // Patch out Warp tutorial
             var catwalkF = MERFileSystem.GetPackageFile(target, "BioD_ProCer_200Catwalk.pcc");
             if (catwalkF != null)
@@ -1090,56 +1092,61 @@ namespace Randomizer.Randomizers.Game2.Misc
                 var catwalkP = MEPackageHandler.OpenMEPackage(catwalkF);
 
                 // They're falling back -> Stop respawns
-                KismetHelper.CreateOutputLink(catwalkP.GetUExport(386), "Done", catwalkP.GetUExport(376), 2);
+                KismetHelper.CreateNewOutputLink(catwalkP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS65_PullTuto_Spawn_Wave_2.BioSeqAct_FaceOnlyVO_9"),
+                    "Done", catwalkP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS65_PullTuto_Spawn_Wave_2.BioSeqAct_CombatController_0"), 2); // index 2: Stop spawns
 
                 // Remove outputs from Delay 1s
-                KismetHelper.RemoveOutputLinks(catwalkP.GetUExport(2231));
+                KismetHelper.RemoveOutputLinks(catwalkP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS65_PullTuto_Spawn_Wave_2.SeqAct_Delay_4"));
 
                 // Set Delay 1s to 'They're falling back'
-                KismetHelper.CreateOutputLink(catwalkP.GetUExport(2231), "Finished", catwalkP.GetUExport(2247), 0);
+                // LE2: This goes to a gate in?
+                KismetHelper.CreateOutputLink(catwalkP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS65_PullTuto_Spawn_Wave_2.SeqAct_Delay_4"), "Finished",
+                    catwalkP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS65_PullTuto_Spawn_Wave_2.SeqAct_Gate_0"), 0);
 
-                catwalkP.GetUExport(2231).WriteProperty(new FloatProperty(5, "Duration"));
+                // Set 5 second delay instead of tutorial for when enemies stop spawning
+                catwalkP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS65_PullTuto_Spawn_Wave_2.SeqVar_Float_4").WriteProperty(new FloatProperty(5, "Duration"));
 
                 MERFileSystem.SavePackage(catwalkP);
             }
 
-            // Patch out Warp tutorial
+            // Patch out Overload tutorial
             var controlRoomF = MERFileSystem.GetPackageFile(target, "BioD_ProCer_250ControlRoom.pcc");
             if (controlRoomF != null)
             {
                 var controlRoomP = MEPackageHandler.OpenMEPackage(controlRoomF);
 
+
+
                 // Fastest way to the shuttle ->ForceCrateExplode
-                KismetHelper.CreateOutputLink(controlRoomP.GetUExport(765), "Done", controlRoomP.GetUExport(2932), 0);
+                KismetHelper.CreateNewOutputLink(controlRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS87_OverloadTutorial.BioSeqAct_FaceOnlyVO_6"),
+                    "Done", controlRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS87_OverloadTutorial.SeqAct_ActivateRemoteEvent_0"),
+                    0);
 
-                // The fastest way to the shuttle -> Destory crate object
-                KismetHelper.CreateOutputLink(controlRoomP.GetUExport(765), "Done", controlRoomP.GetUExport(2963), 0);
+                // The fastest way to the shuttle -> Destroy crate object
+                KismetHelper.CreateOutputLink(controlRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS87_OverloadTutorial.BioSeqAct_FaceOnlyVO_6"), "Done", 
+                    controlRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS87_OverloadTutorial.SeqAct_Destroy_0"),
+                    0);
 
-                var outboundToHint = SeqTools.GetOutboundLinksOfNode(controlRoomP.GetUExport(766));
+                var outboundToHint = SeqTools.GetOutboundLinksOfNode(controlRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS87_OverloadTutorial.BioSeqAct_FaceOnlyVO_7"));
                 if (outboundToHint.Count == 4)
                 {
+                    // Done to ShowHint remove
                     // Total hack, but it works, maybe
                     if (outboundToHint[0].Count == 3)
                     {
                         outboundToHint[0].RemoveAt(0);
                     }
+
+                    // Failed to ShowHint remove
                     if (outboundToHint[1].Count == 2)
                     {
                         outboundToHint[1].RemoveAt(0);
                     }
 
-                    SeqTools.WriteOutboundLinksToNode(controlRoomP.GetUExport(766), outboundToHint);
+                    SeqTools.WriteOutboundLinksToNode(controlRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS87_OverloadTutorial.BioSeqAct_FaceOnlyVO_7"), outboundToHint);
                 }
 
-                controlRoomP.GetUExport(3323).WriteProperty(new FloatProperty(3, "FloatValue"));
-
-                // Remove outputs from Delay 1s
-                //KismetHelper.RemoveOutputLinks(controlRoomP.GetUExport(2231));
-
-                //// Set Delay 1s to 'They're falling back'
-                //KismetHelper.CreateOutputLink(controlRoomP.GetUExport(2231), "Finished", catwalkP.GetUExport(2247), 0);
-
-                //controlRoomP.GetUExport(2231).WriteProperty(new FloatProperty(5, "Duration"));
+                controlRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS87_OverloadTutorial.SeqVar_Float_2").WriteProperty(new FloatProperty(1, "FloatValue"));
 
                 MERFileSystem.SavePackage(controlRoomP);
             }

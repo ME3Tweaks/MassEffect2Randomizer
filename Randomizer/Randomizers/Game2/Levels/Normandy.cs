@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
@@ -21,10 +22,114 @@ namespace Randomizer.Randomizers.Game2.Levels
     {
         public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            AddBurgersToCookingQuest(target);
+            //AddBurgersToCookingQuest(target);
             RandomizeNormandyHolo(target);
             RandomizeWrongWashroomSFX(target);
+            RandomizeProbes(target);
+
             return true;
+        }
+
+        class NormandyProbe
+        {
+            internal string InstancedFullPath { get; set; }
+            internal float Scale { get; set; }
+
+            /// <summary>
+            /// Installs the dynamic loading mapping data for the normandy probe
+            /// </summary>
+            public void AddDynamicLoadMapping()
+            {
+                CoalescedHandler.AddDynamicLoadMappingEntry(new SeekFreeInfo()
+                {
+                    EntryPath = InstancedFullPath,
+                    SeekFreePackage = "MERGameContent_Probes"
+                });
+            }
+
+            /// <summary>
+            /// Installs the probe data to the config file
+            /// </summary>
+            public void AddToConfig()
+            {
+                var bioGame = CoalescedHandler.GetIniFile("BioGame.ini");
+                var probeConfig = bioGame.GetOrAddSection("MERGameContentKismet.MERSeqAct_RandomizeProbe");
+                probeConfig.AddEntry(new CoalesceProperty("MeshOptions", new CoalesceValue($"(ProbeMesh=\"{InstancedFullPath}\", Scale={Scale}f)", CoalesceParseAction.AddUnique)));
+            }
+        }
+
+        /// <summary>
+        /// Gets the defined list of probe options that will be installed into the config files. The assets should be in MERGameContent_Probes.pcc (for LE2R)
+        /// </summary>
+        /// <returns></returns>
+        private static List<NormandyProbe> GetProbeOptions()
+        {
+            var list = new List<NormandyProbe>();
+
+            // Sovereign
+            list.Add(new NormandyProbe()
+            {
+                InstancedFullPath = "BioApl_Dec_Scaled_Ships01.Meshes.Sov_Min",
+                Scale = 0.3f, // Needs verified
+            });
+
+            // Mako
+            list.Add(new NormandyProbe()
+            {
+                InstancedFullPath = "BIOG_VEH_ROV_A.StaticMesh.ROV_StaticMesh",
+                Scale = 0.1f, // Needs verified
+            });
+
+            // Collector ship
+            list.Add(new NormandyProbe()
+            {
+                InstancedFullPath = "biog_veh_collector.Meshes.CollectorShip_Static_Ingame_HiRes",
+                Scale = 0.0025f,
+            });
+
+            // Add more here
+
+            return list;
+        }
+
+        private static void RandomizeProbes(GameTarget target)
+        {
+            var galaxyMapObjs = MERFileSystem.GetPackageFile(target, "BioD_Nor_103bGalaxyMapObjs.pcc");
+            var galaxyMapObjsP = MERFileSystem.OpenMEPackage(galaxyMapObjs);
+
+            var randomizeProbeSeqAct = SequenceObjectCreator.CreateSequenceObject(galaxyMapObjsP, "MERSeqAct_RandomizeProbe");
+            var seq4 = galaxyMapObjsP.FindExport("TheWorld.PersistentLevel.Main_Sequence.GalaxyMap.SequenceReference_0.Sequence_4");
+            KismetHelper.AddObjectToSequence(randomizeProbeSeqAct, seq4);
+
+            KismetHelper.CreateOutputLink(randomizeProbeSeqAct, "Out", galaxyMapObjsP.FindExport("TheWorld.PersistentLevel.Main_Sequence.GalaxyMap.SequenceReference_0.Sequence_4.BioSeqAct_OrbitalGame_1"));
+
+            // The starting event now goes to our randomize first which then goes to orbital game
+            MERSeqTools.ChangeOutlink(galaxyMapObjsP.FindExport("TheWorld.PersistentLevel.Main_Sequence.GalaxyMap.SequenceReference_0.Sequence_4.BioSeqEvt_GalaxyMap_0"),
+                0, 0, randomizeProbeSeqAct.UIndex);
+            var externProbe = galaxyMapObjsP.FindExport("TheWorld.PersistentLevel.Main_Sequence.GalaxyMap.SequenceReference_0.Sequence_4.SeqVar_External_2");
+            KismetHelper.CreateVariableLink(randomizeProbeSeqAct, "Probe", externProbe); // Link the probe to the new kismet object
+
+            // Install the probe asset file
+            MEREmbedded.GetEmbeddedPackage(MEGame.LE2, "DynamicLoad.MERGameContent_Probes.pcc").WriteToFile(Path.Combine(MERFileSystem.DLCModCookedPath, "MERGAmeContent_Probes.pcc"));
+
+            // Add the dynamic load and config entries for it to use
+            foreach (var v in GetProbeOptions())
+            {
+                v.AddDynamicLoadMapping();
+                v.AddToConfig();
+            }
+
+            // Add one more random voice line
+            var randSwitch = galaxyMapObjsP.FindExport("TheWorld.PersistentLevel.Main_Sequence.GalaxyMap.SequenceReference_0.Sequence_4.SeqAct_RandomSwitch_1");
+            var newLinkNum = MERSeqTools.AddRandomSwitchOutput(randSwitch);
+
+            var delay = MERSeqTools.AddDelay(SeqTools.GetParentSequence(randSwitch), 0.5f);
+
+            var wwisePost = galaxyMapObjsP.FindExport("TheWorld.PersistentLevel.Main_Sequence.GalaxyMap.SequenceReference_0.Sequence_4.SeqAct_WwisePostEvent_3");
+            KismetHelper.CreateOutputLink(randSwitch, $"Link {newLinkNum}", delay);
+            KismetHelper.CreateOutputLink(delay, "Finished", wwisePost);
+
+            MERFileSystem.SavePackage(galaxyMapObjsP);
         }
 
         /// <summary>
@@ -46,6 +151,10 @@ namespace Randomizer.Randomizers.Game2.Levels
         {
             ("BioD_Nor_CR3_200_LOC_INT.pcc", "ss_collector_general_S.en_us_global_collector_general_ss_collector_general_00332542_m_wav"), // SHEPARD, SUBMIT NOW
             ("BioD_Nor_CR3_200_LOC_INT.pcc", "norcr3_ensign_threesome_a_S.en_us_nor_yeoman_norcr3_ensign_threesome_a_00218997_m_wav"), // AUGH!
+            ("BioD_ProCer_300ShuttleBay_LOC_INT.pcc", "procer_vixen_intro_d_S.en_us_hench_leading_procer_vixen_intro_d_00217867_m_wav"), // WHAT THE HELL ARE YOU DOING? (Jacob)!
+            ("BioD_ProCer_250ControlRoom_LOC_INT.pcc","procer_wilson_intro_d_S.en_us_procer_wilson_procer_wilson_intro_d_00216755_m_wav"), // OH GOD, THEY FOUND ME
+            ("BioD_ProCer_250ControlRoom_LOC_INT.pcc","procer_techpwrs_tutor_a_S.en_us_procer_wilson_procer_techpwrs_tutor_a_00248148_m_wav") // This really isn't the time, jacob
+            
         };
 
         private static void RandomizeWrongWashroomSFX(GameTarget target)
@@ -213,49 +322,105 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var package = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile(target, packagef));
 
                 //WIREFRAME COLOR
-                var wireframeMaterial = package.Exports.First(x => x.ObjectName == "Wireframe_mat_Master");
-                var data = wireframeMaterial.Data;
-
                 var wireColorR = ThreadSafeRandom.NextFloat(0.01, 2);
                 var wireColorG = ThreadSafeRandom.NextFloat(0.01, 2);
                 var wireColorB = ThreadSafeRandom.NextFloat(0.01, 2);
 
-                List<float> allColors = new List<float>();
-                allColors.Add(wireColorR);
-                allColors.Add(wireColorG);
-                allColors.Add(wireColorB);
+                var wireframeMaterial = package.FindExport("BioVFX_Env_Hologram.Material.Wireframe_mat_Master");
+                var matConst = MERMaterials.GenerateMaterialInstanceConstantFromMaterial(wireframeMaterial);
+                MERMaterials.SetMatConstVectorParam(matConst, "Color", wireColorR, wireColorG, wireColorB);
 
-                data.OverwriteRange(0x33C, BitConverter.GetBytes(wireColorR)); //R
-                data.OverwriteRange(0x340, BitConverter.GetBytes(wireColorG)); //G
-                data.OverwriteRange(0x344, BitConverter.GetBytes(wireColorB)); //B
-                wireframeMaterial.Data = data;
+                // Now make it use the mat const
+                var exports = new List<string>();
+                if (packagef == "BioD_Nor_104Comm.pcc")
+                {
+                    exports.Add("TheWorld.PersistentLevel.SkeletalMeshActor_2.SkeletalMeshComponent_37"); // Small normandy in comm room
+                }
+                else
+                {
+                    exports.Add("BioVFX_Env_Galaxymap.Prefabs.Nor2_Deck_Hologram_wUpgrades_Prefab.Nor2_Deck_Hologram_wUpgrades_Prefab_Arc16.SkeletalMeshComponent0"); // CIC normandy
+                }
+
+                foreach (var expIFP in exports)
+                {
+                    var exp = package.FindExport(expIFP);
+                    if (exp != null)
+                    {
+                        var mats = exp.GetProperty<ArrayProperty<ObjectProperty>>("Materials");
+                        foreach (var mat in mats)
+                        {
+                            mat.Value = matConst.UIndex; // Repoint material, both are the same here on the wireframe mat refs
+                        }
+
+                        exp.WriteProperty(mats);
+                    }
+                }
+
+
+
+
+                //data.OverwriteRange(0x33C, BitConverter.GetBytes(wireColorR)); //R
+                //data.OverwriteRange(0x340, BitConverter.GetBytes(wireColorG)); //G
+                //data.OverwriteRange(0x344, BitConverter.GetBytes(wireColorB)); //B
+                //wireframeMaterial.Data = data;
 
                 //INTERNAL HOLO
-                var norHoloLargeMat = package.Exports.First(x => x.ObjectName == "Nor_Hologram_Large");
-                data = norHoloLargeMat.Data;
+                var norHoloLargeMat = package.FindExport("BioVFX_Env_Galaxymap.Materials.Nor_Hologram_Large_METR"); // LE2 uses METR
 
                 float holoR = 0, holoG = 0, holoB = 0;
                 holoR = wireColorR * 5;
                 holoG = wireColorG * 5;
                 holoB = wireColorB * 5;
 
-                data.OverwriteRange(0x314, BitConverter.GetBytes(holoR)); //R
-                data.OverwriteRange(0x318, BitConverter.GetBytes(holoG)); //G
-                data.OverwriteRange(0x31C, BitConverter.GetBytes(holoB)); //B
-                norHoloLargeMat.Data = data;
+                matConst = MERMaterials.GenerateMaterialInstanceConstantFromMaterial(norHoloLargeMat);
+                MERMaterials.SetMatConstVectorParam(matConst, "Color", holoR, holoG, holoB);
+
+                // Now make it use the mat const
+                exports = new List<string>();
+                if (packagef == "BioD_Nor_104Comm.pcc")
+                {
+                    exports.Add("TheWorld.PersistentLevel.SkeletalMeshActor_1.SkeletalMeshComponent_36"); // The main mesh?
+                }
+                else
+                {
+                    exports.Add("TheWorld.PersistentLevel.SkeletalMeshActor_2.SkeletalMeshComponent_1"); // CIC normandy
+                }
+
+                // Fix the colors
+                foreach (var exp in exports)
+                {
+                    var skm1 = package.FindExport(exp);
+                    if (skm1 != null)
+                    {
+                        var mats = skm1.GetProperty<ArrayProperty<ObjectProperty>>("Materials");
+                        mats[0].Value = matConst.UIndex; // First material in list is METR Nor Holo
+                        skm1.WriteProperty(mats);
+                    }
+                }
+
+
+
+
+
 
                 if (packagef == "BioA_Nor_110.pcc")
                 {
                     //need to also adjust the glow under the CIC. It's controlled by a interp apparently
-                    var lightColorInterp = package.GetUExport(300);
+                    var lightColorInterp =
+                        package.FindExport(
+                            "TheWorld.PersistentLevel.Main_Sequence.InterpData_3.InterpGroup_0.InterpTrackColorProp_1");
                     var vectorTrack = lightColorInterp.GetProperty<StructProperty>("VectorTrack");
                     var blueToOrangePoints = vectorTrack.GetProp<ArrayProperty<StructProperty>>("Points");
                     //var maxColor = allColors.Max();
-                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("X").Value = wireColorR;
-                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("Y").Value = wireColorG;
-                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("Z").Value = wireColorB;
+                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("X").Value =
+                        wireColorR;
+                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("Y").Value =
+                        wireColorG;
+                    blueToOrangePoints[1].GetProp<StructProperty>("OutVal").GetProp<FloatProperty>("Z").Value =
+                        wireColorB;
                     lightColorInterp.WriteProperty(vectorTrack);
                 }
+
                 MERFileSystem.SavePackage(package);
             }
         }

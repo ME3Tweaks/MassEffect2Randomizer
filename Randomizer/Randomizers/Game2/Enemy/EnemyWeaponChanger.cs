@@ -84,8 +84,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             PackageTools.CreateNewClass(sfxGame, @"SFXLoadoutDataMER", classText);
 
             // Patch the loadout generation method
-            var functionText = MEREmbedded.GetEmbeddedTextAsset(@"Functions.GenerateInventoryFromLoadout.uc");
-            ScriptTools.InstallScriptTextToExport(sfxGame.FindExport("BioPawn.GenerateInventoryFromLoadout"), functionText, "MERWeaponRandomization", new MERPackageCache(target, null, false));
+            ScriptTools.InstallScriptToExport(sfxGame.FindExport("BioPawn.GenerateInventoryFromLoadout"), "GenerateInventoryFromLoadout.uc", false, new MERPackageCache(target, null, false));
 
             MERFileSystem.SavePackage(sfxGame);
 

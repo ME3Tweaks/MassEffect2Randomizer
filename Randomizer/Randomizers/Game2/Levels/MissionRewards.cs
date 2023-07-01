@@ -236,8 +236,8 @@ namespace Randomizer.Randomizers.Game1.Misc
             mw.TreasureIDIdx = treasureId.GetProperty<IntProperty>("m_nIndex");
             mw.TreasureIDSrefName = treasureId.GetProperty<StrProperty>("m_sRefName")?.Value;
         }
-
 #endif
+
         /// <summary>
         /// 
         /// </summary>

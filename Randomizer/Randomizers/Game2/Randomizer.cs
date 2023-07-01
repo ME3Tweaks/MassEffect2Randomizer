@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -13,8 +14,11 @@ using LegendaryExplorerCore.Helpers;
 using LegendaryExplorerCore.Memory;
 using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
+using LegendaryExplorerCore.Unreal.BinaryConverters;
+using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Helpers;
 using ME3TweaksCore.Misc;
+using Microsoft.WindowsAPICodePack.Win32Native.NamedPipe;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game1.Misc;
 using Randomizer.Randomizers.Game2.Enemy;
@@ -28,6 +32,7 @@ using Randomizer.Randomizers.Shared;
 using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 using Serilog;
+using File = System.IO.File;
 
 namespace Randomizer.Randomizers.Game2
 {
@@ -130,6 +135,7 @@ namespace Randomizer.Randomizers.Game2
                 }
             }
 
+            List<string> installTimeOnlyPackages = new List<string>();
             Exception rethrowException = null;
             try
             {
@@ -147,14 +153,7 @@ namespace Randomizer.Randomizers.Game2
                 sw.Start();
 
                 // Prepare the textures
-                if (SelectedOptions.RandomizationTarget.Game == MEGame.ME2)
-                {
-                    ME2Textures.SetupME2Textures(SelectedOptions.RandomizationTarget);
-                }
-                else
-                {
-                    LE2Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
-                }
+                LE2Textures.SetupLE2Textures(SelectedOptions.RandomizationTarget);
 
                 void srUpdate(object? o, EventArgs eventArgs)
                 {
@@ -166,6 +165,23 @@ namespace Randomizer.Randomizers.Game2
                         {
                             SelectedOptions.SetCurrentOperationText?.Invoke(option.CurrentOperation);
                         }
+                    }
+                }
+
+                // Load MER-specific kismet objects
+                foreach (var package in MEREmbedded.ExtractEmbeddedBinaryFolder("Packages.LE2.InstallSessionOnly"))
+                {
+                    var actualPath = Path.Combine(MERFileSystem.DLCModCookedPath, MEREmbedded.GetFilenameFromAssetName(package));
+                    installTimeOnlyPackages.Add(actualPath);
+
+                    using var p = MEPackageHandler.OpenMEPackage(actualPath);
+                    foreach (var ex in p.Exports.Where(x => x.IsClass && x.InheritsFrom("SequenceObject")))
+                    {
+                        var classInfo = GlobalUnrealObjectInfo.generateClassInfo(ex);
+                        var defaults = p.GetUExport(ObjectBinary.From<UClass>(ex).Defaults);
+                        Debug.WriteLine($@"Inventorying {ex.InstancedFullPath}");
+                        GlobalUnrealObjectInfo.GenerateSequenceObjectInfoForClassDefaults(defaults);
+                        GlobalUnrealObjectInfo.InstallCustomClassInfo(ex.ObjectName, classInfo, ex.Game);
                     }
                 }
 
@@ -214,7 +230,7 @@ namespace Randomizer.Randomizers.Game2
                         && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -292,12 +308,21 @@ namespace Randomizer.Randomizers.Game2
             TLKBuilder.EndHandler();
             MERFileSystem.Finalize(SelectedOptions);
             ResetClasses();
+            CleanupInstallTimeOnlyFiles(installTimeOnlyPackages);
             MemoryManager.ResetMemoryManager();
             MemoryManager.SetUsePooledMemory(false);
 
             // Re-throw the unhandled exception after MERFS has closed
             if (rethrowException != null)
                 throw rethrowException;
+        }
+
+        private void CleanupInstallTimeOnlyFiles(List<string> installTimeOnlyPackages)
+        {
+            foreach (var f in installTimeOnlyPackages)
+            {
+                File.Delete(f);
+            }
         }
 
         /// <summary>
@@ -357,7 +382,7 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {HumanName = "Squadmate heads",
                         Description = "Changes the heads of your squadmates",
                         PerformRandomizationOnExportDelegate = SquadmateHead.RandomizeExport2,
-                        PerformFileSpecificRandomization = SquadmateHead.FilePrerun,
+                        // PerformFileSpecificRandomization = SquadmateHead.FilePrerun, // Miranda/Jacob fixes for ProCer
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true,
                         StateChangingDelegate=optionChangingDelegate,
@@ -636,7 +661,7 @@ namespace Randomizer.Randomizers.Game2
                 Options = new ObservableCollectionExtended<RandomizationOption>()
                 {
                     new RandomizationOption() {HumanName = "Normandy", Description = "Changes various things around the ship, including one sidequest", PerformSpecificRandomizationDelegate = Normandy.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
-                    //new RandomizationOption() {HumanName = "Prologue"},
+                    new RandomizationOption() {HumanName = "Prologue", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = LazarusStation.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe},
                     //new RandomizationOption() {HumanName = "Tali Acquisition"}, //sfxgame tla damagetype
                     new RandomizationOption() {HumanName = "Citadel", Description = "Changes many things across the level", PerformSpecificRandomizationDelegate = Citadel.PerformRandomization, RequiresTLK = true, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Archangel Acquisition", Description = "It's a mystery!", PerformSpecificRandomizationDelegate = ArchangelAcquisition.PerformRandomization, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true, RequiresTLK = true},
