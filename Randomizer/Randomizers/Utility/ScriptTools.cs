@@ -176,5 +176,33 @@ namespace Randomizer.Randomizers.Utility
                 ? packageToInstallTo.FindExport($"{parentExport.InstancedFullPath}.{embeddedClassName}")
                 : packageToInstallTo.FindExport(embeddedClassName);
         }
+
+        /// <summary>
+        /// AddToOrReplace implementation. Does not save the package
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="packageToInstallTo"></param>
+        /// <param name="scriptName"></param>
+        /// <param name="classIFP"></param>
+        /// <exception cref="Exception"></exception>
+        public static void AddToClassInPackage(GameTarget target, IMEPackage packageToInstallTo, string scriptName, string classIFP)
+        {
+            var fl = new FileLib(packageToInstallTo);
+            bool initialized = fl.Initialize(gameRootPath: target.TargetPath);
+            if (!initialized)
+            {
+                MERLog.Error($@"FileLib loading failed for package {packageToInstallTo.FileNameNoExtension}:");
+                foreach (var v in fl.InitializationLog.AllErrors)
+                {
+                    MERLog.Error(v.Message);
+                }
+
+                throw new Exception($"Failed to initialize FileLib for package {packageToInstallTo.FilePath}");
+            }
+
+            var scriptText = MEREmbedded.GetEmbeddedTextAsset($"Scripts.{scriptName}.uc");
+            var classExp = packageToInstallTo.FindExport(classIFP);
+            MessageLog log = UnrealScriptCompiler.AddOrReplaceInClass(classExp, scriptText, fl);
+        }
     }
 }

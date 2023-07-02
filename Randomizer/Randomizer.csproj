@@ -116,6 +116,7 @@
 		<None Remove="Randomizers\Game2\Assets\Text\Powers\BasePowerIFPs.txt" />
 		<None Remove="Randomizers\Game2\Assets\Text\Powers\EvolvedHenchPowerIFPs.txt" />
 		<None Remove="Randomizers\Game2\Assets\Text\Scripts\IsFriendlyBlockingFireLine.uc" />
+		<None Remove="Randomizers\Game2\Assets\Text\Scripts\PlayerOnPowersLoaded.uc" />
 		<None Remove="Randomizers\Game2\Assets\Text\Scripts\SFXGame.ModifyDamage.uc" />
 		<None Remove="Randomizers\Game3\Assets\Starterkit\le3starterkit.zip" />
 		<None Remove="Randomizers\Game3\Assets\Text\imagecredits.txt" />
