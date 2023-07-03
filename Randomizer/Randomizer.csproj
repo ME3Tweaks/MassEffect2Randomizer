@@ -11,17 +11,17 @@
 
 	<PropertyGroup Condition="'$(Configuration)'=='Game1Debug' Or '$(Configuration)'=='Game1Release'">
 		<Product>Mass Effect Randomizer Core Library</Product>
-		<Description>Core randomization library for Mass Effect and Mass Effect (Legendary Edition)</Description>
+		<Description>Core randomization library for Mass Effect (Legendary Edition)</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Game2Debug' Or '$(Configuration)'=='Game2Release'">
 		<Product>Mass Effect 2 Randomizer Core Library</Product>
-		<Description>Core randomization library for Mass Effect 2 and Mass Effect 2 (Legendary Edition)</Description>
+		<Description>Core randomization library for Mass Effect 2 (Legendary Edition)</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
 		<Product>Mass Effect 3 Randomizer Core Library</Product>
-		<Description>Core randomization library for Mass Effect 3 and Mass Effect 3 (Legendary Edition)</Description>
+		<Description>Core randomization library for Mass Effect 3 (Legendary Edition)</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Game1Debug|x64'">
@@ -60,6 +60,7 @@
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.png" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.tfc" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)'=='Game2Debug'">
@@ -85,6 +86,7 @@
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.jpg" />
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.uc" />
 		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.afc" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.tfc" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)'=='Game3Debug' Or '$(Configuration)'=='Game3Release'">
@@ -97,6 +99,7 @@
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.jpg" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.uc" />
 		<EmbeddedResource Include="Randomizers\Game3\Assets\**\*.afc" />
+		<EmbeddedResource Include="Randomizers\Game2\Assets\**\*.tfc" />
 	</ItemGroup>
 
 	<ItemGroup>

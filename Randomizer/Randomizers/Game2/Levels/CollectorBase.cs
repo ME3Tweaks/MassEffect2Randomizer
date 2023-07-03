@@ -229,9 +229,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var burgerMDL = PackageTools.PortExportIntoPackage(target, biopEndGm3, burgerPackage.FindExport("Edmonton_Burger_Delux2go.Burger_MDL"));
 
                 // 2. Link up the textures
-                TFCBuilder.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
-                TFCBuilder.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
-                TFCBuilder.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
+                TextureHandler.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
+                TextureHandler.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
+                TextureHandler.RandomizeExport(target, biopEndGm3.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
 
                 // 3. Convert the collector base into lunch or possibly early dinner
                 // It's early dinner cause that thing will keep you full all night long

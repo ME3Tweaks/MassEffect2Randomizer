@@ -17,7 +17,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             var shuttleFile = MERFileSystem.GetPackageFile(target, @"BioD_ArvLvl5_110_Asteroid.pcc", false);
             if (shuttleFile != null && File.Exists(shuttleFile))
             {
-                var shuttleP = MEPackageHandler.OpenMEPackage(shuttleFile);
+                var shuttleP = MERFileSystem.OpenMEPackage(shuttleFile);
                 var randColorR = ThreadSafeRandom.Next(256);
                 var randColorG = ThreadSafeRandom.Next(256);
                 var randColorB = ThreadSafeRandom.Next(256);

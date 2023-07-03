@@ -45,7 +45,7 @@ namespace Randomizer.MER
                 {
 #if DEBUG
                     Debug.WriteLine(@"WARNING: Loading a default global lookup cache. This will fail in release builds!");
-                    Init(new GameTarget(MERFileSystem.Games.Last(), MEDirectories.GetDefaultGamePath(MERFileSystem.Games.Last()), true));
+                    Init(new GameTarget(MERFileSystem.Game, MEDirectories.GetDefaultGamePath(MERFileSystem.Game), true));
 #else
                     throw new Exception("Cannot access a null GlobalCommonLookupCache! It must be initialized first");
 #endif

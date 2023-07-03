@@ -19,6 +19,7 @@ using Microsoft.WindowsAPICodePack.PortableDevices.CommandSystem.Object;
 using Newtonsoft.Json;
 using Randomizer.Randomizers;
 using Randomizer.Randomizers.Game2.Enemy;
+using Randomizer.Randomizers.Game2.TextureAssets.LE2;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
@@ -706,6 +707,11 @@ namespace Randomizer.MER
             {
                 Debug.WriteLine(sPower);
             }
+        }
+
+        public static void BuildTFCs(object sender, DoWorkEventArgs e)
+        {
+            LE2Textures.BuildPremadeTFC();
         }
     }
 }

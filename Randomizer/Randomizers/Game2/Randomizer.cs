@@ -229,7 +229,7 @@ namespace Randomizer.Randomizers.Game2
                         //&& false //uncomment to disable filtering
                         && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
                         //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("BioH_Assassin", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
@@ -303,7 +303,7 @@ namespace Randomizer.Randomizers.Game2
             }
 
             // Close out files and free memory
-            TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
+            TextureHandler.EndHandler(SelectedOptions.RandomizationTarget);
             CoalescedHandler.EndHandler();
             TLKBuilder.EndHandler();
             MERFileSystem.Finalize(SelectedOptions);
@@ -556,7 +556,7 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {HumanName = "Hologram colors", Description="Changes colors of holograms",PerformRandomizationOnExportDelegate = RSharedHolograms.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Drone colors", Description="Changes colors of drones",PerformRandomizationOnExportDelegate = CombatDrone.RandomizeExport, IsRecommended = true},
                     //new RandomizationOption() {HumanName = "Omnitool", Description="Changes colors of omnitools",PerformRandomizationOnExportDelegate = ROmniTool.RandomizeExport},
-                    new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TFCBuilder.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
+                    new RandomizationOption() {HumanName = "Specific textures",Description="Changes specific textures to more fun ones", PerformRandomizationOnExportDelegate = TextureHandler.RandomizeExport, Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe, IsRecommended = true},
                     new RandomizationOption() {HumanName = "SizeSixteens mode",
                         Description = "This option installs a change specific for the streamer SizeSixteens. If you watched his ME1 Randomizer streams, you'll understand the change.",
                         PerformSpecificRandomizationDelegate = SizeSixteens.InstallSSChanges,
@@ -705,13 +705,13 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption()
                     {
                         HumanName = "Henchmen powers",
-                        Description = "Shuffles the powers of squadmates. Loading an existing save after running this will cause them to lose talent points. Use the refund points button below to adjust your latest save file and reset their powers.",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
+                        Description = "Shuffles the powers of squadmates. Using an existing save or re-randomizing and loading a save will cause points to be refunded.",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilitiesLE2,
-                        SetupRandomizerDelegate = HenchTalents.ResetTalents,
-                        SetupRandomizerButtonToolTip = "Allows you to select a save file to remove henchman records from.\nThis will wipe all henchman powers and refund the correct amount of talent points to spend.\nThis will ALSO reset the weapon they are using the default weapon they use.",
-                        SetupRandomizerButtonText = "Refund points",
+                        // etupRandomizerDelegate = HenchTalents.ResetTalents,
+                        // SetupRandomizerButtonToolTip = "Allows you to select a save file to remove henchman records from.\nThis will wipe all henchman powers and refund the correct amount of talent points to spend.\nThis will ALSO reset the weapon they are using the default weapon they use.",
+                        // SetupRandomizerButtonText = "Refund points",
                         RequiresTLK = true,
                         SubOptions = new ObservableCollectionExtended<RandomizationOption>()
                         {

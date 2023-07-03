@@ -22,7 +22,7 @@ namespace Randomizer.Randomizers.Game2.Levels
     {
         public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            //AddBurgersToCookingQuest(target);
+            AddBurgersToCookingQuest(target);
             RandomizeNormandyHolo(target);
             RandomizeWrongWashroomSFX(target);
             RandomizeProbes(target);
@@ -154,7 +154,6 @@ namespace Randomizer.Randomizers.Game2.Levels
             ("BioD_ProCer_300ShuttleBay_LOC_INT.pcc", "procer_vixen_intro_d_S.en_us_hench_leading_procer_vixen_intro_d_00217867_m_wav"), // WHAT THE HELL ARE YOU DOING? (Jacob)!
             ("BioD_ProCer_250ControlRoom_LOC_INT.pcc","procer_wilson_intro_d_S.en_us_procer_wilson_procer_wilson_intro_d_00216755_m_wav"), // OH GOD, THEY FOUND ME
             ("BioD_ProCer_250ControlRoom_LOC_INT.pcc","procer_techpwrs_tutor_a_S.en_us_procer_wilson_procer_techpwrs_tutor_a_00248148_m_wav") // This really isn't the time, jacob
-            
         };
 
         private static void RandomizeWrongWashroomSFX(GameTarget target)
@@ -218,9 +217,9 @@ namespace Randomizer.Randomizers.Game2.Levels
 
                 // 2. Link up the textures
                 // ME2R OT/LE build now does this as package stored to make this simpler.
-                //TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
-                //TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
-                //TFCBuilder.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
+                //TextureHandler.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
+                //TextureHandler.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
+                //TextureHandler.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
 
                 // 3. Clone 3 more burgers
                 addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
@@ -239,10 +238,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var pDiff = nor250Henchmen.FindExport("BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_Diff");
                 pNorm.ObjectName = "Plates_NotUgly_Norm";
                 pDiff.ObjectName = "Plates_NotUgly_Diff";
-                TFCBuilder.RandomizeExport(target, pDiff, null);
-                TFCBuilder.RandomizeExport(target, pNorm, null);
-
-
+                TextureHandler.RandomizeExport(target, pDiff, null);
+                TextureHandler.RandomizeExport(target, pNorm, null);
+                
                 // We need to make dynamic lit - values are copied from another SMA in BioA_Nor_200. I don't know what the channels mean
                 var skmc = plateSMA1.GetProperty<ObjectProperty>("StaticMeshComponent").ResolveToEntry(world.FileRef) as ExportEntry;
                 var lc = skmc.GetProperty<StructProperty>("LightingChannels");

@@ -90,6 +90,10 @@ namespace RandomizerUI
         /// </summary>
         public ObservableCollectionExtended<RandomizationGroup> RandomizationGroups { get; } = new ObservableCollectionExtended<RandomizationGroup>();
         public bool AllowOptionsChanging { get; set; } = true;
+
+        /// <summary>
+        /// Reinstall the DLC mod component, vs stacking on top of it
+        /// </summary>
         public bool PerformReroll { get; set; } = true;
         public long CurrentProgressValue { get; set; }
         public string CurrentOperationText { get; set; }
@@ -339,9 +343,9 @@ namespace RandomizerUI
                 }
             }
 
-            if (Directory.Exists(modPath) && PerformReroll)
+            if (Directory.Exists(modPath))
             {
-                if (backupStatus.BackedUp)
+                if (PerformReroll && backupStatus.BackedUp)
                 {
                     var settings = new MetroDialogSettings()
                     {
@@ -350,7 +354,9 @@ namespace RandomizerUI
                         FirstAuxiliaryButtonText = "Cancel",
                         DefaultButtonFocus = MessageDialogResult.Affirmative
                     };
-                    var result = await this.ShowMessageAsync("Existing randomization already installed", "An existing randomization is already installed. It is highly recommended that you perform a quick restore before re-rolling so that basegame changes do not stack or are left installed if your new options do not include these changes.\n\nPerform a quick restore before randomization?", MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
+                    var result = await this.ShowMessageAsync("Existing randomization already installed",
+                        "An existing randomization is already installed. It is highly recommended that you perform a quick restore before re-rolling so that basegame changes do not stack or are left installed if your new options do not include these changes.\n\nPerform a quick restore before randomization?",
+                        MessageDialogStyle.AffirmativeAndNegativeAndSingleAuxiliary, settings);
                     if (result == MessageDialogResult.FirstAuxiliary)
                     {
                         // Do nothing. User canceled
@@ -366,22 +372,22 @@ namespace RandomizerUI
 
                     // User did not want to restore, just run 
                 }
-            }
-            else
-            {
-                // no backup, can't quick restore
-                var settings = new MetroDialogSettings()
+                else if (PerformReroll) // Backup doesn't exist but user specified they want fresh install
                 {
-                    AffirmativeButtonText = "Continue anyways",
-                    NegativeButtonText = "Cancel",
-                };
-                var result = await this.ShowMessageAsync("Existing randomization already installed",
-                    "An existing randomization is already installed. Some basegame only randomized files may remain after the DLC component is removed, and if options that modify these files are selected, the effects will stack. It is recommended you 'Remove Randomization' in the bottom left window, then repair your game to ensure you have a fresh installation for a re-roll.\n\nAn ME3Tweaks-based backup is recommended to avoid this procedure, which can be created in the bottom left of the application. It enables the quick restore feature, which only takes a few seconds.",
-                    MessageDialogStyle.AffirmativeAndNegative, settings);
-                if (result == MessageDialogResult.Negative)
-                {
-                    // Do nothing. User canceled
-                    return;
+                    // no backup, can't quick restore
+                    var settings = new MetroDialogSettings()
+                    {
+                        AffirmativeButtonText = "Continue anyways",
+                        NegativeButtonText = "Cancel",
+                    };
+                    var result = await this.ShowMessageAsync("Existing randomization already installed",
+                        "An existing randomization is already installed. Some basegame only randomized files may remain after the DLC component is removed, and if options that modify these files are selected, the effects will stack. It is recommended you 'Remove Randomization' in the bottom left window, then repair your game to ensure you have a fresh installation for a re-roll.\n\nAn ME3Tweaks-based backup is recommended to avoid this procedure, which can be created in the bottom left of the application. It enables the quick restore feature, which only takes a few seconds.",
+                        MessageDialogStyle.AffirmativeAndNegative, settings);
+                    if (result == MessageDialogResult.Negative)
+                    {
+                        // Do nothing. User canceled
+                        return;
+                    }
                 }
             }
 

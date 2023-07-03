@@ -12,6 +12,7 @@ using LegendaryExplorerCore.Textures;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.Classes;
 using Microsoft.IO;
+using Randomizer.Randomizers.Game2.TextureAssets.LE2;
 
 namespace Randomizer.Randomizers.Utility
 {
@@ -66,15 +67,15 @@ namespace Randomizer.Randomizers.Utility
                 return;
             }
 
-            if (loadedImage.mipMaps[0].width != 1024 || loadedImage.mipMaps[0].height != 512)
-            {
-                Debug.WriteLine($@"Error: aspect ratio is not 2:1 1024x512");
-                loadedImage = null;
-                return;
-            }
+            //if (loadedImage.mipMaps[0].width != 1024 || loadedImage.mipMaps[0].height != 512)
+            //{
+            //    Debug.WriteLine($@"Error: aspect ratio is not 2:1 1024x512");
+            //    loadedImage = null;
+            //    return;
+            //}
 
             Texture2D t2d = new Texture2D(export);
-            t2d.Replace(loadedImage, props);
+            t2d.Replace(loadedImage, props, forcedTFCName: LE2Textures.PremadeTFCName);
         }
     }
 }

@@ -11,7 +11,7 @@ using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
-
+    // Likely being cut for LE2R
     class KasumiArtGalleryFile
     {
         public string PackageName { get; set; }
@@ -85,17 +85,17 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var painting2 = nor230P.FindExport("BioT_NorHenMT.Painting02_Diff");
                 if (painting1 != null && painting2 != null)
                 {
-                    var assets = TFCBuilder.ListTextureAssets(target.Game, "Kasumi.NormandyPaintings").Select(x => $"Kasumi.NormandyPaintings.{x}").ToList();
+                    var assets = new List<string>(); //TextureHandler.ListTextureAssets(target.Game, "Kasumi.NormandyPaintings").Select(x => $"Kasumi.NormandyPaintings.{x}").ToList();
                     assets.Shuffle();
 
                     RTexture2D r2d = new RTexture2D()
                     {
-                        AllowedTextureAssetNames = assets,
-                        LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_Environment", 1025), "TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
+                        AllowedTextureIds = assets,
+                        //LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_Environment", 1025), "TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
                     };
 
-                    TFCBuilder.InstallTexture(target, r2d, painting1, assets.PullFirstItem());
-                    TFCBuilder.InstallTexture(target, r2d, painting2, assets.PullFirstItem());
+                    TextureHandler.InstallTexture(target, r2d, painting1, assets.PullFirstItem());
+                    TextureHandler.InstallTexture(target, r2d, painting2, assets.PullFirstItem());
 
                     MERFileSystem.SavePackage(nor230P);
                 }
@@ -104,8 +104,9 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         private static void RandomizeArtGallery(GameTarget target)
         {
-            var wideAssets = TFCBuilder.ListTextureAssets(target.Game,"Kasumi.ArtGallery.wide").Select(x => $"Kasumi.ArtGallery.wide.{x}").ToList();
-            var tallAssets = TFCBuilder.ListTextureAssets(target.Game, "Kasumi.ArtGallery.tall").Select(x => $"Kasumi.ArtGallery.tall.{x}").ToList();
+            // This feature is likely to be cut
+            var wideAssets = new List<string>(); //TextureHandler.ListTextureAssets(target.Game,"Kasumi.ArtGallery.wide").Select(x => $"Kasumi.ArtGallery.wide.{x}").ToList());
+            var tallAssets = new List<string>(); //TextureHandler.ListTextureAssets(target.Game, "Kasumi.ArtGallery.tall").Select(x => $"Kasumi.ArtGallery.tall.{x}").ToList();
             wideAssets.Shuffle();
             tallAssets.Shuffle();
 
@@ -159,7 +160,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                         }
                     }
 
-                    InstallARArtTextures(target,kagf.WideTextureUIndexes, wideAssets, artGalleryP, "Wide");
+                    InstallARArtTextures(target, kagf.WideTextureUIndexes, wideAssets, artGalleryP, "Wide");
                     InstallARArtTextures(target, kagf.TallTextureUIndexes, tallAssets, artGalleryP, "Tall");
 
                     MERFileSystem.SavePackage(artGalleryP);
@@ -182,11 +183,11 @@ namespace Randomizer.Randomizers.Game2.Levels
                 var texExport = artGalleryP.GetUExport(uIndex);
                 RTexture2D r2d = new RTexture2D()
                 {
-                    LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_Environment", 1025), "TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
-                    AllowedTextureAssetNames = new List<string>() { asset },
+                    //LODGroup = new EnumProperty(new NameReference("TEXTUREGROUP_Environment", 1025), "TextureGroup", MEGame.ME2, "LODGroup"), // A bit higher quality
+                    AllowedTextureIds = new List<string>() { asset },
                     TextureInstancedFullPath = texExport.InstancedFullPath // don't think this is used but just leave it here anyways.
                 };
-                TFCBuilder.InstallTexture(target, r2d, texExport, asset);
+                TextureHandler.InstallTexture(target, r2d, texExport, asset);
             }
         }
 

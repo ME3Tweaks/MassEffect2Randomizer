@@ -28,26 +28,33 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         public static bool RandomizeIconicFemShep(GameTarget target, RandomizationOption option)
         {
-            var femF = MERFileSystem.GetPackageFile(target, "BIOG_Female_Player_C.pcc");
-            if (femF != null && File.Exists(femF))
+            // LE version
+            var files = new[] { @"BIOG_HMF_HED_PROMorph_R.pcc", @"BioP_Char.pcc" };
+            foreach (var f in files)
             {
-                var femP = MEPackageHandler.OpenMEPackage(femF);
-                var femMorphFace = femP.GetUExport(682);
-                RBioMorphFace.RandomizeExportNonHench(target, femMorphFace, option);
-                var matSetup = femP.GetUExport(681);
-                RBioMaterialOverride.RandomizeExport(matSetup, option);
+                var headPackage = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, f));
+                var shepMDL = headPackage.FindExport("PROSheppard.HMF_HED_PROSheppard_MDL");
+                if (shepMDL == null)
+                {
+                    shepMDL = headPackage.FindExport("BIOG_HMF_HED_PROMorph_R.PROSheppard.HMF_HED_PROSheppard_MDL");
+                }
 
-                // Copy this data into BioP_Char so you get accurate results
-                var biop_charF = MERFileSystem.GetPackageFile(target, @"BioP_Char.pcc");
-                var biop_char = MEPackageHandler.OpenMEPackage(biop_charF);
-                // TODO: CACHE?
-                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, femMorphFace, biop_char, biop_char.GetUExport(3482), true, new RelinkerOptionsPackage(),out IEntry _);
-                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.ReplaceSingular, matSetup, biop_char, biop_char.GetUExport(3472), true, new RelinkerOptionsPackage(), out IEntry _);
-                //biop_char.GetUExport(3482).WriteProperties(femMorphFace.GetProperties()); // Copy the morph face
-                //biop_char.GetUExport(3472).WriteProperties(matSetup.GetProperties()); // Copy the material setups
-                MERFileSystem.SavePackage(biop_char);
-                MERFileSystem.SavePackage(femP);
+                var objBin = RSharedSkeletalMesh.FuzzSkeleton(shepMDL, option);
+
+                //if (option.HasSubOptionSelected(CharacterCreator.SUBOPTIONKEY_MALESHEP_COLORS))
+                {
+                    Dictionary<string, CFVector4> vectors = new();
+                    Dictionary<string, float> scalars = new();
+                    var materials = objBin.Materials;
+                    foreach (var mat in materials.Select(x => headPackage.GetUExport(x)))
+                    {
+                        RMaterialInstance.RandomizeSubMatInst(mat, vectors, scalars);
+                    }
+                }
+
+                MERFileSystem.SavePackage(headPackage);
             }
+
             return true;
         }
 
@@ -89,29 +96,23 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         public static bool RandomizeIconicMaleShep(GameTarget target, RandomizationOption option)
         {
-            var sfxgame = MERFileSystem.GetPackageFile(target, "SFXGame.pcc");
-            if (sfxgame != null && File.Exists(sfxgame))
+            var sfxgameP = SFXGame.GetSFXGame(target);
+            var shepMDL = sfxgameP.FindExport("BIOG_HMM_HED_PROMorph.Sheppard.HMM_HED_PROSheppard_MDL");
+            var objBin = RSharedSkeletalMesh.FuzzSkeleton(shepMDL, option);
+
+            if (option.HasSubOptionSelected(CharacterCreator.SUBOPTIONKEY_MALESHEP_COLORS))
             {
-                var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
-                var shepMDL = sfxgameP.GetUExport(42539);
-                var objBin = RSharedSkeletalMesh.FuzzSkeleton(shepMDL, option);
-
-                if (option.HasSubOptionSelected(CharacterCreator.SUBOPTIONKEY_MALESHEP_COLORS))
+                Dictionary<string, CFVector4> vectors = new();
+                Dictionary<string, float> scalars = new();
+                var materials = objBin.Materials;
+                foreach (var mat in materials.Select(x => sfxgameP.GetUExport(x)))
                 {
-                    Dictionary<string, CFVector4> vectors = new();
-                    Dictionary<string, float> scalars = new();
-                    var materials = objBin.Materials;
-                    foreach (var mat in materials.Select(x => sfxgameP.GetUExport(x)))
-                    {
-                        RMaterialInstance.RandomizeSubMatInst(mat, vectors, scalars);
-                    }
+                    RMaterialInstance.RandomizeSubMatInst(mat, vectors, scalars);
                 }
-
-                MERFileSystem.SavePackage(sfxgameP);
-                return true;
             }
 
-            return false;
+            MERFileSystem.SavePackage(sfxgameP);
+            return true;
         }
 
         public static bool RandomizeCharacterCreator(GameTarget target, RandomizationOption option)

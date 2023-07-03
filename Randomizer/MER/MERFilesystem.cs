@@ -29,25 +29,16 @@ namespace Randomizer.MER
         public const string PREVENT_SAVE_METADATA_NAME = "preventsave";
 
 #if __GAME1__
-        /// <summary>
-        /// List of games this build supports
-        /// </summary>
-        public static MEGame[] Games = new[] { MEGame.ME1, MEGame.LE1 };
-        public static readonly string[] filesToSkip = { "Core", "PlotManagerMap", "RefShaderCache-PC-D3D-SM3", "RefShaderCache-PC-D3D-SM5", "IpDrv", "WwiseAudio", "SFXOnlineFoundation", "GFxUI" };
+        public static MEGame Game = MEGame.LE1;
+        public static readonly string[] filesToSkip = { "Core", "PlotManagerMap","RefShaderCache-PC-D3D-SM5", "IpDrv", "WwiseAudio", "SFXOnlineFoundation", "GFxUI" };
         public static readonly string[] alwaysBasegameFiles = { "Startup", "Engine", "GameFramework", "SFXGame", "EntryMenu", "BIOG_Male_Player_C", "BIOC_Materials", "SFXStrategicAI" };
 #elif __GAME2__
-        /// <summary>
-        /// List of games this build supports
-        /// </summary>
-        public static MEGame[] Games = new[] { MEGame.ME2, MEGame.LE2 };
-        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
+        public static MEGame Game = MEGame.LE2;
+        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
         public static readonly string[] alwaysBasegameFiles = { "Startup_INT.pcc", "Engine.pcc", "GameFramework.pcc", "SFXGame.pcc", "EntryMenu.pcc", "BIOG_Male_Player_C.pcc" };
 #elif __GAME3__
-        /// <summary>
-        /// List of games this build supports
-        /// </summary>
-        public static MEGame[] Games = new[] { MEGame.LE3 };
-        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM3.upk", "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
+        public static MEGame Game = MEGame.LE3;
+        public static readonly string[] filesToSkip = { "RefShaderCache-PC-D3D-SM5.upk", "IpDrv.pcc", "WwiseAudio.pcc", "SFXOnlineFoundation.pcc", "GFxUI.pcc" };
 #endif
 
 

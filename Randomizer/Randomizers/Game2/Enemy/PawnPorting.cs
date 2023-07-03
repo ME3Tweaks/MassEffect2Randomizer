@@ -162,7 +162,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     {
                         // Darker head with veins (that you honestly can't really see...)
                         TextureInstancedFullPath = "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROMorph_Diff",
-                        AllowedTextureAssetNames = new List<string>
+                        AllowedTextureIds = new List<string>
                         {
                             "Pawn.Collector_Batarian_HeadMorph.bin",
                         }
@@ -274,7 +274,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
                     foreach (var tu in pawn.TextureUpdates)
                     {
                         var targetTextureExp = targetPackage.FindExport(tu.TextureInstancedFullPath);
-                        TFCBuilder.InstallTexture(target, tu, targetTextureExp);
+                        TextureHandler.InstallTexture(target, tu, targetTextureExp);
                     }
                 }
 
