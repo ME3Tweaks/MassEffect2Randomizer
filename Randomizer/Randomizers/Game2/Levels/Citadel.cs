@@ -77,7 +77,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 2038, 2022, 44, 11, cache, pickedIndices); //omni
         }
 
-        private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, MERPackageCache cache, List<int> pickedIndices)
+        private static void RandomizeEndorsementLine(string packageName, string maleConvIFP, string femaleConvIFP, int conversationUIndex, int replyIdx, MERPackageCache cache, List<int> pickedIndices)
         {
             var package = cache.GetCachedPackage(packageName);
 
