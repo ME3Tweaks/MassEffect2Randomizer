@@ -24,34 +24,25 @@ namespace Randomizer.Randomizers.Game2.Levels
             // Make the ship faster because otherwise it takes ages to do stuff
             // And can also consume more fuel
 
-            var sfxgame = MERFileSystem.GetPackageFile(target, "SFXGame.pcc");
-            if (sfxgame != null && File.Exists(sfxgame))
+            var sfxgameP = SFXGame.GetSFXGame(target);
+            var galaxyModCamDefaults = sfxgameP.FindExport("Default__BioCameraBehaviorGalaxy");
+            var props = galaxyModCamDefaults.GetProperties();
+
+            props.AddOrReplaceProp(new FloatProperty(150, "m_fMovementScalarGalaxy")); // is this used?
+            props.AddOrReplaceProp(new FloatProperty(75, "m_fMovementScalarCluster"));
+            props.AddOrReplaceProp(new FloatProperty(125, "m_fMovementScalarSystem"));
+
+            galaxyModCamDefaults.WriteProperties(props);
+
+            // Make it so you can't run out of a gas.
+            if (option.HasSubOptionSelected(SUBOPTIONKEY_INFINITEGAS))
             {
-                var sfxgameP = MEPackageHandler.OpenMEPackage(sfxgame);
-                var galaxyModCamDefaults = sfxgameP.GetUExport(3899);
-                var props = galaxyModCamDefaults.GetProperties();
-
-                props.AddOrReplaceProp(new FloatProperty(150, "m_fMovementScalarGalaxy")); // is this used?
-                props.AddOrReplaceProp(new FloatProperty(75, "m_fMovementScalarCluster"));
-                props.AddOrReplaceProp(new FloatProperty(125, "m_fMovementScalarSystem"));
-
-                galaxyModCamDefaults.WriteProperties(props);
-
-                // Make it so you can't run out of a gas.
-                if (option.HasSubOptionSelected(SUBOPTIONKEY_INFINITEGAS))
-                {
-                    var BurnFuel = sfxgameP.GetUExport(3877);
-                    if (BurnFuel.ObjectName == "BurnFuel")
-                    {
-                        var bfData = BurnFuel.Data;
-                        bfData.OverwriteRange(0x9C, BitConverter.GetBytes(50f)); // Make it so we don't run out of gas
-                        BurnFuel.Data = bfData;
-                    }
-                }
-
-
-                MERFileSystem.SavePackage(sfxgameP);
+                var BurnFuel = sfxgameP.FindExport("BioCameraBehaviorGalaxy.BurnFuel");
+                ScriptTools.InstallScriptToExport(BurnFuel, "BurnFuel.uc");
             }
+
+
+            MERFileSystem.SavePackage(sfxgameP);
 
             // Give a bit more starting gas
             // IDK why it's in Weapon
@@ -74,7 +65,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                 {
                     case "SFXCluster":
                         {
-                            var props = export.GetProperties();
+                            props = export.GetProperties();
                             var starColor = props.GetProp<StructProperty>("StarColor");
                             if (starColor != null)
                             {
@@ -104,7 +95,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                         break;
                     case "SFXSystem":
                         {
-                            var props = export.GetProperties();
+                            props = export.GetProperties();
                             var starColor = props.GetProp<StructProperty>("StarColor");
                             if (starColor != null)
                             {
@@ -137,7 +128,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                         break;
                     case "BioPlanet":
                         {
-                            var props = export.GetProperties();
+                            props = export.GetProperties();
                             var starColor = props.GetProp<StructProperty>("SunColor");
                             if (starColor != null)
                             {
@@ -186,6 +177,5 @@ namespace Randomizer.Randomizers.Game2.Levels
             MERFileSystem.SavePackage(package);
             return true;
         }
-
     }
 }
