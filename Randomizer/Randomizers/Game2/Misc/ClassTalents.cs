@@ -8,6 +8,8 @@ using LegendaryExplorerCore.Misc;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
+using LegendaryExplorerCore.UnrealScript;
+using LegendaryExplorerCore.UnrealScript.Compiling.Errors;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.Levels;
@@ -285,7 +287,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             // Step 3. Precalculate talent sets that will be assigned
             List<TalentSet> talentSets = new List<TalentSet>(6);
 
-            option.Description = "Determining player power sets";
+            option.CurrentOperation = "Determining player power sets";
             option.ProgressIndeterminate = true;
             int baseAttempt = 0;
             bool powersConfigured = false; //if a solution was found
@@ -543,6 +545,12 @@ namespace Randomizer.Randomizers.Game2.Misc
                     MERFileSystem.SavePackage(loadout.FileRef);
                 });
 
+            option.ProgressIndeterminate = true;
+            option.CurrentOperation = "Adding fixes for class talent system";
+            var sfxgame = SFXGame.GetSFXGame(target);
+            ScriptTools.AddToClassInPackage(target, sfxgame, "PlayerOnPowersLoaded", "SFXPawn_Player");
+            
+            MERFileSystem.SavePackage(sfxgame);
             return true;
         }
 

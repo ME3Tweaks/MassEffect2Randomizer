@@ -21,8 +21,49 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
+            InstallRandomFirstWeapon(target);
             MakeItCreepy(target);
             return true;
+        }
+
+        /// <summary>
+        /// Changes the weapon you get from the locker.
+        /// </summary>
+        /// <param name="target"></param>
+        private static void InstallRandomFirstWeapon(GameTarget target)
+        {
+            var rezRoom = MERFileSystem.GetPackageFile(target, "BioD_ProCer_100RezRoom.pcc");
+            var rezRoomP = MERFileSystem.OpenMEPackage(rezRoom);
+
+            var getPistolSeq = rezRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS5_Go_Get_Pistol");
+
+            // Install new object
+            var giveRandWeapon = SequenceObjectCreator.CreateSequenceObject(rezRoomP, "MERSeqAct_GiveRandomWeapon");
+            KismetHelper.AddObjectToSequence(giveRandWeapon, getPistolSeq);
+            
+            // Hook new object target to player
+            KismetHelper.CreateVariableLink(giveRandWeapon, "Target", rezRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS5_Go_Get_Pistol.SeqVar_Player_1"));
+
+            // Output from new inventory object to the correct next item
+            KismetHelper.CreateOutputLink(giveRandWeapon, "Out", rezRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS5_Go_Get_Pistol.BioSeqAct_SetIsInCombat_1"));
+            
+            var seqObjs = KismetHelper.GetSequenceObjects(getPistolSeq).OfType<ExportEntry>().Where(x => x.ClassName == "SeqAct_GiveInventory");
+            foreach (var giveInv in seqObjs)
+            {
+                // Remove the weapon given to the player in this object, we have assigned it ourselves assign it ourselves
+                var invList = giveInv.GetProperty<ArrayProperty<ObjectProperty>>("InventoryList");
+
+                // We do this in case another mod changes the initial weapon
+                // Hopefully they use name including weapon
+                invList.RemoveAll(x => x.ResolveToEntry(rezRoomP).ObjectName.Instanced.Contains("Weapon"));
+                giveInv.WriteProperty(invList);
+                KismetHelper.RemoveOutputLinks(giveInv);
+                KismetHelper.CreateOutputLink(giveInv, "Out", giveRandWeapon);
+            }
+
+
+
+            MERFileSystem.SavePackage(rezRoomP);
         }
 
         private static void MakeItCreepy(GameTarget target)

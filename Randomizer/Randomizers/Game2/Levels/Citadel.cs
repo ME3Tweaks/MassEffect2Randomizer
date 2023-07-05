@@ -20,7 +20,7 @@ namespace Randomizer.Randomizers.Game2.Levels
         #region ENDORSEMENTS
         // Endorsement line is 2.1ish seconds long.
         // BOTH LISTS MUST BE THE SAME LENGTH AND HAVE IDENTICAL TLK STRS!
-        private static List<(string packageName, int uindex)> EndorsementCandidatesFemale = new List<(string packageName, int uindex)>()
+        private static List<(string packageName, string ifp)> EndorsementCandidatesFemale = new()
         {
             ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3408), // Sorry. Don't remember, don't care.
             ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3403), // I knew this was a mistake
@@ -34,33 +34,34 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             ("BioD_Nor_101Cockpit_LOC_INT.pcc", 3675 ), // What is this high school
 
-            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 6895), // Free drinks on me
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", "omgmwl_buy_drinks_d_S.en_us_player_f_omgmwl_buy_drinks_d_00236782_f_wav"), // Free drinks on me
             ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 7034), // Sectors of space
 
-            ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", 240), // Go to hell
+            ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", "prscva_double_cross_d_S.en_us_player_f_prscva_double_cross_d_00186607_f_wav"), // Go to hell
 
         };
 
-        private static List<(string packageName, int uindex)> EndorsementCandidatesMale = new List<(string packageName, int uindex)>()
+        private static List<(string packageName, string ifp)> EndorsementCandidatesMale = new ()
         {
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3432), // Sorry. Don't remember, don't care.
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3427), // I knew this was a mistake
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3445), // People die. I don't have time for this crap.
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3523), // Geth, pirates, mercenary scum
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_m_cithub_rpplot_giver5_d_00322109_m_wav"), // Sorry. Don't remember, don't care.
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_m_cithub_rpplot_giver5_d_00290444_m_wav"), // I knew this was a mistake
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_m_cithub_rpplot_giver5_d_00322128_m_wav"), // People die. I don't have time for this crap.
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_vend_sniper_d_S.en_us_cithub_vend_sniper_cithub_vend_sniper_d_00252897_m_wav"), // Geth, pirates, mercenary scum
 
             ("BioD_CitHub_240Vendors_LOC_INT.pcc", 811), // Cheap touristy crap
             ("BioD_CitHub_240Vendors_LOC_INT.pcc", 813), // HEY EVERYONE THIS STORE DISCRIMINATES AGAINST THE POOR
 
-            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", 2710), // Are you naturally this bitchy or is it just me
+            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", "procer_vixen_briefing_d_S.en_us_player_m_procer_vixen_briefing_d_00218765_m_wav"), // Are you naturally this bitchy or is it just me
+            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", "procer_vixen_briefing_d_S.en_us_player_m_procer_vixen_briefing_d_00218765_m_wav"), // Are you naturally this bitchy or is it just me\r\n"), // Cerberus gave me my body back, give them a chance
 
             ("BioD_Nor_101Cockpit_LOC_INT.pcc", 3712 ), // What is this high school
 
-            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 6902), // Free drinks on me
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", "omgmwl_buy_drinks_d_S.en_us_player_m_omgmwl_buy_drinks_d_00236782_m_wav"), // Free drinks on me
             ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 7113), // Sectors of space
 
-            ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", 244), // Go to hell
+            ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", "prscva_double_cross_d_S.en_us_player_m_prscva_double_cross_d_00186607_m_wav"), // Go to hell
 
-
+            ("BioD_KroHub_110GruntLoyalty_LOC_INT.pcc","krokgl_shamantent_d_S.en_us_player_m_krokgl_shamantent_d_00270395_m_wav") // I don't need to listen to any more of this
         };
 
 
@@ -76,7 +77,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 2038, 2022, 44, 11, cache, pickedIndices); //omni
         }
 
-        private static void RandomizeEndorsementLine(string packageName, int maleUIndex, int femaleUIndex, int conversationUIndex, int replyIdx, MERPackageCache cache, List<int> pickedIndices)
+        private static void RandomizeEndorsementLine(string packageName, string maleConvIFP, string femaleConvIFP, int conversationUIndex, int replyIdx, MERPackageCache cache, List<int> pickedIndices)
         {
             var package = cache.GetCachedPackage(packageName);
 

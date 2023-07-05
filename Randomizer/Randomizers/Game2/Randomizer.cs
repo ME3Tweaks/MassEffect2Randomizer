@@ -679,14 +679,11 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption()
                     {
                         HumanName = "Class powers",
-                        Description = "Shuffles the powers of all player classes. Loading an existing save after running this will cause you to lose talent points. Use the refund points button below to adjust your latest save file and reset your powers.",
+                        Description = "Shuffles the powers of all player classes. Points spent in powers removed from your save will be refunded",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = ClassTalents.ShuffleClassAbilitites,
                         RequiresTLK = true,
-                        SetupRandomizerDelegate = HenchTalents.ResetTalents,
-                        SetupRandomizerButtonToolTip = "Allows you to select a save file to remove player power records from.\nThis will wipe all assigned power points and refund the correct amount of talent points to spend.",
-                        SetupRandomizerButtonText = "Refund points",
                         /* Will have to implement later as removing gating code is actually complicated
                         SubOptions = new ObservableCollectionExtended<RandomizationOption>()
                         {
@@ -705,8 +702,8 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption()
                     {
                         HumanName = "Henchmen powers",
-                        Description = "Shuffles the powers of squadmates. Using an existing save or re-randomizing and loading a save will cause points to be refunded.",
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Normal,
+                        Description = "Shuffles the powers of squadmates. Points spent in powers removed from henchmen in your save will be refunded",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true,
                         PerformSpecificRandomizationDelegate = HenchTalents.ShuffleSquadmateAbilitiesLE2,
                         // etupRandomizerDelegate = HenchTalents.ResetTalents,
