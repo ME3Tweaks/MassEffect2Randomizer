@@ -228,7 +228,7 @@ namespace Randomizer.Randomizers.Game2
                         if (true
                         //&& false //uncomment to disable filtering
                         && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("SFXGame", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("EndGm", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
                         && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                         )
@@ -878,7 +878,7 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {
                         HumanName = "Actors in cutscenes",
                         Description="Swaps pawns around in animated cutscenes. May break some due to complexity, but often hilarious",
-                        PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns2,
+                        PerformRandomizationOnExportDelegate = Cutscene.ShuffleCutscenePawns3,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning,
                         IsRecommended = true
                     },
@@ -915,7 +915,7 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption()
                     {
                         HumanName = "Actors in conversations",
-                        PerformFileSpecificRandomization = RBioConversation.RandomizePackageActorsInConversation,
+                        PerformFileSpecificRandomization = RBioConversation.RandomizeActorsInConversation2,
                         Description = "Changes pawn roles in conversations. Somewhat buggy simply due to complexity and restrictions in engine, but can be entertaining",
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning

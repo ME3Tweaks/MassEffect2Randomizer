@@ -113,6 +113,8 @@
 	<ItemGroup>
 		<None Remove="Randomizers\Game2\Assets\Text\Classes\MERSeqAct_RandomizeProbe.uc" />
 		<None Remove="Randomizers\Game2\Assets\Text\Classes\SFXLoadoutDataMER.uc" />
+		<None Remove="Randomizers\Game2\Assets\Text\playerweaponifps.txt" />
+		<None Remove="Randomizers\Game2\Assets\Text\Scripts\BurnFuel.uc" />
 		<None Remove="Randomizers\Game2\Assets\Text\Scripts\GenerateInventoryFromLoadout.uc" />
 		<None Remove="Randomizers\Game2\Assets\Text\Scripts\GetPhysicsLevel.uc" />
 		<None Remove="Randomizers\Game2\Assets\Text\Scripts\InitializeHenchman.uc" />

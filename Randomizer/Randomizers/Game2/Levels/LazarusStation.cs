@@ -4,12 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Unreal;
 using Randomizer.MER;
 using Randomizer.Shared;
+using Randomizer.Randomizers.Handlers;
 
 namespace Randomizer.Randomizers.Game2.Levels
 {
@@ -40,13 +42,13 @@ namespace Randomizer.Randomizers.Game2.Levels
             // Install new object
             var giveRandWeapon = SequenceObjectCreator.CreateSequenceObject(rezRoomP, "MERSeqAct_GiveRandomWeapon");
             KismetHelper.AddObjectToSequence(giveRandWeapon, getPistolSeq);
-            
+
             // Hook new object target to player
             KismetHelper.CreateVariableLink(giveRandWeapon, "Target", rezRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS5_Go_Get_Pistol.SeqVar_Player_1"));
 
             // Output from new inventory object to the correct next item
             KismetHelper.CreateOutputLink(giveRandWeapon, "Out", rezRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS5_Go_Get_Pistol.BioSeqAct_SetIsInCombat_1"));
-            
+
             var seqObjs = KismetHelper.GetSequenceObjects(getPistolSeq).OfType<ExportEntry>().Where(x => x.ClassName == "SeqAct_GiveInventory");
             foreach (var giveInv in seqObjs)
             {
@@ -61,9 +63,32 @@ namespace Randomizer.Randomizers.Game2.Levels
                 KismetHelper.CreateOutputLink(giveInv, "Out", giveRandWeapon);
             }
 
+            // Patch out the reload tutorial
+            var mirandaLookForThermalClip = rezRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS10_Reload_Heatsink.BioSeqAct_FaceOnlyVO_11");
+            var gotoLS15PlotStatus = rezRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.LS10_Reload_Heatsink.SequenceReference_1");
+            KismetHelper.RemoveOutputLinks(mirandaLookForThermalClip);
+            KismetHelper.CreateOutputLink(mirandaLookForThermalClip, "Done", gotoLS15PlotStatus);
 
 
             MERFileSystem.SavePackage(rezRoomP);
+
+
+            // Add weapon options to config file
+
+            var bioWeapon = CoalescedHandler.GetIniFile(@"BioWeapon.ini");
+            var merGiveRandomWeapon = bioWeapon.GetOrAddSection(@"MERGameContentKismet.MERSeqAct_GiveRandomWeapon");
+            var playerWeaponsList = MEREmbedded.GetEmbeddedTextAsset(@"playerweaponifps.txt")
+                .Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var ew in playerWeaponsList)
+            {
+                // Lines starting with // are 'commented' out - mainly so during dev
+                // we can force specific lines
+                if (!ew.StartsWith("//"))
+                {
+                    merGiveRandomWeapon.AddEntryIfUnique(new CoalesceProperty(@"WeaponsList", new CoalesceValue(ew, CoalesceParseAction.AddUnique)));
+                }
+            }
         }
 
         private static void MakeItCreepy(GameTarget target)

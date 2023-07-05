@@ -69,6 +69,68 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             return false;
         }
 
+        /// <summary>
+        /// The inputs we filter for randomizing interps with
+        /// </summary>
+        private static readonly List<int> INTERP_PLAY_INPUT_IDXS = new() { 0 };
+
+        /// <summary>
+        /// Uses runtime randomization class
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="export"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public static bool RandomizeActorsInConversation2(GameTarget target, IMEPackage package, RandomizationOption option)
+        {
+            var conversationStartExports = package.Exports.Where(CanRandomizeSeqActStartConvo).ToList();
+            if (!conversationStartExports.Any())
+                return false;
+
+            MERPackageCache localCache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+
+            foreach (var convStart in conversationStartExports)
+            {
+                //if (convStart.UIndex < 13638)
+                //    continue;
+                if (!CanRandomizeConversationStart(convStart))
+                    continue;
+
+                var sequence = SeqTools.GetParentSequence(convStart);
+
+                // Add our randomizer node
+                var randNextNode =
+                    SequenceObjectCreator.CreateSequenceObject(package, @"MERSeqAct_RandomizePawnsInNextNode");
+                KismetHelper.AddObjectToSequence(randNextNode, sequence);
+
+                var sequenceObjects = SeqTools.GetAllSequenceElements(sequence).OfType<ExportEntry>();
+                var incomingExports =
+                    SeqTools.FindOutboundConnectionsToNode(convStart, sequenceObjects, INTERP_PLAY_INPUT_IDXS);
+
+                foreach (var incoming in incomingExports)
+                {
+                    // Repoint to our randomization node
+                    var outboundsFromPrevNode = SeqTools.GetOutboundLinksOfNode(incoming);
+                    foreach (var outLink in outboundsFromPrevNode)
+                    {
+                        foreach (var linkedNode in outLink)
+                        {
+                            // Play is Input 0
+                            if (linkedNode.InputLinkIdx == 0 && linkedNode.LinkedOp == convStart)
+                            {
+                                linkedNode.LinkedOp = randNextNode;
+                            }
+                        }
+                    }
+
+                    SeqTools.WriteOutboundLinksToNode(incoming, outboundsFromPrevNode);
+                }
+
+                KismetHelper.CreateOutputLink(randNextNode, "Out", convStart);
+            }
+            return true;
+        }
+
         public static bool RandomizePackageActorsInConversation(GameTarget target, IMEPackage package, RandomizationOption option)
         {
             var conversationStartExports = package.Exports.Where(CanRandomizeSeqActStartConvo).ToList();
@@ -512,7 +574,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                         // So if we change it there, it... in theory should change
                         case "Owner":
                             lookupInfo.FindActor = "Owner"; // Special case. We should not change owner to something else. We should only update what owner now points to 
-                            // or something... this shit is so confusing
+                                                            // or something... this shit is so confusing
                             break;
                         case "Puppet1_1":
                             lookupInfo.FindActor = new NameReference("Pup1", 2);

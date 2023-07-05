@@ -110,8 +110,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             // Add corrected weapons here
             CoalescedHandler.AddDynamicLoadMappingEntry(new SeekFreeInfo() { EntryPath = @"SFXGameContentMER.SFXHeavyWeapon_Blackstorm_MER", SeekFreePackage = @"SFXHeavyWeapon_Blackstorm_MER" });
             CoalescedHandler.AddDynamicLoadMappingEntry(new SeekFreeInfo() { EntryPath = @"SFXGameContent_Inventory.SFXWeapon_GethMiniGun", SeekFreePackage = @"SFXWeapon_GethMiniGun" });
-
-
+            
             // Add animations
             MERLog.Information(@"Installing weapon animations startup package");
             WeaponAnimsPackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(MEGame.LE2, @"Weapons.Startup_LE2R_WeaponAnims.pcc"), @"Startup_LE2R_WeaponAnims.pcc");

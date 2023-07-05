@@ -22,70 +22,73 @@ namespace Randomizer.Randomizers.Game2.Levels
         // BOTH LISTS MUST BE THE SAME LENGTH AND HAVE IDENTICAL TLK STRS!
         private static List<(string packageName, string ifp)> EndorsementCandidatesFemale = new()
         {
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3408), // Sorry. Don't remember, don't care.
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3403), // I knew this was a mistake
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3421), // People die. I don't have time for this crap.
-            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", 3503), // Geth, pirates, mercenary scum
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_f_cithub_rpplot_giver5_d_00322109_f_wav"), // Sorry. Don't remember, don't care.
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_f_cithub_rpplot_giver5_d_00290444_f_wav"), // I knew this was a mistake
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_f_cithub_rpplot_giver5_d_00322128_f_wav"), // People die. I don't have time for this crap.
+            ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_vend_sniper_d_S.en_us_player_f_cithub_vend_sniper_d_00253670_f_wav"), // Geth, pirates, mercenary scum
 
-            ("BioD_CitHub_240Vendors_LOC_INT.pcc", 796), // Cheap touristy crap
-            ("BioD_CitHub_240Vendors_LOC_INT.pcc", 798), // HEY EVERYONE THIS STORE DISCRIMINATES AGAINST THE POOR
+            ("BioD_CitHub_240Vendors_LOC_INT.pcc", "cithub_vend_decor_d_S.en_us_player_f_cithub_vend_decor_d_00252286_f_wav"), // Cheap touristy crap
+            ("BioD_CitHub_240Vendors_LOC_INT.pcc", "cithub_vend_decor_d_S.en_us_player_f_cithub_vend_decor_d_00252288_f_wav"), // HEY EVERYONE THIS STORE DISCRIMINATES AGAINST THE POOR
 
-            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", 2693), // Are you naturally this bitchy or is it just me
+            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", "procer_vixen_briefing_d_S.en_us_player_f_procer_vixen_briefing_d_00218765_f_wav"), // Are you naturally this bitchy or is it just me
+            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", "procer_leading_briefing_d_S.en_us_player_f_procer_leading_briefing_d_00263469_f_wav"), // Cerberus gave me my body back
 
-            ("BioD_Nor_101Cockpit_LOC_INT.pcc", 3675 ), // What is this high school
+            ("BioD_Nor_101Cockpit_LOC_INT.pcc", "norjk_starter_h_S.en_us_player_f_norjk_starter_h_00275990_f_wav" ), // What is this high school
 
             ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", "omgmwl_buy_drinks_d_S.en_us_player_f_omgmwl_buy_drinks_d_00236782_f_wav"), // Free drinks on me
-            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 7034), // Sectors of space
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", "omgmwl_daughter01_d_S.en_us_player_f_omgmwl_daughter01_d_00234320_f_wav"), // Sectors of space
 
             ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", "prscva_double_cross_d_S.en_us_player_f_prscva_double_cross_d_00186607_f_wav"), // Go to hell
 
+            ("BioD_KroHub_110GruntLoyalty_LOC_INT.pcc", "krokgl_shamantent_d_S.en_us_player_f_krokgl_shamantent_d_00270395_f_wav"), // I don't need to listen to any more of this
         };
 
-        private static List<(string packageName, string ifp)> EndorsementCandidatesMale = new ()
+        private static List<(string packageName, string ifp)> EndorsementCandidatesMale = new()
         {
             ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_m_cithub_rpplot_giver5_d_00322109_m_wav"), // Sorry. Don't remember, don't care.
             ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_m_cithub_rpplot_giver5_d_00290444_m_wav"), // I knew this was a mistake
             ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_rpplot_giver5_d_S.en_us_player_m_cithub_rpplot_giver5_d_00322128_m_wav"), // People die. I don't have time for this crap.
             ("BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_vend_sniper_d_S.en_us_cithub_vend_sniper_cithub_vend_sniper_d_00252897_m_wav"), // Geth, pirates, mercenary scum
 
-            ("BioD_CitHub_240Vendors_LOC_INT.pcc", 811), // Cheap touristy crap
-            ("BioD_CitHub_240Vendors_LOC_INT.pcc", 813), // HEY EVERYONE THIS STORE DISCRIMINATES AGAINST THE POOR
+            ("BioD_CitHub_240Vendors_LOC_INT.pcc", "cithub_vend_decor_d_S.en_us_player_m_cithub_vend_decor_d_00252286_m_wav"), // Cheap touristy crap
+            ("BioD_CitHub_240Vendors_LOC_INT.pcc", "cithub_vend_decor_d_S.en_us_player_m_cithub_vend_decor_d_00252288_m_wav"), // HEY EVERYONE THIS STORE DISCRIMINATES AGAINST THE POOR
 
             ("BioD_Procer_350BriefRoom_LOC_INT.pcc", "procer_vixen_briefing_d_S.en_us_player_m_procer_vixen_briefing_d_00218765_m_wav"), // Are you naturally this bitchy or is it just me
-            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", "procer_vixen_briefing_d_S.en_us_player_m_procer_vixen_briefing_d_00218765_m_wav"), // Are you naturally this bitchy or is it just me\r\n"), // Cerberus gave me my body back, give them a chance
+            ("BioD_Procer_350BriefRoom_LOC_INT.pcc", "procer_leading_briefing_d_S.en_us_player_m_procer_leading_briefing_d_00263469_m_wav"), // Cerberus gave me my body back
 
-            ("BioD_Nor_101Cockpit_LOC_INT.pcc", 3712 ), // What is this high school
+            ("BioD_Nor_101Cockpit_LOC_INT.pcc", "norjk_starter_h_S.en_us_player_m_norjk_starter_h_00275990_m_wav" ), // What is this high school
 
             ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", "omgmwl_buy_drinks_d_S.en_us_player_m_omgmwl_buy_drinks_d_00236782_m_wav"), // Free drinks on me
-            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", 7113), // Sectors of space
+            ("BioD_OmgHub_500DenVIP_LOC_INT.pcc", "omgmwl_daughter01_d_S.en_us_player_m_omgmwl_daughter01_d_00234320_m_wav"), // Sectors of space
 
             ("BioD_PrsCvA_104bLastCheckIn_LOC_INT.pcc", "prscva_double_cross_d_S.en_us_player_m_prscva_double_cross_d_00186607_m_wav"), // Go to hell
 
-            ("BioD_KroHub_110GruntLoyalty_LOC_INT.pcc","krokgl_shamantent_d_S.en_us_player_m_krokgl_shamantent_d_00270395_m_wav") // I don't need to listen to any more of this
+            ("BioD_KroHub_110GruntLoyalty_LOC_INT.pcc","krokgl_shamantent_d_S.en_us_player_m_krokgl_shamantent_d_00270395_m_wav"), // I don't need to listen to any more of this
+
         };
 
 
 
         private static void RandomizeEndorsements(GameTarget target)
         {
-            var cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+            var cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, false);
             List<int> pickedIndices = new List<int>();
 
-            RandomizeEndorsementLine(@"BioD_CitHub_240Vendors_LOC_INT.pcc", 808, 793, 26, 7, cache, pickedIndices); //sirta, i think?
-            RandomizeEndorsementLine(@"BioD_CitHub_300UpperWing_LOC_INT.pcc", 3539, 3514, 105, 18, cache, pickedIndices); // gun turian
-            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 1979, 1963, 43, 8, cache, pickedIndices); //biotic
-            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", 2038, 2022, 44, 11, cache, pickedIndices); //omni
+            RandomizeEndorsementLine(@"BioD_CitHub_240Vendors_LOC_INT.pcc", "cithub_vend_decor_d_S.en_us_player_m_cithub_vend_decor_d_00252280_m_wav", "cithub_vend_decor_d_S.en_us_player_f_cithub_vend_decor_d_00252280_f_wav", "cithub_vend_decor_d_D.cithub_vend_decor_d_dlg", 7, cache, pickedIndices); //sirta, i think?
+            RandomizeEndorsementLine(@"BioD_CitHub_300UpperWing_LOC_INT.pcc", "cithub_vend_sniper_d_S.en_us_player_m_cithub_vend_sniper_d_00253684_m_wav", "cithub_vend_sniper_d_S.en_us_player_f_cithub_vend_sniper_d_00253684_f_wav", "cithub_vend_sniper_d_d.cithub_vend_sniper_d_dlg", 18, cache, pickedIndices); // gun turian
+            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", "cithub_vend_biotic_d_S.en_us_player_m_cithub_vend_biotic_d_00249952_m_wav", "cithub_vend_biotic_d_S.en_us_player_f_cithub_vend_biotic_d_00249952_f_wav", "cithub_vend_biotic_d_D.cithub_vend_biotic_d_dlg", 8, cache, pickedIndices); //biotic
+            RandomizeEndorsementLine(@"BioD_CitHub_420LowerSouth_LOC_INT.pcc", "cithub_vend_omni_d_S.en_us_player_m_cithub_vend_omni_d_00253591_m_wav", "cithub_vend_omni_d_S.en_us_player_f_cithub_vend_omni_d_00253591_f_wav", "cithub_vend_omni_d_D.cithub_vend_omni_d_dlg", 11, cache, pickedIndices); //omni
         }
 
-        private static void RandomizeEndorsementLine(string packageName, string maleConvIFP, string femaleConvIFP, int conversationUIndex, int replyIdx, MERPackageCache cache, List<int> pickedIndices)
+        private static void RandomizeEndorsementLine(string packageName, string maleConvIFP, string femaleConvIFP, string conversationIFP, int replyIdx, MERPackageCache cache, List<int> pickedIndices)
         {
             var package = cache.GetCachedPackage(packageName);
 
-            var conversation = package.GetUExport(conversationUIndex);
+            var conversation = package.FindExport(conversationIFP);
             var replies = conversation.GetProperty<ArrayProperty<StructProperty>>("m_ReplyList");
 
-            var endorsementLineMale = package.GetUExport(maleUIndex);
-            var endorsementLineFemale = package.GetUExport(femaleUIndex);
+            var endorsementLineMale = package.FindExport(maleConvIFP);
+            var endorsementLineFemale = package.FindExport(femaleConvIFP);
 
             var replacementIndex = EndorsementCandidatesMale.RandomIndex();
             while (pickedIndices.Contains(replacementIndex))
@@ -99,12 +102,12 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             // Male
             var sourcePackage = cache.GetCachedPackage(maleReplacement.packageName);
-            var sourceExport = sourcePackage.GetUExport(maleReplacement.uindex);
+            var sourceExport = sourcePackage.FindExport(maleReplacement.ifp);
             WwiseTools.RepointWwiseStream(sourceExport, endorsementLineMale);
 
             // Female
             sourcePackage = cache.GetCachedPackage(femaleReplacement.packageName);
-            sourceExport = sourcePackage.GetUExport(femaleReplacement.uindex);
+            sourceExport = sourcePackage.FindExport(femaleReplacement.ifp);
             WwiseTools.RepointWwiseStream(sourceExport, endorsementLineFemale);
 
             // Update the TLK reference. Not sure how this works with FaceFX honestly (or if it does at all...)
@@ -114,7 +117,6 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 // Conversations srTExt seems to be used to tell what line to play. Not sure how.
                 // We can't change this or it will break the audio
-
 
                 var replyStruct = replies[replyIdx];
                 var uiStr = replyStruct.Properties.GetProp<StringRefProperty>("srText");
@@ -130,7 +132,6 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
 
             MERFileSystem.SavePackage(package);
-
         }
 
         // Works, but doesn't actually due to how FaceFX looks crap up
@@ -168,8 +169,10 @@ namespace Randomizer.Randomizers.Game2.Levels
         {
             RandomizeEndorsements(target);
             RandomizeThaneInterrogation(target);
-            RandomizeCouncilConvo(target);
-            RandomizeShepDance(target);
+            
+            // Implement once gesture system is reimplemented
+            //RandomizeCouncilConvo(target);
+            //RandomizeShepDance(target);
             return true;
         }
 
@@ -323,16 +326,17 @@ namespace Randomizer.Randomizers.Game2.Levels
             if (citHubTF != null)
             {
                 var citHubTP = MEPackageHandler.OpenMEPackage(citHubTF);
+                var citAslInterrogateSKM = citHubTP.FindExport("TheWorld.PersistentLevel.BioPawn_4.SkeletalMeshComponent_1733");
 
                 var newMdl = PackageTools.PortExportIntoPackage(target, citHubTP, lockedUpAsset.BodyAsset.GetAsset(target));
-                citHubTP.GetUExport(670).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
+                citAslInterrogateSKM.WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
                 if (!lockedUpAsset.KeepHead)
                 {
-                    citHubTP.GetUExport(671).RemoveProperty("SkeletalMesh");
+                    citHubTP.FindExport("TheWorld.PersistentLevel.BioPawn_4.SkeletalMeshComponent_68").RemoveProperty("SkeletalMesh");
                 }
                 if (lockedUpAsset.RemoveMaterials)
                 {
-                    citHubTP.GetUExport(670).RemoveProperty("Materials");
+                    citAslInterrogateSKM.RemoveProperty("Materials");
                 }
                 MERFileSystem.SavePackage(citHubTP);
             }
@@ -349,15 +353,16 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 var citHubTP = MEPackageHandler.OpenMEPackage(citHubASLTF);
 
+                var citAslLawyerSKM = citHubTP.FindExport("TheWorld.PersistentLevel.BioPawn_8.SkeletalMeshComponent_304");
                 var newMdl = PackageTools.PortExportIntoPackage(target, citHubTP, lawyerAsset.BodyAsset.GetAsset(target));
-                citHubTP.GetUExport(822).WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
+                citAslLawyerSKM.WriteProperty(new ObjectProperty(newMdl, "SkeletalMesh"));
                 if (!lawyerAsset.KeepHead)
                 {
-                    citHubTP.GetUExport(823).RemoveProperty("SkeletalMesh");
+                    citHubTP.FindExport("TheWorld.PersistentLevel.BioPawn_8.SkeletalMeshComponent_72").RemoveProperty("SkeletalMesh");
                 }
                 if (lawyerAsset.RemoveMaterials)
                 {
-                    citHubTP.GetUExport(822).RemoveProperty("Materials");
+                    citAslLawyerSKM.RemoveProperty("Materials");
                 }
                 MERFileSystem.SavePackage(citHubTP);
             }
@@ -386,6 +391,28 @@ namespace Randomizer.Randomizers.Game2.Levels
                     AssetPath = "BIOG_SCI_ARM_NKD_R.NKDa.SCI_ARM_NKDa_MDL"
                 },
             },
+            // Vorcha
+            new IlliumHub.DancerSource()
+            {
+                KeepHead = true,
+                RemoveMaterials = true,
+                BodyAsset = new IlliumHub.AssetSource()
+                {
+                    PackageFile = "BioD_N7BldInv2_100.pcc",
+                    AssetPath = "BIOG_ALN_TRO_NKD_R.NKDa.ALN_TRO_NKDa_MDL"
+                }
+            },
+            // Rat Monkey thing
+            new IlliumHub.DancerSource()
+            {
+                KeepHead = false,
+                RemoveMaterials = true,
+                BodyAsset = new IlliumHub.AssetSource()
+                {
+                    PackageFile = "BioP_KroHub.pcc",
+                    AssetPath = "BIOG_AMB_MON_NKD_R.NKDa.AMB_MON_NKDa_MDL"
+                }
+            }
         };
     }
 }
