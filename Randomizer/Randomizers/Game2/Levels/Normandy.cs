@@ -187,129 +187,53 @@ namespace Randomizer.Randomizers.Game2.Levels
             (new Vector3(160,3823,-479), new CIVector3(0,ThreadSafeRandom.Next(65535),0)),
         };
 
+        /// <summary>
+        /// Adds the burgers and plates to the nor250 level file
+        /// </summary>
+        /// <param name="nor250"></param>
+        /// <returns></returns>
+        private static List<ExportEntry> AddBurgersToLevel(IMEPackage nor250)
+        {
+            // LE2R: These are all precomputed in the file so we don't have to code this crap up again like ME2R
+            var world = nor250.FindExport("TheWorld.PersistentLevel");
+            var packageBin = MEREmbedded.GetEmbeddedPackage(MERFileSystem.Game, "Burger.Delux2go_EdmontonBurger.pcc");
+            var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(packageBin);
+
+            List<ExportEntry> portedActors = new List<ExportEntry>();
+            foreach (var meshActor in burgerPackage.Exports.Where(x => x.idxLink == 0 && x.ClassName is "SFXSkeletalMeshActor" or "StaticMeshActor"))
+            {
+                EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, meshActor,
+                    nor250, world, true, new RelinkerOptionsPackage(), out var portedActor);
+                portedActors.Add(portedActor as ExportEntry);
+            }
+
+            nor250.AddToLevelActorsIfNotThere(portedActors.ToArray());
+            return portedActors;
+        }
+
         private static void AddBurgersToCookingQuest(GameTarget target)
         {
             var cookingAreaF = MERFileSystem.GetPackageFile(target, "BioD_Nor_250Henchmen.pcc");
             if (cookingAreaF != null && File.Exists(cookingAreaF))
             {
                 var nor250Henchmen = MEPackageHandler.OpenMEPackage(cookingAreaF);
-
-                var packageBin = MEREmbedded.GetEmbeddedPackage(target.Game, "Delux2go_EdmontonBurger.pcc");
-                var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(packageBin);
-
-                List<ExportEntry> addedBurgers = new List<ExportEntry>();
-
-                // 1. Add the burger package by porting in the first skeletal mesh.
-                var world = nor250Henchmen.FindExport("TheWorld.PersistentLevel");
-                var firstBurgerSKM = PackageTools.PortExportIntoPackage(target, nor250Henchmen, burgerPackage.FindExport("BurgerSKMA"), world.UIndex, false);
-
-                // Setup the object for cloning, add to list of new actors
-                firstBurgerSKM.WriteProperty(new BoolProperty(true, "bHidden")); // Make burger hidden by default. It's unhidden in kismet
-                addedBurgers.Add(firstBurgerSKM);
-
-                // 1.5 Shrink the burger
-                // Look, everyone likes a thicc burger but this thing is the size
-                // of a barbie 4 wheeler
-                // I think it could use a small taking down a notch
-                var ds = firstBurgerSKM.GetProperty<FloatProperty>("DrawScale");
-                ds.Value = 0.0005f;
-                firstBurgerSKM.WriteProperty(ds);
-
-                // 2. Link up the textures
-                // ME2R OT/LE build now does this as package stored to make this simpler.
-                //TextureHandler.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Diff"), null);
-                //TextureHandler.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Norm"), null);
-                //TextureHandler.RandomizeExport(target, nor250Henchmen.FindExport("Edmonton_Burger_Delux2go.Textures.Burger_Spec"), null);
-
-                // 3. Clone 3 more burgers
-                addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
-                addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
-                addedBurgers.Add(EntryCloner.CloneTree(firstBurgerSKM));
-
-                // 4. Port in plates for the ones people are eating to sit on
-                var plateFile = MERFileSystem.GetPackageFile(target, "BioA_OmgHub800_Marketplace.pcc");
-                var platePackage = MEPackageHandler.OpenMEPackage(plateFile);
-                List<ExportEntry> plateExports = new List<ExportEntry>();
-                var plateSMA1 = PackageTools.PortExportIntoPackage(target, nor250Henchmen, platePackage.GetUExport(3280), world.UIndex, false);
-                plateSMA1.WriteProperty(new BoolProperty(true, "bHidden")); //make hidden by default
-
-                // Update the textures to remove that god awful original design and use something less ugly
-                var pNorm = nor250Henchmen.FindExport("BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_Norm");
-                var pDiff = nor250Henchmen.FindExport("BioAPL_Dec_PlatesCup_Ceramic.Materials.Plates_Diff");
-                pNorm.ObjectName = "Plates_NotUgly_Norm";
-                pDiff.ObjectName = "Plates_NotUgly_Diff";
-                TextureHandler.RandomizeExport(target, pDiff, null);
-                TextureHandler.RandomizeExport(target, pNorm, null);
-                
-                // We need to make dynamic lit - values are copied from another SMA in BioA_Nor_200. I don't know what the channels mean
-                var skmc = plateSMA1.GetProperty<ObjectProperty>("StaticMeshComponent").ResolveToEntry(world.FileRef) as ExportEntry;
-                var lc = skmc.GetProperty<StructProperty>("LightingChannels");
-                lc.Properties.Clear();
-                lc.Properties.Add(new BoolProperty(true, "bInitialized"));
-                lc.Properties.Add(new BoolProperty(true, new NameReference("Unnamed", 5))); //??
-                lc.Properties.Add(new BoolProperty(true, new NameReference("Unnamed", 7))); //??
-                skmc.WriteProperty(lc);
-                skmc.WriteProperty(new BoolProperty(false, "bForceDirectLightMap"));
-
-                plateExports.Add(plateSMA1);
-                plateExports.Add(EntryCloner.CloneTree(plateSMA1));
-                plateExports.Add(EntryCloner.CloneTree(plateSMA1));
+                var addedActors = AddBurgersToLevel(nor250Henchmen);
 
                 // 4. Setup the locations and rotations, setup the sequence object info
-                var toggleHiddenUnhide = nor250Henchmen.GetUExport(5734);
-                for (int i = 0; i < addedBurgers.Count; i++)
+                var cookSeq = nor250Henchmen.FindExport(@"TheWorld.PersistentLevel.Main_Sequence.Cook");
+                var toggleHiddenUnhide = nor250Henchmen.FindExport(@"TheWorld.PersistentLevel.Main_Sequence.Cook.SeqAct_ToggleHidden_0");
+                for (int i = 0; i < addedActors.Count; i++)
                 {
-                    var burger = addedBurgers[i];
-                    var lp = BurgerLocations[i];
-                    burger.WriteProperty(lp.loc.ToVectorStructProperty("Location"));
-                    burger.WriteProperty(lp.rot.ToRotatorStructProperty("Rotation"));
-
-                    // Add burger object to kismet unhide
-                    var cookSeq = nor250Henchmen.FindExport(@"TheWorld.PersistentLevel.Main_Sequence.Cook");
-
-
+                    // Add burger/plate objects to kismet unhide
                     var clonedSeqObj = SequenceObjectCreator.CreateSequenceObject(nor250Henchmen, "SeqVar_Object");
-                    clonedSeqObj.WriteProperty(new ObjectProperty(burger.UIndex, "ObjValue"));
+                    clonedSeqObj.WriteProperty(new ObjectProperty(addedActors[i].UIndex, "ObjValue"));
                     KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObj);
-
-                    if (i >= 1)
-                    {
-                        var plate = plateExports[i - 1];
-                        // Put the burger on the plate
-                        var pLoc = lp.loc;
-                        pLoc.Z -= 15; // Plate under burger
-                        plate.WriteProperty(lp.loc.ToVectorStructProperty("Location"));
-
-                        // Add plate object to kismet unhide
-                        var clonedSeqObjPlate = MERSeqTools.CloneBasicSequenceObject(nor250Henchmen.GetUExport(5970));
-                        clonedSeqObjPlate.WriteProperty(new ObjectProperty(plate.UIndex, "ObjValue"));
-                        KismetHelper.CreateVariableLink(toggleHiddenUnhide, "Target", clonedSeqObjPlate);
-                    }
+                    KismetHelper.AddObjectToSequence(clonedSeqObj, cookSeq);
                 }
 
                 // Add burgers to level
-                addedBurgers.AddRange(plateExports);
-                nor250Henchmen.AddToLevelActorsIfNotThere(addedBurgers.ToArray());
-
                 MERFileSystem.SavePackage(nor250Henchmen);
             }
-        }
-
-        private static void RandomizeTrashCompactor(GameTarget target)
-        {
-            var packageF = MERFileSystem.GetPackageFile(target, "BioA_Nor_310.pcc");
-            if (packageF != null && File.Exists(packageF))
-            {
-                var package = MEPackageHandler.OpenMEPackage(packageF);
-                if (package.TryGetUExport(2176, out var junkCube) && junkCube.ClassName == "SkeletalMesh")
-                {
-                    // We had to check the class name of the object cause it might be the vanilla version and not the HEN_VT one
-
-
-                    MERFileSystem.SavePackage(package);
-                }
-            }
-
         }
 
         private static void RandomizeNormandyHolo(GameTarget target)

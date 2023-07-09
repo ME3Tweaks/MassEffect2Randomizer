@@ -227,10 +227,10 @@ namespace Randomizer.Randomizers.Game2
 #if DEBUG
                         if (true
                         //&& false //uncomment to disable filtering
-                        && !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("EndGm", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("EndGm", StringComparison.InvariantCultureIgnoreCase)
+                        // && !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -422,7 +422,8 @@ namespace Randomizer.Randomizers.Game2
                     new RandomizationOption() {HumanName = "Eyes (excluding Illusive Man)",
                         Description="Changes the colors of eyes",
                         IsRecommended = true,
-                        PerformRandomizationOnExportDelegate = RSharedEyes.RandomizeExport,
+                        PerformSpecificRandomizationDelegate = RSharedEyes.Init,
+                        PerformRandomizationOnExportDelegate = RSharedEyes.RandomizeExport2,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe
                     },
                     new RandomizationOption() {HumanName = "Illusive Man eyes",

@@ -17,19 +17,54 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
 {
     class RSFXSkeletalMeshActorMAT
     {
-        private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject && exp.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject) && exp.ClassName == "SFXSkeletalMeshActorMAT" && !exp.ObjectName.Name.Contains("Dead", StringComparison.InvariantCultureIgnoreCase);
+        private static bool CanRandomize(ExportEntry exp) => !exp.IsDefaultObject &&
+                                                             exp.ClassName == "SFXSkeletalMeshActorMAT" &&
+                                                             !exp.ObjectName.Name.Contains("Dead",
+                                                                 StringComparison.InvariantCultureIgnoreCase);
 
         public static bool RandomizeBasicGestures(GameTarget target, ExportEntry export, RandomizationOption option)
         {
             if (!CanRandomize(export)) return false;
-            if (export.GetProperty<ObjectProperty>("SkeletalMeshComponent")?.ResolveToEntry(export.FileRef) is ExportEntry smc)
+            if (export.ObjectFlags.Has(UnrealFlags.EObjectFlags.ArchetypeObject))
+            {
+                return RandomizeArchetype(target, export);
+            }
+            else
+            {
+                return RandomizeInstance(export);
+            }
+
+            return false;
+        }
+
+        private static bool RandomizeInstance(ExportEntry export)
+        {
+            if (export.Archetype is ExportEntry archetype &&
+                archetype.ObjectFlags.HasFlag(UnrealFlags.EObjectFlags.DebugPostLoad))
+            {
+                var skmc = export.GetProperty<ObjectProperty>(@"SkeletalMeshComponent").ResolveToEntry(export.FileRef) as ExportEntry;
+                skmc?.RemoveProperty("AnimSets"); // Ensure AnimSets is not populated
+                skmc?.RemoveProperty("AnimTreeTemplate"); // Ensure AnimTreeTemplate is not populated
+            }
+
+            return true;
+        }
+
+        private static bool RandomizeArchetype(GameTarget target, ExportEntry export)
+        {
+            if (export.GetProperty<ObjectProperty>("SkeletalMeshComponent")?.ResolveToEntry(export.FileRef) is
+                ExportEntry smc)
             {
                 //Debug.WriteLine($"Installing new lite animations for {export.InstancedFullPath}");
                 var animsets = smc.GetProperty<ArrayProperty<ObjectProperty>>("AnimSets");
-                var animTreeTemplate = smc.GetProperty<ObjectProperty>("AnimTreeTemplate")?.ResolveToEntry(export.FileRef) as ExportEntry;
+                var animTreeTemplate =
+                    smc.GetProperty<ObjectProperty>("AnimTreeTemplate")?.ResolveToEntry(export.FileRef) as ExportEntry;
                 if (animsets != null && animTreeTemplate != null)
                 {
                     int numAnimationsSupported = 0;
+                    // Count the total number of animations this litepawn supported
+                    // before we modify it - look at the animsets and count the number of 
+                    // sequences in each animset and total them up
                     foreach (var animsetO in animsets)
                     {
                         var animset = animsetO.ResolveToEntry(export.FileRef) as ExportEntry;
@@ -37,20 +72,25 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                         numAnimationsSupported += sequences.Count;
                     }
 
-                    smc.RemoveProperty("AnimSets"); // We want to force new animations. we'll waste a bit of memory doing this but oh well
+                    smc.RemoveProperty(
+                        "AnimSets"); // We want to force new animations. we'll waste a bit of memory doing this but oh well
+
                     var installedGestures = new List<Gesture>();
                     var animationPackagesCache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
                     while (numAnimationsSupported > 0)
                     {
                         // should we make sure they're unique?
-                        
+
                         // Install gesture
-                        var randGest = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, export.FileRef, 2, filterKeywords: null, blacklistedKeywords: null, mainPackagesAllowed: null, includeSpecial: true);
-                        InstallDynamicAnimSetRefForSkeletalMesh(smc, randGest);
+                        var randGest = GestureManager.InstallRandomFilteredGestureAsset(target, export.FileRef, 2,
+                            filterKeywords: null, blacklistedKeywords: null, mainPackagesAllowed: null,
+                            includeSpecial: true);
+                        GestureManager.InstallDynamicAnimSetRefForSkeletalMesh(smc, randGest);
                         installedGestures.Add(randGest);
-                        
+
                         numAnimationsSupported--;
                     }
+
                     animationPackagesCache.ReleasePackages();
                     var isSubfile = PackageTools.IsLevelSubfile(Path.GetFileName(export.FileRef.FilePath));
                     if (isSubfile)
@@ -72,27 +112,33 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                     {
                         animTreeTemplate = EntryCloner.CloneTree(animTreeTemplate, true);
                         animTreeTemplate.ObjectName = export.FileRef.GetNextIndexedName("MER_AnimTree"); // New name
-                        smc.WriteProperty(new ObjectProperty(animTreeTemplate, "AnimTreeTemplate")); // Write the template back
+                        smc.WriteProperty(new ObjectProperty(animTreeTemplate,
+                            "AnimTreeTemplate")); // Write the template back
                     }
                     else if (isSubfile)
                     {
                         // if it's a subfile it won't be used as an import
                         // Let's rename this object
-                        animTreeTemplate.ObjectName = new NameReference("MER_AnimTree", ThreadSafeRandom.Next(200000000)); // New name
+                        animTreeTemplate.ObjectName =
+                            new NameReference("MER_AnimTree", ThreadSafeRandom.Next(200000000)); // New name
                     }
 
 
-                    var animNodeSequences = export.FileRef.Exports.Where(x => x.idxLink == animTreeTemplate.UIndex && x.IsA("AnimNodeSequence")).ToList();
+                    var animNodeSequences = export.FileRef.Exports
+                        .Where(x => x.idxLink == animTreeTemplate.UIndex && x.IsA("AnimNodeSequence")).ToList();
                     for (int i = 0; i < installedGestures.Count; i++)
                     {
                         var installedG = installedGestures[i];
                         var ans = animNodeSequences[i];
                         ans.WriteProperty(new NameProperty(installedG.GestureAnim, "AnimSeqName"));
                     }
+
                     animTreeTemplate.ObjectFlags |= UnrealFlags.EObjectFlags.DebugPostLoad; // Set as used
+                    export.ObjectFlags |= UnrealFlags.EObjectFlags.DebugPostLoad; // Set as modified - used for instances
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -120,59 +166,8 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 {
                     ri.Properties.AddOrReplaceProp(new FloatProperty(3, "BlendInTime"));
                 }
+
                 export.WriteProperty(randInfo);
-            }
-        }
-
-        private static void InstallDynamicAnimSetRefForSkeletalMesh(ExportEntry export, Gesture gesture)
-        {
-            // We have parent sequence data
-            var skmDynamicAnimSets = export.GetProperty<ArrayProperty<ObjectProperty>>("AnimSets") ?? new ArrayProperty<ObjectProperty>("AnimSets");
-
-            // Check to see if there is any item that uses our bioanimset
-            var bioAnimSet = gesture.GetBioAnimSet(export.FileRef, Game2Gestures.GestureSetNameToPackageExportName);
-            if (bioAnimSet != null)
-            {
-                ExportEntry skmBioDynamicAnimSet = null;
-                foreach (var skmDynAnimSet in skmDynamicAnimSets)
-                {
-                    var kEntry = skmDynAnimSet.ResolveToEntry(export.FileRef) as ExportEntry; // I don't think these can be imports as they're part of the seq
-                    var associatedset = kEntry.GetProperty<ObjectProperty>("m_pBioAnimSetData").ResolveToEntry(export.FileRef);
-                    if (associatedset == bioAnimSet)
-                    {
-                        // It's this one
-                        skmBioDynamicAnimSet = kEntry;
-                        break;
-                    }
-                }
-
-                if (skmBioDynamicAnimSet == null)
-                {
-                    // We need to generate a new one
-                    PropertyCollection props = new PropertyCollection();
-                    props.Add(new NameProperty(gesture.GestureSet, "m_nmOrigSetName"));
-                    props.Add(new ArrayProperty<ObjectProperty>("Sequences"));
-                    props.Add(new ObjectProperty(bioAnimSet, "m_pBioAnimSetData"));
-                    skmBioDynamicAnimSet = ExportCreator.CreateExport(export.FileRef, $"BioDynamicAnimSet", "BioDynamicAnimSet", export);
-
-                    // Write a blank count of 0 - we will update this in subsequent call
-                    // This must be here to ensure parser can read it
-                    skmBioDynamicAnimSet.WritePropertiesAndBinary(props, new byte[4]);
-                    skmDynamicAnimSets.Add(new ObjectProperty(skmBioDynamicAnimSet)); // Add new export to sequence's list of biodynamicanimsets
-                    export.WriteProperty(skmDynamicAnimSets);
-                }
-
-                var currentObjs = skmBioDynamicAnimSet.GetProperty<ArrayProperty<ObjectProperty>>("Sequences");
-                if (currentObjs.All(x => x.Value != gesture.Entry.UIndex))
-                {
-                    // We need to add our item to it
-                    currentObjs.Add(new ObjectProperty(gesture.Entry));
-                    var bin = ObjectBinary.From<BioDynamicAnimSet>(skmBioDynamicAnimSet);
-                    bin.SequenceNamesToUnkMap[gesture.GestureAnim] = 1; // Not sure what the value should be, or if game actually reads this
-                    // FIX IT IF WE EVER FIGURE IT OUT!
-                    skmBioDynamicAnimSet.WriteProperty(currentObjs);
-                    skmBioDynamicAnimSet.WriteBinary(bin);
-                }
             }
         }
     }

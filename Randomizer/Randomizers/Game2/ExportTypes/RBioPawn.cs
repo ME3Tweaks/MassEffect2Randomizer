@@ -17,7 +17,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
         /// <returns></returns>
         private static bool CanRandomize(ExportEntry export)
         {
-            if (!export.IsDefaultObject && !export.IsClass && export.IsA("BioPawn"))
+            if (!export.IsDefaultObject && !export.IsClass && !export.ObjectFlags.HasFlag(UnrealFlags.EObjectFlags.ArchetypeObject) && (export.IsA("BioPawn") || export.IsA("SFXSkeletalMeshActorMAT")))
             {
                 // BioPawn instance
                 var props = export.GetProperties();

@@ -127,13 +127,13 @@ namespace Randomizer.Randomizers.Game2.Levels
         {
             cache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
 
-            var danceGestureData = RBioEvtSysTrackGesture.GetGestures(danceTrackExp);
+            var danceGestureData = RBioEvtSysTrackGesture.GetSysTrackGestures(danceTrackExp);
             var newGestures = new List<Gesture>();
 
             int i = danceGestureData.Count + 1; // The default pose is the +1
             while (i > 0)
             {
-                newGestures.Add(RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, danceTrackExp.FileRef, 6, filterKeywords: danceKeywords, blacklistedKeywords: notDanceKeywords, mainPackagesAllowed: null, includeSpecial: true, cache: cache));
+                newGestures.Add(GestureManager.InstallRandomFilteredGestureAsset(target, danceTrackExp.FileRef, 6, filterKeywords: danceKeywords, blacklistedKeywords: notDanceKeywords, mainPackagesAllowed: null, includeSpecial: true, cache: cache));
                 i--;
             }
 
@@ -141,7 +141,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             {
                 danceGestureData[k] = newGestures.PullFirstItem();
             }
-            RBioEvtSysTrackGesture.WriteGestures(danceTrackExp, danceGestureData);
+            RBioEvtSysTrackGesture.WriteSysTrackGestures(danceTrackExp, danceGestureData);
 
             // Update the default pose
             RBioEvtSysTrackGesture.WriteDefaultPose(danceTrackExp, newGestures.PullFirstItem());

@@ -31,6 +31,12 @@ namespace Randomizer.MER
         /// </summary>
         private bool PreventSaves;
 
+        /// <summary>
+        /// Creates a tiered cache for the specified target with the parent cache to look into if necessary
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="parent"></param>
+        /// <param name="preventSaves"></param>
         public MERPackageCache(GameTarget target, MERPackageCache parent, bool preventSaves)
         {
             Target = target;

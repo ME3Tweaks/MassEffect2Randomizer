@@ -326,6 +326,12 @@ namespace RandomizerUI
 
         private async void StartRandomization()
         {
+            if (MERUtilities.IsGameRunning(SelectedTarget.Game))
+            {
+                await this.ShowMessageAsync($"{SelectedTarget.Game.ToGameName()} is running", $"Cannot randomize the game while {SelectedTarget.Game.ToGameName()} is running. Please close the game and try again.");
+                return;
+            }
+
             var modPath = MERFileSystem.GetDLCModPath(SelectedTarget);
             var backupStatus = BackupService.GetBackupStatus(SelectedTarget.Game);
             if (!backupStatus.BackedUp && !Directory.Exists(modPath))

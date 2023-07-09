@@ -5,10 +5,12 @@ using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
 using LegendaryExplorerCore.Unreal;
+using ME3TweaksCore.Objects;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
 using Randomizer.Randomizers.Game2.ExportTypes;
 using Randomizer.Randomizers.Handlers;
+using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 using Randomizer.Shared;
 
@@ -169,10 +171,11 @@ namespace Randomizer.Randomizers.Game2.Levels
         {
             RandomizeEndorsements(target);
             RandomizeThaneInterrogation(target);
-            
+
+            RandomizeCouncilConvo(target);
+
             // Implement once gesture system is reimplemented
-            //RandomizeCouncilConvo(target);
-            //RandomizeShepDance(target);
+            // RandomizeShepDance(target);
             return true;
         }
 
@@ -245,16 +248,21 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         private static void RandomizeCouncilConvo(GameTarget target)
         {
-            var embassyF = MERFileSystem.GetPackageFile(target, "BioD_CitHub_Embassy_LOC_INT.pcc");
-            if (embassyF != null)
+            var langs = GameLanguage.GetLanguagesForGame(target.Game);
+            foreach (var lang in langs)
             {
-                var embassyInt = MEPackageHandler.OpenMEPackage(embassyF);
-                MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
+                // Modify each localized version
+                var embassyF = MERFileSystem.GetPackageFile(target, $"BioD_CitHub_Embassy_LOC_{lang.FileCode}.pcc");
+                if (embassyF != null)
+                {
+                    var embassyInt = MEPackageHandler.OpenMEPackage(embassyF);
+                    MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
 
-                var convoE = embassyInt.GetUExport(94);
-                RandomizeCouncilConvoSingle(target, convoE, cache);
+                    var convoE = embassyInt.FindExport("citprs_council_d_D.citprs_council_d_dlg");
+                    RandomizeCouncilConvoSingle(target, convoE, cache);
 
-                MERFileSystem.SavePackage(embassyInt);
+                    MERFileSystem.SavePackage(embassyInt);
+                }
             }
         }
 
@@ -287,24 +295,24 @@ namespace Randomizer.Randomizers.Game2.Levels
                         {
                             var actorToFind = gestTrack.Export.GetProperty<NameProperty>("m_nmFindActor");
 
-                            if (actorToFind.Value.Name.EndsWith("_council"))
+                            //if (actorToFind.Value.Name.EndsWith("_council"))
                             {
-                                var gestures = RBioEvtSysTrackGesture.GetGestures(gestTrack.Export);
+                                var gestures = RBioEvtSysTrackGesture.GetSysTrackGestures(gestTrack.Export);
                                 if (gestures != null)
                                 {
                                     for (int i = 0; i < gestures.Count; i++)
                                     {
-                                        var newGesture = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
+                                        var newGesture = GestureManager.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
                                         gestures[i] = newGesture;
                                     }
 
-                                    RBioEvtSysTrackGesture.WriteGestures(gestTrack.Export, gestures);
+                                    RBioEvtSysTrackGesture.WriteSysTrackGestures(gestTrack.Export, gestures);
                                 }
 
                                 var defaultPose = RBioEvtSysTrackGesture.GetDefaultPose(gestTrack.Export);
                                 if (defaultPose != null)
                                 {
-                                    var newPose = RBioEvtSysTrackGesture.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
+                                    var newPose = GestureManager.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
                                     if (newPose != null)
                                     {
                                         RBioEvtSysTrackGesture.WriteDefaultPose(gestTrack.Export, newPose);
@@ -316,6 +324,8 @@ namespace Randomizer.Randomizers.Game2.Levels
                 }
             }
         }
+
+
 
 
         private static void RandomizeThaneInterrogation(GameTarget target)

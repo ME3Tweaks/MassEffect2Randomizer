@@ -10,6 +10,7 @@ using LegendaryExplorerCore.Coalesced;
 using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.TLK.ME1;
+using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using Randomizer.Randomizers;
 
@@ -288,6 +289,33 @@ namespace Randomizer.MER
             ms = new MemoryStream();
             stream.CopyTo(ms);
             return ms.ToArray();
+        }
+    }
+
+    public static class ObjectPropertyExtensions
+    {
+        /// <summary>
+        /// Resolves this object reference to its export entry. Returns null if its not an export.
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="pcc"></param>
+        /// <returns></returns>
+        public static ExportEntry ResolveToExport(this ObjectProperty property, IMEPackage pcc)
+        {
+            return property.ResolveToEntry(pcc) as ExportEntry;
+        }
+    }
+
+    public static class ExportExtensions
+    {
+        /// <summary>
+        /// Returns if this export is an archetype object or not
+        /// </summary>
+        /// <param name="export"></param>
+        /// <returns></returns>
+        public static bool IsArchetype(this ExportEntry export)
+        {
+            return export.ObjectFlags.HasFlag(UnrealFlags.EObjectFlags.ArchetypeObject);
         }
     }
 }

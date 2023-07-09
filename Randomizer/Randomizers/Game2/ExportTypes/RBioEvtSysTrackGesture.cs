@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using LegendaryExplorerCore.Kismet;
@@ -19,58 +20,23 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
     /// </summary>
     class RBioEvtSysTrackGesture
     {
-        public static Gesture InstallRandomGestureAsset(GameTarget target, IMEPackage package, float minSequenceLength = 0, MERPackageCache cache = null)
+        /// <summary>
+        /// Gets the gestures used by the BioEvtSysTrack export
+        /// </summary>
+        /// <param name="sysTrack"></param>
+        /// <returns></returns>
+        public static List<Gesture> GetSysTrackGestures(ExportEntry sysTrack)
         {
-            var gestureFiles = MERUtilities.ListStaticAssets("binary.gestures");
-            var randGestureFile = gestureFiles.RandomElement();
-            cache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
-            var gPackage = cache.GetCachedPackageEmbedded(target.Game, randGestureFile); // NEEDS FIXED! It is a full path
-            var options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
-
-            // Pick a random element, make sure it's long enough
-            var randomGestureExport = options.RandomElement();
-            var seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-
-            int numRetries = 5;
-            while (seqLength < minSequenceLength)
-            {
-                randomGestureExport = options.RandomElement();
-                seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-                numRetries--;
-            }
-
-            var portedInExp = PackageTools.PortExportIntoPackage(target, package, randomGestureExport);
-
-            return new Gesture(portedInExp);
-        }
-
-
-        public static void DebugS()
-        {
-            // Gesture data output
-            //var p = MEPackageHandler.OpenMEPackage(MERFileSystem.GetPackageFile("SFXGame.pcc"));
-            //var rtd = ObjectBinary.From<BioGestureRuntimeData>(p.GetUExport(35297));
-            //foreach (var d in rtd.m_mapAnimSetOwners)
-            //{
-            //    Debug.WriteLine($"{{\"{d.Key}\", \"{d.Value}\"}},");
-            //}
-
-            // Build 
-            //im
-        }
-
-        public static List<Gesture> GetGestures(ExportEntry export)
-        {
-            var gestures = export.GetProperty<ArrayProperty<StructProperty>>("m_aGestures");
+            var gestures = sysTrack.GetProperty<ArrayProperty<StructProperty>>("m_aGestures");
             return gestures?.Select(x => new Gesture(x)).ToList();
         }
 
         /// <summary>
-        /// Writes the list of gestures to the export, then looks up the parent path to find the sequence's biodynamicanim sets and ensures the values are in them. Does not support adding additional items
+        /// Writes the list of gestures to the sysTrack, then looks up the parent path to find the sequence's biodynamicanim sets and ensures the values are in them. Does not support adding additional items
         /// </summary>
         /// <param name="export"></param>
         /// <param name="gestures"></param>
-        public static void WriteGestures(ExportEntry export, List<Gesture> gesturesToWrite)
+        public static void WriteSysTrackGestures(ExportEntry export, List<Gesture> gesturesToWrite)
         {
             var gestures = export.GetProperty<ArrayProperty<StructProperty>>("m_aGestures");
             if (gestures.Count != gesturesToWrite.Count)
@@ -85,15 +51,36 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                 var ngesture = gesturesToWrite[i];
                 gesture.Properties.AddOrReplaceProp(new NameProperty(ngesture.GestureSet, "nmGestureSet"));
                 gesture.Properties.AddOrReplaceProp(new NameProperty(ngesture.GestureAnim, "nmGestureAnim"));
-                InstallDynamicAnimSetRefForSeq(ref owningSequence, export, ngesture);
+                InstallDynamicAnimSetRefForKismet(ref owningSequence, export, ngesture);
             }
 
             export.WriteProperty(gestures);
         }
+
+        public static Gesture GetDefaultPose(ExportEntry export)
+        {
+            var props = export.GetProperties();
+            return new Gesture()
+            {
+                GestureAnim = props.GetProp<NameProperty>("nmStartingPoseSet").Value,
+                GestureSet = props.GetProp<NameProperty>("nmStartingPoseSet").Value,
+            };
+        }
+
+        public static void WriteDefaultPose(ExportEntry export, Gesture newPose)
+        {
+            var props = export.GetProperties();
+            props.AddOrReplaceProp(new NameProperty(newPose.GestureSet, "nmStartingPoseSet"));
+            props.AddOrReplaceProp(new NameProperty(newPose.GestureAnim, "nmStartingPoseAnim"));
+            export.WriteProperties(props);
+            ExportEntry owningSeq = null;
+            InstallDynamicAnimSetRefForKismet(ref owningSeq, export, newPose);
+        }
+
         /*
         private static void VerifyGesturesWork(ExportEntry trackExport)
         {
-            var gestures = RBioEvtSysTrackGesture.GetGestures(trackExport);
+            var gestures = RBioEvtSysTrackGesture.GetSysTrackGestures(trackExport);
             var defaultPose = RBioEvtSysTrackGesture.GetDefaultPose(trackExport);
 
             var gesturesToCheck = gestures.Append(defaultPose).ToList();
@@ -152,13 +139,15 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
             }
         }
         */
-        private static void InstallDynamicAnimSetRefForSeq(ref ExportEntry owningSequence, ExportEntry export, Gesture gesture)
+        private static void InstallDynamicAnimSetRefForKismet(ref ExportEntry owningSequence, ExportEntry export, Gesture gesture)
         {
             // Find owning sequence
             if (owningSequence == null)
                 owningSequence = export;
             while (owningSequence.ClassName != "Sequence")
             {
+                //owningSequence = SeqTools.GetParentSequence(owningSequence);
+
                 owningSequence = owningSequence.Parent as ExportEntry;
                 var parSeq = SeqTools.GetParentSequence(owningSequence);
                 if (parSeq != null)
@@ -172,7 +161,7 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                                      ?? new ArrayProperty<ObjectProperty>("m_aBioDynamicAnimSets");
 
             // Check to see if there is any item that uses our bioanimset
-            var bioAnimSet = gesture.GetBioAnimSet(export.FileRef, Game2Gestures.GestureSetNameToPackageExportName);
+            var bioAnimSet = GestureManager.GetBioAnimSet(gesture, export.FileRef);
             if (bioAnimSet != null)
             {
                 ExportEntry kismetBDAS = null;
@@ -217,123 +206,6 @@ namespace Randomizer.Randomizers.Game2.ExportTypes
                     kismetBDAS.WriteBinary(bin);
                 }
             }
-        }
-
-        public static string GetPackageExportNameForGestureSet(string gestureset)
-        {
-            Game2Gestures.GestureSetNameToPackageExportName.TryGetValue(gestureset, out var res);
-            return res;
-        }
-
-        public static bool IsGesturePackage(string packagename)
-        {
-            return Game2Gestures.GestureSetNameToPackageExportName.Values.Any(x => x == packagename);
-        }
-
-
-        public static void WriteDefaultPose(ExportEntry export, Gesture newPose)
-        {
-            var props = export.GetProperties();
-            props.AddOrReplaceProp(new NameProperty(newPose.GestureSet, "nmStartingPoseSet"));
-            props.AddOrReplaceProp(new NameProperty(newPose.GestureAnim, "nmStartingPoseAnim"));
-            export.WriteProperties(props);
-            ExportEntry owningSeq = null;
-            InstallDynamicAnimSetRefForSeq(ref owningSeq, export, newPose);
-        }
-
-        public static Gesture GetDefaultPose(ExportEntry export)
-        {
-            var props = export.GetProperties();
-            return new Gesture()
-            {
-                GestureAnim = props.GetProp<NameProperty>("nmStartingPoseSet").Value,
-                GestureSet = props.GetProp<NameProperty>("nmStartingPoseSet").Value,
-            };
-        }
-
-
-
-
-        public static Gesture InstallRandomFilteredGestureAsset(GameTarget target, IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
-        {
-            var gestureFiles = MERUtilities.ListStaticPackageAssets(target, "Gestures", false, true);
-
-            // Special and package file filtering
-            if (mainPackagesAllowed != null)
-            {
-                var newList = new List<string>();
-                foreach (var gf in gestureFiles)
-                {
-                    if (includeSpecial && gf.Contains("gestures.special."))
-                    {
-                        newList.Add(gf);
-                        continue;
-                    }
-
-                    var packageName = Path.GetFileNameWithoutExtension(MEREmbedded.GetFilenameFromAssetName(gf));
-                    if (mainPackagesAllowed.Contains(packageName))
-                    {
-                        newList.Add(gf);
-                        continue;
-                    }
-                }
-
-                gestureFiles = newList;
-            }
-
-            // Pick a random package
-            var randGestureFile = gestureFiles.RandomElement();
-            var hasCache = cache != null;
-            cache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
-            var gPackage = cache.GetCachedPackageEmbedded(target.Game, $"Gestures.{MEREmbedded.GetFilenameFromAssetName(randGestureFile)}"); // NEEDS FIXED! It's a full path
-            List<ExportEntry> options;
-            if (filterKeywords != null && blacklistedKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)
-                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
-            }
-            else if (filterKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)).ToList();
-            }
-            else if (blacklistedKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
-            }
-            else
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
-            }
-
-            if (options.Any())
-            {
-                // Pick a random element
-                var randomGestureExport = options.RandomElement();
-
-                // Filter it out if we cannot use it
-                var seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-
-                int numRetries = 7;
-                while (seqLength < minLength && numRetries >= 0)
-                {
-                    randomGestureExport = options.RandomElement();
-                    seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-                    numRetries--;
-                }
-
-                var portedInExp = PackageTools.PortExportIntoPackage(target, targetPackage, randomGestureExport);
-                if (!hasCache)
-                {
-                    cache.ReleasePackages();
-                }
-
-                return new Gesture(portedInExp);
-            }
-
-            return null;
         }
     }
 }

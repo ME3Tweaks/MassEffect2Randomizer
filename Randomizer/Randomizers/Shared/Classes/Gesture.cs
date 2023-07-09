@@ -8,9 +8,6 @@ using LegendaryExplorerCore.Unreal;
 
 namespace Randomizer.Randomizers.Shared.Classes
 {
-    // Old code maybe?
-
-
     public class Gesture
     {
         public string GestureSet { get; set; }
@@ -30,7 +27,6 @@ namespace Randomizer.Randomizers.Shared.Classes
             GestureAnim = export.GetProperty<NameProperty>("SequenceName").Value;
             GestureSet = export.ObjectName.Name.Substring(0, export.ObjectName.Instanced.Length - GestureAnim.Instanced.Length - 1); // -1 for _
             Entry = export;
-
         }
 
         public Gesture() { }
@@ -60,6 +56,8 @@ namespace Randomizer.Randomizers.Shared.Classes
             if (Entry != null) return true;
             if (GestureSetNameToPackageExportName.TryGetValue(GestureSet, out var pName))
             {
+                // This is how game does internal lookup of export names
+                // its why export names are very important when doing animations!!
                 Entry = exportFileRef.FindEntry($"{pName}.{GestureSet}_{GestureAnim}");
                 return Entry != null;
             }
