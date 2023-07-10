@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using LegendaryExplorerCore.Unreal.Collections;
 using Randomizer.Randomizers.Utility;
-using Randomizer.Randomizers.Game2.Misc;
 
 namespace Randomizer.Randomizers.Shared.Classes
 {
@@ -407,7 +406,15 @@ namespace Randomizer.Randomizers.Shared.Classes
             var skmDynamicAnimSets = skelMeshComp.GetProperty<ArrayProperty<ObjectProperty>>("AnimSets") ?? new ArrayProperty<ObjectProperty>("AnimSets");
 
             // Check to see if there is any item that uses our bioanimset
+#if __GAME1__
+            IEntry bioAnimSet = null; // This needs worked out because we don't have a package mapping for this game
+            throw new NotImplementedException();
+
+#elif __GAME2__
             var bioAnimSet = gesture.GetBioAnimSet(skelMeshComp.FileRef, Game2Gestures.GestureSetNameToPackageExportName);
+#elif __GAME3__
+            var bioAnimSet = gesture.GetBioAnimSet(skelMeshComp.FileRef, Game3Gestures.GestureSetNameToPackageExportName);
+#endif
             if (bioAnimSet != null)
             {
                 ExportEntry skmBioDynamicAnimSet = null;
