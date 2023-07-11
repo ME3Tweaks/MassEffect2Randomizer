@@ -26,12 +26,15 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry InstallRandomSwitchIntoSequence(GameTarget target, ExportEntry sequence, int numLinks)
         {
-            var packageBin = MEREmbedded.GetEmbeddedPackage(target.Game, "PremadeSeqObjs.pcc");
-            var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(packageBin);
-
-            // 1. Add the switch object and link it to the sequence
-            var nSwitch = PackageTools.PortExportIntoPackage(target, sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false, true);
+            var nSwitch = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_RandomSwitch", new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true));
             KismetHelper.AddObjectToSequence(nSwitch, sequence);
+            var properties = nSwitch.GetProperties();
+            //    var packageBin = MEREmbedded.GetEmbeddedPackage(target.Game, "PremadeSeqObjs.pcc");
+            //    var premadeObjsP = MEPackageHandler.OpenMEPackageFromStream(packageBin);
+
+            //    // 1. Add the switch object and link it to the sequence
+            //    var nSwitch = PackageTools.PortExportIntoPackage(target, sequence.FileRef, premadeObjsP.FindExport("SeqAct_RandomSwitch_0"), sequence.UIndex, false, true);
+            //    KismetHelper.AddObjectToSequence(nSwitch, sequence);
 
             // 2. Generate the output links array. We will refresh the properties
             // with new structs so we don't have to make a copy constructor
@@ -40,6 +43,7 @@ namespace Randomizer.Shared
             {
                 olinks.Add(olinks[0]); // Just add a bunch of the first link
             }
+
             nSwitch.WriteProperty(olinks);
 
             // Reload the olinks with unique structs now
@@ -51,6 +55,7 @@ namespace Randomizer.Shared
 
             nSwitch.WriteProperty(olinks);
             nSwitch.WriteProperty(new IntProperty(numLinks, "LinkCount"));
+
             return nSwitch;
         }
 
@@ -135,7 +140,7 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry CloneBasicSequenceObject(ExportEntry itemToClone)
         {
-            ExportEntry exp = itemToClone.Clone();
+            ExportEntry exp = EntryCloner.CloneEntry(itemToClone);
             //needs to have the same index to work properly
             if (exp.ClassName == "SeqVar_External")
             {
@@ -359,6 +364,13 @@ namespace Randomizer.Shared
         {
             parentSequence ??= targetPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence");
             EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceSequence, targetPackage, parentSequence, true, new RelinkerOptionsPackage(), out var newUiSeq);
+            var expCount = targetPackage.Exports.Count(x => x.InstancedFullPath == newUiSeq.InstancedFullPath);
+            if (expCount > 1)
+            {
+                // update the index
+                newUiSeq.ObjectName = targetPackage.GetNextIndexedName(sourceSequence.ObjectName.Name);
+            }
+
             KismetHelper.AddObjectToSequence(newUiSeq as ExportEntry, parentSequence);
             return newUiSeq as ExportEntry;
         }
@@ -375,6 +387,69 @@ namespace Randomizer.Shared
             KismetHelper.AddObjectToSequence(newDelay, sequence);
             newDelay.WriteProperty(new FloatProperty(delay, "Duration"));
             return newDelay;
+        }
+
+#if __GAME2__
+        public static ExportEntry InstallMakeItCreepySingle(ExportEntry sourcePawnObj, ExportEntry destPawnObj)
+        {
+            var sequence = SeqTools.GetParentSequence(sourcePawnObj);
+            var creepyPrefab = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(MEGame.LE2, "SeqPrefabs.MakeItCreepy.pcc"), @"MakeItCreepy.pcc");
+            var creepySeq = creepyPrefab.FindExport("MakeItCreepyInput");
+
+            var newSeq = MERSeqTools.InstallSequenceStandalone(creepySeq, sequence.FileRef, sequence);
+            KismetHelper.CreateVariableLink(newSeq, "SourceActor", sourcePawnObj);
+            KismetHelper.CreateVariableLink(newSeq, "TargetActor", destPawnObj);
+
+            return newSeq;
+        }
+#endif
+        /// <summary>
+        /// Creates a player object in the given sequence
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="returnsPawns"></param>
+        /// <returns></returns>
+        public static ExportEntry CreatePlayerObject(ExportEntry sequence, bool returnsPawns)
+        {
+            var player = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Player");
+            if (returnsPawns)
+            {
+                player.WriteProperty(new BoolProperty(true, "bReturnPawns"));
+            }
+            KismetHelper.AddObjectToSequence(player, sequence);
+            return player;
+        }
+
+        /// <summary>
+        /// Creates a SeqAct_ConsoleCommand that executes the command on a player object
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="consoleCommand"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateConsoleCommandObject(ExportEntry sequence, string consoleCommand)
+        {
+            var player = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Player");
+            var consoleCommandObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_ConsoleCommand");
+            var ap = new ArrayProperty<StrProperty>("Commands");
+            ap.Add(consoleCommand);
+            consoleCommandObj.WriteProperty(ap);
+            KismetHelper.CreateVariableLink(consoleCommandObj, "Target", player);
+            KismetHelper.AddObjectsToSequence(sequence, false, player, consoleCommandObj);
+            return consoleCommandObj;
+        }
+
+        /// <summary>
+        /// Creates a new SeqAct_ActivateRemoteEvent with the specified event name
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="eventName"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateActivateRemoteEvent(ExportEntry sequence, string eventName)
+        {
+            var rmEvt = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_ActivateRemoteEvent");
+            rmEvt.WriteProperty(new NameProperty(eventName, "EventName"));
+            KismetHelper.AddObjectsToSequence(sequence, false, rmEvt);
+            return rmEvt;
         }
     }
 }

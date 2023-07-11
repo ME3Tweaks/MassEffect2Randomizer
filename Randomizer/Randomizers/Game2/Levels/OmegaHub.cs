@@ -133,7 +133,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             int i = danceGestureData.Count + 1; // The default pose is the +1
             while (i > 0)
             {
-                newGestures.Add(GestureManager.InstallRandomFilteredGestureAsset(target, danceTrackExp.FileRef, 6, filterKeywords: danceKeywords, blacklistedKeywords: notDanceKeywords, mainPackagesAllowed: null, includeSpecial: true, cache: cache));
+                newGestures.Add(GestureManager.InstallRandomFilteredGestureAsset(target, danceTrackExp.FileRef, 6, filterKeywords: danceKeywords, blacklistedKeywords: notDanceKeywords, mainPackagesAllowed: null, includeSpecial: true));
                 i--;
             }
 

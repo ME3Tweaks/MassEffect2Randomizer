@@ -28,11 +28,21 @@ namespace Randomizer.MER
             return export.FileRef.GetUExport(ObjectBinary.From<UClass>(export).Defaults);
         }
 
+        /// <summary>
+        /// Gets the Level object from this file
+        /// </summary>
+        /// <param name="package"></param>
+        /// <returns></returns>
         public static ExportEntry GetLevel(this IMEPackage package)
         {
             return package.FindExport("TheWorld.PersistentLevel");
         }
 
+        /// <summary>
+        /// Gets thte binary of the level from this package
+        /// </summary>
+        /// <param name="package"></param>
+        /// <returns></returns>
         public static Level GetLevelBinary(this IMEPackage package)
         {
             var level = GetLevel(package);
@@ -41,6 +51,11 @@ namespace Randomizer.MER
             return null;
         }
 
+        /// <summary>
+        /// Gets the list of actors in the level. Skips null entries.
+        /// </summary>
+        /// <param name="package"></param>
+        /// <returns></returns>
         public static List<ExportEntry> GetLevelActors(this IMEPackage package)
         {
             var levelBin = GetLevelBinary(package);
@@ -237,7 +252,20 @@ namespace Randomizer.MER
 
             var index = keys.RandomIndex();
             return new KeyValuePair<TKey, TValue>(keys[index], values[index]);
+        }
 
+        /// <summary>
+        /// Returns a random value from the dictionary
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="dict"></param>
+        /// <returns></returns>
+        public static TValue RandomValue<TKey, TValue>(this IDictionary<TKey, TValue> dict)
+        {
+            var keys = dict.Keys.ToList();
+            var index = keys.RandomElement();
+            return dict[index];
         }
     }
 

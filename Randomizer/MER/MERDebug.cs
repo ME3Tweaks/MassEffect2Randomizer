@@ -306,7 +306,7 @@ namespace Randomizer.MER
             {
                 //if (powerExport.ObjectName.Name == "SFXPower_Flashbang_NPC")
                 //    Debugger.Break();
-                var pi = new EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
+                var pi = new Randomizer.Randomizers.Game2.Enemy.EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
                 //if ((pi.RequiresStartupPackage && !pi.PackageFileName.StartsWith("SFX")))
                 //{
                 //    // We do not allow startup files that have levels
