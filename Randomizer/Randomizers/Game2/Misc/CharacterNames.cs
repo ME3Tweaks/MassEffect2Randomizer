@@ -68,20 +68,21 @@ namespace Randomizer.Randomizers.Game2.Misc
                 var cellBLock3F = MERFileSystem.GetPackageFile(target, "BioD_PrsCvA_103CellBlock03.pcc");
                 if (cellBLock3F != null)
                 {
-                    var cellBlock3P = MEPackageHandler.OpenMEPackage(cellBLock3F);
+                    var cellBlock3P = MERFileSystem.OpenMEPackage(cellBLock3F);
 
                     // Clone the turianguard pawn type so we can change the name, maybe something else if we want
-                    var newGuardBPCST = EntryCloner.CloneTree(cellBlock3P.GetUExport(701), true);
+                    // ME2R this was a BioPawnChallengeScaledType; now it is just BioPawnType, LE2 killed off the subclass
+                    var newGuardBPCST = EntryCloner.CloneTree(cellBlock3P.FindExport("BIOChar_PrsCvA.Ambient_pawns.AMB_TurianGuard"), true);
                     newGuardBPCST.ObjectName = "MER_NamedBeatGuard";
                     newGuardBPCST.WriteProperty(new StringRefProperty(BeatPrisonerGuardTLKID, "ActorGameNameStrRef"));
-                    cellBlock3P.GetUExport(668).WriteProperty(new ObjectProperty(newGuardBPCST, "ActorType"));
+                    cellBlock3P.FindExport("TheWorld.PersistentLevel.BioPawn_9").WriteProperty(new ObjectProperty(newGuardBPCST, "ActorType"));
 
                     // Change shown name for the prisoner
-                    cellBlock3P.GetUExport(699).WriteProperty(new StringRefProperty(BeatPrisonerTLKID, "ActorGameNameStrRef"));
+                    cellBlock3P.FindExport("biochar_prscva.Ambient_pawns.AMB_Beaten_Prisoner").WriteProperty(new StringRefProperty(BeatPrisonerTLKID, "ActorGameNameStrRef"));
 
                     // Make the two people 'selectable' so they show up with names
-                    cellBlock3P.GetUExport(682).RemoveProperty("m_bTargetableOverride"); // guard
-                    cellBlock3P.GetUExport(677).RemoveProperty("m_bTargetableOverride"); // prisoner
+                    cellBlock3P.FindExport("TheWorld.PersistentLevel.BioPawn_9.BioPawnBehavior_11").RemoveProperty("m_bTargetableOverride"); // guard
+                    cellBlock3P.FindExport("TheWorld.PersistentLevel.BioPawn_4.BioPawnBehavior_22").RemoveProperty("m_bTargetableOverride"); // prisoner
 
                     MERFileSystem.SavePackage(cellBlock3P);
                 }
@@ -188,8 +189,9 @@ namespace Randomizer.Randomizers.Game2.Misc
                 var tlkId = InstallName();
                 if (tlkId != 0)
                 {
-                    beachPathP.GetUExport(700).WriteProperty(new StringRefProperty(tlkId, "ActorGameNameStrRef"));
-                    beachPathP.GetUExport(700).ObjectName = "survivor_female_MER";
+                    var archetype = beachPathP.FindExport("BioChar_BchLmL.bchlml_female_villager4");
+                    archetype.WriteProperty(new StringRefProperty(tlkId, "ActorGameNameStrRef"));
+                    archetype.ObjectName = "survivor_female_MER";
                     MERFileSystem.SavePackage(beachPathP);
                 }
             }

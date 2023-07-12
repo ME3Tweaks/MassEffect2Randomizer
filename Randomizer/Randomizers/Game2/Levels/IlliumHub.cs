@@ -228,9 +228,9 @@ namespace Randomizer.Randomizers.Game2.Levels
             var loungeF = MERFileSystem.GetPackageFile(target, "BioD_TwrHub_202Lounge.pcc");
             if (loungeF != null && File.Exists(loungeF))
             {
-                var package = MEPackageHandler.OpenMEPackage(loungeF);
-                var bodySM = package.GetUExport(4509);
-                var headSM = package.GetUExport(2778);
+                var package = MERFileSystem.OpenMEPackage(loungeF);
+                var bodySM = package.FindExport("BioChar_LitePawns.Skel_Asaris.Skel_Asaris_SexyKneeling03.SkeletalMeshComponent0");
+                var headSM = package.FindExport("BioChar_LitePawns.Skel_Asaris.Skel_Asaris_SexyKneeling03.HeadMesh0");
 
                 // Install new head and body assets
                 var newInfo = DancerOptions.RandomElement();
@@ -263,11 +263,11 @@ namespace Randomizer.Randomizers.Game2.Levels
                         Y = newInfo.DrawScale,
                         Z = newInfo.DrawScale,
                     };
-                    package.GetUExport(619).WriteProperty(ds.ToLocationStructProperty("DrawScale3D")); //hack
+                    (bodySM.Parent as ExportEntry).WriteProperty(ds.ToLocationStructProperty("DrawScale3D")); //hack
                 }
 
                 // Install any updates to locations/rotations
-                var dancerInstance = package.GetUExport(4510); // contains location data for dancer which may need to be slightly adjusted
+                var dancerInstance = package.FindExport("TheWorld.PersistentLevel.SFXSkeletalMeshActorMAT_0"); // contains location data for dancer which may need to be slightly adjusted
                 if (newInfo.Location != null)
                 {
                     dancerInstance.WriteProperty(newInfo.Location.ToLocationStructProperty("Location"));
