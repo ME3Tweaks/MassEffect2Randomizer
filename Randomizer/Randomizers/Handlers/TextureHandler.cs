@@ -52,7 +52,7 @@ namespace Randomizer.Randomizers.Handlers
             var tfcStream = MEREmbedded.GetEmbeddedAsset("Binary", $"Textures.{LE2Textures.PremadeTFCName}.tfc");
             tfcStream.WriteToFile(Path.Combine(MERFileSystem.DLCModCookedPath, $"{LE2Textures.PremadeTFCName}.tfc")); // Write the embedded TFC out to the DLC folder
 #endif
-            PremadeTexturePackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(MERFileSystem.Game, @"Textures.PremadeImages.pcc"), @"PremadeImages.pcc");
+            // PremadeTexturePackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(MERFileSystem.Game, @"Textures.PremadeImages.pcc"), @"PremadeImages.pcc");
         }
 
         /// <summary>
