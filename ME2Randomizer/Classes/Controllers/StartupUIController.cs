@@ -346,17 +346,11 @@ namespace RandomizerUI.Classes.Controllers
                         if (Locations.GetTarget(true) != null)
                         {
                             window.SelectedTarget = Locations.GetTarget(true);
-                            window.LEGameRadioButton.IsChecked = true;
                         }
                         else if (Locations.GetTarget(false) != null)
                         {
                             window.SelectedTarget = Locations.GetTarget(false);
-                            window.OTGameRadioButton.IsChecked = true;
                         }
-
-                        // Disable games not installed or found
-                        window.LEGameRadioButton.IsEnabled = Locations.GetTarget(true) != null;
-                        window.OTGameRadioButton.IsEnabled = Locations.GetTarget(false) != null;
 
                         Random random = new Random();
                         var preseed = random.Next();

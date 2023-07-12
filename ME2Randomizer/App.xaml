@@ -9,7 +9,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <!-- Accent and AppTheme setting -->
-                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/themes/dark.violet.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/themes/dark.blue.xaml" />
                 <ResourceDictionary Source="Classes\Updater\WiderDialogStyle.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <FontFamily x:Key="AeroLight">

@@ -670,16 +670,6 @@ namespace RandomizerUI
             }
         }
 
-        private void SwitchToOT_Click(object sender, RoutedEventArgs e)
-        {
-            SelectedTarget = Locations.GetTarget(false);
-        }
-
-        private void SwitchToLE_Click(object sender, RoutedEventArgs e)
-        {
-            SelectedTarget = Locations.GetTarget(true);
-        }
-
         private void OnSelectedTargetChanged()
         {
             if (SelectedTarget != null)
@@ -691,14 +681,7 @@ namespace RandomizerUI
                 //MERPeriodicRefresh();.OnPeriodicRefresh += MERPeriodicRefresh;
 #if __GAME1__
 #elif __GAME2__
-                if (SelectedTarget.Game == MEGame.LE2)
-                {
-                    ThemeManager.Current.ChangeTheme(this, "Dark.Blue");
-                }
-                else
-                {
-                    ThemeManager.Current.ChangeTheme(this, "Dark.Violet");
-                }
+                ThemeManager.Current.ChangeTheme(this, "Dark.Blue");
 #elif __GAME3__
                 ThemeManager.Current.ChangeTheme(this, "Dark.Green");
 #endif
