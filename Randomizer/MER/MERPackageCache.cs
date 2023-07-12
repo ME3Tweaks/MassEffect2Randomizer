@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using LegendaryExplorerCore.Packages;
 using ME3TweaksCore.Targets;
+using Randomizer.Randomizers;
 using Serilog;
 using WinCopies.Util;
 
@@ -100,6 +101,18 @@ namespace Randomizer.MER
         }
 
         /// <summary>
+        /// Returns a random package that is already opened in the cache
+        /// </summary>
+        /// <returns>Null if cache is empty, random otherwise</returns>
+        public IMEPackage GetRandomPackage()
+        {
+            if (Cache.Count == 0)
+                return null;
+
+            return Cache.RandomValue();
+        }
+
+        /// <summary>
         /// Returns a cached package that references an internally embedded package. Ensure this cache is synchronized across threads or you may end up saving two different instances of files to the same location
         /// </summary>
         /// <param name="packageName"></param>
@@ -160,6 +173,15 @@ namespace Randomizer.MER
         public IReadOnlyCollection<IMEPackage> GetPackages()
         {
             return new ReadOnlyCollection<IMEPackage>(Cache.Values.ToList());
+        }
+
+        /// <summary>
+        /// Gets the list of packages in this cache - the list is a copy
+        /// </summary>
+        /// <returns></returns>
+        public List<IMEPackage> GetPackageList()
+        {
+            return Cache.Values.ToList();
         }
     }
 }

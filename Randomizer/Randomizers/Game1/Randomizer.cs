@@ -302,7 +302,6 @@ namespace Randomizer.Randomizers.Game1
             }
 
             // Close out files and free memory
-            TFCBuilder.EndTFCs(SelectedOptions.RandomizationTarget);
             CoalescedHandler.EndHandler();
             TLKBuilder.EndHandler();
             MERFileSystem.Finalize(SelectedOptions);

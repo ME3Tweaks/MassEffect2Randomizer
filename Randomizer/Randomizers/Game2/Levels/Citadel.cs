@@ -169,14 +169,222 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         internal static bool PerformRandomization(GameTarget target, RandomizationOption notUsed)
         {
-            RandomizeEndorsements(target);
-            RandomizeThaneInterrogation(target);
+            //RandomizeEndorsements(target);
+            //RandomizeThaneInterrogation(target);
 
-            RandomizeCouncilConvo(target);
+            //RandomizeCouncilConvo(target);
 
             // Implement once gesture system is reimplemented
-            // RandomizeShepDance(target);
+            //RandomizeShepDance(target);
+            InstallPackingHeat(target);
+
+            // MakeAdsCreepy(target);
             return true;
+        }
+
+        private static void MakeAdsCreepy(GameTarget target)
+        {
+            #region Level 28 Top Floor
+            {
+                var topFloorF = MERFileSystem.GetPackageFile(target, @"BioD_CitHub_300UpperWing.pcc");
+                var topFloorP = MERFileSystem.OpenMEPackage(topFloorF);
+
+                var sequence = topFloorP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Talk_objects");
+                var player = MERSeqTools.CreatePlayerObject(sequence, true);
+                var adPawn =
+                    topFloorP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Talk_objects.SeqVar_Object_11");
+
+                var creepySeq = MERSeqTools.InstallMakeItCreepySingle(player, adPawn);
+
+                // Change all the ads to point to our creepyseq
+                var baseIFP = "TheWorld.PersistentLevel.Main_Sequence.Talk_objects.SeqAct_SetObject_";
+                for (int i = 0; i < 5; i++)
+                {
+                    var ifp = baseIFP + i;
+                    var setObj = topFloorP.FindExport(ifp);
+                    SeqTools.ChangeOutlink(setObj, 0, 0, creepySeq.UIndex);
+                }
+
+                // CreepySeq -> Start Conversation
+                KismetHelper.CreateOutputLink(creepySeq, "Out",
+                    topFloorP.FindExport(
+                        "TheWorld.PersistentLevel.Main_Sequence.Talk_objects.SFXSeqAct_StartConversation_8"));
+
+                MERFileSystem.SavePackage(topFloorP);
+            }
+            #endregion
+
+            #region Level 26 Bottom Floor ELCOR
+
+            {
+                var bottomFloorF = MERFileSystem.GetPackageFile(target, @"BioD_CitHub_400LowerWing.pcc");
+                var bottomFloorP = MERFileSystem.OpenMEPackage(bottomFloorF);
+
+                var sequence = bottomFloorP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Tracking_sign");
+                var player = MERSeqTools.CreatePlayerObject(sequence, true);
+
+                // get actors
+                var modify =
+                    bottomFloorP.FindExport(
+                        "TheWorld.PersistentLevel.Main_Sequence.Tracking_sign.BioSeqAct_ModifyPropertyPawn_1");
+                var pawnsToChange = SeqTools.GetVariableLinksOfNode(modify).SelectMany(x => x.LinkedNodes)
+                    .OfType<ExportEntry>().ToList();
+
+                ExportEntry lastCreepySeq = null;
+                foreach (var p in pawnsToChange)
+                {
+                    var creepySeq = MERSeqTools.InstallMakeItCreepySingle(player, p);
+                    if (lastCreepySeq == null)
+                    {
+                        // Point to first creepyseq
+                        SeqTools.ChangeOutlink(modify, 0, 1, creepySeq.UIndex);
+                    }
+                    else
+                    {
+                        KismetHelper.CreateOutputLink(lastCreepySeq, "Out", creepySeq);
+                    }
+
+                    lastCreepySeq = creepySeq;
+
+                }
+
+                // CreepySeq -> Start Conversation
+                KismetHelper.CreateOutputLink(lastCreepySeq, "Out",
+                    bottomFloorP.FindExport(
+                        "TheWorld.PersistentLevel.Main_Sequence.Tracking_sign.SFXSeqAct_StartConversation_0"));
+                MERFileSystem.SavePackage(bottomFloorP);
+
+            }
+            #endregion
+
+
+            #region Level 26 Bottom Floor SOUTH MULTI
+            {
+                var lowSouthF = MERFileSystem.GetPackageFile(target, @"BioD_CitHub_420LowerSouth.pcc");
+                var lowSouthP = MERFileSystem.OpenMEPackage(lowSouthF);
+
+                var sequence = lowSouthP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Low_talking_ad");
+                var player = MERSeqTools.CreatePlayerObject(sequence, true);
+                var adPawn = lowSouthP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Low_talking_ad.SeqVar_Object_1");
+
+                var creepySeq = MERSeqTools.InstallMakeItCreepySingle(player, adPawn);
+
+                // Change all the ads to point to our creepyseq
+                var baseIFP = "TheWorld.PersistentLevel.Main_Sequence.Low_talking_ad.SeqAct_SetObject_";
+                for (int i = 0; i < 5; i++)
+                {
+                    var ifp = baseIFP + i;
+                    var setObj = lowSouthP.FindExport(ifp);
+                    SeqTools.ChangeOutlink(setObj, 0, 0, creepySeq.UIndex);
+                }
+
+                // CreepySeq -> Start Conversation
+                KismetHelper.CreateOutputLink(creepySeq, "Out",
+                    lowSouthP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Low_talking_ad.SFXSeqAct_StartConversation_0"));
+
+                MERFileSystem.SavePackage(lowSouthP);
+            }
+            #endregion
+
+
+            #region Level 27 MID MULTI
+            {
+                var mainRoomF = MERFileSystem.GetPackageFile(target, @"BioD_CitHub_200MainRoom.pcc");
+                var mainRoomP = MERFileSystem.OpenMEPackage(mainRoomF);
+
+                var sequence = mainRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.ads.Mid_Ad_logic");
+                var player = MERSeqTools.CreatePlayerObject(sequence, true);
+                var adPawn = mainRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.ads.Mid_Ad_logic.SeqVar_Object_1");
+
+                var creepySeq = MERSeqTools.InstallMakeItCreepySingle(player, adPawn);
+
+                // Change all the basic ads to point to our creepyseq
+                var baseIFP = "TheWorld.PersistentLevel.Main_Sequence.ads.Mid_Ad_logic.SeqAct_SetObject_";
+                for (int i = 0; i < 5; i++)
+                {
+                    var ifp = baseIFP + i;
+                    int idx = 0;
+                    if (i == 0)
+                    {
+                        idx = 2; // Use different output link
+                    }
+                    else if (i == 4)
+                    {
+                        ifp = "TheWorld.PersistentLevel.Main_Sequence.ads.Mid_Ad_logic.BioSeqAct_ModifyPropertyPawn_10"; // We use same logic but different IFP as it's branched
+                    }
+                    var setObj = mainRoomP.FindExport(ifp);
+                    SeqTools.ChangeOutlink(setObj, 0, idx, creepySeq.UIndex);
+                }
+
+                // CreepySeq -> Start Conversation
+                KismetHelper.CreateOutputLink(creepySeq, "Out", mainRoomP.FindExport("TheWorld.PersistentLevel.Main_Sequence.ads.Mid_Ad_logic.SFXSeqAct_StartConversation_7"));
+
+                MERFileSystem.SavePackage(mainRoomP);
+            }
+            #endregion
+        }
+
+        private static void InstallPackingHeat(GameTarget target)
+        {
+            // Files required for modification:
+            // BioD_CitHub.pcc -> Adds a hackjob reverse triggerstream to stream out the 311PackingHeat file
+            // BioD_CitHub_300UpperWing.pcc -> When this file is loaded in, PackingHeat is streamed in via a console command on the LevelLoaded event
+            //        -> It also triggers a remote event when the reporter conversation wraps up to trigger logic in 311PackingHeat
+            // BioD_CitHub_311PackingHeat.pcc -> New package file, has all the logic for packing heat
+            //        -> Localizations for SFXVocalizationBanks
+
+            #region BioD_Cithub.pcc
+
+            {
+                var biodCitHubF = MERFileSystem.GetPackageFile(target, "BioD_CitHub.pcc");
+                if (biodCitHubF != null)
+                {
+                    var biodCitHubP = MERFileSystem.OpenMEPackage(biodCitHubF);
+
+                    // Port the trigger volume
+                    var mainSeq = biodCitHubP.FindExport("TheWorld.PersistentLevel.Main_Sequence");
+                    var fabP = MEPackageHandler.OpenMEPackageFromStream(
+                        MEREmbedded.GetEmbeddedPackage(target.Game, "SeqPrefabs.PackingHeat.pcc"), "PackingHeat.pcc");
+                    var brSeq = fabP.FindExport("TheWorld.PersistentLevel.Main_Sequence.BloodRageVolume");
+                    EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, brSeq,
+                        biodCitHubP, mainSeq, true, new RelinkerOptionsPackage(), out var newSeq);
+                    KismetHelper.AddObjectToSequence(newSeq as ExportEntry, mainSeq);
+
+                    // This will have been ported in by the sequence
+                    var trigVol = fabP.FindExport("TheWorld.PersistentLevel.BioTriggerVolume_14");
+                    fabP.AddToLevelActorsIfNotThere(trigVol);
+
+                    MERFileSystem.SavePackage(biodCitHubP);
+                }
+            }
+
+            #endregion
+
+            #region BioD_CitHub_300UpperWing.pcc
+            var biodCitHubUWF = MERFileSystem.GetPackageFile(target, "BioD_CitHub_300UpperWing.pcc");
+            if (biodCitHubUWF != null)
+            {
+                var biodCitHubUWP = MERFileSystem.OpenMEPackage(biodCitHubUWF);
+
+                // Stream the file in when the package loads
+                var levelLoaded = biodCitHubUWP.FindExport("TheWorld.PersistentLevel.Main_Sequence.RP_Plot_5_Logic.SeqEvent_LevelLoaded_0");
+                var rp5Seq = biodCitHubUWP.FindExport("TheWorld.PersistentLevel.Main_Sequence.RP_Plot_5_Logic");
+                var cc = MERSeqTools.CreateConsoleCommandObject(rp5Seq, "streamlevelin BioD_CitHub_311PackingHeat");
+                KismetHelper.CreateOutputLink(levelLoaded, "Loaded and Visible", cc);
+
+                // Signal the remote event when the conversation logic finishes
+                var saveGame = biodCitHubUWP.FindExport("TheWorld.PersistentLevel.Main_Sequence.RP_Plot_5_Logic.SFXSeqAct_SaveGame_0");
+                var brc = MERSeqTools.CreateActivateRemoteEvent(rp5Seq, "BloodRageCheck");
+                KismetHelper.CreateOutputLink(saveGame, "Out", brc);
+                MERFileSystem.SavePackage(biodCitHubUWP);
+            }
+
+            #endregion
+
+            #region BioD_CitHub_311PackingHeat.pcc
+            // Install the entire package set
+            MEREmbedded.ExtractEmbeddedBinaryFolder("Packages.LE2.PackingHeat");
+            #endregion
         }
 
         private static void RandomizeShepDance(GameTarget target)
@@ -185,11 +393,11 @@ namespace Randomizer.Randomizers.Game2.Levels
             if (loungeF != null)
             {
                 var loungeP = MEPackageHandler.OpenMEPackage(loungeF);
-                var sequence = loungeP.GetUExport(2583);
+                var sequence = loungeP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Dancing_Shepard");
 
                 MERPackageCache cache = new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
                 List<InterpTools.InterpData> interpDatas = new List<InterpTools.InterpData>();
-                var interp1 = loungeP.GetUExport(2532);
+                var interp1 = loungeP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Dancing_Shepard.SeqAct_Interp_1");
 
                 // Make 2 additional dance options by cloning the interp and the data tree
                 var interp2 = MERSeqTools.CloneBasicSequenceObject(interp1);
@@ -197,7 +405,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
 
                 // Clone the interp data for attaching to 2 and 3
-                var interpData1 = loungeP.GetUExport(698);
+                var interpData1 = loungeP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Dancing_Shepard.InterpData_1");
                 var interpData2 = EntryCloner.CloneTree(interpData1);
                 var interpData3 = EntryCloner.CloneTree(interpData2);
                 KismetHelper.AddObjectToSequence(interpData2, sequence);
@@ -219,8 +427,8 @@ namespace Randomizer.Randomizers.Game2.Levels
                 SeqTools.WriteVariableLinksToNode(interp3, id3);
 
                 // Add additional finished states for fadetoblack when done
-                KismetHelper.CreateOutputLink(loungeP.GetUExport(449), "Finished", interp2, 2);
-                KismetHelper.CreateOutputLink(loungeP.GetUExport(449), "Finished", interp3, 2);
+                KismetHelper.CreateOutputLink(loungeP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Dancing_Shepard.BioSeqAct_BlackScreen_1"), "Finished", interp2, 2);
+                KismetHelper.CreateOutputLink(loungeP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Dancing_Shepard.BioSeqAct_BlackScreen_1"), "Finished", interp3, 2);
 
 
                 // Link up the random choice it makes
@@ -230,9 +438,9 @@ namespace Randomizer.Randomizers.Game2.Levels
                 KismetHelper.CreateOutputLink(randSw, "Link 3", interp3);
 
                 // Break the original output to start the interp, repoint it's output to the switch instead
-                var sgm = loungeP.GetUExport(475); //set gesture mode
+                var sgm = loungeP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Dancing_Shepard.BioSeqAct_SetGestureMode_3"); //set gesture mode
                 KismetHelper.RemoveOutputLinks(sgm);
-                KismetHelper.CreateOutputLink(sgm, "Done", loungeP.GetUExport(451));
+                KismetHelper.CreateOutputLink(sgm, "Done", loungeP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Dancing_Shepard.BioSeqAct_BlackScreen_3"));
                 KismetHelper.CreateOutputLink(sgm, "Done", randSw);
 
                 // Now install the dances
@@ -302,7 +510,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                                 {
                                     for (int i = 0; i < gestures.Count; i++)
                                     {
-                                        var newGesture = GestureManager.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
+                                        var newGesture = GestureManager.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true);
                                         gestures[i] = newGesture;
                                     }
 
@@ -312,7 +520,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                                 var defaultPose = RBioEvtSysTrackGesture.GetDefaultPose(gestTrack.Export);
                                 if (defaultPose != null)
                                 {
-                                    var newPose = GestureManager.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true, cache: cache);
+                                    var newPose = GestureManager.InstallRandomFilteredGestureAsset(target, gestTrack.Export.FileRef, 5, filterKeywords: councilKeywords, blacklistedKeywords: OmegaHub.notDanceKeywords, mainPackagesAllowed: councilAnimPackages, includeSpecial: true);
                                     if (newPose != null)
                                     {
                                         RBioEvtSysTrackGesture.WriteDefaultPose(gestTrack.Export, newPose);
@@ -335,7 +543,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             var citHubTF = MERFileSystem.GetPackageFile(target, "BioD_CitHub_200Dialogue.pcc");
             if (citHubTF != null)
             {
-                var citHubTP = MEPackageHandler.OpenMEPackage(citHubTF);
+                var citHubTP = MERFileSystem.OpenMEPackage(citHubTF);
                 var citAslInterrogateSKM = citHubTP.FindExport("TheWorld.PersistentLevel.BioPawn_4.SkeletalMeshComponent_1733");
 
                 var newMdl = PackageTools.PortExportIntoPackage(target, citHubTP, lockedUpAsset.BodyAsset.GetAsset(target));

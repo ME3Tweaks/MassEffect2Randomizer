@@ -18,14 +18,11 @@ using ME3TweaksCore.Targets;
 using Microsoft.WindowsAPICodePack.PortableDevices.CommandSystem.Object;
 using Newtonsoft.Json;
 using Randomizer.Randomizers;
-using Randomizer.Randomizers.Game2.Enemy;
-using Randomizer.Randomizers.Game2.TextureAssets.LE2;
 using Randomizer.Randomizers.Handlers;
 using Randomizer.Randomizers.Shared.Classes;
 using Randomizer.Randomizers.Utility;
 using WinCopies.Diagnostics;
 using WinCopies.Util;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Randomizer.MER
 {
@@ -309,7 +306,7 @@ namespace Randomizer.MER
             {
                 //if (powerExport.ObjectName.Name == "SFXPower_Flashbang_NPC")
                 //    Debugger.Break();
-                var pi = new EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
+                var pi = new Randomizer.Randomizers.Game2.Enemy.EnemyPowerChanger.PowerInfo(powerExport, isCorrectedPackage);
                 //if ((pi.RequiresStartupPackage && !pi.PackageFileName.StartsWith("SFX")))
                 //{
                 //    // We do not allow startup files that have levels
@@ -711,7 +708,9 @@ namespace Randomizer.MER
 
         public static void BuildTFCs(object sender, DoWorkEventArgs e)
         {
+#if __GAME2
             LE2Textures.BuildPremadeTFC();
+#endif
         }
     }
 }

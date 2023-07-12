@@ -11,7 +11,6 @@ using System.IO;
 using System.Linq;
 using LegendaryExplorerCore.Unreal.Collections;
 using Randomizer.Randomizers.Utility;
-using Randomizer.Randomizers.Game2.Misc;
 
 namespace Randomizer.Randomizers.Shared.Classes
 {
@@ -192,6 +191,8 @@ namespace Randomizer.Randomizers.Shared.Classes
                         $"Gestures.{v.Value.Name}.pcc"); // We don't capture the result - we just preload
                 }
             }
+
+
         }
 
         /// <summary>
@@ -204,6 +205,9 @@ namespace Randomizer.Randomizers.Shared.Classes
             return mapAnimSetOwners.Values.Any(x => x.Equals(instancedFullPath, StringComparison.InvariantCultureIgnoreCase));
         }
 
+        /// <summary>
+        /// Cache holding the gesture packages in memory
+        /// </summary>
         private static MERPackageCache _gesturePackageCache;
 
         /// <summary>
@@ -308,91 +312,97 @@ namespace Randomizer.Randomizers.Shared.Classes
             return bioDynObj;
         }
 
-        public static Gesture InstallRandomFilteredGestureAsset(GameTarget target, IMEPackage targetPackage, float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null, string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache = null)
+        public static Gesture InstallRandomFilteredGestureAsset(GameTarget target, IMEPackage targetPackage,
+            float minLength = 0, string[] filterKeywords = null, string[] blacklistedKeywords = null,
+            string[] mainPackagesAllowed = null, bool includeSpecial = false, MERPackageCache cache2 = null)
         {
-            var gestureFiles = MERUtilities.ListStaticPackageAssets(target, "Gestures", false, true);
+            //var gestureFiles = MERUtilities.ListStaticPackageAssets(target, "Gestures", false, true);
 
-            // Special and package file filtering
-            if (mainPackagesAllowed != null)
-            {
-                var newList = new List<string>();
-                foreach (var gf in gestureFiles)
-                {
-                    if (includeSpecial && gf.Contains("gestures.special."))
-                    {
-                        newList.Add(gf);
-                        continue;
-                    }
+            //// Special and package file filtering
+            //// This is ME2R specific, might need reworked or removed for LE2R
+            //if (mainPackagesAllowed != null)
+            //{
+            //    var newList = new List<string>();
+            //    foreach (var gf in gestureFiles)
+            //    {
+            //        if (includeSpecial && gf.Contains("gestures.special."))
+            //        {
+            //            newList.Add(gf);
+            //            continue;
+            //        }
 
-                    var packageName = Path.GetFileNameWithoutExtension(MEREmbedded.GetFilenameFromAssetName(gf));
-                    if (mainPackagesAllowed.Contains(packageName))
-                    {
-                        newList.Add(gf);
-                        continue;
-                    }
-                }
+            //        var packageName = Path.GetFileNameWithoutExtension(MEREmbedded.GetFilenameFromAssetName(gf));
+            //        if (mainPackagesAllowed.Contains(packageName))
+            //        {
+            //            newList.Add(gf);
+            //            continue;
+            //        }
+            //    }
 
-                gestureFiles = newList;
-            }
+            //    gestureFiles = newList;
+            //}
 
             // Pick a random package
-            var randGestureFile = gestureFiles.RandomElement();
-            var hasCache = cache != null;
-            cache ??= new MERPackageCache(target, MERCaches.GlobalCommonLookupCache, true);
-            var gPackage = cache.GetCachedPackageEmbedded(target.Game, $"Gestures.{MEREmbedded.GetFilenameFromAssetName(randGestureFile)}"); // NEEDS FIXED! It's a full path
-            List<ExportEntry> options;
-            if (filterKeywords != null && blacklistedKeywords != null)
+            var randomPackageList = _gesturePackageCache.GetPackageList();
+            randomPackageList.Shuffle();
+            for (int i = randomPackageList.Count; i > 0; i--)
             {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)
-                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
-            }
-            else if (filterKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && x.ObjectName.Name.ContainsAny(StringComparison.InvariantCultureIgnoreCase, filterKeywords)).ToList();
-            }
-            else if (blacklistedKeywords != null)
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
-                                                      && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
-            }
-            else
-            {
-                options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
-            }
-
-            // remove non-gesture config entries
-            options.RemoveAll(x => x.ObjectName.Name == "AnimSequence");
-
-            // Ensure options are in config map
-            var fileName = Path.GetFileNameWithoutExtension(MEREmbedded.GetFilenameFromAssetName(randGestureFile)); // BIOG_HMM_DP_A
-
-            if (options.Any())
-            {
-                // Pick a random element
-                var randomGestureExport = options.RandomElement();
-
-                // Filter it out if we cannot use it
-                var seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-
-                int numRetries = 7;
-                while (seqLength < minLength && numRetries >= 0)
+                var gPackage = randomPackageList.PullFirstItem();
+                List<ExportEntry> options;
+                if (filterKeywords != null && blacklistedKeywords != null)
                 {
-                    randomGestureExport = options.RandomElement();
-                    seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
-                    numRetries--;
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                          && x.ObjectName.Name.ContainsAny(
+                                                              StringComparison.InvariantCultureIgnoreCase, filterKeywords)
+                                                          && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
+                }
+                else if (filterKeywords != null)
+                {
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                          && x.ObjectName.Name.ContainsAny(
+                                                              StringComparison.InvariantCultureIgnoreCase, filterKeywords))
+                        .ToList();
+                }
+                else if (blacklistedKeywords != null)
+                {
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence"
+                                                          && !x.ObjectName.Name.ContainsAny(blacklistedKeywords)).ToList();
+                }
+                else
+                {
+                    options = gPackage.Exports.Where(x => x.ClassName == "AnimSequence").ToList();
                 }
 
-                var portedInExp = PackageTools.PortExportIntoPackage(target, targetPackage, randomGestureExport);
-                if (!hasCache)
-                {
-                    cache.ReleasePackages();
-                }
+                // remove non-gesture config entries
+                options.RemoveAll(x => x.ObjectName.Name == "AnimSequence");
 
-                return new Gesture(portedInExp);
+                // Ensure options are in config map
+                // var fileName = Path.GetFileNameWithoutExtension(MEREmbedded.GetFilenameFromAssetName(randGestureFile)); // BIOG_HMM_DP_A
+
+                if (options.Any())
+                {
+                    // Pick a random element
+                    var randomGestureExport = options.RandomElement();
+
+                    // Filter it out if we cannot use it
+                    var seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
+
+                    int numRetries = 7;
+                    while (seqLength < minLength && numRetries >= 0)
+                    {
+                        randomGestureExport = options.RandomElement();
+                        seqLength = randomGestureExport.GetProperty<FloatProperty>("SequenceLength");
+                        numRetries--;
+                    }
+
+                    var portedInExp = PackageTools.PortExportIntoPackage(target, targetPackage, randomGestureExport);
+
+                    return new Gesture(portedInExp);
+                }
             }
 
+            // Oh damn - nothing matches at all!
+            Debugger.Break();
             return null;
         }
 
@@ -407,7 +417,15 @@ namespace Randomizer.Randomizers.Shared.Classes
             var skmDynamicAnimSets = skelMeshComp.GetProperty<ArrayProperty<ObjectProperty>>("AnimSets") ?? new ArrayProperty<ObjectProperty>("AnimSets");
 
             // Check to see if there is any item that uses our bioanimset
-            var bioAnimSet = gesture.GetBioAnimSet(skelMeshComp.FileRef, Game2Gestures.GestureSetNameToPackageExportName);
+#if __GAME1__
+            IEntry bioAnimSet = null; // This needs worked out because we don't have a package mapping for this game
+            throw new NotImplementedException();
+
+#elif __GAME2__
+            var bioAnimSet = gesture.GetBioAnimSet(skelMeshComp.FileRef, Game2.Misc.Game2Gestures.GestureSetNameToPackageExportName);
+#elif __GAME3__
+            var bioAnimSet = gesture.GetBioAnimSet(skelMeshComp.FileRef, Game3Gestures.GestureSetNameToPackageExportName);
+#endif
             if (bioAnimSet != null)
             {
                 ExportEntry skmBioDynamicAnimSet = null;
@@ -446,7 +464,7 @@ namespace Randomizer.Randomizers.Shared.Classes
                     currentObjs.Add(new ObjectProperty(gesture.Entry));
                     var bin = ObjectBinary.From<BioDynamicAnimSet>(skmBioDynamicAnimSet);
                     bin.SequenceNamesToUnkMap[gesture.GestureAnim] = 1; // Not sure what the value should be, or if game actually reads this
-                    // FIX IT IF WE EVER FIGURE IT OUT!
+                                                                        // FIX IT IF WE EVER FIGURE IT OUT!
                     skmBioDynamicAnimSet.WriteProperty(currentObjs);
                     skmBioDynamicAnimSet.WriteBinary(bin);
                 }

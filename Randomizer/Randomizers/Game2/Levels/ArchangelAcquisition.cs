@@ -9,46 +9,50 @@ namespace Randomizer.Randomizers.Game2.Levels
 {
     class ArchangelAcquisition
     {
+        /// <summary>
+        /// Garrus can kill the player
+        /// </summary>
+        /// <param name="target"></param>
         private static void MakeGarrusDeadly(GameTarget target)
         {
-            // Relay at the end of the DLC
             var garrusShootSeqFile = MERFileSystem.GetPackageFile(target, @"BioD_OmgGrA_100Leadup.pcc");
             if (garrusShootSeqFile != null && File.Exists(garrusShootSeqFile))
             {
-                var garrusSeqP = MEPackageHandler.OpenMEPackage(garrusShootSeqFile);
+                var garrusSeqP = MERFileSystem.OpenMEPackage(garrusShootSeqFile);
 
                 // Chance to shoot Shepard
-                RandSeqVarInt(garrusSeqP.GetUExport(1043), 60, 100); //60 to 100 percent chance
+                RandSeqVarInt(garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.SeqVar_Int_7"), 60, 100); //60 to 100 percent chance
 
                 // Make garrus shoot faster so he can actually kill the player
-                garrusSeqP.GetUExport(974).WriteProperty(new FloatProperty(3, "PlayRate"));
+                garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.SeqAct_Interp_5").WriteProperty(new FloatProperty(3, "PlayRate"));
 
                 // Lower the damage so its not instant kill
-                garrusSeqP.GetUExport(34).WriteProperty(new FloatProperty(550, "DamageAmount"));
-                garrusSeqP.GetUExport(34).WriteProperty(new FloatProperty(2, "MomentumScale"));
+                garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.BioSeqAct_CauseDamage_0").WriteProperty(new FloatProperty(550, "DamageAmount"));
+                garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.BioSeqAct_CauseDamage_0").WriteProperty(new FloatProperty(2, "MomentumScale"));
 
                 // Do not reset the chance to shoot shepard again
-                SeqTools.ChangeOutlink(garrusSeqP.GetUExport(33), 0, 0, 982);
+                SeqTools.ChangeOutlink(garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.BioSeqAct_AttachVisualEffect_2"), 0, 0, 982);
 
                 // Make garrus damage type very deadly
-                var garrusDamageTypeProps = garrusSeqP.GetUExport(8).GetProperties();
+                var garDamage = garrusSeqP.FindExport("SFXGameContent.Default__SFXDamageType_OmgGraFakeSniper");
+                var garrusDamageTypeProps = garDamage.GetProperties();
                 garrusDamageTypeProps.Clear(); // Remove the old props
                 garrusDamageTypeProps.AddOrReplaceProp(new BoolProperty(true, "bImmediateDeath"));
                 garrusDamageTypeProps.AddOrReplaceProp(new BoolProperty(true, "bIgnoreShieldHitLimit"));
                 garrusDamageTypeProps.AddOrReplaceProp(new BoolProperty(true, "bIgnoreShields"));
                 garrusDamageTypeProps.AddOrReplaceProp(new BoolProperty(true, "bIgnoresBleedout"));
-                garrusSeqP.GetUExport(8).WriteProperties(garrusDamageTypeProps);
+                garDamage.WriteProperties(garrusDamageTypeProps);
 
                 // Make shepard more vulnerable
-                garrusSeqP.GetUExport(1005).WriteProperty(new IntProperty(60, "ValueB"));
+                garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.SeqCond_CompareInt_4").WriteProperty(new IntProperty(60, "ValueB"));
 
 
                 // Make garrus stand more often
-                garrusSeqP.GetUExport(1039).WriteProperty(new IntProperty(60, "IntValue"));
+                garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.SeqVar_Int_3").WriteProperty(new IntProperty(60, "IntValue"));
 
                 // Make shoot extra free bullets
-                garrusSeqP.GetUExport(1037).WriteProperty(new IntProperty(75, "IntValue"));
-                RandSeqVarInt(garrusSeqP.GetUExport(1042), 1, 4);
+                garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.SeqVar_Int_1").WriteProperty(new IntProperty(75, "IntValue"));
+                RandSeqVarInt(garrusSeqP.FindExport("TheWorld.PersistentLevel.Main_Sequence.Archangel_Sniping.SeqVar_Int_6"), 1, 4);
 
                 MERFileSystem.SavePackage(garrusSeqP);
             }

@@ -12,7 +12,6 @@ using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.BinaryConverters;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
-using Randomizer.Randomizers.Game2.TextureAssets.LE2;
 
 namespace Randomizer.Randomizers.Handlers
 {
@@ -49,8 +48,8 @@ namespace Randomizer.Randomizers.Handlers
             TextureRandomizations = randomizations;
             // PremadeTFCName: CHANGE FOR OTHER GAMES
 #if __GAME2__
-            var tfcStream = MEREmbedded.GetEmbeddedAsset("Binary", $"Textures.{LE2Textures.PremadeTFCName}.tfc");
-            tfcStream.WriteToFile(Path.Combine(MERFileSystem.DLCModCookedPath, $"{LE2Textures.PremadeTFCName}.tfc")); // Write the embedded TFC out to the DLC folder
+            var tfcStream = MEREmbedded.GetEmbeddedAsset("Binary", $"Textures.{Randomizer.Randomizers.Game2.TextureAssets.LE2.LE2Textures.PremadeTFCName}.tfc");
+            tfcStream.WriteToFile(Path.Combine(MERFileSystem.DLCModCookedPath, $"{Randomizer.Randomizers.Game2.TextureAssets.LE2.LE2Textures.PremadeTFCName}.tfc")); // Write the embedded TFC out to the DLC folder
 #endif
             // PremadeTexturePackage = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(MERFileSystem.Game, @"Textures.PremadeImages.pcc"), @"PremadeImages.pcc");
         }

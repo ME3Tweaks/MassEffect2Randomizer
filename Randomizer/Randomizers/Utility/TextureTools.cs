@@ -12,7 +12,6 @@ using LegendaryExplorerCore.Textures;
 using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.Classes;
 using Microsoft.IO;
-using Randomizer.Randomizers.Game2.TextureAssets.LE2;
 
 namespace Randomizer.Randomizers.Utility
 {
@@ -75,7 +74,11 @@ namespace Randomizer.Randomizers.Utility
             //}
 
             Texture2D t2d = new Texture2D(export);
-            t2d.Replace(loadedImage, props, forcedTFCName: LE2Textures.PremadeTFCName);
+#if __GAME2__
+            t2d.Replace(loadedImage, props, forcedTFCName: Randomizer.Randomizers.Game2.TextureAssets.LE2.LE2Textures.PremadeTFCName);
+#else
+            throw new NotImplementedException();
+#endif
         }
     }
 }
