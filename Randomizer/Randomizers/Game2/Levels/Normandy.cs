@@ -196,7 +196,7 @@ namespace Randomizer.Randomizers.Game2.Levels
         {
             // LE2R: These are all precomputed in the file so we don't have to code this crap up again like ME2R
             var world = nor250.FindExport("TheWorld.PersistentLevel");
-            var packageBin = MEREmbedded.GetEmbeddedPackage(MERFileSystem.Game, "Burger.Delux2go_EdmontonBurger.pcc");
+            var packageBin = MEREmbedded.GetEmbeddedPackage(MERFileSystem.Game, "Burger.Delux2go_Setup.pcc");
             var burgerPackage = MEPackageHandler.OpenMEPackageFromStream(packageBin);
 
             List<ExportEntry> portedActors = new List<ExportEntry>();
