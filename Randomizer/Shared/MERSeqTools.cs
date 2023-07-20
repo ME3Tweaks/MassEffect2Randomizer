@@ -451,5 +451,30 @@ namespace Randomizer.Shared
             KismetHelper.AddObjectsToSequence(sequence, false, rmEvt);
             return rmEvt;
         }
+
+        /// <summary>
+        /// Installs a sequence with an output. The input must be linked separately.
+        /// </summary>
+        /// <param name="sourceSequence"></param>
+        /// <param name="targetPackage"></param>
+        /// <param name="parentSequence"></param>
+        /// <param name="linkedOp"></param>
+        /// <param name="linkedInputIdx"></param>
+        /// <returns></returns>
+        public static IEntry InstallSequenceChained(ExportEntry sourceSequence, IMEPackage targetPackage, ExportEntry parentSequence, ExportEntry linkedOp, int linkedInputIdx)
+        {
+            parentSequence ??= targetPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence");
+            EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceSequence, targetPackage, parentSequence, true, new RelinkerOptionsPackage(), out var newUiSeq);
+            var expCount = targetPackage.Exports.Count(x => x.InstancedFullPath == newUiSeq.InstancedFullPath);
+            if (expCount > 1)
+            {
+                // update the index
+                newUiSeq.ObjectName = targetPackage.GetNextIndexedName(sourceSequence.ObjectName.Name);
+            }
+
+            KismetHelper.AddObjectToSequence(newUiSeq as ExportEntry, parentSequence);
+            KismetHelper.CreateOutputLink(newUiSeq as ExportEntry, "Out", linkedOp, linkedInputIdx);
+            return newUiSeq as ExportEntry;
+        }
     }
 }

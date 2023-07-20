@@ -6,8 +6,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using LegendaryExplorerCore.GameFilesystem;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
@@ -43,6 +45,31 @@ namespace Randomizer.MER
             ScriptTools.InstallScriptToPackage(package, scriptName, "Debug." + scriptName + ".uc", false, saveOnFinish);
         }
 
+        public static void ReplaceGetUExport()
+        {
+            var package = MEPackageHandler.OpenMEPackage(@"B:\SteamLibrary\steamapps\common\Mass Effect 2\BioGame\CookedPC\BioD_EndGm2_420CombatZone.pcc"); // ME2 file
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+
+                var sourceText = Clipboard.GetText();
+                var newText = sourceText; // end result text
+
+                while (newText.IndexOf(@".GetUExport(") >= 0)
+                {
+                    var tempText = newText.Substring(newText.IndexOf(@".GetUExport(") + 12);
+                    var indexEnd = tempText.IndexOf(@")");
+
+                    var uExportNum = int.Parse(tempText.Substring(0, indexEnd));
+
+                    var ifp = package.GetUExport(uExportNum).InstancedFullPath;
+
+                    newText = newText.Replace($@".GetUExport({uExportNum})", $".FindExport(\"{ifp}\")");
+                }
+
+                Clipboard.SetText(newText);
+            });
+        }
+        
         public static void BuildPowersBank(object sender, DoWorkEventArgs e)
         {
 #if DEBUG && __GAME2__
@@ -711,6 +738,11 @@ namespace Randomizer.MER
 #if __GAME2
             LE2Textures.BuildPremadeTFC();
 #endif
+        }
+
+        public static void DoStuff(object sender, DoWorkEventArgs e)
+        {
+            ReplaceGetUExport();
         }
     }
 }
