@@ -143,7 +143,19 @@ namespace Randomizer.Randomizers.Utility
                 var relinkedResults = EntryExporter.ExportExportToPackage(sourceExport, targetPackage, out newEntry, MERCaches.GlobalCommonLookupCache, cache);
                 if (relinkedResults.Any())
                 {
-                    Debugger.Break();
+#if __GAME2__
+                    if (relinkedResults.Count == 1 && relinkedResults[0].Entry.ObjectNameString.Contains("OVRD"))
+                    {
+                        // Do nothing, this is a false positive from the way METR startup file has some extra imports
+                        // from things like BIOG_HMM_HED files. IDK why it's like this.
+                    }
+                    else
+                    {
+                        Debugger.Break();
+                    }
+#else
+ Debugger.Break();
+#endif
                 }
             }
 #if DEBUG

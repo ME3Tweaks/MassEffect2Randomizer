@@ -107,7 +107,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             {
                 if (IsCorrectedAsset)
                 {
-                    var package = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, $"correctedmeshes.heads.{PackageFile}"));
+                    var package = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, $"CorrectedMeshes.{PackageFile}"));
                     return package.FindExport(AssetPath);
                 }
                 else
@@ -151,13 +151,14 @@ namespace Randomizer.Randomizers.Game2.Misc
             {
                 PackageFile = "BioH_Vixen_00.pcc",
                 AssetPath = "BIOG_HMF_HED_PROMorph_R.PROMiranda.HMF_HED_PRO_Miranda_MDL",
+                HairAssetPath = "BIOG_HMF_HIR_PRO.Hair_PROMiranda.HMF_HIR_MIR_MDL",
                 IsFemaleAsset = true,
                 NameSuffix = "anda",
                 IsSquadmateHead = true
             },
             new HeadAssetSource()
             {
-                PackageFile = "ThaneNoChest.pcc",
+                PackageFile = "ChestsAndHeads.pcc",
                 AssetPath = "BIOG_DRL_HED_PROThane_R.Thane.DRL_HED_PROTHANE_NOCOLLAR_MDL",
                 NameSuffix="ne",
                 IsSquadmateHead = true,
@@ -260,7 +261,6 @@ namespace Randomizer.Randomizers.Game2.Misc
                 IsUsable = false
             },
 
-
             new HeadAssetSource()
             {
                 PackageFile = "BioH_Leading_00.pcc",
@@ -330,7 +330,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             },
             new HeadAssetSource()
             {
-                PackageFile = "IllusiveNoChest.pcc",
+                PackageFile = "ChestsAndHeads.pcc",
                 AssetPath = "BIOG_HMM_HED_PROMorph.IllusiveMan_MER.HMM_HED_PROIllusiveMan_MDL",
                 IsCorrectedAsset = true,
                 NameSuffix = "per",
@@ -574,8 +574,7 @@ namespace Randomizer.Randomizers.Game2.Misc
                 headMeshExp.WriteProperty(skelMesh);
                 headMeshExp.ObjectFlags |= UnrealFlags.EObjectFlags.DebugPostLoad; // Mark as modified so we do not re-randomize it
 
-                // update the bone positions... dunno if this is a good idea or not
-                //UpdateBonePositionsForHead(existingAsset, newMdl);
+                UpdateHeadMeshPosition(squadmateInfo, newMdl);
                 newMdl.ObjectName = newMdl.ObjectName.Name + $"_{squadmateInfo.ClassName}ified";
 
                 // Get parent object
@@ -646,6 +645,9 @@ namespace Randomizer.Randomizers.Game2.Misc
                 {
                     // Port in hair
                     var hairMDL = PackageTools.PortExportIntoPackage(target, headMeshExp.FileRef, newAsset.GetHairAsset(target), useMemorySafeImport: newAsset.UseMemorySafe, cache: HeadAssetCache);
+                    UpdateHeadMeshPosition(squadmateInfo, hairMDL);
+                    hairMDL.ObjectName = newMdl.ObjectName.Name + $"_{squadmateInfo.ClassName}ified";
+
 
                     // Clone existing mesh
                     var hairMeshExp = EntryCloner.CloneEntry(headMeshExp);
@@ -684,16 +686,17 @@ namespace Randomizer.Randomizers.Game2.Misc
 
                     IMEPackage newMeshP;
                     var parent = headMeshExp.Parent as ExportEntry;
+                    newMeshP = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, "CorrectedMeshes.ChestsAndHeads.pcc"));
+                    /*
                     if (parent.ObjectName == "Default__SFXPawn_Thane_02")
                     {
                         // Install DLC version of mesh
-                        newMeshP = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedAsset("Binary", "correctedmeshes.body.ThaneBodyNoEyelidsDLC.pcc"));
                     }
                     else
                     {
                         // Install basegame version of mesh
                         newMeshP = MEPackageHandler.OpenMEPackageFromStream(MEREmbedded.GetEmbeddedPackage(target.Game, "correctedmeshes.body.ThaneBodyNoEyelids.pcc"));
-                    }
+                    }*/
 
                     var meshExp = parent.GetProperty<ObjectProperty>("Mesh").ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
                     var targetMesh = (meshExp.GetProperty<ObjectProperty>("SkeletalMesh") ?? ((ExportEntry)meshExp.Archetype).GetProperty<ObjectProperty>("SkeletalMesh")).ResolveToEntry(headMeshExp.FileRef) as ExportEntry;
@@ -753,27 +756,17 @@ namespace Randomizer.Randomizers.Game2.Misc
             //}
         }
 
-        private static void UpdateBonePositionsForHead(IEntry existingAsset, ExportEntry newMdl)
+        private static void UpdateHeadMeshPosition(SquadMate squadmateInfo, ExportEntry newMdl)
         {
-            ExportEntry oldMdl = existingAsset as ExportEntry;
-            oldMdl ??= EntryImporter.ResolveImport(existingAsset as ImportEntry);
-
-            var oldBin = ObjectBinary.From<SkeletalMesh>(oldMdl);
-            var newBin = ObjectBinary.From<SkeletalMesh>(newMdl);
-
-            Dictionary<MeshBone, MeshBone> boneMap = new Dictionary<MeshBone, MeshBone>();
-            foreach (var bone in oldBin.RefSkeleton)
+            if (squadmateInfo.InternalName == "Thief")
             {
-                var matchingNewBone = newBin.RefSkeleton.FirstOrDefault(x => x.Name.Name == bone.Name.Name);
-                if (matchingNewBone != null)
+                var newBin = ObjectBinary.From<SkeletalMesh>(newMdl);
+                foreach (var lod in newBin.LODModels)
                 {
-                    // Update it's data
-                    matchingNewBone.Orientation = bone.Orientation;
-                    matchingNewBone.Position = bone.Position;
+                    lod.VertexBufferGPUSkin.MeshOrigin.Z -= 6; // Shift head down a bit for the hood
                 }
+                newMdl.WriteBinary(newBin);
             }
-
-            newMdl.WriteBinary(newBin);
         }
 
         //private static bool ForcedRun(ExportEntry export, bool doWorldCheck = true)
@@ -1091,6 +1084,7 @@ namespace Randomizer.Randomizers.Game2.Misc
             }
 
             // There is file for miranda on BioA_ZyaVtl_100... why...??
+            // BioWare fixed this after I reported it in LE
 
             return false;
         }

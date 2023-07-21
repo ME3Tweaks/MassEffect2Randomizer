@@ -227,10 +227,10 @@ namespace Randomizer.Randomizers.Game2
 #if DEBUG
                         if (true
                         //&& false //uncomment to disable filtering
-                        //&& !file.Contains("JnkKgA", StringComparison.InvariantCultureIgnoreCase)
-                        //&& !file.Contains("EndGm", StringComparison.InvariantCultureIgnoreCase)
+                        && !file.Contains("BioH", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("ProCer", StringComparison.InvariantCultureIgnoreCase)
                         // && !file.Contains("ProNor", StringComparison.InvariantCultureIgnoreCase)
-                        && !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
+                        //&& !file.Contains("CitHub", StringComparison.InvariantCultureIgnoreCase)
                         )
                             return;
 #endif
@@ -571,15 +571,7 @@ namespace Randomizer.Randomizers.Game2
                         SetupRandomizerButtonText = "Setup",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
                         RequiresTLK = true
-                    },
-#if DEBUG && __ME2__
-                    new RandomizationOption() {HumanName = "Skip splash",
-                        Description = "Skips the splash screen",
-                        PerformSpecificRandomizationDelegate = EntryMenu.SetupFastStartup,
-                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Safe,
-                        OptionIsSelected = true},
-#endif
-
+                    }
                 }
             });
 
@@ -613,7 +605,7 @@ namespace Randomizer.Randomizers.Game2
                 {
                     new RandomizationOption() {HumanName = "Weapon stats", Description = "Attempts to change gun stats in a way that makes game still playable", PerformSpecificRandomizationDelegate = Weapons.RandomizeWeapons, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Usable weapon classes", Description = "Changes what guns the player and squad can use", PerformSpecificRandomizationDelegate = Weapons.RandomizeSquadmateWeapons, IsRecommended = true},
-                    //new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
+                    // new RandomizationOption() {HumanName = "Enemy AI", Description = "Changes enemy AI so they behave differently", PerformRandomizationOnExportDelegate = PawnAI.RandomizeExport, IsRecommended = true},
                     new RandomizationOption() {HumanName = "Enemy weapons",
                         Description = "Gives enemies different guns",
                         PerformRandomizationOnExportDelegate = EnemyWeaponChanger.RandomizeExport,
@@ -909,6 +901,12 @@ namespace Randomizer.Randomizers.Game2
                     },
                     new RandomizationOption()
                     {
+                        HumanName = "Lots of sounds", PerformSpecificRandomizationDelegate = SFXGame.RandomizeWwiseEvents,
+                        Description = "Shuffles sound references in the main game logic file, which is shared by almost everything in game",
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    },
+                    new RandomizationOption()
+                    {
                         HumanName = "Conversation Wheel", PerformRandomizationOnExportDelegate = RBioConversation.RandomizeExportReplies,
                         Description = "Changes replies in wheel. Can make conversations hard to exit",
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Unsafe
@@ -918,6 +916,14 @@ namespace Randomizer.Randomizers.Game2
                         HumanName = "Actors in conversations",
                         PerformFileSpecificRandomization = RBioConversation.RandomizeActorsInConversation2,
                         Description = "Changes pawn roles in conversations. Somewhat buggy simply due to complexity and restrictions in engine, but can be entertaining",
+                        IsRecommended = true,
+                        Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
+                    },
+                    new RandomizationOption()
+                    {
+                        HumanName = "BioStage placement",
+                        PerformRandomizationOnExportDelegate = RBioStage.RandomizeBioStage,
+                        Description = "Swaps nodes where characters stand in a biostage",
                         IsRecommended = true,
                         Dangerousness = RandomizationOption.EOptionDangerousness.Danger_Warning
                     },
