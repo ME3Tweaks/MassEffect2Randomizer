@@ -476,5 +476,17 @@ namespace Randomizer.Shared
             KismetHelper.CreateOutputLink(newUiSeq as ExportEntry, "Out", linkedOp, linkedInputIdx);
             return newUiSeq as ExportEntry;
         }
+
+        /// <summary>
+        /// Returns the first linked node - on a proper seqact_interp this will be InterpData. This code is real bad
+        /// so hope I don't regret this later
+        /// </summary>
+        /// <param name="seqActInterp"></param>
+        /// <returns></returns>
+        public static ExportEntry GetInterpData(ExportEntry seqActInterp)
+        {
+            var links = SeqTools.GetVariableLinksOfNode(seqActInterp);
+            return links[0].LinkedNodes[0] as ExportEntry;
+        }
     }
 }

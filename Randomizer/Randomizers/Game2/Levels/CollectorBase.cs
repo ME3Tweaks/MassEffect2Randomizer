@@ -19,7 +19,7 @@ namespace Randomizer.Randomizers.Game2.Levels
     {
         public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            //RandomizeFlyerSpawnPawns(target);
+            RandomizeFlyerSpawnPawns(target);
             //AutomatePlatforming400(target, option);
             //MakeTubesSectionHarder(target);
 
@@ -27,6 +27,65 @@ namespace Randomizer.Randomizers.Game2.Levels
             MichaelBayifyFinalFight(target, option);
             // InstallBorger(target); // Change to new texture system
             return true;
+        }
+
+        private static float DESTROYER_PLAYRATE = 2;
+
+        private static void PlatformDestroyer(IMEPackage reaperFightPackage)
+        {
+            var sequences = reaperFightPackage.Exports.Where(x => x.ClassName == "Sequence" && x.ObjectName.Instanced.StartsWith("Destroy_Platform_")).ToList();
+            foreach (var sequence in sequences)
+            {
+                var seqObjs = SeqTools.GetAllSequenceElements(sequence).OfType<ExportEntry>().Where(x => x.ClassName == "SeqAct_Interp").ToList();
+                foreach (var seqObj in seqObjs)
+                {
+                    bool setGesture = false;
+                    // 1. Set gesture speed
+                    var interpData = new InterpTools.InterpData(MERSeqTools.GetInterpData(seqObj));
+                    foreach (var group in interpData.InterpGroups.Where(x => x.GroupName == "ProtoReaper"))
+                    {
+                        foreach (var track in group.Tracks.Where(x => x.TrackTitle != null && x.TrackTitle.StartsWith("Gesture")))
+                        {
+                            setGesture = true;
+                            var gestures = track.Export.GetProperty<ArrayProperty<StructProperty>>(@"m_aGestures");
+                            foreach (var g in gestures)
+                            {
+                                g.Properties.AddOrReplaceProp(new FloatProperty(DESTROYER_PLAYRATE, "fPlayRate"));
+                            }
+
+                            track.Export.WriteProperty(gestures);
+                        }
+                    }
+
+
+                    // 2. If there is gesture speed, also set playrate of whole track (this skips platform destroy animation)
+                    //if (setGesture)
+                    {
+                        seqObj.WriteProperty(new FloatProperty(DESTROYER_PLAYRATE, "PlayRate"));
+                    }
+                }
+            }
+
+            // Make reaper blow up platforms much earlier
+            var firstAppearance = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.First_Appearance");
+            var destPlatformA = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_A");
+            var destPlatformB = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B");
+            var destPlatformC = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_C");
+
+
+            var outFirstAppearance = SeqTools.GetOutboundLinksOfNode(firstAppearance);
+            outFirstAppearance[0][0].LinkedOp = destPlatformA;
+            SeqTools.WriteOutboundLinksToNode(firstAppearance, outFirstAppearance);
+
+            var outA = SeqTools.GetOutboundLinksOfNode(destPlatformA);
+            outA[0][0].LinkedOp = destPlatformB;
+            SeqTools.WriteOutboundLinksToNode(destPlatformA, outA);
+            
+            var outB = SeqTools.GetOutboundLinksOfNode(destPlatformB);
+            outB[0][0].LinkedOp = destPlatformC;
+            SeqTools.WriteOutboundLinksToNode(destPlatformB, outB);
+
+            // Do not save, calling method will handle it
         }
 
         private static void MichaelBayifyFinalFight(GameTarget target, RandomizationOption option)
@@ -66,7 +125,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             }
 
-
+            PlatformDestroyer(reaperFightP);
             MERFileSystem.SavePackage(reaperFightP);
         }
 
@@ -247,11 +306,13 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         private static void GenericRandomizeFlyerSpawns(GameTarget target, IMEPackage package, int maxNumNewEnemies, EPortablePawnClassification minClassification = EPortablePawnClassification.Mook, EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)
         {
-            var flyerPrepSequences = package.Exports.Where(x => x.ClassName == "Sequence" && x.GetProperty<StrProperty>("ObjName") is StrProperty objName && objName == "REF_SpawnPrep_Flyer").ToList();
+            var aiFactories = package.Exports.Where(x => x.ClassName == "SFXSeqAct_AIFactory").ToList();
 
-            foreach (var flySeq in flyerPrepSequences)
+            foreach (var aiFactory in aiFactories)
             {
-                var objectsInSeq = KismetHelper.GetSequenceObjects(flySeq).OfType<ExportEntry>().ToList();
+                var seq = SeqTools.GetParentSequence(aiFactory);
+                var sequenceObjects = KismetHelper.GetSequenceObjects(seq);
+                var objectsInSeq = sequenceObjects.OfType<ExportEntry>().ToList();
                 var preGate = objectsInSeq.FirstOrDefault(x => x.ClassName == "SeqAct_Gate"); // should not be null
                 var outbound = SeqTools.GetOutboundLinksOfNode(preGate);
                 var aifactoryObj = outbound[0][0].LinkedOp as ExportEntry; //First out on first link. Should point to AIFactory assuming these are all duplicated flyers
@@ -262,8 +323,8 @@ namespace Randomizer.Randomizers.Game2.Levels
                     // We can add new pawns to install
                     List<PortablePawn> newPawnsInThisSeq = new List<PortablePawn>();
                     int numEnemies = 1; // 1 is the original amount.
-                    List<ExportEntry> aiFactories = new List<ExportEntry>();
-                    aiFactories.Add(aifactoryObj); // the original one
+                    List<ExportEntry> allAiFactoriesInSeq = new List<ExportEntry>();
+                    allAiFactoriesInSeq.Add(aiFactory); // the original one
                     for (int i = 0; i < maxNumNewEnemies; i++)
                     {
                         var randPawn = availablePawns.RandomElement();
@@ -274,8 +335,8 @@ namespace Randomizer.Randomizers.Game2.Levels
                             newPawnsInThisSeq.Add(randPawn);
                             // Clone the ai factory sequence object and add it to the sequence
                             var newAiFactorySeqObj = EntryCloner.CloneTree(aifactoryObj);
-                            aiFactories.Add(newAiFactorySeqObj);
-                            KismetHelper.AddObjectToSequence(newAiFactorySeqObj, flySeq, false);
+                            allAiFactoriesInSeq.Add(newAiFactorySeqObj);
+                            KismetHelper.AddObjectToSequence(newAiFactorySeqObj, seq, false);
 
                             // Update the backing factory object
                             var backingFactory = newAiFactorySeqObj.GetProperty<ObjectProperty>("Factory").ResolveToEntry(package) as ExportEntry;
@@ -293,7 +354,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                     if (newPawnsInThisSeq.Any())
                     {
                         // install the switch
-                        var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(target, flySeq, numEnemies);
+                        var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(target, seq, numEnemies);
                         outbound[0][0].LinkedOp = randSw;
                         SeqTools.WriteOutboundLinksToNode(preGate, outbound);
 
@@ -301,7 +362,7 @@ namespace Randomizer.Randomizers.Game2.Levels
                         for (int i = 0; i < numEnemies; i++)
                         {
                             var linkDesc = $"Link {i + 1}";
-                            KismetHelper.CreateOutputLink(randSw, linkDesc, aiFactories[i]); // switches are indexed at 1
+                            KismetHelper.CreateOutputLink(randSw, linkDesc, allAiFactoriesInSeq[i]); // switches are indexed at 1
                         }
                     }
                 }

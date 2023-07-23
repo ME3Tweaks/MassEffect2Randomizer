@@ -56,137 +56,96 @@ namespace Randomizer.Randomizers.Game2.Enemy
     {
         public static PortablePawn[] PortablePawns = new[]
         {
-            
-
             // YMIR Mech
+            //new PortablePawn()
+            //{
+            //    PackageFilename = "BioP_ProCer.pcc",
+            //    ChallengeTypeFullPath = "BioChar_Mechs.SUB_HeavyWeaponMech",
+            //    AssetToPortIn = "BioChar_Mechs.SUB_HeavyWeaponMech",
+            //    AssetPaths = new[] {
+            //        "BIOG_CBT_MHV_NKD_R.NKDa.CBT_MHV_NKDa_MDL",
+            //    },
+            //    PawnClassPath = "SFXGamePawns.SFXPawn_HeavyMech",
+            //    Classification = EPortablePawnClassification.Subboss,
+            //    IsCorrectedPackage = false
+            //},
+
+            // Bombinatiton
             new PortablePawn()
             {
-                PackageFilename = "BioP_ProCer.pcc",
-                ChallengeTypeFullPath = "BioChar_Mechs.SUB_HeavyWeaponMech",
-                AssetToPortIn = "BioChar_Mechs.SUB_HeavyWeaponMech",
+                PackageFilename = "SFXPawn_Bombination.pcc",
+                ChallengeTypeFullPath = "MERChar_EndGm2.Bomination",
+                AssetToPortIn = "MERChar_EndGm2.Bomination",
                 AssetPaths = new[] {
-                    "BIOG_CBT_MHV_NKD_R.NKDa.CBT_MHV_NKDa_MDL",
+                    "BIOG_ZMB_ARM_NKD_R.NKDd.ZMB_ARM_NKDd_MDL",
+                    "BIOG_ZMB_ARM_NKD_R.NKDd.ZMB_ARM_NKDd_MAT_1a"
                 },
-                PawnClassPath = "SFXGamePawns.SFXPawn_HeavyMech",
-                Classification = EPortablePawnClassification.Subboss,
+                PawnClassPath = "MERGamePawns.SFXPawn_Bombination",
+                Classification = EPortablePawnClassification.Mook,
                 IsCorrectedPackage = false
+
             },
 
             // Klixen
-            new PortablePawn()
-            {
-                PackageFilename = "SFXPawn_Spider.pcc",
-                ChallengeTypeFullPath = "BioChar_Animals.Combat.ELT_Spider",
-                AssetToPortIn = "BioChar_Animals.Combat.ELT_Spider",
-                AssetPaths = new[] {
-                    "biog_cbt_rac_nkd_r.NKDa.CBT_RAC_NKDa_MDL",
-                    "EffectsMaterials.Users.Creatures.CBT_SPD_NKD_MAT_1a_USER",
-                },
-                PawnClassPath = "SFXGamePawns.SFXPawn_Spider",
-                IsCorrectedPackage = true
-            },
-
-            //Collector Krogan
-            new PortablePawn()
-            {
-                PackageFilename = "SFXPawn_Collector_Krogan.pcc",
-                ChallengeTypeFullPath = "BioChar_MER.Combat.SUB_Collector_Krogan",
-                AssetToPortIn = "BioChar_MER.Combat.SUB_Collector_Krogan",
-                AssetPaths = new[] {
-                    "BIOG_KRO_ARM_HVY_R.HVYe.KRO_ARM_HVYe_MDL", //Body
-                    "BIOG_KRO_HED_PROMorph.KRO_HED_PROBase_MDL", //Head
-                },
-                PawnClassPath = "SFXGamePawns.SFXPawn_Collector_Krogan", // not garm!
-                IsCorrectedPackage = true
-            },
-
-            // Does not seem to work, unfortunately ;(
             //new PortablePawn()
             //{
-            //    PackageFilename = "SFXPawn_GethColossus.pcc",
-            //    ChallengeTypeFullPath = "BioChar_Geth.Armature.BOS_GethColossus",
-            //    AssetToPortIn = "BioChar_Geth.Armature.BOS_GethColossus",
-            //    AssetPaths = new string[] {
-            //        //"BIOG_KRO_HED_PROMorph.KRO_HED_PROBase_MDL", //Head
-            //        "BIOG_RBT_TNK_NKD_R.NKDa.RBT_TNK_NKDa_MDL", //Body
+            //    PackageFilename = "SFXPawn_Spider.pcc",
+            //    ChallengeTypeFullPath = "BioChar_Animals.Combat.ELT_Spider",
+            //    AssetToPortIn = "BioChar_Animals.Combat.ELT_Spider",
+            //    AssetPaths = new[] {
+            //        "biog_cbt_rac_nkd_r.NKDa.CBT_RAC_NKDa_MDL",
+            //        "EffectsMaterials.Users.Creatures.CBT_SPD_NKD_MAT_1a_USER",
             //    },
-            //    PawnClassPath = "SFXGamePawns.SFXPawn_Colossus",
-            //    IsCorrectedPackage = true
-            //},
-
-            // Praetorian - NEEDS NERFED
-            //new PortablePawn()
-            //{
-            //    PackageFilename = "SFXPawn_Praetorian.pcc",
-            //    ChallengeTypeFullPath = "BioChar_Collectors.BOS_Praetorian",
-            //    AssetToPortIn = "BioChar_Collectors.BOS_Praetorian",
-            //    AssetPaths = new string[] {
-            //        "BIOG_CBT_PRA_NKD_R.NKDa.CBT_PRA_NKDa_MDL", //Body
-            //    },
-            //    PawnClassPath = "SFXGamePawns.SFXPawn_Praetorian",
-            //    IsCorrectedPackage = true
+            //    PawnClassPath = "SFXGamePawns.SFXPawn_Spider",
             //},
 
             //Geth Prime. AI doesn't let him climb over shit so he's pretty stationary
-            new PortablePawn()
-            {
-                PackageFilename = "BioPawn_GethPrime.pcc",
-                ChallengeTypeFullPath = "BioChar_Geth.Geth.SUB_GethPrime",
-                AssetToPortIn = "BioChar_Geth.Geth.SUB_GethPrime",
-                AssetPaths = new[] {
-                    "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MDL", //Body
-                    "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MAT_2a", //Material
-                },
-                //PawnClassPath = "SFXGamePawns.", // not used for this class
-                IsCorrectedPackage = true
-            },
-
-            //Collector Batarian
-            new PortablePawn()
-            {
-                PackageFilename = "BioPawn_Collector_Batarian.pcc",
-                ChallengeTypeFullPath = "BioChar_MER.Combat.ELT_Collector_Batarian",
-                AssetToPortIn = "BioChar_MER.Combat.ELT_Collector_Batarian",
-                AssetPaths = new[] {
-                    "BIOG_HMM_ARM_HVY_R.HVYa.HMM_ARM_HVYa_MAT_8a",
-                    "BIOG_HMM_ARM_HVY_R.HVYa.HMM_ARM_HVYa_MDL",
-                    "BIOG_HMM_ARM_HVY_R.HVYa.HMM_ARM_HVYa_MAT_18a",
-                    "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROBase_MDL",
-                    "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROMorph_MAT_1a",
-                },
-                //PawnClassPath = "SFXGamePawns.", // not used for this class
-                IsCorrectedPackage = true,
-                TextureUpdates = new []
-                {
-                    new RTexture2D
-                    {
-                        // Darker head with veins (that you honestly can't really see...)
-                        TextureInstancedFullPath = "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROMorph_Diff",
-                        AllowedTextureIds = new List<string>
-                        {
-                            "Pawn.Collector_Batarian_HeadMorph.bin",
-                        }
-                    },
-                }
-            },
+            // He's too strong given the other changes made in LE2R
+            //new PortablePawn()
+            //{
+            //    PackageFilename = "BioPawn_GethPrime.pcc",
+            //    ChallengeTypeFullPath = "BioChar_Geth.Geth.SUB_GethPrime",
+            //    AssetToPortIn = "BioChar_Geth.Geth.SUB_GethPrime",
+            //    AssetPaths = new[] {
+            //        "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MDL", //Body
+            //        "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MAT_2a", //Material
+            //    },
+            //    //PawnClassPath = "SFXGamePawns.", // not used for this class
+            //},
 
 
-            // Collector Asari
-            new PortablePawn()
-            {
-                PackageFilename = "BioPawn_CollectorAsari_S1.pcc",
-                ChallengeTypeFullPath = "BioChar_MER.Vanguards.ELT_Collector_Asari",
-                AssetToPortIn = "BioChar_MER.Vanguards.ELT_Collector_Asari",
-                AssetPaths = new[] {
-                    "BIOG_HMF_ARM_MED_R.MEDa.HMF_ARM_MEDa_MAT_17a",
-                    "BIOG_HMF_ARM_MED_R.MEDa.HMF_ARM_MEDa_MDL",
-                    "BIOG_ASA_HED_PROMorph_R.PROBase.ASA_HED_PROBASE_MDL",
-                    "BIOG_ASA_HED_PROMorph_R.PROBase.ASA_HED_PROMorph_Mat_1a",
-                    "BIOG_ASA_HED_PROMorph_R.ASA_HED_EYE_MAT_1a",
-                    "BIOG_ASA_HED_PROMorph_R.PROBase.ASA_HED_PRO_Lash_Mat_1a",
-                },
-                IsCorrectedPackage = true,
-            }
+            // Flamethrower Vorcha
+            //new PortablePawn()
+            //{
+            //    PackageFilename = "SFXPawn_VorchaFlamethrower.pcc",
+            //    ChallengeTypeFullPath = "MERChar_EndGm2.Soldiers.FlamethrowerVorcha",
+            //    AssetToPortIn = "MERChar_EndGm2.Soldiers.FlamethrowerVorcha",
+            //    AssetPaths = new[] {
+            //        "BIOG_HMM_ARM_HVY_R.HVYa.HMM_ARM_HVYa_MAT_18a",
+            //        "BIOG_HMM_HGR_HVY_R.HVYa.HMM_HGR_HVYa_MAT_18a",
+            //        "BIOG_HMM_ARM_HVY_R.HVYa.HMM_ARM_HVYa_MDL",
+            //        "BIOG_HMM_HGR_HVY_R.HVYa.HMM_HGR_HVYa_MDL",
+            //        "BIOG_HMM_HGR_HVY_R.HVYa.HMM_VSR_HVYa_MDL",
+            //        "BIOG_HMM_HGR_HVY_R.HVYa.HMM_VSR_HVYa_MAT_1a",
+            //        "BIOG_HMM_HGR_HVY_R.BRT.HMM_BTR_HVY_MDL",
+            //        "BIOG_HMM_HGR_HVY_R.BRT.HMM_BTR_HVY_MAT_1a",
+            //        "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROBase_MDL",
+            //        "BIOG_BAT_HED_PROMorph_R.PROBase.BAT_HED_PROMorph_MAT_1a"
+            //    },
+            //    //PawnClassPath = "SFXGamePawns.", // not used for this class
+            //},
+
+            // Krogan
+            //new PortablePawn()
+            //{
+            //    PackageFilename = "SFXPawn_CollectorKrogan",
+            //    ChallengeTypeFullPath = "BioChar_Geth.Geth.SUB_GethPrime",
+            //    AssetToPortIn = "BioChar_Geth.Geth.SUB_GethPrime",
+            //    AssetPaths = new[] {
+            //        "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MDL", //Body
+            //        "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MAT_2a", //Material
+            //    },
+            //}
         };
 
         public static void ResetClass()
@@ -252,13 +211,16 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 }
                 else
                 {
-                    Debug.WriteLine("Pawn package not found: {pawn.PackageFilename}");
+                    Debug.WriteLine($"Pawn package not found: {pawn.PackageFilename}");
                 }
             }
 
             if (pawnPackage != null)
             {
-                PackageTools.PortExportIntoPackage(target, targetPackage, pawnPackage.FindExport(pawn.AssetToPortIn), useMemorySafeImport: !pawn.IsCorrectedPackage);
+                var iAsset = pawnPackage.FindExport(pawn.AssetToPortIn);
+                if (iAsset == null)
+                    Debugger.Break();
+                PackageTools.PortExportIntoPackage(target, targetPackage, iAsset, useMemorySafeImport: !pawn.IsCorrectedPackage);
 
                 // Ensure the assets are too as they may not be directly referenced except in the level instance
                 foreach (var asset in pawn.AssetPaths)
