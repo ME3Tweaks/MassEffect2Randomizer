@@ -461,7 +461,7 @@ namespace Randomizer.Shared
         /// <param name="linkedOp"></param>
         /// <param name="linkedInputIdx"></param>
         /// <returns></returns>
-        public static IEntry InstallSequenceChained(ExportEntry sourceSequence, IMEPackage targetPackage, ExportEntry parentSequence, ExportEntry linkedOp, int linkedInputIdx)
+        public static ExportEntry InstallSequenceChained(ExportEntry sourceSequence, IMEPackage targetPackage, ExportEntry parentSequence, ExportEntry linkedOp, int linkedInputIdx)
         {
             parentSequence ??= targetPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence");
             EntryImporter.ImportAndRelinkEntries(EntryImporter.PortingOption.CloneAllDependencies, sourceSequence, targetPackage, parentSequence, true, new RelinkerOptionsPackage(), out var newUiSeq);

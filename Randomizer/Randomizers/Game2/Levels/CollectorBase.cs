@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
@@ -19,7 +20,7 @@ namespace Randomizer.Randomizers.Game2.Levels
     {
         public static bool PerformRandomization(GameTarget target, RandomizationOption option)
         {
-            RandomizeFlyerSpawnPawns(target);
+            //RandomizeFlyerSpawnPawns(target);
             //AutomatePlatforming400(target, option);
             //MakeTubesSectionHarder(target);
 
@@ -31,13 +32,15 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         private static float DESTROYER_PLAYRATE = 2;
 
-        private static void PlatformDestroyer(IMEPackage reaperFightPackage)
+        private static void PlatformDestroyer(IMEPackage reaperFightPackage, IMEPackage sequenceSupportPackage)
         {
+
             var sequences = reaperFightPackage.Exports.Where(x => x.ClassName == "Sequence" && x.ObjectName.Instanced.StartsWith("Destroy_Platform_")).ToList();
             foreach (var sequence in sequences)
             {
-                var seqObjs = SeqTools.GetAllSequenceElements(sequence).OfType<ExportEntry>().Where(x => x.ClassName == "SeqAct_Interp").ToList();
-                foreach (var seqObj in seqObjs)
+                var seqObjs = SeqTools.GetAllSequenceElements(sequence).OfType<ExportEntry>().ToList();   
+                // Update interps
+                foreach (var seqObj in seqObjs.Where(x => x.ClassName == "SeqAct_Interp"))
                 {
                     bool setGesture = false;
                     // 1. Set gesture speed
@@ -64,6 +67,16 @@ namespace Randomizer.Randomizers.Game2.Levels
                         seqObj.WriteProperty(new FloatProperty(DESTROYER_PLAYRATE, "PlayRate"));
                     }
                 }
+
+                // Set ragdolls on pawns standing on platforms as they are destroyed
+                var checkIfInVolume = seqObjs.FirstOrDefault(x => x.ClassName == "BioSeqAct_CheckIfInVolume");
+                var attachEffect = seqObjs.FirstOrDefault(x => x.ObjectName.Instanced == "BioSeqAct_AttachVisualEffect_0"); // This is very specific and depends on compile order of file!
+
+                KismetHelper.RemoveOutputLinks(checkIfInVolume); // remove teleport and get nearest point logic
+
+                var newSeq = MERSeqTools.InstallSequenceChained(sequenceSupportPackage.FindExport("RagdollIntoAir"), reaperFightPackage, sequence, attachEffect, 0);
+                KismetHelper.CreateOutputLink(checkIfInVolume, "In Volume", newSeq); // Connect input
+                KismetHelper.CreateVariableLink(newSeq, "Pawn", MERSeqTools.CreatePlayerObject(sequence, true));
             }
 
             // Make reaper blow up platforms much earlier
@@ -125,7 +138,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             }
 
-            PlatformDestroyer(reaperFightP);
+            PlatformDestroyer(reaperFightP, sequenceSupportPackage);
             MERFileSystem.SavePackage(reaperFightP);
         }
 
