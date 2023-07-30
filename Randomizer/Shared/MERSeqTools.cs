@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Media;
+using LegendaryExplorerCore.Gammtek.Extensions.Collections.Generic;
 using LegendaryExplorerCore.Kismet;
 using LegendaryExplorerCore.Packages;
 using LegendaryExplorerCore.Packages.CloningImportingAndRelinking;
@@ -487,6 +488,69 @@ namespace Randomizer.Shared
         {
             var links = SeqTools.GetVariableLinksOfNode(seqActInterp);
             return links[0].LinkedNodes[0] as ExportEntry;
+        }
+
+        /// <summary>
+        /// Makes a new SeqVar_ObjectList in the given sequence with the given values in ObjList.
+        /// </summary>
+        /// <param name="objects"></param>
+        /// <param name="sequence"></param>
+        /// <returns></returns>
+        public static ExportEntry MakeSeqVarList(List<ExportEntry> objects, ExportEntry sequence)
+        {
+            var list = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_ObjectList");
+            KismetHelper.AddObjectToSequence(list, sequence);
+
+            ArrayProperty<ObjectProperty> objList = new ArrayProperty<ObjectProperty>("ObjList");
+            objList.ReplaceAll(objects.Select(x=>new ObjectProperty(x)));
+            list.WriteProperty(objList);
+
+            return list;
+        }
+
+        //public static ExportEntry CreateSquadObject(ExportEntry sequence)
+        //{
+        //    var squadObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Object");
+        //    KismetHelper.AddObjectToSequence(squadObj, sequence);
+
+        //    var bioSquadClass = EntryImporter.EnsureClassIsInFile(sequence.FileRef, "BioSquadCombat", new RelinkerOptionsPackage());
+
+        //    objList.ReplaceAll(objects.Select(x => new ObjectProperty(x)));
+        //    squadObj.WriteProperty(objList);
+
+        //    return squadObj;
+        //}
+
+        /// <summary>
+        /// Creates a new SeqVar_Float with the given value in the given sequence
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateFloat(ExportEntry sequence, float value)
+        {
+            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Float");
+            KismetHelper.AddObjectToSequence(fObj, sequence);
+
+            fObj.WriteProperty(new FloatProperty(value, "FloatValue"));
+
+            return fObj;
+        }
+
+        /// <summary>
+        /// Creates a new SeqVar_Object with the given value in the given sequence
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateObject(ExportEntry sequence, ExportEntry value)
+        {
+            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Object");
+            KismetHelper.AddObjectToSequence(fObj, sequence);
+
+            fObj.WriteProperty(new ObjectProperty(value?.UIndex ?? 0, "ObjValue"));
+
+            return fObj;
         }
     }
 }

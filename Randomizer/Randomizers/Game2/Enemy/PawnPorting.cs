@@ -26,7 +26,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
         /// <summary>
         /// The full path to the BioChallengeScaledPawnType object
         /// </summary>
-        public string ChallengeTypeFullPath { get; set; }
+        public string BioPawnTypeIFP { get; set; }
         /// <summary>
         /// The asset to port in. Sometimes you don't wnat the BioChallengeScaledPawnType as it won't include things like models (for example, SFXPawn_Garm)
         /// </summary>
@@ -60,7 +60,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             //new PortablePawn()
             //{
             //    PackageFilename = "BioP_ProCer.pcc",
-            //    ChallengeTypeFullPath = "BioChar_Mechs.SUB_HeavyWeaponMech",
+            //    BioPawnTypeIFP = "BioChar_Mechs.SUB_HeavyWeaponMech",
             //    AssetToPortIn = "BioChar_Mechs.SUB_HeavyWeaponMech",
             //    AssetPaths = new[] {
             //        "BIOG_CBT_MHV_NKD_R.NKDa.CBT_MHV_NKDa_MDL",
@@ -73,8 +73,8 @@ namespace Randomizer.Randomizers.Game2.Enemy
             // Bombinatiton
             new PortablePawn()
             {
-                PackageFilename = "SFXPawn_Bombination.pcc",
-                ChallengeTypeFullPath = "MERChar_EndGm2.Bomination",
+                PackageFilename = "SFXPawn_Bombination3.pcc",
+                BioPawnTypeIFP = "MERChar_EndGm2.Bomination",
                 AssetToPortIn = "MERChar_EndGm2.Bomination",
                 AssetPaths = new[] {
                     "BIOG_ZMB_ARM_NKD_R.NKDd.ZMB_ARM_NKDd_MDL",
@@ -83,28 +83,98 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 PawnClassPath = "MERGamePawns.SFXPawn_Bombination",
                 Classification = EPortablePawnClassification.Mook,
                 IsCorrectedPackage = false
+            },
 
+            // Husk
+            new PortablePawn()
+            {
+                PackageFilename = "BioD_ShpCr2_170HubRoom2.pcc",
+                BioPawnTypeIFP = "BioChar_Collectors.SWARM_BlueHusk",
+                AssetToPortIn = "BioChar_Collectors.SWARM_BlueHusk",
+                AssetPaths = new[] {
+                    "BIOG_ZMB_ARM_NKD_R.NKDa.ZMBLite_ARM_NKDa_MDL",
+                    "BIOG_ZMB_ARM_NKD_R.NKDa.ZMB_ARM_NKDa_MAT_1a"
+                },
+                PawnClassPath = "SFXGamePawns.SFXPawn_HuskLite",
+                Classification = EPortablePawnClassification.Mook,
+                IsCorrectedPackage = false
+            },
+
+            // Charging husk - charges immediately
+            new PortablePawn()
+            {
+                PackageFilename = "SFXPawn_ChargingHusk.pcc",
+                BioPawnTypeIFP = "MERChar_Enemies.ChargingHusk",
+                AssetToPortIn = "MERChar_Enemies.ChargingHusk",
+                AssetPaths = new[] {
+                    "BIOG_ZMB_ARM_NKD_R.NKDa.ZMBLite_ARM_NKDa_MDL",
+                    "BIOG_ZMB_ARM_NKD_R.NKDa.ZMB_ARM_NKDa_MAT_1a"
+                },
+                PawnClassPath = "MERGamePawns.SFXPawn_ChargingHusk",
+                Classification = EPortablePawnClassification.Mook,
+                IsCorrectedPackage = false
             },
 
             // Klixen
-            //new PortablePawn()
-            //{
-            //    PackageFilename = "SFXPawn_Spider.pcc",
-            //    ChallengeTypeFullPath = "BioChar_Animals.Combat.ELT_Spider",
-            //    AssetToPortIn = "BioChar_Animals.Combat.ELT_Spider",
-            //    AssetPaths = new[] {
-            //        "biog_cbt_rac_nkd_r.NKDa.CBT_RAC_NKDa_MDL",
-            //        "EffectsMaterials.Users.Creatures.CBT_SPD_NKD_MAT_1a_USER",
-            //    },
-            //    PawnClassPath = "SFXGamePawns.SFXPawn_Spider",
-            //},
+            new PortablePawn()
+            {
+                PackageFilename = "SFXPawn_Spider.pcc",
+                BioPawnTypeIFP = "BioChar_Animals.Combat.ELT_Spider",
+                AssetToPortIn = "BioChar_Animals.Combat.ELT_Spider",
+                AssetPaths = new[] {
+                    "biog_cbt_rac_nkd_r.NKDa.CBT_RAC_NKDa_MDL",
+                    "EffectsMaterials.Users.Creatures.CBT_SPD_NKD_MAT_1a_USER",
+                },
+                PawnClassPath = "SFXGamePawns.SFXPawn_Spider",
+            },
+
+            // Scion
+            new PortablePawn()
+            {
+                PackageFilename = "SFXPawn_Scion.pcc",
+                BioPawnTypeIFP = "BioChar_Collectors.ELT_Scion",
+                AssetToPortIn = "BioChar_Collectors.ELT_Scion",
+                AssetPaths = new[] {
+                    // I don't think these are really necessary, technically...
+                    "BIOG_SCI_ARM_NKD_R.NKDa.SCI_ARM_NKDa_MDL",
+                    "BIOG_SCI_ARM_NKD_R.NKDa.SCI_ARM_NKDa_MAT_1a",
+                },
+                PawnClassPath = "SFXGamePawns.SFXPawn_Scion",
+            },
+
+            // Varren - they don't work properly when flown in
+            new PortablePawn()
+            {
+                PackageFilename = "SFXPawn_Varren.pcc",
+                BioPawnTypeIFP = "MERChar_Enemies.Animal.VarrenSpawnable",
+                AssetToPortIn = "MERChar_Enemies.Animal.VarrenSpawnable",
+                AssetPaths = new[] {
+                    "BIOG_CBT_VAR_NKD_R.NKDa.CBT_VAR_NKDa_MAT_2a",
+                    "BIOG_CBT_VAR_NKD_R.NKDa.CBT_VAR_NKDa_MAT_2b",
+                    "BIOG_CBT_VAR_NKD_R.NKDa.CBT_VAR_NKDa_MDL",
+                    "BIOG_CBT_VAR_NKD_R.NKDa.CBT_VAR_NKDa_MAT_3a",
+                    "BIOG_CBT_VAR_NKD_R.NKDa.CBT_VAR_NKDa_MAT_3b"
+                },
+                PawnClassPath = "MERGamePawns.SFXPawn_VarrenFull",
+            },
+
+            new PortablePawn()
+            {
+                PackageFilename = "SFXPawn_GethDestroyer.pcc",
+                BioPawnTypeIFP = "MERChar_Enemies.GethDestroyerSpawnable",
+                AssetToPortIn = "MERChar_Enemies.GethDestroyerSpawnable",
+                AssetPaths = new string[] {
+                    // Assets are already referenced by custom pawn
+                },
+                PawnClassPath = "MERGamePawns.SFXPawn_GethDestroyerFull",
+            },
 
             //Geth Prime. AI doesn't let him climb over shit so he's pretty stationary
             // He's too strong given the other changes made in LE2R
             //new PortablePawn()
             //{
             //    PackageFilename = "BioPawn_GethPrime.pcc",
-            //    ChallengeTypeFullPath = "BioChar_Geth.Geth.SUB_GethPrime",
+            //    BioPawnTypeIFP = "BioChar_Geth.Geth.SUB_GethPrime",
             //    AssetToPortIn = "BioChar_Geth.Geth.SUB_GethPrime",
             //    AssetPaths = new[] {
             //        "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MDL", //Body
@@ -118,7 +188,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             //new PortablePawn()
             //{
             //    PackageFilename = "SFXPawn_VorchaFlamethrower.pcc",
-            //    ChallengeTypeFullPath = "MERChar_EndGm2.Soldiers.FlamethrowerVorcha",
+            //    BioPawnTypeIFP = "MERChar_EndGm2.Soldiers.FlamethrowerVorcha",
             //    AssetToPortIn = "MERChar_EndGm2.Soldiers.FlamethrowerVorcha",
             //    AssetPaths = new[] {
             //        "BIOG_HMM_ARM_HVY_R.HVYa.HMM_ARM_HVYa_MAT_18a",
@@ -139,7 +209,7 @@ namespace Randomizer.Randomizers.Game2.Enemy
             //new PortablePawn()
             //{
             //    PackageFilename = "SFXPawn_CollectorKrogan",
-            //    ChallengeTypeFullPath = "BioChar_Geth.Geth.SUB_GethPrime",
+            //    BioPawnTypeIFP = "BioChar_Geth.Geth.SUB_GethPrime",
             //    AssetToPortIn = "BioChar_Geth.Geth.SUB_GethPrime",
             //    AssetPaths = new[] {
             //        "BIOG_GTH_STP_NKD_R.NKDa.GTH_STP_NKDa_MDL", //Body
