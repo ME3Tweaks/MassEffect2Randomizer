@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -30,23 +31,81 @@ namespace Randomizer.Randomizers.Game2.Levels
             //UpdateHives4(target, sequenceSupportPackage); // Run to the final button
 
             // The Long Walk
+            //RandomlyChooseTeams(target, option);
             //AutomateTheLongWalk(target, option);
-            UpdateSpawnsLongWalk(target, sequenceSupportPackage);
+            //UpdateSpawnsLongWalk(target, sequenceSupportPackage);
 
 
             // Platforming and Final Battles
-            //UpdatePreFinalBattle(target, sequenceSupportPackage);
-            //UpdateFinalBattle(target, sequenceSupportPackage);
+            // UpdatePreFinalBattle(target, sequenceSupportPackage);
+            UpdateFinalBattle(target, sequenceSupportPackage);
 
             // Post-CollectorBase
-            //UpdatePostCollectorBase(target);
+            // UpdatePostCollectorBase(target);
 
             // RandomizeFlyerSpawnPawns(target);
-            //MakeTubesSectionHarder(target);
 
-            //MichaelBayifyFinalFight(target, option);
-            // InstallBorger(target); // Change to new texture system
+            UpdateLevelStreaming(target);
             return true;
+        }
+
+        private static void UpdateLevelStreaming(GameTarget target)
+        {
+            // Fix streaming states for all of long walk
+            var biodEndGm2F = MERFileSystem.GetPackageFile(target, "BioD_EndGm2.pcc");
+            if (biodEndGm2F != null)
+            {
+                var package = MERFileSystem.OpenMEPackage(biodEndGm2F);
+
+                //
+                {
+                    var ts = package.FindExport("TheWorld.PersistentLevel.BioTriggerStream_0");
+                    var ss = ts.GetProperty<ArrayProperty<StructProperty>>("StreamingStates");
+
+                    // Find all phase states and ensure all previous walk phases are also loaded and visible.
+                    // This prevents previous enemies from despawning 
+                    foreach (var state in ss)
+                    {
+                        var stateName = state.Properties.GetProp<NameProperty>("StateName")?.Value.Name;
+                        if (stateName == null || stateName == "None")
+                            continue; // Don't care
+
+                        int phaseNum = 0;
+                        if (stateName == "SS_WALKCONCLUSION")
+                        {
+                            // Ensure previous states are set too
+                            phaseNum = 5;
+                        }
+                        else
+                        {
+                            var phasePos = stateName.IndexOf("PHASE", StringComparison.InvariantCultureIgnoreCase);
+                            if (phasePos == -1)
+                            {
+                                continue; // We don't care about these
+                            }
+
+                            phaseNum = int.Parse(stateName.Substring(phasePos + 5));
+                        }
+
+                        // Ensure previous states are kept
+                        var visibleChunks = state.GetProp<ArrayProperty<NameProperty>>("VisibleChunkNames");
+                        var baseName = "BioD_EndGm2_300Walk0";
+                        while (phaseNum > 1)
+                        {
+                            if (visibleChunks.All(x => x.Value != baseName + phaseNum))
+                            {
+                                // This has pawns as part of the level so we must make sure it doesn't disappear or player will just see enemies disappear
+                                visibleChunks.Add(new NameProperty(baseName + phaseNum));
+                            }
+
+                            phaseNum--;
+                        }
+                    }
+
+                    ts.WriteProperty(ss);
+                }
+                MERFileSystem.SavePackage(package);
+            }
         }
 
         private static void UpdateSpawnsLongWalk(GameTarget target, IMEPackage sequenceSupportPackage)
@@ -71,7 +130,7 @@ namespace Randomizer.Randomizers.Game2.Levels
 
             AddRandomSpawns(target, package,
                 "TheWorld.PersistentLevel.Main_Sequence.CombatEncounter_FlyerRaid.SeqAct_Delay_1",
-                allowedPawns, 8,
+                allowedPawns, 6,
                 "TheWorld.PersistentLevel.Main_Sequence.CombatEncounter_FlyerRaid.SeqVar_Object_36",
                 1500f, sequenceSupportPackage);
 
@@ -91,12 +150,12 @@ namespace Randomizer.Randomizers.Game2.Levels
             using var package = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, file));
 
             // Logic here
-            string[] allowedPawns = new[] { "MERChar_EndGm2.Bomination" }; // Special sequence for spawning will kill these as they fly over and these pawns have timed detonators
+            string[] allowedPawns = new[] { "MERChar_EndGm2.SuicideBomination" }; // Special sequence for spawning will kill these as they fly over and these pawns have timed detonators
 
             AddRandomSpawns(target, package,
-                "TheWorld.PersistentLevel.Main_Sequence.CombatEncounter_MoreDrones.Trooper_SpawnSet01.SeqEvent_SequenceActivated_0",
+                "TheWorld.PersistentLevel.Main_Sequence.Henchmen_Patrol_Track_03.BioSeqAct_PMExecuteTransition_4",
                 allowedPawns, 3,
-                "TheWorld.PersistentLevel.Main_Sequence.CombatEncounter_MoreDrones.Trooper_SpawnSet01.SeqVar_Object_2",
+                "TheWorld.PersistentLevel.Main_Sequence.Henchmen_Patrol_Track_03.SeqVar_Object_4",
                 400f, sequenceSupportPackage, spawnSeqName: "EndGm2RandomEnemySpawnSuicide");
 
             // Remove playpen manipulations
@@ -114,10 +173,10 @@ namespace Randomizer.Randomizers.Game2.Levels
             string[] allowedPawns = new[] { "MERChar_Enemies.ChargingHusk", "MERChar_EndGm2.Bomination" }; // Swarm the player
 
             AddRandomSpawns(target, package,
-                "TheWorld.PersistentLevel.Main_Sequence.CombatEncounter_FinalPopUp_Zombies.ZombieRespawn_LastRun03.SeqEvent_SequenceActivated_1",
+                "TheWorld.PersistentLevel.Main_Sequence.Henchmen_Patrol_Track_05.BioSeqAct_PMExecuteTransition_2",
                 allowedPawns, 12,
-                "TheWorld.PersistentLevel.Main_Sequence.CombatEncounter_FinalPopUp_Zombies.ZombieRespawn_LastRun03.SeqVar_Object_19",
-                1600f, sequenceSupportPackage);
+                MERSeqTools.CreateNewSquadObject(SeqTools.GetParentSequence(package.FindExport("TheWorld.PersistentLevel.Main_Sequence.Henchmen_Patrol_Track_05.BioSeqAct_PMExecuteTransition_2"))).InstancedFullPath,
+                900f, sequenceSupportPackage);
 
             // Remove playpen manipulations
 
@@ -166,7 +225,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             string[] allowedPawns = new[] { "MERChar_Enemies.GethDestroyerSpawnable" };
 
             AddRandomSpawns(target, package,
-                "TheWorld.PersistentLevel.Main_Sequence.Corridor150_Combat_Respawn.SeqAct_Gate_0", allowedPawns, 3,
+                "TheWorld.PersistentLevel.Main_Sequence.Corridor150_Combat_Respawn.SeqAct_Gate_0", allowedPawns, 2,
                 "TheWorld.PersistentLevel.Main_Sequence.Corridor150_Combat_Respawn.SeqVar_Object_36", 1300f,
                 sequenceSupportPackage);
 
@@ -243,95 +302,144 @@ namespace Randomizer.Randomizers.Game2.Levels
 
         #region The Long Walk
 
-        private static void AutomateTheLongWalk(GameTarget target, RandomizationOption option)
+        private static void RandomlyChooseTeams(GameTarget target, RandomizationOption option)
         {
-            var prelongwalkfile = MERFileSystem.GetPackageFile(target, "BioD_EndGm2_200Factory.pcc");
-            if (prelongwalkfile != null)
+            var files = new string[] { "BioD_EndGm1_310Huddle.pcc", "BioD_EndGm2_200Factory.pcc" };
+
+            foreach (var file in files)
             {
-                // Pre-long walk selection
-                var package = MEPackageHandler.OpenMEPackage(prelongwalkfile);
-                var bioticTeamSeq =
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B");
+                var teamSelectFile = MERFileSystem.GetPackageFile(target, file);
+                var package = MERFileSystem.OpenMEPackage(teamSelectFile);
 
-                var activated =
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.SeqEvent_SequenceActivated_0");
-                KismetHelper.RemoveAllLinks(activated);
+                var teams = package.Exports.Where(x => x.ClassName == "Sequence" && x.ObjectName.Instanced.StartsWith("Select_Team_")).ToList();
 
-                // install new logic
-                var randSwitch =
-                    MERSeqTools.InstallRandomSwitchIntoSequence(target, bioticTeamSeq,
-                        13); // don't include theif or veteran as dlc might not be installed
-                KismetHelper.CreateOutputLink(activated, "Out", randSwitch);
-
-                // Outputs of random choice
-                KismetHelper.CreateOutputLink(randSwitch, "Link 1",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_9")); //thane
-                KismetHelper.CreateOutputLink(randSwitch, "Link 2",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_8")); //jack
-                KismetHelper.CreateOutputLink(randSwitch, "Link 3",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_2")); //garrus
-                KismetHelper.CreateOutputLink(randSwitch, "Link 4",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_13")); //legion
-                KismetHelper.CreateOutputLink(randSwitch, "Link 5",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_6")); //grunt
-                KismetHelper.CreateOutputLink(randSwitch, "Link 6",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_0")); //jacob
-                KismetHelper.CreateOutputLink(randSwitch, "Link 7",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_7")); //samara
-                KismetHelper.CreateOutputLink(randSwitch, "Link 8",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_4")); //mordin
-                KismetHelper.CreateOutputLink(randSwitch, "Link 9",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_3")); //tali
-                KismetHelper.CreateOutputLink(randSwitch, "Link 10",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_15")); //morinth
-                KismetHelper.CreateOutputLink(randSwitch, "Link 11",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_19")); //miranda
-
-                // kasumi
-                KismetHelper.CreateOutputLink(randSwitch, "Link 12",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_10")); //kasumi
-
-                // zaeed
-                KismetHelper.CreateOutputLink(randSwitch, "Link 13",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.Factory_Cutscene_Conversation_Sequence.Select_Team_B.BioSeqAct_PMExecuteTransition_5")); //zaeed
-
-                MERFileSystem.SavePackage(package);
-            }
-
-            var biodEndGm2F = MERFileSystem.GetPackageFile(target, "BioD_EndGm2.pcc");
-            if (biodEndGm2F != null)
-            {
-                var package = MEPackageHandler.OpenMEPackage(biodEndGm2F);
-                var ts = package.FindExport("TheWorld.PersistentLevel.BioTriggerStream_0");
-                var ss = ts.GetProperty<ArrayProperty<StructProperty>>("StreamingStates");
-                // Make walk4 remain loaded while walk5 is active as enemeis may not yet be cleared out
-                var conclusion = ss[8];
-                var visibleNames = conclusion.GetProp<ArrayProperty<NameProperty>>("VisibleChunkNames");
-                if (!visibleNames.Any(x => x.Value == "BioD_EndGm2_300Walk04"))
+                foreach (var teamSeq in teams)
                 {
-                    // This has pawns as part of the level so we must make sure it doesn't disappear or player will just see enemies disappear
-                    visibleNames.Add(new NameProperty("BioD_EndGm2_300Walk04"));
+                    var seqObjects = SeqTools.GetAllSequenceElements(teamSeq).OfType<ExportEntry>().ToList();
+                    /*
+                    if (false)
+                    {
+                        // CHoiceGUI is native doesn't actually set lstData... sigh
+    
+                        var showChoiceGui = seqObjects.FirstOrDefault(x => x.ClassName == "BioSeqAct_ShowChoiceGUI");
+                        var seqInt = package.FindExport(teamSeq.InstancedFullPath + ".SeqVar_Int_0");
+                        var choiceData = package.FindExport(teamSeq.InstancedFullPath + ".BioSeqVar_ChoiceGUIData_0");
+                        var nextNode = MERSeqTools.GetNextNode(showChoiceGui, 0);
+                        nextNode = MERSeqTools.GetNextNode(nextNode, 0);
+    
+                        // Add rand selector
+                        var randIndexSelector = SequenceObjectCreator.CreateSequenceObject(package,
+                            "MERSeqAct_GetRandomChoiceGUIIndex", MERCaches.GlobalCommonLookupCache);
+                        KismetHelper.AddObjectToSequence(randIndexSelector, teamSeq);
+                        KismetHelper.CreateVariableLink(randIndexSelector, "ChosenIndex", seqInt);
+                        KismetHelper.CreateVariableLink(randIndexSelector, "ChoiceGUIData", choiceData);
+                        KismetHelper.CreateOutputLink(randIndexSelector, "Out", nextNode); // Point to after CloseChoiceGUI
+    
+                        // Repoint to rand selector
+                        var outboundNodes = SeqTools.FindOutboundConnectionsToNode(showChoiceGui, seqObjects);
+                        foreach (var outboundNode in outboundNodes)
+                        {
+                            var outboundLinks = SeqTools.GetOutboundLinksOfNode(outboundNode);
+                            foreach (var outLink in outboundLinks)
+                            {
+                                foreach (var linkedOp in outLink)
+                                {
+                                    if (linkedOp.LinkedOp == showChoiceGui)
+                                    {
+                                        linkedOp.LinkedOp = randIndexSelector;
+                                        linkedOp.InputLinkIdx = 0;
+                                    }
+                                }
+                            }
+    
+                            SeqTools.WriteOutboundLinksToNode(outboundNode, outboundLinks);
+                        }
+                    }
+                    */
+
+
+                    var chosenIndex = package.FindExport(teamSeq.InstancedFullPath + ".SeqVar_Int_0");
+
+                    // Count the number of options added
+
+                    // 1. Create the counter
+                    var inputInt = MERSeqTools.CreateInt(teamSeq, 0);
+
+                    // Output to count
+
+
+                    // Create our rand list container and replace ShowGUI logic with it
+                    var hackDelay =
+                        MERSeqTools.AddDelay(teamSeq,
+                            0.01f); // This is a hack so kismet logic runs in order. Otherwise this would require 
+                    // significantly rearchitecting the sequence
+
+                    // Add rand selector
+                    var randIndexContainer = SequenceObjectCreator.CreateSequenceObject(package,
+                        "MERSeqAct_RandIntList", MERCaches.GlobalCommonLookupCache);
+                    KismetHelper.AddObjectToSequence(randIndexContainer, teamSeq);
+                    KismetHelper.CreateVariableLink(randIndexContainer, "Input", inputInt);
+                    KismetHelper.CreateVariableLink(randIndexContainer, "Result", chosenIndex);
+
+                    // Add logic to add each valid choice index to our random int list
+                    foreach (var seqObj in seqObjects.Where(x => x.ClassName == "BioSeqAct_AddChoiceGUIElement"))
+                    {
+                        var choiceIdLink = SeqTools.GetVariableLinksOfNode(seqObj)[8];
+                        ExportEntry choiceIdInt;
+                        if (choiceIdLink.LinkedNodes.Count == 0)
+                        {
+                            // This is choice 0 which is default which is why this is null
+                            choiceIdInt = MERSeqTools.CreateInt(teamSeq, 0);
+                        }
+                        else
+                        {
+                            choiceIdInt = SeqTools.GetVariableLinksOfNode(seqObj)[8].LinkedNodes[0] as ExportEntry;
+                            if (choiceIdInt == null)
+                                Debugger.Break();
+                        }
+
+                        var setInt = MERSeqTools.CreateSetInt(teamSeq, inputInt, choiceIdInt);
+                        KismetHelper.CreateOutputLink(seqObj, "Success", setInt);
+                        KismetHelper.CreateOutputLink(setInt, "Out", randIndexContainer);
+                    }
+
+                    // Get the node after showchoicegui and closegui - we will output to that to skip the UI
+                    var showChoiceGui = seqObjects.FirstOrDefault(x => x.ClassName == "BioSeqAct_ShowChoiceGUI");
+                    var nextNode = MERSeqTools.GetNextNode(showChoiceGui, 0);
+                    nextNode = MERSeqTools.GetNextNode(nextNode, 0);
+                    KismetHelper.CreateOutputLink(randIndexContainer, "SetValue",
+                        nextNode); // Point to after CloseChoiceGUI
+
+                    // Repoint from ShowGUI to rand selector
+                    var outboundNodes = SeqTools.FindOutboundConnectionsToNode(showChoiceGui, seqObjects);
+                    foreach (var outboundNode in outboundNodes)
+                    {
+                        var outboundLinks = SeqTools.GetOutboundLinksOfNode(outboundNode);
+                        foreach (var outLink in outboundLinks)
+                        {
+                            foreach (var linkedOp in outLink)
+                            {
+                                if (linkedOp.LinkedOp == showChoiceGui)
+                                {
+                                    linkedOp.LinkedOp = hackDelay;
+                                    linkedOp.InputLinkIdx = 0; // SetValue
+                                }
+                            }
+                        }
+
+                        SeqTools.WriteOutboundLinksToNode(outboundNode, outboundLinks);
+                    }
+
+                    KismetHelper.CreateOutputLink(hackDelay, "Finished", randIndexContainer, 2); // SetOutput
                 }
 
-                ts.WriteProperty(ss);
+
                 MERFileSystem.SavePackage(package);
             }
+        }
 
+        private static void AutomateTheLongWalk(GameTarget target, RandomizationOption option)
+        {
             var longwalkfile = MERFileSystem.GetPackageFile(target, "BioD_EndGm2_300LongWalk.pcc");
             if (longwalkfile != null)
             {
@@ -346,8 +454,8 @@ namespace Randomizer.Randomizers.Game2.Levels
                 // The auto walk delay on Stop Walking
                 var delay = MERSeqTools.AddDelay(seq, ThreadSafeRandom.NextFloat(2, 7)); // How long to hold position
                 KismetHelper.CreateOutputLink(delay, "Finished",
-                    package.FindExport(
-                        "TheWorld.PersistentLevel.Main_Sequence.LongWalk_Controller.Control_Walking_State.BioSeqAct_ResurrectHenchman_0"));
+                            package.FindExport(
+                                "TheWorld.PersistentLevel.Main_Sequence.LongWalk_Controller.Control_Walking_State.BioSeqAct_ResurrectHenchman_0"));
                 KismetHelper.CreateOutputLink(stopWalking, "Out", delay);
 
                 // Do not allow targeting the escort
@@ -372,10 +480,26 @@ namespace Randomizer.Randomizers.Game2.Levels
                     package.FindExport(
                         "TheWorld.PersistentLevel.Main_Sequence.LongWalk_Controller.Control_Walking_State.SeqAct_Gate_2"));
 
+
+                // Damage henchmen outside of the bubble
+                var hench2Vfx = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.LongWalk_Controller.Control_Walking_State.Damage_if_too_Far.HenchB_VFX_OnRange");
+                var hench1Vfx = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.LongWalk_Controller.Control_Walking_State.Damage_if_too_Far.HenchA_VFX_OnRange");
+                var damage1 = SequenceObjectCreator.CreateSequenceObject(package, "MERSeqAct_CauseDamageVocal", MERCaches.GlobalCommonLookupCache);
+                var damage2 = SequenceObjectCreator.CreateSequenceObject(package, "MERSeqAct_CauseDamageVocal", MERCaches.GlobalCommonLookupCache);
+                KismetHelper.AddObjectsToSequence(SeqTools.GetParentSequence(hench1Vfx), true, damage1, damage2);
+
+                damage1.WriteProperty(new ObjectProperty(package.FindEntry("SFXGame.SFXDamageType_Environmental"), "DamageType"));
+                damage2.WriteProperty(new ObjectProperty(package.FindEntry("SFXGame.SFXDamageType_Environmental"), "DamageType"));
+                damage1.WriteProperty(new IntProperty(7, "DamageAmount"));
+                damage2.WriteProperty(new IntProperty(7, "DamageAmount"));
+
+                KismetHelper.CreateOutputLink(hench1Vfx, "Took Damage", damage1);
+                KismetHelper.CreateOutputLink(hench2Vfx, "Took Damage", damage2);
+
                 MERFileSystem.SavePackage(package);
             }
 
-            //randomize long walk lengths. 
+            //randomize long walk lengths.
             // IFP map
             var endwalkexportmap = new Dictionary<string, string>()
             {
@@ -449,9 +573,29 @@ namespace Randomizer.Randomizers.Game2.Levels
             finalFightPackage.AddToLevelActorsIfNotThere(newEntry as ExportEntry);
         }
 
-        private static void PlatformDestroyer(IMEPackage reaperFightPackage, IMEPackage sequenceSupportPackage)
-        {
 
+        private static void AddRandomSpawnsToFinalFight(GameTarget target, IMEPackage reaperFightPackage, IMEPackage sequenceSupportPackage)
+        {
+            // Logic here
+            string[] allowedPawns = new[] { "MERChar_Enemies.ChargingHusk", "MERChar_EndGm2.Bomination" }; // We only use husks in the early area
+
+            var squad1 = MERSeqTools.CreateNewSquadObject(reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop"), "LoopSquad");
+            AddRandomSpawns(target, reaperFightPackage,
+                "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.SeqAct_Gate_3",
+                allowedPawns, 6,
+                squad1.InstancedFullPath,
+                1500f, sequenceSupportPackage);
+
+            var squad2 = MERSeqTools.CreateNewSquadObject(reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop"), "LoopSquad");
+            AddRandomSpawns(target, reaperFightPackage,
+                "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.SeqAct_Gate_3",
+                allowedPawns, 2,
+                squad1.InstancedFullPath,
+                1500f, sequenceSupportPackage);
+        }
+
+        private static void PlatformDestroyer(GameTarget target, IMEPackage reaperFightPackage, IMEPackage sequenceSupportPackage)
+        {
             var sequences = reaperFightPackage.Exports.Where(x =>
                 x.ClassName == "Sequence" && x.ObjectName.Instanced.StartsWith("Destroy_Platform_")).ToList();
             foreach (var sequence in sequences)
@@ -507,27 +651,94 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
 
             // Make reaper blow up platforms much earlier
-            var firstAppearance = reaperFightPackage.FindExport(
-                "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.First_Appearance");
-            var destPlatformA = reaperFightPackage.FindExport(
-                "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_A");
-            var destPlatformB = reaperFightPackage.FindExport(
-                "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B");
-            var destPlatformC = reaperFightPackage.FindExport(
-                "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_C");
+
+            var destroyPlatformA = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_A");
+            var destroyPlatformB = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B");
+            var destroyPlatformC = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_C");
+
+            // Create the remote event signalers
+            var destroyBSignalEvent = MERSeqTools.CreateActivateRemoteEvent(destroyPlatformA, "DestroyPlatformB");
+            var destroyCSignalEvent = MERSeqTools.CreateActivateRemoteEvent(destroyPlatformB, "DestroyPlatformC");
+
+            // A -> B
+            var retractLog = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_A.SeqAct_Log_3");
+            KismetHelper.RemoveOutputLinks(retractLog); // Interp and voc
+            KismetHelper.CreateOutputLink(retractLog, "Out", destroyBSignalEvent);
+            KismetHelper.CreateOutputLink(retractLog, "Out", // This is the gate that needs opened so that this logic can pass through once completed. Links to 'Open'
+                reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_A.SeqAct_Gate_2"), 1);
+
+            // B -> C
+            // Logic is different here
+            // Wipes output of 'Completed' and points to our logic
+            var interp = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B.SeqAct_Interp_3");
+            var links = SeqTools.GetOutboundLinksOfNode(interp);
+            links[0].Clear();
+            links[0].Add(new SeqTools.OutboundLink() { InputLinkIdx = 0, LinkedOp = destroyCSignalEvent });
+            // Opens the passthrough gate
+            links[0].Add(new SeqTools.OutboundLink() { InputLinkIdx = 1, LinkedOp = reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B.SeqAct_Gate_2") });
+            SeqTools.WriteOutboundLinksToNode(interp, links);
 
 
-            var outFirstAppearance = SeqTools.GetOutboundLinksOfNode(firstAppearance);
-            outFirstAppearance[0][0].LinkedOp = destPlatformA;
-            SeqTools.WriteOutboundLinksToNode(firstAppearance, outFirstAppearance);
+            // These are receivers from the previous platform destroy to trigger the next animation
+            var destroyBEvent = MERSeqTools.CreateSeqEventRemoteActivated(destroyPlatformB, "DestroyPlatformB");
+            var destroyCEvent = MERSeqTools.CreateSeqEventRemoteActivated(destroyPlatformC, "DestroyPlatformC");
 
-            var outA = SeqTools.GetOutboundLinksOfNode(destPlatformA);
-            outA[0][0].LinkedOp = destPlatformB;
-            SeqTools.WriteOutboundLinksToNode(destPlatformA, outA);
+            // Events close the input gates but don't use them
+            KismetHelper.CreateOutputLink(destroyBEvent, "Out", reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B.SeqAct_Gate_4"), 2);
+            KismetHelper.CreateOutputLink(destroyCEvent, "Out", reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_C.SeqAct_Gate_4"), 2);
 
-            var outB = SeqTools.GetOutboundLinksOfNode(destPlatformB);
-            outB[0][0].LinkedOp = destPlatformC;
-            SeqTools.WriteOutboundLinksToNode(destPlatformB, outB);
+            // B Platform and reaper plays
+            KismetHelper.CreateOutputLink(destroyBEvent, "Out", reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B.SeqAct_Interp_3"));
+            KismetHelper.CreateOutputLink(destroyBEvent, "Out", reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B.SeqAct_Interp_2"));
+
+            // C Platform and reaper plays
+            KismetHelper.CreateOutputLink(destroyCEvent, "Out", reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_C.SeqAct_Interp_3"));
+            KismetHelper.CreateOutputLink(destroyCEvent, "Out", reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_C.SeqAct_Interp_2"));
+
+            // Close the gates that reaper uses to normally trigger platforms B and C because we only care about A.
+            reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SeqAct_Gate_2").WriteProperty(new BoolProperty(false, "bOpen"));
+            reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SeqAct_Gate_4").WriteProperty(new BoolProperty(false, "bOpen"));
+
+            // Make the time after he retracts not a million years
+            reaperFightPackage.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.SeqVar_Float_6").WriteProperty(new FloatProperty(1, "FloatValue"));
+
+            // Suicide bombing during this sequence
+            string[] allowedPawns = new[] { "MERChar_EndGm2.SuicideBomination" }; // Special sequence for spawning will kill these as they fly over and these pawns have timed detonators
+
+            // Coming up
+            AddRandomSpawns(target, reaperFightPackage, "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_A.SeqAct_Gate_4",
+                allowedPawns, 2, MERSeqTools.CreateNewSquadObject(destroyPlatformA).InstancedFullPath, 500f, sequenceSupportPackage, spawnSeqName: "EndGm2RandomEnemySpawnSuicide");
+
+            // Destroying B
+            AddRandomSpawns(target, reaperFightPackage, destroyBEvent.InstancedFullPath,
+                allowedPawns, 2, MERSeqTools.CreateNewSquadObject(destroyPlatformB).InstancedFullPath, 500f, sequenceSupportPackage, spawnSeqName: "EndGm2RandomEnemySpawnSuicide");
+
+
+            if (false)
+            {
+                // Old code
+                var firstAppearance = reaperFightPackage.FindExport(
+                    "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.First_Appearance");
+                var destPlatformA = reaperFightPackage.FindExport(
+                    "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_A");
+                var destPlatformB = reaperFightPackage.FindExport(
+                    "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_B");
+                var destPlatformC = reaperFightPackage.FindExport(
+                    "TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Reaper_Attack_Loop.Destroy_Platform_C");
+
+
+                var outFirstAppearance = SeqTools.GetOutboundLinksOfNode(firstAppearance);
+                outFirstAppearance[0][0].LinkedOp = destPlatformA;
+                SeqTools.WriteOutboundLinksToNode(firstAppearance, outFirstAppearance);
+
+                var outA = SeqTools.GetOutboundLinksOfNode(destPlatformA);
+                outA[0][0].LinkedOp = destPlatformB;
+                SeqTools.WriteOutboundLinksToNode(destPlatformA, outA);
+
+                var outB = SeqTools.GetOutboundLinksOfNode(destPlatformB);
+                outB[0][0].LinkedOp = destPlatformC;
+                SeqTools.WriteOutboundLinksToNode(destPlatformB, outB);
+            }
 
             // Add shepard ragdoll recovery to work around... fun issues with ragdoll
             MERSeqTools.InstallSequenceStandalone(sequenceSupportPackage.FindExport("ShepardRagdollRecovery"),
@@ -538,11 +749,20 @@ namespace Randomizer.Randomizers.Game2.Levels
         }
 
         /// <summary>
-        /// Makes Reaper destroy platforms and use different weapons
+        /// Makes Reaper destroy platforms and use different weapons, more HP
         /// </summary>
         /// <param name="reaperFightP"></param>
-        private static void MichaelBayifyFinalFight(IMEPackage reaperFightP, IMEPackage sequenceSupportPackage)
+        private static void MichaelBayifyFinalFight(GameTarget target, IMEPackage reaperFightP, IMEPackage sequenceSupportPackage)
         {
+            // Give more HP since squadmates do a lot more now
+            var loadout = reaperFightP.FindExport("BioChar_Loadouts.Collector.BOS_Reaper");
+            var shields = loadout.GetProperty<ArrayProperty<StructProperty>>("ShieldLoadouts");
+            // 12000 -> 17000
+            shields[0].GetProp<StructProperty>("MaxShields").GetProp<FloatProperty>("X").Value = 17000;
+            shields[0].GetProp<StructProperty>("MaxShields").GetProp<FloatProperty>("Y").Value = 17000;
+            loadout.WriteProperty(shields);
+
+            // Add reaper weapon handler
             var fireWeaponAts = reaperFightP.Exports.Where(x => x.ClassName == @"SFXSeqAct_FireWeaponAt").ToList();
             var matchingInputIdxs = new List<int>(new[] { 0 });
 
@@ -576,9 +796,21 @@ namespace Randomizer.Randomizers.Game2.Levels
 
                 SeqTools.WriteOutboundLinksToNode(source, outlinks);
 
+                // Add attack during idle step
+                var log = seqObjs.FirstOrDefault(x => x.ClassName == "SeqAct_Log" && x.GetProperty<ArrayProperty<StrProperty>>("m_aObjComment") is ArrayProperty<StrProperty> comments && comments.Count == 1 && comments[0].Value.Contains("Starting Idle"));
+                if (log == null)
+                {
+                    continue;
+                }
+
+                // Link to extra firing handler
+                var firingHandler = MERSeqTools.InstallSequenceChained(sequenceSupportPackage.FindExport("ReaperExtraWeaponFiringController"), reaperFightP, SeqTools.GetParentSequence(fwa), newSeq, 0);
+                KismetHelper.CreateVariableLink(firingHandler, "Reaper", MERSeqTools.CreateFindObject(SeqTools.GetParentSequence(firingHandler), "BOSS_ProtoReaper"));
+                KismetHelper.CreateOutputLink(log, "Out", firingHandler);
             }
 
-            PlatformDestroyer(reaperFightP, sequenceSupportPackage);
+            AddRandomSpawnsToFinalFight(target, reaperFightP, sequenceSupportPackage);
+            PlatformDestroyer(target, reaperFightP, sequenceSupportPackage);
         }
 
         private static void MakeTubesSectionHarder(GameTarget target)
@@ -722,6 +954,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             // Logic here
             AutomatePlatforming400(package);
             UnconstipatePathing(package);
+            RandomizePreReaperSpawns(target, package);
 
             MERFileSystem.SavePackage(package);
 
@@ -733,43 +966,77 @@ namespace Randomizer.Randomizers.Game2.Levels
             using var package = MERFileSystem.OpenMEPackage(MERFileSystem.GetPackageFile(target, file));
 
             // Logic here
-            MichaelBayifyFinalFight(package, sequenceSupportPackage);
+            MichaelBayifyFinalFight(target, package, sequenceSupportPackage);
             InstallAtmosphereHandler(package, sequenceSupportPackage);
-
-
+            RandomizePickups(target, package, sequenceSupportPackage);
+            MarkDownedSquadmatesDead(package, sequenceSupportPackage);
+            ImproveSquadmateAI(package, sequenceSupportPackage);
             MERFileSystem.SavePackage(package);
         }
 
-
-
-
-        private static void RandomizeFlyerSpawnPawns(GameTarget target)
+        private static void RandomizePickups(GameTarget target, IMEPackage package, IMEPackage sequenceSupportPackage)
         {
-            string[] files =
-            {
-                "BioD_EndGm2_420CombatZone.pcc",
-                "BioD_EndGm2_430ReaperCombat.pcc"
-            };
-            ChangeFlyersInFiles(target, files);
+            // Item to branch from
+            var gate = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Add_CollectorPossessed_To_Combat.SequenceReference_4.Sequence_2445.SeqAct_Gate_0");
+            var sequence = SeqTools.GetParentSequence(gate);
+            KismetHelper.RemoveOutputLinks(gate);
 
-            // Install names
-            TLKBuilder.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
-            TLKBuilder.ReplaceString(7892161, "Enthralled Batarian"); //Batarian Commando update
-            //TLKBuilder.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
+            // The original option
+            var awardAmmo = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Add_CollectorPossessed_To_Combat.SequenceReference_4.Sequence_2445.SFXSeqAct_AwardResource_0");
+
+            // The end result
+            var toggleHidden = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Add_CollectorPossessed_To_Combat.SequenceReference_4.Sequence_2445.SeqAct_ToggleHidden_2");
+
+            // New option
+            var awardMedigel = SequenceObjectCreator.CreateSequenceObject(package, "SFXSeqAct_AwardResource", MERCaches.GlobalCommonLookupCache);
+            awardMedigel.WriteProperty(new EnumProperty("MEDIGEL_TREASURE", "ETreasureType", package.Game, "TreasureType"));
+            KismetHelper.AddObjectToSequence(awardMedigel, sequence);
+            KismetHelper.CreateVariableLink(awardMedigel, "Amount", MERSeqTools.CreateInt(sequence, 2));
+            KismetHelper.CreateOutputLink(awardMedigel, "Out", toggleHidden);
+
+            // Install branching
+            var randSwitch = MERSeqTools.InstallRandomSwitchIntoSequence(target, sequence, 2);
+            KismetHelper.CreateOutputLink(randSwitch, "Link 1", awardAmmo);
+            KismetHelper.CreateOutputLink(randSwitch, "Link 2", awardMedigel);
+
+            KismetHelper.CreateOutputLink(gate, "Out", randSwitch);
+
         }
 
-        private static void ChangeFlyersInFiles(GameTarget target, string[] files)
+        private static void MarkDownedSquadmatesDead(IMEPackage package, IMEPackage sequenceSupportPackage)
         {
-            foreach (var f in files)
-            {
-                var fPath = MERFileSystem.GetPackageFile(target, f);
-                if (fPath != null && File.Exists(fPath))
-                {
-                    var package = MEPackageHandler.OpenMEPackage(fPath);
-                    GenericRandomizeFlyerSpawns(target, package, 3);
-                    MERFileSystem.SavePackage(package);
-                }
-            }
+            var trigger = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SeqAct_Log_7");
+            var end = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SequenceReference_20");
+            KismetHelper.RemoveOutputLinks(trigger);
+
+            var mark = SequenceObjectCreator.CreateSequenceObject(package, "MERSeqAct_MarkDownedSquadmatesUnloyal", MERCaches.GlobalCommonLookupCache);
+            KismetHelper.AddObjectToSequence(mark, SeqTools.GetParentSequence(trigger));
+            KismetHelper.CreateOutputLink(trigger, "Out", mark);
+            KismetHelper.CreateOutputLink(mark, "Out", end);
+        }
+
+        private static void ImproveSquadmateAI(IMEPackage package, IMEPackage sequenceSupportPackage)
+        {
+            // Installs HenchTargeting sequence to the Main_Sequence
+            MERSeqTools.InstallSequenceStandalone(sequenceSupportPackage.FindExport("HenchTargetting"), package);
+            var trigger = package.FindExport("TheWorld.PersistentLevel.Main_Sequence.Reaper_Combat_Handler.SEQ_Initialize_Reaper_Combat.BioSeqAct_TurnTowards_1");
+            var remoteEvent = MERSeqTools.CreateActivateRemoteEvent(SeqTools.GetParentSequence(trigger), "SetupFinalBattleHench"); // Trigger HenchTargetting
+            KismetHelper.CreateOutputLink(trigger, "Out", remoteEvent);
+
+            // Change the tag of a gunship so HenchTargetting can find it
+            var eyeLeft = package.FindExport("TheWorld.PersistentLevel.SFXPawn_Targetable_Gunship_6");
+            eyeLeft.WriteProperty(new NameProperty("HenchTargetAid", "Tag"));
+        }
+
+
+        private static void RandomizePreReaperSpawns(GameTarget target, IMEPackage preReaperFightP)
+        {
+            GenericRandomizeAIFactorySpawns(target, preReaperFightP, new [] { ""});
+
+            // Install names
+            //TLKBuilder.ReplaceString(7892160, "Indoctrinated Krogan"); //Garm update
+            //TLKBuilder.ReplaceString(7892161, "Enthralled Batarian"); //Batarian Commando update
+                                                                      //TLKBuilder.ReplaceString(7892162, "Collected Human"); //Batarian Commando update
         }
 
         /// <summary>
@@ -791,79 +1058,34 @@ namespace Randomizer.Randomizers.Game2.Levels
             }
         }
 
-        private static void GenericRandomizeFlyerSpawns(GameTarget target, IMEPackage package, int maxNumNewEnemies,
-            EPortablePawnClassification minClassification = EPortablePawnClassification.Mook,
-            EPortablePawnClassification maxClassification = EPortablePawnClassification.Boss)
+        /// <summary>
+        /// Changes all AIFactory spawns in the given file
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="package"></param>
+        /// <param name="maxNumNewEnemies"></param>
+        /// <param name="minClassification"></param>
+        /// <param name="maxClassification"></param>
+        private static void GenericRandomizeAIFactorySpawns(GameTarget target, IMEPackage package, string[] allowedPawns)
         {
             var aiFactories = package.Exports.Where(x => x.ClassName == "SFXSeqAct_AIFactory").ToList();
 
             foreach (var aiFactory in aiFactories)
             {
                 var seq = SeqTools.GetParentSequence(aiFactory);
-                var sequenceObjects = KismetHelper.GetSequenceObjects(seq);
-                var objectsInSeq = sequenceObjects.OfType<ExportEntry>().ToList();
-                var preGate = objectsInSeq.FirstOrDefault(x => x.ClassName == "SeqAct_Gate"); // should not be null
-                var outbound = SeqTools.GetOutboundLinksOfNode(preGate);
-                var aifactoryObj =
-                    outbound[0][0]
-                        .LinkedOp as ExportEntry; //First out on first link. Should point to AIFactory assuming these are all duplicated flyers
+                var sequenceObjects = KismetHelper.GetSequenceObjects(seq).OfType<ExportEntry>().ToList();
 
-                var availablePawns = PawnPorting.PortablePawns.Where(x =>
-                    x.Classification >= minClassification && x.Classification <= maxClassification).ToList();
-                if (availablePawns.Any())
-                {
-                    // We can add new pawns to install
-                    List<PortablePawn> newPawnsInThisSeq = new List<PortablePawn>();
-                    int numEnemies = 1; // 1 is the original amount.
-                    List<ExportEntry> allAiFactoriesInSeq = new List<ExportEntry>();
-                    allAiFactoriesInSeq.Add(aiFactory); // the original one
-                    for (int i = 0; i < maxNumNewEnemies; i++)
-                    {
-                        var randPawn = availablePawns.RandomElement();
-                        if (!newPawnsInThisSeq.Contains(randPawn))
-                        {
-                            numEnemies++;
-                            PawnPorting.PortPawnIntoPackage(target, randPawn, package);
-                            newPawnsInThisSeq.Add(randPawn);
-                            // Clone the ai factory sequence object and add it to the sequence
-                            var newAiFactorySeqObj = EntryCloner.CloneTree(aifactoryObj);
-                            allAiFactoriesInSeq.Add(newAiFactorySeqObj);
-                            KismetHelper.AddObjectToSequence(newAiFactorySeqObj, seq, false);
+                // Create the assignment object
+                var aiFactoryAssignment = SequenceObjectCreator.CreateSequenceObject(package, "MERSeqAct_AssignAIFactoryData", MERCaches.GlobalCommonLookupCache);
+                aiFactoryAssignment.WriteProperty(new ObjectProperty(aiFactory, "Factory"));
+                var pawnTypeList = MERSeqTools.CreatePawnList(target, seq, allowedPawns);
+                KismetHelper.CreateVariableLink(aiFactoryAssignment, "PawnTypes", pawnTypeList);
 
-                            // Update the backing factory object
-                            var backingFactory =
-                                newAiFactorySeqObj.GetProperty<ObjectProperty>("Factory")
-                                    .ResolveToEntry(package) as ExportEntry;
-                            backingFactory.WriteProperty(new ObjectProperty(package.FindExport(randPawn.BioPawnTypeIFP),
-                                "ActorType"));
-                            var collection =
-                                backingFactory.GetProperty<ArrayProperty<ObjectProperty>>("ActorResourceCollection");
-                            collection.Clear();
-                            foreach (var asset in randPawn.AssetPaths)
-                            {
-                                collection.Add(new ObjectProperty(package.FindExport(asset)));
-                            }
+                // Repoint incoming to spawn to this node instead
+                MERSeqTools.RedirectInboundLinks(aiFactory, aiFactoryAssignment);
 
-                            backingFactory.WriteProperty(collection);
-                        }
-                    }
-
-                    if (newPawnsInThisSeq.Any())
-                    {
-                        // install the switch
-                        var randSw = MERSeqTools.InstallRandomSwitchIntoSequence(target, seq, numEnemies);
-                        outbound[0][0].LinkedOp = randSw;
-                        SeqTools.WriteOutboundLinksToNode(preGate, outbound);
-
-                        // Hook up switch to ai factories
-                        for (int i = 0; i < numEnemies; i++)
-                        {
-                            var linkDesc = $"Link {i + 1}";
-                            KismetHelper.CreateOutputLink(randSw, linkDesc,
-                                allAiFactoriesInSeq[i]); // switches are indexed at 1
-                        }
-                    }
-                }
+                // Create outlink to continue spawn
+                KismetHelper.CreateOutputLink(aiFactoryAssignment, "Out", aiFactory);
             }
         }
 
@@ -882,7 +1104,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             KismetHelper.RemoveOutputLinks(
                 platformController.FindExport(
                     "TheWorld.PersistentLevel.Main_Sequence.CombatA_IncomingPlatform0405.SeqAct_Log_2")); //A Platform 0405 (together)
-            // there's final platform with the controls on it. we don't touch it
+                                                                                                          // there's final platform with the controls on it. we don't touch it
 
             // Install delays and hook them up to the complection states
             InstallPlatformAutomation(
@@ -986,24 +1208,7 @@ namespace Randomizer.Randomizers.Game2.Levels
             var sequence = SeqTools.GetParentSequence(trigger);
 
             List<ExportEntry> bioPawnTypes = new List<ExportEntry>();
-            foreach (var v in PawnPorting.PortablePawns)
-            {
-                if (allowedPawns.Contains(v.BioPawnTypeIFP))
-                {
-                    PawnPorting.PortPawnIntoPackage(target, v, package);
-                    var bpt = package.FindExport(v.BioPawnTypeIFP);
-                    if (bpt == null)
-                        Debugger.Break();
-                    bioPawnTypes.Add(bpt);
-                }
-            }
-
-            if (bioPawnTypes.Count == 0)
-            {
-                Debugger.Break(); // The list should not be empty
-            }
-
-            var pawnTypeList = MERSeqTools.MakeSeqVarList(bioPawnTypes, sequence);
+            var pawnTypeList = MERSeqTools.CreatePawnList(target, sequence, allowedPawns);
             var endGm2RandomEnemySpawn = sequenceSupportPackage.FindExport(spawnSeqName);
             //var squad = squadObjectIFP != null ? package.FindExport(squadObjectIFP) : MERSeqTools.CreateSquadObject(sequence);
             var squad = package.FindExport(squadObjectIFP);

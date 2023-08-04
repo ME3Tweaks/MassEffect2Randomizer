@@ -84,6 +84,20 @@ namespace Randomizer.Randomizers.Game2.Enemy
                 Classification = EPortablePawnClassification.Mook,
                 IsCorrectedPackage = false
             },
+            // Bombinatiton - Suicide version (faster cast on the power to fix flying bug)
+            new PortablePawn()
+            {
+                PackageFilename = "SFXPawn_Bombination3.pcc",
+                BioPawnTypeIFP = "MERChar_EndGm2.SuicideBomination",
+                AssetToPortIn = "MERChar_EndGm2.SuicideBomination",
+                AssetPaths = new[] {
+                    "BIOG_ZMB_ARM_NKD_R.NKDd.ZMB_ARM_NKDd_MDL",
+                    "BIOG_ZMB_ARM_NKD_R.NKDd.ZMB_ARM_NKDd_MAT_1a"
+                },
+                PawnClassPath = "MERGamePawns.SFXPawn_BombinationSuicide",
+                Classification = EPortablePawnClassification.Mook,
+                IsCorrectedPackage = false
+            },
 
             // Husk
             new PortablePawn()

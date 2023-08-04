@@ -12,6 +12,7 @@ using LegendaryExplorerCore.Unreal;
 using LegendaryExplorerCore.Unreal.ObjectInfo;
 using ME3TweaksCore.Targets;
 using Randomizer.MER;
+using Randomizer.Randomizers.Game2.Enemy;
 using Randomizer.Randomizers.Utility;
 
 namespace Randomizer.Shared
@@ -384,7 +385,7 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry AddDelay(ExportEntry sequence, float delay)
         {
-            var newDelay = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_Delay");
+            var newDelay = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_Delay", MERCaches.GlobalCommonLookupCache);
             KismetHelper.AddObjectToSequence(newDelay, sequence);
             newDelay.WriteProperty(new FloatProperty(delay, "Duration"));
             return newDelay;
@@ -412,7 +413,7 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry CreatePlayerObject(ExportEntry sequence, bool returnsPawns)
         {
-            var player = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Player");
+            var player = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Player", MERCaches.GlobalCommonLookupCache);
             if (returnsPawns)
             {
                 player.WriteProperty(new BoolProperty(true, "bReturnPawns"));
@@ -447,7 +448,7 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry CreateActivateRemoteEvent(ExportEntry sequence, string eventName)
         {
-            var rmEvt = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_ActivateRemoteEvent");
+            var rmEvt = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_ActivateRemoteEvent", MERCaches.GlobalCommonLookupCache);
             rmEvt.WriteProperty(new NameProperty(eventName, "EventName"));
             KismetHelper.AddObjectsToSequence(sequence, false, rmEvt);
             return rmEvt;
@@ -498,28 +499,36 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry MakeSeqVarList(List<ExportEntry> objects, ExportEntry sequence)
         {
-            var list = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_ObjectList");
+            var list = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_ObjectList", MERCaches.GlobalCommonLookupCache);
             KismetHelper.AddObjectToSequence(list, sequence);
 
             ArrayProperty<ObjectProperty> objList = new ArrayProperty<ObjectProperty>("ObjList");
-            objList.ReplaceAll(objects.Select(x=>new ObjectProperty(x)));
+            objList.ReplaceAll(objects.Select(x => new ObjectProperty(x)));
             list.WriteProperty(objList);
 
             return list;
         }
 
-        //public static ExportEntry CreateSquadObject(ExportEntry sequence)
-        //{
-        //    var squadObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Object");
-        //    KismetHelper.AddObjectToSequence(squadObj, sequence);
+        /// <summary>
+        /// Creates a new hostile squad and returns its object.
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateNewSquadObject(ExportEntry sequence, string tag = null)
+        {
+            var squadObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Object", MERCaches.GlobalCommonLookupCache);
+            KismetHelper.AddObjectToSequence(squadObj, sequence);
 
-        //    var bioSquadClass = EntryImporter.EnsureClassIsInFile(sequence.FileRef, "BioSquadCombat", new RelinkerOptionsPackage());
+            var newSquad = ExportCreator.CreateExport(sequence.FileRef, "BioSquadCombat", "BioSquadCombat", sequence.FileRef.GetLevel());
 
-        //    objList.ReplaceAll(objects.Select(x => new ObjectProperty(x)));
-        //    squadObj.WriteProperty(objList);
+            newSquad.WriteProperty(new IntProperty(2, "ObjVersion")); // Not sure this is required - LE2
+            newSquad.WriteProperty(new NameProperty(tag ?? "BioSquadCombat", "Tag"));
+            newSquad.FileRef.AddToLevelActorsIfNotThere(newSquad);
 
-        //    return squadObj;
-        //}
+            squadObj.WriteProperty(new ObjectProperty(newSquad, "ObjValue"));
+
+            return squadObj;
+        }
 
         /// <summary>
         /// Creates a new SeqVar_Float with the given value in the given sequence
@@ -529,7 +538,7 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry CreateFloat(ExportEntry sequence, float value)
         {
-            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Float");
+            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Float", MERCaches.GlobalCommonLookupCache);
             KismetHelper.AddObjectToSequence(fObj, sequence);
 
             fObj.WriteProperty(new FloatProperty(value, "FloatValue"));
@@ -545,12 +554,184 @@ namespace Randomizer.Shared
         /// <returns></returns>
         public static ExportEntry CreateObject(ExportEntry sequence, ExportEntry value)
         {
-            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Object");
+            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Object", MERCaches.GlobalCommonLookupCache);
             KismetHelper.AddObjectToSequence(fObj, sequence);
 
             fObj.WriteProperty(new ObjectProperty(value?.UIndex ?? 0, "ObjValue"));
 
             return fObj;
+        }
+
+        /// <summary>
+        /// Creates a new SeqVar_Int with the given value in the given sequence
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="i"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateInt(ExportEntry sequence, int value)
+        {
+            var iObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqVar_Int", MERCaches.GlobalCommonLookupCache);
+            KismetHelper.AddObjectToSequence(iObj, sequence);
+
+            iObj.WriteProperty(new IntProperty(value, "IntValue"));
+
+            return iObj;
+        }
+
+        /// <summary>
+        /// Creates a new SeqEvent_RemoteEvent with the given EventName
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="eventName"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateSeqEventRemoteActivated(ExportEntry sequence, string eventName)
+        {
+            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqEvent_RemoteEvent", MERCaches.GlobalCommonLookupCache);
+            KismetHelper.AddObjectToSequence(fObj, sequence);
+
+            fObj.WriteProperty(new NameProperty(eventName, "EventName"));
+
+            return fObj;
+        }
+
+        /// <summary>
+        /// Creates a new BioSeqVar_ObjectFindByTag with the given tag name and optionally searching unique tags
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="tagToFind"></param>
+        /// <param name="searchUniqueTags"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateFindObject(ExportEntry sequence, string tagToFind, bool searchUniqueTags = false)
+        {
+            var fObj = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "BioSeqVar_ObjectFindByTag", MERCaches.GlobalCommonLookupCache);
+            KismetHelper.AddObjectToSequence(fObj, sequence);
+
+            fObj.WriteProperty(new StrProperty(tagToFind, "m_sObjectTagToFind"));
+            if (searchUniqueTags)
+            {
+                fObj.WriteProperty(new BoolProperty(true, "m_bSearchUniqueTag"));
+            }
+            return fObj;
+        }
+
+        /// <summary>
+        /// Creates a new SeqVar_AddInt with the specified parameters (if any)
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <param name="IntResult"></param>
+        /// <returns></returns>
+        public static ExportEntry CreateAddInt(ExportEntry sequence, ExportEntry A = null, ExportEntry B = null, ExportEntry IntResult = null, ExportEntry FloatResult = null)
+        {
+            var addInt = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_AddInt", MERCaches.GlobalCommonLookupCache);
+            KismetHelper.AddObjectToSequence(addInt, sequence);
+
+            if (A != null)
+            {
+                KismetHelper.CreateVariableLink(addInt, "A", A);
+            }
+            if (B != null)
+            {
+                KismetHelper.CreateVariableLink(addInt, "B", B);
+            }
+            if (IntResult != null)
+            {
+                KismetHelper.CreateVariableLink(addInt, "IntResult", IntResult);
+            }
+            if (FloatResult != null)
+            {
+                KismetHelper.CreateVariableLink(addInt, "FloatResult", FloatResult);
+            }
+
+            return addInt;
+        }
+
+        /// <summary>
+        /// Creates a SeqAct_SetInt with the specified parameters
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="target"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static ExportEntry CreateSetInt(ExportEntry sequence, ExportEntry target = null, ExportEntry value = null)
+        {
+            var setInt = SequenceObjectCreator.CreateSequenceObject(sequence.FileRef, "SeqAct_SetInt", MERCaches.GlobalCommonLookupCache);
+            KismetHelper.AddObjectToSequence(setInt, sequence);
+
+            if (value != null)
+            {
+                KismetHelper.CreateVariableLink(setInt, "Value", value);
+            }
+
+            if (target != null)
+            {
+                KismetHelper.CreateVariableLink(setInt, "Target", target);
+            }
+
+            return setInt;
+
+        }
+
+        /// <summary>
+        /// Creates a SeqVar_ObjectList with BioPawnTypes specified by the allowedPawns list that MER can port around
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="sequence"></param>
+        /// <param name="allowedPawns"></param>
+        /// <returns></returns>
+        public static ExportEntry CreatePawnList(GameTarget target, ExportEntry sequence, string[] allowedPawns)
+        {
+            var bioPawnTypes = new List<ExportEntry>();
+            foreach (var v in PawnPorting.PortablePawns)
+            {
+                if (allowedPawns.Contains(v.BioPawnTypeIFP))
+                {
+                    PawnPorting.PortPawnIntoPackage(target, v, sequence.FileRef);
+                    var bpt = sequence.FileRef.FindExport(v.BioPawnTypeIFP);
+                    if (bpt == null)
+                        Debugger.Break();
+                    bioPawnTypes.Add(bpt);
+                }
+            }
+
+            if (bioPawnTypes.Count == 0)
+            {
+                Debugger.Break(); // The list should not be empty
+            }
+
+            return MERSeqTools.MakeSeqVarList(bioPawnTypes, sequence);
+        }
+
+        /// <summary>
+        /// Redirects all inputs to a given sequence object to another
+        /// </summary>
+        /// <param name="original"></param>
+        /// <param name="newDest"></param>
+        /// <param name="inputIdxOriginal"></param>
+        /// <param name="newDestIdx"></param>
+        public static void RedirectInboundLinks(ExportEntry original, ExportEntry newDest, int inputIdxOriginal = 0, int newDestIdx = 0)
+        {
+            var seqObjects = SeqTools.GetAllSequenceElements(original).OfType<ExportEntry>();
+            var outboundNodes = SeqTools.FindOutboundConnectionsToNode(original, seqObjects);
+            foreach (var outboundNode in outboundNodes)
+            {
+                var outboundLinks = SeqTools.GetOutboundLinksOfNode(outboundNode);
+                foreach (var outLink in outboundLinks)
+                {
+                    foreach (var linkedOp in outLink)
+                    {
+                        if (linkedOp.LinkedOp == original && linkedOp.InputLinkIdx == inputIdxOriginal)
+                        {
+                            linkedOp.LinkedOp = newDest;
+                            linkedOp.InputLinkIdx = newDestIdx;
+                        }
+                    }
+                }
+
+                SeqTools.WriteOutboundLinksToNode(outboundNode, outboundLinks);
+            }
         }
     }
 }
